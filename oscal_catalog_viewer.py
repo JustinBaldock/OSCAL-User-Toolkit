@@ -43,9 +43,12 @@ def collect_controls(obj: dict, parent_titles: list[str] | None = None) -> list[
 
     for ctrl in obj.get("controls", []):
         props = ctrl.get("props", [])
+        ctrl_id = ctrl.get("id", "")
+        # Use label prop when available (e.g. GOV-01), otherwise fall back to the id (e.g. ism-1130)
+        label = get_prop(props, "label", default=None) or ctrl_id
         result.append({
-            "id":              ctrl.get("id", ""),
-            "label":          get_prop(props, "label"),
+            "id":              ctrl_id,
+            "label":          label,
             "class":          ctrl.get("class", ""),
             "title":          ctrl.get("title", ""),
             "statement":      get_statement(ctrl.get("parts", [])),
@@ -240,10 +243,10 @@ class OSCALViewer(tk.Tk):
         cols = ("label", "title", "class")
         self._tree = ttk.Treeview(left, columns=cols, show="headings",
                                   selectmode="browse")
-        self._tree.heading("label",  text="Label",  anchor="w")
-        self._tree.heading("title",  text="Title",  anchor="w")
+        self._tree.heading("label",  text="ID / Label", anchor="w")
+        self._tree.heading("title",  text="Title / Statement", anchor="w")
         self._tree.heading("class",  text="Class",  anchor="w")
-        self._tree.column("label",  width=90,  minwidth=70,  anchor="w")
+        self._tree.column("label",  width=120, minwidth=90,  anchor="w")
         self._tree.column("title",  width=310, minwidth=150, anchor="w", stretch=True)
         self._tree.column("class",  width=110, minwidth=90,  anchor="w")
 
@@ -338,8 +341,13 @@ class OSCALViewer(tk.Tk):
         self._tree.delete(*self._tree.get_children())
         for i, ctrl in enumerate(controls):
             tag = "principle" if ctrl["class"] == "ISM-principle" else "control"
+            # For controls whose title is just a generated placeholder (e.g. "Control: ism-1130"),
+            # show the statement prose instead — it is the meaningful content.
+            display_title = ctrl["title"]
+            if display_title.lower().startswith("control:") or not display_title:
+                display_title = ctrl["statement"]
             self._tree.insert("", "end", iid=str(i),
-                              values=(ctrl["label"], ctrl["title"], ctrl["class"]),
+                              values=(ctrl["label"], display_title, ctrl["class"]),
                               tags=(tag,))
         self._tree.tag_configure("principle", foreground=self.TEAL)
         self._tree.tag_configure("control",   foreground=self.TEXT)
@@ -414,8 +422,14 @@ class OSCALViewer(tk.Tk):
             relief="flat",
         ).pack(side="left", padx=10, pady=8)
 
+        # Use a meaningful title: for ism-NNNN controls the JSON title is a generated
+        # placeholder like "Control: ism-1130" — in that case show the statement prose
+        # as the header text instead.
+        has_real_title = (ctrl["title"] and
+                          not ctrl["title"].lower().startswith("control:"))
+        header_text = ctrl["title"] if has_real_title else ctrl["statement"]
         tk.Label(
-            header, text=ctrl["title"],
+            header, text=header_text,
             bg=self.HEADER_BG, fg=self.TEXT,
             font=("Helvetica", 13, "bold"),
             wraplength=480, justify="left",
@@ -460,7 +474,7 @@ class OSCALViewer(tk.Tk):
         tk.Frame(self._detail_frame, bg=self.HEADER_BG, height=1).pack(
             fill="x", padx=22, pady=8)
 
-        # Statement
+        # Statement — always show the prose block
         if ctrl["statement"]:
             tk.Label(
                 self._detail_frame, text="Statement",
