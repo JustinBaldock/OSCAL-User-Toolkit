@@ -373,7 +373,7 @@ class OSCALViewer(tk.Tk):
         self._notebook.add(tab, text="🛡  SSP Editor")
 
         # SSP toolbar
-        ssp_tb = tk.Frame(tab, bg=self.CARD_BG, height=46)
+        ssp_tb = tk.Frame(tab, bg=self.CARD_BG, height=52)
         ssp_tb.pack(fill="x", side="top")
         ssp_tb.pack_propagate(False)
 
@@ -394,10 +394,28 @@ class OSCALViewer(tk.Tk):
                   relief="flat", padx=12, pady=4, cursor="hand2",
                   ).pack(side="left", padx=(0, 8), pady=8)
 
+        # Separator
+        tk.Frame(ssp_tb, bg=self.HEADER_BG, width=2).pack(
+            side="left", fill="y", padx=8, pady=6)
+
+        # Profile info box — shows the currently linked profile
+        prof_box = tk.Frame(ssp_tb, bg=self.SIDEBAR_BG,
+                            highlightthickness=1, highlightbackground=self.HEADER_BG)
+        prof_box.pack(side="left", fill="y", pady=6, padx=(0, 8))
+        tk.Label(prof_box, text="🔖 Profile:",
+                 bg=self.SIDEBAR_BG, fg=self.SUBTEXT,
+                 font=("Helvetica", 9, "bold")).pack(side="left", padx=(10, 4))
+        self._ssp_profile_lbl = tk.Label(
+            prof_box, text="⚠  No profile loaded — open a profile before saving the SSP",
+            bg=self.SIDEBAR_BG, fg=self.RED,
+            font=("Helvetica", 9))
+        self._ssp_profile_lbl.pack(side="left", padx=(0, 10))
+
+        # SSP save status (right side of toolbar)
         self._ssp_status_lbl = tk.Label(
             ssp_tb, text="SSP not saved", bg=self.CARD_BG, fg=self.SUBTEXT,
             font=("Helvetica", 10, "italic"))
-        self._ssp_status_lbl.pack(side="left", padx=8)
+        self._ssp_status_lbl.pack(side="left", padx=16)
 
         # Scrollable SSP form
         ssp_canvas = tk.Canvas(tab, bg=self.BG, highlightthickness=0)
@@ -805,9 +823,34 @@ class OSCALViewer(tk.Tk):
             errors.append("Authorization Boundary Description is required (Section 3).")
         if not self._ssp.get("information_types"):
             errors.append("At least one Information Type is required (Section 5).")
-        if not self._catalog:
-            errors.append("No catalog is loaded — the SSP import-profile cannot be set.")
+        if not self._profile and not self._catalog:
+            errors.append("No catalog or profile is loaded — the SSP import-profile cannot be set.")
+        if not self._profile:
+            errors.append(
+                "No profile is loaded. It is strongly recommended to load an OSCAL profile "
+                "before saving — the SSP will fall back to referencing the catalog directly.")
         return errors
+
+    def _update_ssp_profile_box(self):
+        """Refresh the SSP toolbar profile info box from the currently loaded profile."""
+        if self._profile:
+            p = self._profile
+            parts = [p.get("title", "Unknown profile")]
+            if p.get("version") and p["version"] != "—":
+                parts[0] += f"  (v{p['version']})"
+            if p.get("oscal_version") and p["oscal_version"] != "—":
+                parts.append(f"OSCAL {p['oscal_version']}")
+            if p.get("ids"):
+                parts.append(f"{len(p['ids'])} controls")
+            fname = Path(p["filepath"]).name if p.get("filepath") else ""
+            if fname:
+                parts.append(fname)
+            self._ssp_profile_lbl.config(
+                text="  |  ".join(parts), fg=self.YELLOW)
+        else:
+            self._ssp_profile_lbl.config(
+                text="⚠  No profile loaded — open a profile before saving the SSP",
+                fg=self.RED)
 
     def _build_oscal_ssp(self):
         """Convert self._ssp into a valid OSCAL SSP JSON dict."""
@@ -842,13 +885,49 @@ class OSCALViewer(tk.Tk):
                     "base": it.get("a_impact", "fips-199-moderate")},
             })
 
-        # Import profile href — prefer loaded profile filepath, else catalog
-        if self._profile and self._profile.get("filepath"):
-            import_href = Path(self._profile["filepath"]).name
-        elif self._catalog and self._catalog.get("filepath"):
-            import_href = Path(self._catalog["filepath"]).name
+        # Import profile — build a back-matter resource and reference it by UUID fragment.
+        # Reuse the existing resource UUID if this SSP was previously saved/opened,
+        # so the reference stays stable across edits.
+        profile_resource_uuid = self._ssp.get("profile_resource_uuid") or new_uuid()
+        if self._profile:
+            profile_filepath = self._profile.get("filepath", "")
+            profile_filename  = Path(profile_filepath).name if profile_filepath else "profile.json"
+            import_href       = f"#{profile_resource_uuid}"
+            back_matter_resource = {
+                "uuid":  profile_resource_uuid,
+                "title": self._profile.get("title", "OSCAL Profile"),
+                "props": [
+                    {"name": "type",    "value": "profile"},
+                    {"name": "version", "value": self._profile.get("version", "—")},
+                    {"name": "oscal-version",
+                     "value": self._profile.get("oscal_version", "—")},
+                    {"name": "last-modified",
+                     "value": self._profile.get("last_modified", "—")},
+                ],
+                "rlinks": [{"href": profile_filename}],
+            }
+        elif self._catalog:
+            # Fallback: reference the catalog directly (schema discourages this
+            # but it keeps the file valid when no profile is loaded)
+            catalog_filepath = self._catalog.get("filepath", "")
+            catalog_filename  = Path(catalog_filepath).name if catalog_filepath else "catalog.json"
+            import_href       = f"#{profile_resource_uuid}"
+            back_matter_resource = {
+                "uuid":  profile_resource_uuid,
+                "title": self._catalog.get("title", "OSCAL Catalog"),
+                "props": [
+                    {"name": "type",    "value": "catalog"},
+                    {"name": "version", "value": self._catalog.get("version", "—")},
+                    {"name": "oscal-version",
+                     "value": self._catalog.get("oscal_version", "—")},
+                    {"name": "last-modified",
+                     "value": self._catalog.get("last_modified", "—")},
+                ],
+                "rlinks": [{"href": catalog_filename}],
+            }
         else:
             import_href = "PROFILE_OR_CATALOG_HREF"
+            back_matter_resource = None
 
         # Auto-generate a single "this-system" component (required by schema)
         component_uuid = new_uuid()
@@ -908,6 +987,8 @@ class OSCALViewer(tk.Tk):
                     "description": "Control implementation statements will be added in Stage 2.",
                     "implemented-requirements": [],
                 },
+                **({"back-matter": {"resources": [back_matter_resource]}}
+                   if back_matter_resource else {}),
             }
         }
         return doc
@@ -915,11 +996,25 @@ class OSCALViewer(tk.Tk):
     def _save_ssp(self):
         self._collect_ssp_form()
         errors = self._validate_ssp()
-        if errors:
+
+        # Separate hard errors from the "no profile" advisory warning
+        hard_errors  = [e for e in errors if "profile" not in e.lower() or "cannot be set" in e.lower()]
+        warnings     = [e for e in errors if e not in hard_errors]
+
+        if hard_errors:
             messagebox.showerror("Cannot save SSP",
                                  "Please fix the following before saving:\n\n" +
-                                 "\n".join(f"• {e}" for e in errors))
+                                 "\n".join(f"• {e}" for e in hard_errors))
             return
+
+        if warnings:
+            proceed = messagebox.askyesno(
+                "Save with warnings?",
+                "The following advisory issues were found:\n\n" +
+                "\n".join(f"• {w}" for w in warnings) +
+                "\n\nDo you want to save anyway?")
+            if not proceed:
+                return
 
         path = filedialog.asksaveasfilename(
             title="Save OSCAL SSP",
@@ -1006,6 +1101,29 @@ class OSCALViewer(tk.Tk):
                 "a_impact":    it.get("availability-impact",    {}).get("base", "fips-199-moderate"),
             })
 
+        # ── Parse import-profile and back-matter ──────────────────────────────
+        import_profile = root.get("import-profile", {})
+        import_href    = import_profile.get("href", "")
+
+        # Resolve back-matter resource if href is a fragment (#uuid)
+        back_matter_title   = ""
+        back_matter_version = ""
+        back_matter_file    = ""
+        if import_href.startswith("#"):
+            ref_uuid  = import_href.lstrip("#")
+            resources = root.get("back-matter", {}).get("resources", [])
+            resource  = next((r for r in resources if r.get("uuid") == ref_uuid), None)
+            if resource:
+                back_matter_title = resource.get("title", "")
+                rlinks = resource.get("rlinks", [])
+                back_matter_file  = rlinks[0].get("href", "") if rlinks else ""
+                for prop in resource.get("props", []):
+                    if prop.get("name") == "version":
+                        back_matter_version = prop.get("value", "")
+        else:
+            # Bare filename reference
+            back_matter_file = import_href
+
         ssp = {
             "uuid":            root.get("uuid", new_uuid()),
             "title":           meta.get("title", ""),
@@ -1023,6 +1141,9 @@ class OSCALViewer(tk.Tk):
             "roles":           roles,
             "parties":         parties,
             "information_types": info_types,
+            # Store the resolved profile reference so it round-trips
+            "import_href":          import_href,
+            "profile_resource_uuid": import_href.lstrip("#") if import_href.startswith("#") else "",
         }
 
         # Confirm if there is unsaved work in the current form
@@ -1035,6 +1156,20 @@ class OSCALViewer(tk.Tk):
 
         self._ssp = ssp
         self._populate_ssp_form()
+
+        # Update the SSP profile info box from back-matter
+        if back_matter_title:
+            profile_display = back_matter_title
+            if back_matter_version:
+                profile_display += f"  (v{back_matter_version})"
+            if back_matter_file:
+                profile_display += f"  —  {back_matter_file}"
+            self._ssp_profile_lbl.config(text=profile_display, fg=self.YELLOW)
+        elif back_matter_file:
+            self._ssp_profile_lbl.config(text=back_matter_file, fg=self.YELLOW)
+        else:
+            self._ssp_profile_lbl.config(text="No profile recorded in SSP", fg=self.SUBTEXT)
+
         self._ssp_status_lbl.config(
             text=f"Opened: {Path(path).name}", fg=self.BLUE)
         self._status_lbl.config(text=f"SSP opened: {Path(path).name}")
@@ -1147,6 +1282,7 @@ class OSCALViewer(tk.Tk):
                     self._prof_controls_lbl):
             lbl.config(text="—")
         self._clear_profile_btn.config(state="disabled")
+        self._update_ssp_profile_box()
 
         self._populate_tree(self._all_controls)
         self._show_placeholder()
@@ -1178,6 +1314,7 @@ class OSCALViewer(tk.Tk):
         self._prof_modified_lbl.config(text=profile["last_modified"])
         self._prof_controls_lbl.config(text=str(len(profile["ids"])))
 
+        self._update_ssp_profile_box()
         self._apply_filters()
         self._show_placeholder()
         self._status_lbl.config(text=f"Profile applied: {Path(path).name}")
@@ -1190,6 +1327,7 @@ class OSCALViewer(tk.Tk):
                     self._prof_published_lbl, self._prof_modified_lbl,
                     self._prof_controls_lbl):
             lbl.config(text="—")
+        self._update_ssp_profile_box()
         self._apply_filters()
         self._show_placeholder()
         self._status_lbl.config(text="Profile cleared — showing full catalog.")
