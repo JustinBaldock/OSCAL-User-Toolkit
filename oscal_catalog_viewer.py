@@ -88,6 +88,31 @@ def load_catalog(filepath: str) -> dict:
     }
 
 
+def load_profile(filepath: str) -> dict:
+    """Load an OSCAL profile JSON and return its metadata and set of control IDs."""
+    with open(filepath, encoding="utf-8") as f:
+        data = json.load(f)
+
+    if "profile" not in data:
+        raise ValueError("File does not appear to be an OSCAL profile (missing 'profile' key).")
+
+    profile = data["profile"]
+    meta = profile.get("metadata", {})
+
+    # Collect all control IDs referenced across all imports
+    included_ids: set[str] = set()
+    for imp in profile.get("imports", []):
+        for selector in imp.get("include-controls", []):
+            for ctrl_id in selector.get("with-ids", []):
+                included_ids.add(ctrl_id)
+
+    return {
+        "title":   meta.get("title", "Untitled profile"),
+        "version": meta.get("version", "—"),
+        "ids":     included_ids,
+    }
+
+
 # ── Main Application ──────────────────────────────────────────────────────────
 
 class OSCALViewer(tk.Tk):
@@ -113,6 +138,7 @@ class OSCALViewer(tk.Tk):
         self.configure(bg=self.BG)
 
         self._catalog: dict | None = None
+        self._profile: dict | None = None          # loaded profile, or None
         self._all_controls: list[dict] = []
         self._filtered_controls: list[dict] = []
         self._selected_class = tk.StringVar(value="All")
@@ -174,60 +200,96 @@ class OSCALViewer(tk.Tk):
               foreground=[("readonly", self.TEXT)])
 
     def _build_toolbar(self):
-        tb = tk.Frame(self, bg=self.HEADER_BG, height=54)
+        tb = tk.Frame(self, bg=self.HEADER_BG)
         tb.pack(fill="x", side="top")
-        tb.pack_propagate(False)
 
-        # Open button
-        open_btn = tk.Button(
-            tb, text="📂  Open Catalog",
+        # ── Row 1: main controls ──────────────────────────────────────────────
+        row1 = tk.Frame(tb, bg=self.HEADER_BG, height=54)
+        row1.pack(fill="x")
+        row1.pack_propagate(False)
+
+        # Open Catalog button
+        tk.Button(
+            row1, text="📂  Open Catalog",
             command=self._open_file,
             bg=self.ACCENT, fg=self.BG,
             font=("Helvetica", 12, "bold"),
             relief="flat", padx=14, pady=6,
             cursor="hand2", activebackground="#b4befe",
             activeforeground=self.BG,
+        ).pack(side="left", padx=14, pady=10)
+
+        # Open Profile button
+        tk.Button(
+            row1, text="🔖  Open Profile",
+            command=self._open_profile,
+            bg=self.YELLOW, fg=self.BG,
+            font=("Helvetica", 12, "bold"),
+            relief="flat", padx=14, pady=6,
+            cursor="hand2", activebackground="#f5c842",
+            activeforeground=self.BG,
+        ).pack(side="left", padx=(0, 8), pady=10)
+
+        # Clear Profile button
+        self._clear_profile_btn = tk.Button(
+            row1, text="✕  Clear Profile",
+            command=self._clear_profile,
+            bg=self.HEADER_BG, fg=self.SUBTEXT,
+            font=("Helvetica", 11),
+            relief="flat", padx=10, pady=6,
+            cursor="hand2", state="disabled",
         )
-        open_btn.pack(side="left", padx=14, pady=10)
+        self._clear_profile_btn.pack(side="left", pady=10)
 
         # App title
         tk.Label(
-            tb, text="OSCAL Catalog Viewer",
+            row1, text="OSCAL Catalog Viewer",
             bg=self.HEADER_BG, fg=self.TEXT,
             font=("Helvetica", 14, "bold"),
-        ).pack(side="left", padx=6)
-
-        # Catalog title (populated after load)
-        self._catalog_title_lbl = tk.Label(
-            tb, text="",
-            bg=self.HEADER_BG, fg=self.SUBTEXT,
-            font=("Helvetica", 11, "italic"),
-        )
-        self._catalog_title_lbl.pack(side="left", padx=10)
+        ).pack(side="left", padx=12)
 
         # Search box (right side)
-        tk.Label(tb, text="🔍", bg=self.HEADER_BG, fg=self.SUBTEXT,
+        tk.Label(row1, text="🔍", bg=self.HEADER_BG, fg=self.SUBTEXT,
                  font=("Helvetica", 13)).pack(side="right", padx=(0, 6))
         self._search_entry = tk.Entry(
-            tb, textvariable=self._search_var,
+            row1, textvariable=self._search_var,
             bg=self.SIDEBAR_BG, fg=self.TEXT,
             insertbackground=self.TEXT,
             relief="flat", font=("Helvetica", 11),
             width=22,
         )
         self._search_entry.pack(side="right", padx=(0, 12), ipady=4)
-        tk.Label(tb, text="Search:", bg=self.HEADER_BG, fg=self.SUBTEXT,
+        tk.Label(row1, text="Search:", bg=self.HEADER_BG, fg=self.SUBTEXT,
                  font=("Helvetica", 11)).pack(side="right")
 
         # Class filter
         self._class_combo = ttk.Combobox(
-            tb, textvariable=self._selected_class,
+            row1, textvariable=self._selected_class,
             values=["All"], state="readonly", width=18,
         )
         self._class_combo.pack(side="right", padx=(0, 8), pady=14)
         self._class_combo.bind("<<ComboboxSelected>>", self._on_filter)
-        tk.Label(tb, text="Class:", bg=self.HEADER_BG, fg=self.SUBTEXT,
+        tk.Label(row1, text="Class:", bg=self.HEADER_BG, fg=self.SUBTEXT,
                  font=("Helvetica", 11)).pack(side="right", padx=(16, 4))
+
+        # ── Row 2: active file info bar ───────────────────────────────────────
+        row2 = tk.Frame(tb, bg="#252535", height=26)
+        row2.pack(fill="x")
+        row2.pack_propagate(False)
+
+        self._catalog_title_lbl = tk.Label(
+            row2, text="No catalog loaded",
+            bg="#252535", fg=self.SUBTEXT,
+            font=("Helvetica", 10), anchor="w",
+        )
+        self._catalog_title_lbl.pack(side="left", padx=14)
+
+        self._profile_title_lbl = tk.Label(
+            row2, text="",
+            bg="#252535", fg=self.YELLOW,
+            font=("Helvetica", 10), anchor="w",
+        )
+        self._profile_title_lbl.pack(side="left", padx=(8, 0))
 
     def _build_body(self):
         body = tk.PanedWindow(
@@ -318,6 +380,7 @@ class OSCALViewer(tk.Tk):
             return
 
         self._catalog = catalog
+        self._profile = None                        # reset profile on new catalog load
         self._all_controls = catalog["controls"]
         self._filtered_controls = list(self._all_controls)
 
@@ -327,13 +390,52 @@ class OSCALViewer(tk.Tk):
         self._selected_class.set("All")
         self._search_var.set("")
 
+        # Reset profile UI
+        self._profile_title_lbl.config(text="")
+        self._clear_profile_btn.config(state="disabled")
+
         # Update toolbar
-        self._catalog_title_lbl.config(text=f"— {catalog['title']}")
+        self._catalog_title_lbl.config(text=f"Catalog: {catalog['title']}  (v{catalog['version']})")
 
         self._populate_tree(self._all_controls)
         self._show_placeholder()
-        self._status_lbl.config(text=f"Loaded: {Path(path).name}")
+        self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
         self._update_count()
+
+    def _open_profile(self):
+        if not self._catalog:
+            messagebox.showwarning("No catalog loaded",
+                                   "Please open a catalog file before loading a profile.")
+            return
+        path = filedialog.askopenfilename(
+            title="Open OSCAL Profile",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+        try:
+            profile = load_profile(path)
+        except (json.JSONDecodeError, KeyError, ValueError) as exc:
+            messagebox.showerror("Failed to load profile", str(exc))
+            return
+
+        self._profile = profile
+        self._clear_profile_btn.config(state="normal")
+        self._profile_title_lbl.config(
+            text=f"🔖  Profile: {profile['title']}  (v{profile['version']})  "
+                 f"— {len(profile['ids'])} controls"
+        )
+        self._apply_filters()
+        self._show_placeholder()
+        self._status_lbl.config(text=f"Profile applied: {Path(path).name}")
+
+    def _clear_profile(self):
+        self._profile = None
+        self._clear_profile_btn.config(state="disabled")
+        self._profile_title_lbl.config(text="")
+        self._apply_filters()
+        self._show_placeholder()
+        self._status_lbl.config(text="Profile cleared — showing full catalog.")
 
     # ── Tree Population ───────────────────────────────────────────────────────
 
@@ -363,6 +465,12 @@ class OSCALViewer(tk.Tk):
         term = self._search_var.get().lower().strip()
 
         result = self._all_controls
+
+        # Profile filter — restrict to controls whose id is in the profile
+        if self._profile:
+            profile_ids = self._profile["ids"]
+            result = [c for c in result if c["id"] in profile_ids]
+
         if cls != "All":
             result = [c for c in result if c["class"] == cls]
         if term:
