@@ -260,6 +260,7 @@ class OSCALViewer(tk.Tk):
         self._cat_oscal_lbl      = self._info_field(self._cat_fields, "OSCAL Version", "—")
         self._cat_published_lbl  = self._info_field(self._cat_fields, "Published",     "—")
         self._cat_modified_lbl   = self._info_field(self._cat_fields, "Last Modified", "—")
+        self._cat_controls_lbl   = self._info_field(self._cat_fields, "Controls",      "—")
 
         # ── Profile card ──────────────────────────────────────────────────────
         self._prof_card = tk.Frame(panel, bg=self.CARD_BG,
@@ -396,8 +397,8 @@ class OSCALViewer(tk.Tk):
         self._cat_oscal_lbl.config(text=catalog["oscal_version"])
         self._cat_published_lbl.config(text=catalog["published"])
         self._cat_modified_lbl.config(text=catalog["last_modified"])
+        self._cat_controls_lbl.config(text=str(len(catalog["controls"])))
 
-        # Reset profile info card
         self._prof_title_lbl.config(text="No profile loaded", fg=self.SUBTEXT)
         self._prof_version_lbl.config(text="—")
         self._prof_oscal_lbl.config(text="—")
