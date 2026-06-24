@@ -408,7 +408,7 @@ class OSCALViewer(tk.Tk):
         for w in self._detail_frame.winfo_children():
             w.destroy()
 
-        pad = dict(padx=22, pady=4)
+        pad = dict(padx=22)
 
         # Label badge + title
         header = tk.Frame(self._detail_frame, bg=self.HEADER_BG)
@@ -457,7 +457,7 @@ class OSCALViewer(tk.Tk):
         # Applicability chips
         if ctrl["applicability"]:
             chip_frame = tk.Frame(self._detail_frame, bg=self.BG)
-            chip_frame.pack(fill="x", **pad)
+            chip_frame.pack(fill="x", **pad, pady=4)
             tk.Label(chip_frame, text="Applicability:",
                      bg=self.BG, fg=self.SUBTEXT,
                      font=("Helvetica", 11, "bold"),
