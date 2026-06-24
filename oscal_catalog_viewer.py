@@ -383,6 +383,12 @@ class OSCALViewer(tk.Tk):
                   activebackground="#8cd39a", activeforeground=self.BG,
                   ).pack(side="left", padx=12, pady=8)
 
+        tk.Button(ssp_tb, text="📂  Open SSP", command=self._open_ssp,
+                  bg=self.BLUE, fg=self.BG, font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=12, pady=4, cursor="hand2",
+                  activebackground="#6a9fd8", activeforeground=self.BG,
+                  ).pack(side="left", padx=(0, 8), pady=8)
+
         tk.Button(ssp_tb, text="🆕  New SSP", command=self._new_ssp,
                   bg=self.HEADER_BG, fg=self.TEXT, font=("Helvetica", 11),
                   relief="flat", padx=12, pady=4, cursor="hand2",
@@ -941,6 +947,140 @@ class OSCALViewer(tk.Tk):
             self._ssp = self._empty_ssp()
             self._reset_ssp_form()
             self._ssp_status_lbl.config(text="New SSP (unsaved)", fg=self.SUBTEXT)
+
+    def _open_ssp(self):
+        """Load a previously saved OSCAL SSP JSON file back into the editor."""
+        path = filedialog.askopenfilename(
+            title="Open OSCAL SSP",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")])
+        if not path:
+            return
+
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError) as exc:
+            messagebox.showerror("Failed to open SSP", str(exc))
+            return
+
+        root = data.get("system-security-plan")
+        if not root:
+            messagebox.showerror("Invalid file",
+                                 "This file does not appear to be an OSCAL SSP "
+                                 "(missing 'system-security-plan' key).")
+            return
+
+        # ── Parse the OSCAL JSON back into our internal model ─────────────────
+        meta   = root.get("metadata", {})
+        sc     = root.get("system-characteristics", {})
+        status = sc.get("status", {})
+        ab     = sc.get("authorization-boundary", {})
+        na     = sc.get("network-architecture", {})
+        df     = sc.get("data-flow", {})
+        si     = root.get("system-information", sc.get("system-information", {}))
+
+        # Roles
+        roles = [{"role_id": r.get("id", ""), "title": r.get("title", "")}
+                 for r in meta.get("roles", [])]
+
+        # Parties
+        parties = []
+        for p in meta.get("parties", []):
+            emails = p.get("email-addresses", [])
+            parties.append({
+                "uuid":  p.get("uuid", new_uuid()),
+                "type":  p.get("type", "person"),
+                "name":  p.get("name", ""),
+                "email": emails[0] if emails else "",
+            })
+
+        # Information types
+        info_types = []
+        for it in sc.get("system-information", {}).get("information-types", []):
+            info_types.append({
+                "uuid":        it.get("uuid", new_uuid()),
+                "title":       it.get("title", ""),
+                "description": it.get("description", ""),
+                "c_impact":    it.get("confidentiality-impact", {}).get("base", "fips-199-moderate"),
+                "i_impact":    it.get("integrity-impact",       {}).get("base", "fips-199-moderate"),
+                "a_impact":    it.get("availability-impact",    {}).get("base", "fips-199-moderate"),
+            })
+
+        ssp = {
+            "uuid":            root.get("uuid", new_uuid()),
+            "title":           meta.get("title", ""),
+            "version":         meta.get("version", "1.0"),
+            "date_authorized": sc.get("date-authorized", ""),
+            "system_name":     sc.get("system-name", ""),
+            "system_name_short": sc.get("system-name-short", ""),
+            "system_description": sc.get("description", ""),
+            "security_sensitivity_level": sc.get("security-sensitivity-level", "fips-199-moderate"),
+            "status":          status.get("state", "under-development"),
+            "status_remarks":  status.get("remarks", ""),
+            "auth_boundary_description": ab.get("description", ""),
+            "network_architecture": na.get("description", ""),
+            "data_flow":       df.get("description", ""),
+            "roles":           roles,
+            "parties":         parties,
+            "information_types": info_types,
+        }
+
+        # Confirm if there is unsaved work in the current form
+        current_title = self._ssp_vars.get("title", tk.StringVar()).get().strip()
+        if current_title:
+            if not messagebox.askyesno("Replace current SSP?",
+                                       f"Replace the current SSP '{current_title}' "
+                                       f"with '{ssp['title'] or Path(path).name}'?"):
+                return
+
+        self._ssp = ssp
+        self._populate_ssp_form()
+        self._ssp_status_lbl.config(
+            text=f"Opened: {Path(path).name}", fg=self.BLUE)
+        self._status_lbl.config(text=f"SSP opened: {Path(path).name}")
+        # Switch to the SSP tab automatically
+        self._notebook.select(1)
+
+    def _populate_ssp_form(self):
+        """Push self._ssp back into every form widget."""
+        ssp = self._ssp
+        defaults = {"version": "1.0", "status": "under-development",
+                    "security_sensitivity_level": "fips-199-moderate"}
+
+        # Simple StringVar fields
+        for key, var in self._ssp_vars.items():
+            var.set(ssp.get(key) or defaults.get(key, ""))
+
+        # Text widgets
+        for widget, key in [
+            (self._ssp_system_desc,  "system_description"),
+            (self._ssp_status_remarks, "status_remarks"),
+            (self._ssp_auth_boundary, "auth_boundary_description"),
+            (self._ssp_network,       "network_architecture"),
+            (self._ssp_dataflow,      "data_flow"),
+        ]:
+            widget.delete("1.0", "end")
+            val = ssp.get(key, "")
+            if val:
+                widget.insert("1.0", val)
+
+        # Information types tree
+        self._it_tree.delete(*self._it_tree.get_children())
+        for it in ssp.get("information_types", []):
+            self._it_tree.insert("", "end",
+                values=(it["title"], it.get("c_impact", "—"),
+                        it.get("i_impact", "—"), it.get("a_impact", "—")))
+
+        # Roles tree
+        self._role_tree.delete(*self._role_tree.get_children())
+        for r in ssp.get("roles", []):
+            self._role_tree.insert("", "end", values=(r["role_id"], r["title"]))
+
+        # Parties tree
+        self._party_tree.delete(*self._party_tree.get_children())
+        for p in ssp.get("parties", []):
+            self._party_tree.insert("", "end",
+                values=(p["type"], p["name"], p.get("email", "")))
 
     def _reset_ssp_form(self):
         """Reset all SSP form widgets to blank/defaults."""
