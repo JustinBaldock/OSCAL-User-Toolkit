@@ -725,3 +725,151 @@ def new_uuid():
     """
     # uuid.uuid4() generates a random UUID object; str() converts it to a string
     return str(uuid.uuid4())
+
+
+def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
+                      ctrl_tree, applied_tree, notebook, progress_lbl):
+    """
+    Rebuild the All Controls and Applied Controls Treeview tabs.
+
+    Shared by ComponentTab and CapabilityTab so the control-list rendering
+    logic only exists in one place.
+
+    Parameters:
+        ctrl_responses - dict {control_id: response_text}
+        all_controls   - list of control dicts (id, label, title, statement)
+        search_term    - text filter applied to the All Controls tab only
+        ctrl_tree      - Treeview widget for the All Controls tab
+        applied_tree   - Treeview widget for the Applied Controls tab
+        notebook       - ttk.Notebook holding both tabs (for label updates)
+        progress_lbl   - Label widget showing "N of M controls have responses"
+    """
+    DOT_DONE  = "●"
+    DOT_EMPTY = "○"
+
+    term = search_term.lower().strip()
+    filtered = (
+        [c for c in all_controls
+         if term in c["label"].lower()
+         or term in c["statement"].lower()
+         or term in c["id"].lower()]
+        if term else all_controls
+    )
+
+    total      = len(all_controls)
+    done_count = sum(
+        1 for c in all_controls
+        if ctrl_responses.get(c["id"], "").strip()
+    )
+
+    def insert_row(tree, ctrl):
+        has_resp = bool(ctrl_responses.get(ctrl["id"], "").strip())
+        dot = DOT_DONE  if has_resp else DOT_EMPTY
+        tag = "done"    if has_resp else "empty"
+        tree.insert(
+            "", "end", iid=ctrl["id"],
+            values=(dot, ctrl["label"], ctrl["statement"] or ctrl["title"]),
+            tags=(tag,),
+        )
+
+    ctrl_tree.delete(*ctrl_tree.get_children())
+    for ctrl in filtered:
+        insert_row(ctrl_tree, ctrl)
+
+    applied_tree.delete(*applied_tree.get_children())
+    applied_count = 0
+    for ctrl in all_controls:
+        if ctrl_responses.get(ctrl["id"], "").strip():
+            insert_row(applied_tree, ctrl)
+            applied_count += 1
+
+    try:
+        notebook.tab(0, text=f"All Controls ({len(filtered)})")
+        notebook.tab(1, text=f"Applied Controls ({applied_count})")
+    except Exception:
+        pass
+
+    if total > 0:
+        progress_lbl.config(text=f"{done_count} of {total} controls have responses")
+    else:
+        progress_lbl.config(text="")
+
+
+def build_component_oscal_entry(comp, source_href):
+    """
+    Convert one internal component dict into an OSCAL defined-component dict.
+
+    Used by both ComponentTab (when saving a single component file) and
+    CapabilityTab (when exporting a capability document that embeds its
+    member components).  Keeping the conversion in one place ensures the
+    two outputs always stay in sync.
+
+    Parameters:
+        comp        - Internal component dict (uuid, type, title, description,
+                      purpose, status, status_remarks, props, roles,
+                      ctrl_responses, remarks).
+        source_href - URI for the control source (catalog or profile href),
+                      written into each control-implementations block.
+
+    Returns:
+        A dict that conforms to the OSCAL defined-component assembly.
+    """
+    c = {
+        "uuid":        comp["uuid"],
+        "type":        comp.get("type", "software"),
+        "title":       comp.get("title", ""),
+        "description": comp.get("description", ""),
+    }
+
+    if comp.get("purpose"):
+        c["purpose"] = comp["purpose"]
+
+    # Props — operational-status first, then any user-defined props
+    props = []
+    if comp.get("status"):
+        p = {"name": "operational-status", "value": comp["status"]}
+        if comp.get("status_remarks"):
+            p["remarks"] = comp["status_remarks"]
+        props.append(p)
+    for prop in comp.get("props", []):
+        entry = {"name": prop["name"], "value": prop["value"]}
+        if prop.get("remarks"):
+            entry["remarks"] = prop["remarks"]
+        props.append(entry)
+    if props:
+        c["props"] = props
+
+    # Responsible roles — OSCAL uses "role-id" (hyphenated)
+    roles = [
+        {"role-id": r["role_id"],
+         **({"remarks": r["remarks"]} if r.get("remarks") else {})}
+        for r in comp.get("roles", [])
+    ]
+    if roles:
+        c["responsible-roles"] = roles
+
+    # Control implementations — only include controls with a non-empty response
+    implemented = [
+        {
+            "uuid":        new_uuid(),
+            "control-id":  ctrl_id,
+            "description": desc.strip(),
+        }
+        for ctrl_id, desc in comp.get("ctrl_responses", {}).items()
+        if desc.strip()
+    ]
+    if implemented:
+        c["control-implementations"] = [{
+            "uuid":        new_uuid(),
+            "source":      source_href,
+            "description": (
+                f"Control implementations for "
+                f"{comp.get('title', 'this component')}."
+            ),
+            "implemented-requirements": implemented,
+        }]
+
+    if comp.get("remarks"):
+        c["remarks"] = comp["remarks"]
+
+    return c

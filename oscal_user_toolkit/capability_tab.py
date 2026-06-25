@@ -59,7 +59,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
-from .models import new_uuid, now_iso
+from .models import new_uuid, now_iso, build_component_oscal_entry, refresh_ctrl_list
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -146,6 +146,8 @@ class CapabilityTab(tk.Frame):
         Re-evaluates the guard conditions and shows the editor or gate panel
         accordingly. Also refreshes the control list if a capability is open.
         """
+        if not hasattr(self, "_gate_frame"):
+            return
         if self._ready():
             self._gate_frame.pack_forget()
             self._body_pane.pack(fill="both", expand=True)
@@ -1184,72 +1186,16 @@ class CapabilityTab(tk.Frame):
         return catalog["controls"]
 
     def _refresh_ctrl_list(self, search_term=""):
-        """
-        Rebuild both control list tabs (All Controls and Applied Controls)
-        from the current catalog/profile and the saved ctrl_responses.
-
-        Parameters:
-            search_term - Optional text to filter the All Controls tab.
-                          The Applied Controls tab always shows all responses.
-        """
-        self._ctrl_tree.delete(*self._ctrl_tree.get_children())
-        self._applied_ctrl_tree.delete(*self._applied_ctrl_tree.get_children())
-
-        all_controls = self._get_controls()
-        term = search_term.lower().strip()
-
-        # Filter for the All Controls tab
-        filtered = (
-            [c for c in all_controls
-             if term in c["label"].lower()
-             or term in c["statement"].lower()
-             or term in c["id"].lower()]
-            if term else all_controls
+        """Rebuild both control list tabs from the current catalog/profile controls."""
+        refresh_ctrl_list(
+            ctrl_responses=self._ctrl_responses,
+            all_controls=self._get_controls(),
+            search_term=search_term,
+            ctrl_tree=self._ctrl_tree,
+            applied_tree=self._applied_ctrl_tree,
+            notebook=self._ctrl_nb,
+            progress_lbl=self._progress_lbl,
         )
-
-        # Count totals for the progress label and tab headings
-        total      = len(all_controls)
-        done_count = sum(
-            1 for c in all_controls
-            if self._ctrl_responses.get(c["id"], "").strip()
-        )
-
-        def insert_row(tree, ctrl):
-            """Insert one control row into a tree with the correct dot tag."""
-            has_resp = bool(self._ctrl_responses.get(ctrl["id"], "").strip())
-            dot = DOT_DONE  if has_resp else DOT_EMPTY
-            tag = "done"    if has_resp else "empty"
-            tree.insert(
-                "", "end", iid=ctrl["id"],
-                values=(dot, ctrl["label"], ctrl["statement"] or ctrl["title"]),
-                tags=(tag,),
-            )
-
-        # All Controls tab — filtered by search term
-        for ctrl in filtered:
-            insert_row(self._ctrl_tree, ctrl)
-
-        # Applied Controls tab — all controls with a response (no filtering)
-        applied_count = 0
-        for ctrl in all_controls:
-            if self._ctrl_responses.get(ctrl["id"], "").strip():
-                insert_row(self._applied_ctrl_tree, ctrl)
-                applied_count += 1
-
-        # Update tab labels with live counts
-        try:
-            self._ctrl_nb.tab(0, text=f"All Controls ({len(filtered)})")
-            self._ctrl_nb.tab(1, text=f"Applied Controls ({applied_count})")
-        except Exception:
-            pass
-
-        # Update the progress label below the tabs
-        if total > 0:
-            self._progress_lbl.config(
-                text=f"{done_count} of {total} controls have responses"
-            )
-        else:
-            self._progress_lbl.config(text="")
 
     def _on_ctrl_tab_changed(self, _event=None):
         """Called when the user switches between All / Applied tabs."""
@@ -1395,66 +1341,10 @@ class CapabilityTab(tk.Frame):
             c for c in self._get_components() if c["uuid"] in member_uuids
         ]
 
-        oscal_components = []
-        for comp in member_comps:
-            c = {
-                "uuid":        comp["uuid"],
-                "type":        comp.get("type", "software"),
-                "title":       comp.get("title", ""),
-                "description": comp.get("description", ""),
-            }
-            if comp.get("purpose"):
-                c["purpose"] = comp["purpose"]
-
-            # Props — including the operational-status prop
-            props = []
-            if comp.get("status"):
-                p = {"name": "operational-status", "value": comp["status"]}
-                if comp.get("status_remarks"):
-                    p["remarks"] = comp["status_remarks"]
-                props.append(p)
-            for prop in comp.get("props", []):
-                entry = {"name": prop["name"], "value": prop["value"]}
-                if prop.get("remarks"):
-                    entry["remarks"] = prop["remarks"]
-                props.append(entry)
-            if props:
-                c["props"] = props
-
-            # Responsible roles
-            roles = [
-                {"role-id": r["role_id"],
-                 **({"remarks": r["remarks"]} if r.get("remarks") else {})}
-                for r in comp.get("roles", [])
-            ]
-            if roles:
-                c["responsible-roles"] = roles
-
-            # Component-level control implementations
-            implemented = [
-                {
-                    "uuid":        new_uuid(),
-                    "control-id":  ctrl_id,
-                    "description": desc.strip(),
-                }
-                for ctrl_id, desc in comp.get("ctrl_responses", {}).items()
-                if desc.strip()
-            ]
-            if implemented:
-                c["control-implementations"] = [{
-                    "uuid":        new_uuid(),
-                    "source":      source_href,
-                    "description": (
-                        f"Control implementations for "
-                        f"{comp.get('title', 'this component')}."
-                    ),
-                    "implemented-requirements": implemented,
-                }]
-
-            if comp.get("remarks"):
-                c["remarks"] = comp["remarks"]
-
-            oscal_components.append(c)
+        oscal_components = [
+            build_component_oscal_entry(comp, source_href)
+            for comp in member_comps
+        ]
 
         # ── Build the capability entry ─────────────────────────────────────────
         mem_descs    = cap.get("member_descriptions", {})

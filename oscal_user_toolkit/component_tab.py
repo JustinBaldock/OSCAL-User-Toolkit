@@ -43,7 +43,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
-from .models import new_uuid, now_iso
+from .models import new_uuid, now_iso, build_component_oscal_entry, refresh_ctrl_list
 
 # =============================================================================
 # CONSTANTS — Allowed values from the OSCAL Component schema
@@ -1222,97 +1222,16 @@ class ComponentTab(tk.Frame):
         self._refresh_control_list()
 
     def _refresh_control_list(self, search_term=""):
-        """
-        Rebuild BOTH control list tabs from the current profile controls
-        and _ctrl_responses dict.
-
-        Tab 1 (All Controls):
-            Shows every control in the profile, filtered by search_term.
-            Each row has a dot indicator (● = response written, ○ = not yet).
-
-        Tab 2 (Applied Controls):
-            Shows ONLY controls that have a response written for this component.
-            Always shows all applied controls regardless of search_term,
-            so the user never accidentally hides an existing response.
-
-        Parameters:
-            search_term - Text to filter the 'All Controls' tab by.
-                          Does NOT filter the 'Applied Controls' tab.
-        """
-        # ── Get the full list of profile controls ─────────────────────────────
-        all_controls = self._get_profile_controls()
-
-        # ── Apply search filter for the 'All Controls' tab only ───────────────
-        term = search_term.lower().strip()
-        if term:
-            # Filter by label, id, or statement text
-            filtered_controls = [
-                c for c in all_controls
-                if term in c["label"].lower()
-                or term in c["statement"].lower()
-                or term in c["id"].lower()
-            ]
-        else:
-            filtered_controls = all_controls
-
-        # ── Count totals for the progress label ───────────────────────────────
-        total_controls = len(all_controls)
-        done_count = sum(
-            1 for c in all_controls
-            if self._ctrl_responses.get(c["id"], "").strip()
+        """Rebuild both control list tabs from the current profile controls."""
+        refresh_ctrl_list(
+            ctrl_responses=self._ctrl_responses,
+            all_controls=self._get_profile_controls(),
+            search_term=search_term,
+            ctrl_tree=self._ctrl_tree,
+            applied_tree=self._applied_ctrl_tree,
+            notebook=self._ctrl_notebook,
+            progress_lbl=self._ctrl_progress_lbl,
         )
-
-        # ── Helper: insert one row into a Treeview ────────────────────────────
-        def insert_row(tree, ctrl):
-            """
-            Insert a single control row into the given Treeview.
-            Uses the control ID as the internal row identifier (iid) so
-            _on_ctrl_select can look up the control directly.
-            """
-            ctrl_id  = ctrl["id"]
-            has_resp = bool(self._ctrl_responses.get(ctrl_id, "").strip())
-            dot      = DOT_DONE  if has_resp else DOT_EMPTY
-            tag      = "done"    if has_resp else "empty"
-            # Show the statement as the row text — most meaningful for ism-NNNN
-            display  = ctrl["statement"] or ctrl["title"]
-            tree.insert(
-                "", "end",
-                iid=ctrl_id,
-                values=(dot, ctrl["label"], display),
-                tags=(tag,),
-            )
-
-        # ── Rebuild Tab 1: All Controls (with search filter) ──────────────────
-        self._ctrl_tree.delete(*self._ctrl_tree.get_children())
-        for ctrl in filtered_controls:
-            insert_row(self._ctrl_tree, ctrl)
-
-        # ── Rebuild Tab 2: Applied Controls (no search filter) ────────────────
-        # We intentionally ignore search_term here so the user always sees
-        # ALL controls they have already responded to, making it a reliable
-        # reference list regardless of what is typed in the search box.
-        self._applied_ctrl_tree.delete(*self._applied_ctrl_tree.get_children())
-        applied_count = 0
-        for ctrl in all_controls:
-            if self._ctrl_responses.get(ctrl["id"], "").strip():
-                insert_row(self._applied_ctrl_tree, ctrl)
-                applied_count += 1
-
-        # Update the tab labels to show the count in each tab
-        # e.g. "All Controls (1024)"  and  "Applied Controls (42)"
-        try:
-            self._ctrl_notebook.tab(0, text=f"All Controls ({len(filtered_controls)})")
-            self._ctrl_notebook.tab(1, text=f"Applied Controls ({applied_count})")
-        except Exception:
-            pass   # Ignore if notebook is not yet fully constructed
-
-        # ── Update progress label ─────────────────────────────────────────────
-        if total_controls > 0:
-            self._ctrl_progress_lbl.config(
-                text=f"{done_count} of {total_controls} controls have responses"
-            )
-        else:
-            self._ctrl_progress_lbl.config(text="")
 
     def _on_ctrl_search(self, *_args):
         """
@@ -1720,86 +1639,7 @@ class ComponentTab(tk.Frame):
             source_href = "PROFILE_OR_CATALOG_HREF"
 
         # ── Build the single OSCAL component entry ────────────────────────────
-
-        # Required fields — uuid, type, title, description are all mandatory
-        # per the defined-component assembly in the schema.
-        c = {
-            "uuid":        comp["uuid"],
-            "type":        comp.get("type", "software"),
-            "title":       comp.get("title", ""),
-            "description": comp.get("description", ""),
-        }
-
-        # Optional fields — only included when the user provided a value,
-        # keeping the output clean and schema-conformant.
-        if comp.get("purpose"):
-            c["purpose"] = comp["purpose"]
-
-        # ── Props ─────────────────────────────────────────────────────────────
-        # The schema allows props on a component. We add the operational
-        # status as a prop named "operational-status", plus any user-defined
-        # props. The schema defines allowed prop names but also allows others
-        # (allow-other="yes").
-        props = []
-        if comp.get("status"):
-            p = {"name": "operational-status", "value": comp["status"]}
-            if comp.get("status_remarks"):
-                p["remarks"] = comp["status_remarks"]
-            props.append(p)
-        for prop in comp.get("props", []):
-            entry = {"name": prop["name"], "value": prop["value"]}
-            if prop.get("remarks"):
-                entry["remarks"] = prop["remarks"]
-            props.append(entry)
-        if props:
-            c["props"] = props
-
-        # ── Responsible roles ─────────────────────────────────────────────────
-        # The schema uses "role-id" (hyphenated) in JSON output.
-        # Our internal format uses "role_id" (underscored) for Python safety.
-        roles_list = []
-        for role in comp.get("roles", []):
-            r = {"role-id": role["role_id"]}
-            if role.get("remarks"):
-                r["remarks"] = role["remarks"]
-            roles_list.append(r)
-        if roles_list:
-            c["responsible-roles"] = roles_list
-
-        # ── Control implementations ───────────────────────────────────────────
-        # The schema requires each control-implementation to have:
-        #   - uuid (required)
-        #   - source (required) — URI pointing to the profile/catalog
-        #   - description (required)
-        #   - implemented-requirements[] (at least one)
-        #     Each requirement needs: uuid, control-id, description
-        ctrl_responses = comp.get("ctrl_responses", {})
-        implemented = []
-        for ctrl_id, description in ctrl_responses.items():
-            if description.strip():
-                implemented.append({
-                    "uuid":        new_uuid(),
-                    "control-id":  ctrl_id,
-                    "description": description.strip(),
-                })
-
-        # Only include the control-implementations block when at least one
-        # control response has been written — the schema makes it optional.
-        if implemented:
-            c["control-implementations"] = [
-                {
-                    "uuid":        new_uuid(),
-                    "source":      source_href,
-                    "description": (
-                        f"Control implementations for "
-                        f"{comp.get('title', 'this component')}."
-                    ),
-                    "implemented-requirements": implemented,
-                }
-            ]
-
-        if comp.get("remarks"):
-            c["remarks"] = comp["remarks"]
+        c = build_component_oscal_entry(comp, source_href)
 
         # ── Assemble the full OSCAL component-definition document ─────────────
         # The file-level title is derived from the component type and title
@@ -2101,6 +1941,8 @@ class ComponentTab(tk.Frame):
         self._set_status(msg)
         # Component list changed — let the Capability Editor re-check its guard
         self._on_components_changed()
+
+    def _new_file(self):
         """
         Clear all components from the list and start fresh.
         Prompts for confirmation if there are unsaved changes.

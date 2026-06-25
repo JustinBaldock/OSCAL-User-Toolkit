@@ -430,6 +430,15 @@ class OSCALApp(tk.Tk):
     # FILE LOADING
     # =========================================================================
 
+    def _reset_profile_card(self):
+        """Reset the profile info card to its default (no-profile) state."""
+        C = COLORS
+        self._prof_title_lbl.config(text="No profile loaded", fg=C["SUBTEXT"])
+        for lbl in (self._prof_version_lbl, self._prof_oscal_lbl,
+                    self._prof_published_lbl, self._prof_modified_lbl,
+                    self._prof_controls_lbl):
+            lbl.config(text="—")
+
     def _open_catalog(self):
         """
         Ask the user to select an OSCAL catalog JSON file, load it,
@@ -467,11 +476,7 @@ class OSCALApp(tk.Tk):
         self._cat_controls_lbl.config(text=str(len(catalog["controls"])))
 
         # ── Reset the profile info card (profile was cleared above) ───────────
-        self._prof_title_lbl.config(text="No profile loaded", fg=C["SUBTEXT"])
-        for lbl in (self._prof_version_lbl, self._prof_oscal_lbl,
-                    self._prof_published_lbl, self._prof_modified_lbl,
-                    self._prof_controls_lbl):
-            lbl.config(text="—")
+        self._reset_profile_card()
         self._clear_profile_btn.config(state="disabled")
 
         # ── Tell the tabs about the new data ─────────────────────────────────
@@ -549,11 +554,7 @@ class OSCALApp(tk.Tk):
         self._clear_profile_btn.config(state="disabled")
 
         # Reset the profile info card to its default state
-        self._prof_title_lbl.config(text="No profile loaded", fg=C["SUBTEXT"])
-        for lbl in (self._prof_version_lbl, self._prof_oscal_lbl,
-                    self._prof_published_lbl, self._prof_modified_lbl,
-                    self._prof_controls_lbl):
-            lbl.config(text="—")
+        self._reset_profile_card()
 
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()
