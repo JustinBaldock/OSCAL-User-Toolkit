@@ -719,11 +719,19 @@ class ComponentTab(tk.Frame):
                                    sashrelief="flat")
         ctrl_pane.pack(fill="both", expand=True)
 
-        # ── Left sub-pane: control list ───────────────────────────────────────
+        # ── Left sub-pane: tabbed control lists ───────────────────────────────
+        # We use a small inner Notebook to provide two tabs:
+        #   Tab 1 — "All Controls":     every control from the profile
+        #   Tab 2 — "Applied Controls": only controls that have a response
+        #
+        # This solves the problem of very long lists — the user can switch
+        # to "Applied Controls" to quickly find and edit existing responses
+        # without scrolling through hundreds of unrelated controls.
         ctrl_left = tk.Frame(ctrl_pane, bg=C["SIDEBAR_BG"])
-        ctrl_pane.add(ctrl_left, minsize=200, width=280)
+        ctrl_pane.add(ctrl_left, minsize=220, width=300)
 
-        # Search box to filter the control list
+        # ── Search box (shared across both tabs) ──────────────────────────────
+        # The search filters whichever tab is currently active.
         search_row = tk.Frame(ctrl_left, bg=C["SIDEBAR_BG"])
         search_row.pack(fill="x", padx=6, pady=6)
         tk.Label(search_row, text="🔍", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
@@ -736,42 +744,78 @@ class ComponentTab(tk.Frame):
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", fill="x", expand=True, ipady=3, padx=(4, 0))
 
-        # Control Treeview — two columns: dot indicator and control label
-        ctrl_list_frame = tk.Frame(ctrl_left, bg=C["SIDEBAR_BG"])
-        ctrl_list_frame.pack(fill="both", expand=True, padx=6, pady=(0, 6))
+        # ── Inner notebook for the two list tabs ──────────────────────────────
+        ctrl_nb = ttk.Notebook(ctrl_left)
+        ctrl_nb.pack(fill="both", expand=True, padx=4, pady=(0, 2))
+        # Store the notebook so _on_ctrl_search knows which tab is active
+        self._ctrl_notebook = ctrl_nb
 
-        self._ctrl_tree = ttk.Treeview(
-            ctrl_list_frame,
-            columns=("dot", "label", "title"),
-            show="headings",
-            selectmode="browse",
-        )
-        self._ctrl_tree.heading("dot",   text="",             anchor="center")
-        self._ctrl_tree.heading("label", text="ID / Label",   anchor="w")
-        self._ctrl_tree.heading("title", text="Statement",    anchor="w")
-        self._ctrl_tree.column("dot",   width=24,  minwidth=24,  anchor="center", stretch=False)
-        self._ctrl_tree.column("label", width=100, minwidth=80,  anchor="w",     stretch=False)
-        self._ctrl_tree.column("title", width=200, minwidth=100, anchor="w",     stretch=True)
+        # Helper: build a Treeview with dot/label/title columns inside a tab frame
+        def make_ctrl_treeview(tab_parent):
+            """
+            Create a Treeview with scrollbar for displaying controls.
+            Returns the Treeview widget.
 
-        # Colour the dot column: green for done, grey for empty
-        self._ctrl_tree.tag_configure("done",  foreground=C["GREEN"])
-        self._ctrl_tree.tag_configure("empty", foreground=C["SUBTEXT"])
+            Each row shows:
+              col 1 (dot)   — ● green if response written, ○ grey if not
+              col 2 (label) — the control label (e.g. "ism-1130" or "GOV-01")
+              col 3 (title) — the control statement text
+            """
+            frame = tk.Frame(tab_parent, bg=C["SIDEBAR_BG"])
+            frame.pack(fill="both", expand=True)
 
-        ctrl_vsb = ttk.Scrollbar(ctrl_list_frame, orient="vertical",
-                                 command=self._ctrl_tree.yview)
-        self._ctrl_tree.configure(yscrollcommand=ctrl_vsb.set)
-        self._ctrl_tree.pack(side="left", fill="both", expand=True)
-        ctrl_vsb.pack(side="right", fill="y")
+            tree = ttk.Treeview(
+                frame,
+                columns=("dot", "label", "title"),
+                show="headings",
+                selectmode="browse",
+            )
+            tree.heading("dot",   text="",           anchor="center")
+            tree.heading("label", text="ID / Label", anchor="w")
+            tree.heading("title", text="Statement",  anchor="w")
+            tree.column("dot",   width=24,  minwidth=24,  anchor="center", stretch=False)
+            tree.column("label", width=100, minwidth=80,  anchor="w",      stretch=False)
+            tree.column("title", width=180, minwidth=100, anchor="w",      stretch=True)
 
-        self._ctrl_tree.bind("<<TreeviewSelect>>", self._on_ctrl_select)
+            # Tags control the colour of the dot indicator column
+            tree.tag_configure("done",  foreground=C["GREEN"])
+            tree.tag_configure("empty", foreground=C["SUBTEXT"])
 
-        # Progress counter below the list
+            vsb = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+            tree.configure(yscrollcommand=vsb.set)
+            tree.pack(side="left", fill="both", expand=True)
+            vsb.pack(side="right", fill="y")
+
+            # When the user clicks a row, call our selection handler
+            tree.bind("<<TreeviewSelect>>", self._on_ctrl_select)
+            return tree
+
+        # ── Tab 1: All Controls ───────────────────────────────────────────────
+        # Shows every control in the loaded profile, with dot indicators.
+        # This is the full list — useful when adding new responses.
+        all_tab = tk.Frame(ctrl_nb, bg=C["SIDEBAR_BG"])
+        ctrl_nb.add(all_tab, text="All Controls")
+        self._ctrl_tree = make_ctrl_treeview(all_tab)
+
+        # ── Tab 2: Applied Controls ───────────────────────────────────────────
+        # Shows ONLY controls that already have a response written for this
+        # component. This makes it fast to find and edit existing responses
+        # without scrolling through the full list.
+        applied_tab = tk.Frame(ctrl_nb, bg=C["SIDEBAR_BG"])
+        ctrl_nb.add(applied_tab, text="Applied Controls")
+        self._applied_ctrl_tree = make_ctrl_treeview(applied_tab)
+
+        # When the user switches tabs, refresh whichever list is now visible
+        ctrl_nb.bind("<<NotebookTabChanged>>", self._on_ctrl_tab_changed)
+
+        # ── Progress counter below the notebook ───────────────────────────────
+        # Shows e.g. "42 of 1024 controls have responses"
         self._ctrl_progress_lbl = tk.Label(
             ctrl_left, text="",
             bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 9),
         )
-        self._ctrl_progress_lbl.pack(pady=(0, 6))
+        self._ctrl_progress_lbl.pack(pady=(2, 6))
 
         # ── Right sub-pane: implementation response editor ────────────────────
         ctrl_right = tk.Frame(ctrl_pane, bg=C["BG"])
@@ -1125,59 +1169,106 @@ class ComponentTab(tk.Frame):
         profile_ids = profile["ids"]
         return [c for c in catalog["controls"] if c["id"] in profile_ids]
 
+    def _on_ctrl_tab_changed(self, _event=None):
+        """
+        Called when the user switches between the 'All Controls' and
+        'Applied Controls' tabs in Section 7.
+
+        Refreshes whichever list just became visible so its contents are
+        current, and clears the search box to avoid stale filtering.
+        """
+        # Clear the search so results are not confusingly pre-filtered
+        # when the user switches tabs.
+        self._ctrl_search_var.set("")
+        # Rebuild both lists to ensure they reflect the latest responses
+        self._refresh_control_list()
+
     def _refresh_control_list(self, search_term=""):
         """
-        Rebuild the Section 7 control list from the profile controls,
-        applying an optional search filter.
+        Rebuild BOTH control list tabs from the current profile controls
+        and _ctrl_responses dict.
 
-        Each row shows:
-          - A coloured dot (● green = response written, ○ grey = no response)
-          - The control label (e.g. "ism-1130" or "GOV-01")
-          - The control statement (the requirement text)
+        Tab 1 (All Controls):
+            Shows every control in the profile, filtered by search_term.
+            Each row has a dot indicator (● = response written, ○ = not yet).
+
+        Tab 2 (Applied Controls):
+            Shows ONLY controls that have a response written for this component.
+            Always shows all applied controls regardless of search_term,
+            so the user never accidentally hides an existing response.
 
         Parameters:
-            search_term - Optional text to filter controls by label or statement
+            search_term - Text to filter the 'All Controls' tab by.
+                          Does NOT filter the 'Applied Controls' tab.
         """
-        self._ctrl_tree.delete(*self._ctrl_tree.get_children())
-        controls = self._get_profile_controls()
+        # ── Get the full list of profile controls ─────────────────────────────
+        all_controls = self._get_profile_controls()
 
-        # Apply search filter if provided
+        # ── Apply search filter for the 'All Controls' tab only ───────────────
         term = search_term.lower().strip()
         if term:
-            controls = [
-                c for c in controls
+            # Filter by label, id, or statement text
+            filtered_controls = [
+                c for c in all_controls
                 if term in c["label"].lower()
                 or term in c["statement"].lower()
                 or term in c["id"].lower()
             ]
+        else:
+            filtered_controls = all_controls
 
-        # Count how many controls have responses (for the progress label)
-        total_controls = len(self._get_profile_controls())
+        # ── Count totals for the progress label ───────────────────────────────
+        total_controls = len(all_controls)
         done_count = sum(
-            1 for ctrl in self._get_profile_controls()
-            if self._ctrl_responses.get(ctrl["id"], "").strip()
+            1 for c in all_controls
+            if self._ctrl_responses.get(c["id"], "").strip()
         )
 
-        for ctrl in controls:
+        # ── Helper: insert one row into a Treeview ────────────────────────────
+        def insert_row(tree, ctrl):
+            """
+            Insert a single control row into the given Treeview.
+            Uses the control ID as the internal row identifier (iid) so
+            _on_ctrl_select can look up the control directly.
+            """
             ctrl_id  = ctrl["id"]
-            response = self._ctrl_responses.get(ctrl_id, "").strip()
-            has_resp = bool(response)
-
-            # Choose the dot symbol and colour tag
-            dot = DOT_DONE if has_resp else DOT_EMPTY
-            tag = "done"   if has_resp else "empty"
-
-            # Use the statement as the row text (most meaningful for ism-NNNN controls)
-            display_title = ctrl["statement"] or ctrl["title"]
-
-            self._ctrl_tree.insert(
+            has_resp = bool(self._ctrl_responses.get(ctrl_id, "").strip())
+            dot      = DOT_DONE  if has_resp else DOT_EMPTY
+            tag      = "done"    if has_resp else "empty"
+            # Show the statement as the row text — most meaningful for ism-NNNN
+            display  = ctrl["statement"] or ctrl["title"]
+            tree.insert(
                 "", "end",
-                iid=ctrl_id,   # Use the control ID as the row identifier
-                values=(dot, ctrl["label"], display_title),
+                iid=ctrl_id,
+                values=(dot, ctrl["label"], display),
                 tags=(tag,),
             )
 
-        # Update progress label
+        # ── Rebuild Tab 1: All Controls (with search filter) ──────────────────
+        self._ctrl_tree.delete(*self._ctrl_tree.get_children())
+        for ctrl in filtered_controls:
+            insert_row(self._ctrl_tree, ctrl)
+
+        # ── Rebuild Tab 2: Applied Controls (no search filter) ────────────────
+        # We intentionally ignore search_term here so the user always sees
+        # ALL controls they have already responded to, making it a reliable
+        # reference list regardless of what is typed in the search box.
+        self._applied_ctrl_tree.delete(*self._applied_ctrl_tree.get_children())
+        applied_count = 0
+        for ctrl in all_controls:
+            if self._ctrl_responses.get(ctrl["id"], "").strip():
+                insert_row(self._applied_ctrl_tree, ctrl)
+                applied_count += 1
+
+        # Update the tab labels to show the count in each tab
+        # e.g. "All Controls (1024)"  and  "Applied Controls (42)"
+        try:
+            self._ctrl_notebook.tab(0, text=f"All Controls ({len(filtered_controls)})")
+            self._ctrl_notebook.tab(1, text=f"Applied Controls ({applied_count})")
+        except Exception:
+            pass   # Ignore if notebook is not yet fully constructed
+
+        # ── Update progress label ─────────────────────────────────────────────
         if total_controls > 0:
             self._ctrl_progress_lbl.config(
                 text=f"{done_count} of {total_controls} controls have responses"
@@ -1188,43 +1279,60 @@ class ComponentTab(tk.Frame):
     def _on_ctrl_search(self, *_args):
         """
         Called when the user types in the Section 7 search box.
-        Filters the control list to matching controls.
+
+        Only filters the 'All Controls' tab — the 'Applied Controls' tab
+        always shows the complete set of responded controls so the user
+        never loses sight of what they have already written.
         """
         self._refresh_control_list(self._ctrl_search_var.get())
 
     def _on_ctrl_select(self, _event=None):
         """
-        Called when the user clicks a control in the Section 7 list.
+        Called when the user clicks a row in either the 'All Controls' or
+        'Applied Controls' Treeview.
 
-        Saves any response currently in the text editor for the previously
-        selected control, then loads the response for the newly selected one.
+        Works out which tree fired the event, saves any pending response for
+        the previously selected control, then loads the response (if any) for
+        the newly selected one into the response editor on the right.
         """
-        # Save current response text before switching controls
-        if self._selected_ctrl_id:
+        # ── Work out which tree was just clicked ──────────────────────────────
+        # Both trees are bound to this same method. We check each one's
+        # selection() to find which one actually has a selection.
+        ctrl_id = None
+        for tree in (self._ctrl_tree, self._applied_ctrl_tree):
+            sel = tree.selection()
+            if sel:
+                ctrl_id = sel[0]   # The iid is the control ID
+                # Clear the selection in the other tree so only one row
+                # appears highlighted at a time across both tabs.
+                other = (self._applied_ctrl_tree
+                         if tree is self._ctrl_tree
+                         else self._ctrl_tree)
+                other.selection_remove(*other.selection())
+                break
+
+        if ctrl_id is None:
+            return   # Nothing selected in either tree
+
+        # ── Save the current response before switching ────────────────────────
+        if self._selected_ctrl_id and self._selected_ctrl_id != ctrl_id:
             current_text = self._ctrl_response_text.get("1.0", "end-1c").strip()
             if current_text:
                 self._ctrl_responses[self._selected_ctrl_id] = current_text
             else:
                 self._ctrl_responses.pop(self._selected_ctrl_id, None)
 
-        # Find which control was just selected
-        sel = self._ctrl_tree.selection()
-        if not sel:
-            return
-
-        # The iid of each row is the control ID (set in _refresh_control_list)
-        ctrl_id = sel[0]
         self._selected_ctrl_id = ctrl_id
 
-        # Find this control's full dict so we can show its statement
-        catalog  = self._get_catalog()
+        # ── Find this control's full details from the catalog ─────────────────
+        catalog   = self._get_catalog()
         ctrl_dict = None
         if catalog:
             ctrl_dict = next(
                 (c for c in catalog["controls"] if c["id"] == ctrl_id), None
             )
 
-        # Update the statement label (read-only reference at the top)
+        # ── Update the statement label (read-only reference) ──────────────────
         if ctrl_dict:
             label     = ctrl_dict.get("label", ctrl_id)
             statement = ctrl_dict.get("statement", ctrl_dict.get("title", ""))
@@ -1233,11 +1341,9 @@ class ComponentTab(tk.Frame):
                 fg=self._colors["TEXT"],
             )
         else:
-            self._ctrl_stmt_lbl.config(
-                text=ctrl_id, fg=self._colors["SUBTEXT"]
-            )
+            self._ctrl_stmt_lbl.config(text=ctrl_id, fg=self._colors["SUBTEXT"])
 
-        # Load any existing response into the text editor
+        # ── Load any existing response into the text editor ───────────────────
         self._ctrl_response_text.delete("1.0", "end")
         existing = self._ctrl_responses.get(ctrl_id, "")
         if existing:
@@ -1250,9 +1356,8 @@ class ComponentTab(tk.Frame):
         """
         Save the response currently in the text editor for the selected control.
 
-        This updates the in-memory _ctrl_responses dict and refreshes the
-        dot indicators in the list. The data is not written to disk until
-        the user clicks 'Apply Component Changes' and then 'Save File'.
+        Updates _ctrl_responses, then refreshes both list tabs so their dot
+        indicators and the Applied Controls count stay current.
         """
         if not self._selected_ctrl_id:
             messagebox.showinfo(
@@ -1265,22 +1370,21 @@ class ComponentTab(tk.Frame):
         if text:
             self._ctrl_responses[self._selected_ctrl_id] = text
         else:
-            # Empty response — remove the entry entirely
+            # Empty response — remove the entry so the dot clears
             self._ctrl_responses.pop(self._selected_ctrl_id, None)
 
-        # Refresh the list to update the dot indicator for this control
+        # Rebuild both lists so dots and tab counts update immediately
         self._refresh_control_list(self._ctrl_search_var.get())
 
-        # Re-select the same control so the user can keep editing or move on
-        if self._selected_ctrl_id in [
-            self._ctrl_tree.item(iid)["values"][1]
-            for iid in self._ctrl_tree.get_children()
-        ]:
-            try:
-                self._ctrl_tree.selection_set(self._selected_ctrl_id)
-                self._ctrl_tree.see(self._selected_ctrl_id)
-            except Exception:
-                pass
+        # Restore the row selection in whichever tree is currently visible.
+        # The active tab index: 0 = All Controls, 1 = Applied Controls.
+        active_tab = self._ctrl_notebook.index("current")
+        active_tree = self._ctrl_tree if active_tab == 0 else self._applied_ctrl_tree
+        try:
+            active_tree.selection_set(self._selected_ctrl_id)
+            active_tree.see(self._selected_ctrl_id)
+        except Exception:
+            pass   # Row may not exist in Applied tab if response was cleared
 
         self._dirty = True
         self._status_lbl.config(

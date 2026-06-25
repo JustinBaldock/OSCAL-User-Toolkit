@@ -1,0 +1,129 @@
+{
+  "component-definition": {
+    "uuid": "f59b6c6a-8144-4aa5-afbb-6e0205a8dbac",
+    "metadata": {
+      "title": "software - Airlock Digital",
+      "last-modified": "2026-06-25T06:59:10Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+        "type": "service",
+        "title": "Active Directory",
+        "description": "Provide authenciation to all devices and provide group policy to Windows computers.",
+        "purpose": "Provide authenciation to all devices and provide group policy to Windows computers.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6ca91739-66fb-4a40-b381-e11faf01b96f",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Active Directory.",
+            "implemented-requirements": [
+              {
+                "uuid": "496c5314-2614-4110-9784-1742d64aaa5b",
+                "control-id": "ism-1055",
+                "description": "AD has a group policy applied to all Windows computers that disables LAN Manager and NT LAN Manager authenication."
+              },
+              {
+                "uuid": "49250245-1651-4749-8e85-7dfd7bce6ec1",
+                "control-id": "ism-1546",
+                "description": "All users must authenicate against AD before being provided access to systems and resources."
+              },
+              {
+                "uuid": "daad8ad2-14ec-480e-a2fb-6362173a2850",
+                "control-id": "ism-0417",
+                "description": "Currently the system is using single-factor authenciation using passwords."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+        "type": "hardware",
+        "title": "Cabling Infrastrucutre",
+        "description": "All permament cabling infrastructure",
+        "purpose": "Provide connectivity between equipment",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5797a716-cba2-47a7-b55d-4105ee3f1350",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Cabling Infrastrucutre.",
+            "implemented-requirements": [
+              {
+                "uuid": "98d7bf6d-fe36-472c-99bd-025dacad5e1f",
+                "control-id": "ism-0181",
+                "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards."
+              },
+              {
+                "uuid": "70227be9-18cd-4a9e-b359-e455af1c0fad",
+                "control-id": "ism-1111",
+                "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre."
+              },
+              {
+                "uuid": "2819a493-6e1d-4cb0-b0ae-975c24a8b7ef",
+                "control-id": "ism-1820",
+                "description": "All fibre-optic and copper cables use a consistent colour."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+        "type": "software",
+        "title": "Airlock Digital",
+        "description": "Airlock digital provides applicatoin allow listing and execution control of software.",
+        "purpose": "Provides application control solution",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "421e2505-0ad3-421b-818d-9ac89dccd502",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Airlock Digital.",
+            "implemented-requirements": [
+              {
+                "uuid": "33afe5b0-5ff8-4380-869f-bfb9588d860d",
+                "control-id": "ism-0843",
+                "description": "Airlock Digital agent is installed on all Windows workstations via group policy. All workstations are configured in enforcement mode providing application control."
+              },
+              {
+                "uuid": "d1504649-2281-4766-85c4-3ddf39205727",
+                "control-id": "ism-1656",
+                "description": "Airlock Digital agent is installed on all non-internface facing servers. All servers are configured in enforcement mode providing applicaiton control."
+              },
+              {
+                "uuid": "c957bfba-8623-4c37-a868-99c963acf2d1",
+                "control-id": "ism-0955",
+                "description": "Airlock Digital implements application control using cryptographic hash rules, publisher certificate rules and path rules."
+              },
+              {
+                "uuid": "44ecab17-e429-44bd-aed5-6d91419f993e",
+                "control-id": "ism-1471",
+                "description": "Airlock digital  implemented application control using publisher certificate rules. Publisher names and product names are used."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

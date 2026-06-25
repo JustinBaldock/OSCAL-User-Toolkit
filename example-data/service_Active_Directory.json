@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "f59b6c6a-8144-4aa5-afbb-6e0205a8dbac",
+    "metadata": {
+      "title": "service - Active Directory",
+      "last-modified": "2026-06-25T06:45:01Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+        "type": "service",
+        "title": "Active Directory",
+        "description": "Provide authenciation to all devices and provide group policy to Windows computers.",
+        "purpose": "Provide authenciation to all devices and provide group policy to Windows computers.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "ee8d01b5-3e26-4f7e-bfe7-005e8ccd9ca3",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Active Directory.",
+            "implemented-requirements": [
+              {
+                "uuid": "fcdc0e37-1987-4cb4-86f0-36a609cb2910",
+                "control-id": "ism-1055",
+                "description": "AD has a group policy applied to all Windows computers that disables LAN Manager and NT LAN Manager authenication."
+              },
+              {
+                "uuid": "f6c0342b-0b8e-4902-8f5a-98b301960dbb",
+                "control-id": "ism-1546",
+                "description": "All users must authenicate against AD before being provided access to systems and resources."
+              },
+              {
+                "uuid": "62433f08-5c5e-4e5f-bac0-36e064d2b650",
+                "control-id": "ism-0417",
+                "description": "Currently the system is using single-factor authenciation using passwords."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

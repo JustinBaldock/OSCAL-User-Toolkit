@@ -1,0 +1,106 @@
+{
+  "system-security-plan": {
+    "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
+    "metadata": {
+      "title": "Example Network",
+      "last-modified": "2026-06-25T07:06:58Z",
+      "version": "0.1",
+      "oscal-version": "1.1.2"
+    },
+    "import-profile": {
+      "href": "#d908cee1-e8bf-4087-8a19-194b2edbc039"
+    },
+    "system-characteristics": {
+      "system-ids": [
+        {
+          "id": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
+          "identifier-type": "https://ietf.org/rfc/rfc4122"
+        }
+      ],
+      "system-name": "Example Research Network",
+      "system-name-short": "ERN",
+      "description": "This is a description of a small example network.",
+      "date-authorized": "2026-06-24",
+      "security-sensitivity-level": "fips-199-moderate",
+      "system-information": {
+        "information-types": [
+          {
+            "uuid": "8e9ba220-f567-4594-8db3-c7dcf1fd7d49",
+            "title": "policy abc",
+            "description": "A link to a policy document?",
+            "confidentiality-impact": {
+              "base": "fips-199-moderate"
+            },
+            "integrity-impact": {
+              "base": "fips-199-moderate"
+            },
+            "availability-impact": {
+              "base": "fips-199-moderate"
+            }
+          }
+        ]
+      },
+      "status": {
+        "state": "operational",
+        "remarks": "This SSP is in development"
+      },
+      "authorization-boundary": {
+        "description": "A description and image of the system boundary."
+      },
+      "network-architecture": {
+        "description": "Flat network, I wonder if we can embed or link to images here"
+      },
+      "data-flow": {
+        "description": "The data just flows around the network."
+      }
+    },
+    "system-implementation": {
+      "components": [
+        {
+          "uuid": "d3ea4982-ec86-4f2b-b1c9-42def3c2a3c3",
+          "type": "this-system",
+          "title": "Example Research Network",
+          "description": "This is a description of a small example network.",
+          "status": {
+            "state": "operational"
+          }
+        }
+      ]
+    },
+    "control-implementation": {
+      "description": "Control implementation statements will be added in Stage 2.",
+      "implemented-requirements": []
+    },
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "d908cee1-e8bf-4087-8a19-194b2edbc039",
+          "title": "Information security manual non-classified Baseline",
+          "props": [
+            {
+              "name": "type",
+              "value": "profile"
+            },
+            {
+              "name": "version",
+              "value": "2026.06.18"
+            },
+            {
+              "name": "oscal-version",
+              "value": "1.1.2"
+            },
+            {
+              "name": "last-modified",
+              "value": "2026-06-18T08:04:29.980978301Z"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": "ISM_NON_CLASSIFIED-baseline_profile.json"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
