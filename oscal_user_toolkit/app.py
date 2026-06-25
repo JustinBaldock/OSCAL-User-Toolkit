@@ -36,6 +36,7 @@ from .models import load_catalog, load_profile
 from .catalog_tab import CatalogTab
 from .ssp_tab import SSPTab
 from .component_tab import ComponentTab
+from .capability_tab import CapabilityTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -358,14 +359,27 @@ class OSCALApp(tk.Tk):
         self._component_tab = ComponentTab(
             parent     = nb,
             colors     = COLORS,
-            # The component tab can read the catalog for future control lookups
             get_catalog= lambda: self._catalog,
-            # The component tab can read the profile for future filtering
             get_profile= lambda: self._profile,
-            # Let the component tab update the main window status bar
             set_status = lambda msg: self._status_lbl.config(text=msg),
         )
         nb.add(self._component_tab, text="⚙  Component Editor")
+
+        # ── Capability Editor tab ─────────────────────────────────────────────
+        # Sits between Component Editor and SSP Editor.
+        # Requires a catalog loaded AND at least one component in the
+        # Component Editor before editing is allowed.
+        self._capability_tab = CapabilityTab(
+            parent         = nb,
+            colors         = COLORS,
+            get_catalog    = lambda: self._catalog,
+            # Pass a live reference to the Component Editor's component list
+            # so the Capability tab always sees the current set of components.
+            get_components = lambda: self._component_tab._components,
+            get_profile    = lambda: self._profile,
+            set_status     = lambda msg: self._status_lbl.config(text=msg),
+        )
+        nb.add(self._capability_tab, text="🔗  Capability Editor")
 
         # ── SSP Editor tab ────────────────────────────────────────────────────
         self._ssp_tab = SSPTab(
@@ -459,6 +473,8 @@ class OSCALApp(tk.Tk):
         self._catalog_tab.load_controls(catalog["controls"])
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()
+        # Notify the capability tab — catalog changed, re-evaluate guard
+        self._capability_tab.on_state_changed()
 
         self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
 
@@ -507,6 +523,8 @@ class OSCALApp(tk.Tk):
 
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()
+        # Profile changed — capability control list may need to update
+        self._capability_tab.on_state_changed()
 
         # Tell the CatalogTab to filter by the new profile's control IDs.
         # The tab keeps its own class filter and search term unchanged.
@@ -532,6 +550,8 @@ class OSCALApp(tk.Tk):
 
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()
+        # Profile cleared — capability control list may need to update
+        self._capability_tab.on_state_changed()
 
         # Remove the profile filter — pass None so all controls are shown.
         # The tab keeps its own class filter and search term unchanged.

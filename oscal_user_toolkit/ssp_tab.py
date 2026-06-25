@@ -245,7 +245,7 @@ class SSPTab(tk.Frame):
         try:
             # self.master is the Notebook widget
             nb = self.master
-            if hasattr(nb, "index") and nb.index("current") == 2:
+            if hasattr(nb, "index") and nb.index("current") == 3:
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass   # Silently ignore any errors (e.g. during startup)
