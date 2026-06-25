@@ -230,15 +230,26 @@ class ComponentTab(tk.Frame):
             activebackground="#8cd39a", activeforeground=C["BG"],
         ).pack(side="left", padx=12, pady=8)
 
+        # "Open File(s)" lets the user pick one or more files at once.
+        # Components are APPENDED to the list, not replacing it.
         tk.Button(
-            tb, text="📂  Open File", command=self._open_file,
+            tb, text="📂  Open File(s)", command=self._open_files,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground="#6a9fd8", activeforeground=C["BG"],
+        ).pack(side="left", padx=(0, 6), pady=8)
+
+        # "Open Folder" loads every component JSON file in a chosen folder.
+        # Also appends to the list.
+        tk.Button(
+            tb, text="📁  Open Folder", command=self._open_folder,
             bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
             activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
-            tb, text="🆕  New File", command=self._new_file,
+            tb, text="🗑  Clear All", command=self._new_file,
             bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 12), pady=8)
@@ -1784,74 +1795,109 @@ class ComponentTab(tk.Frame):
         }
         return doc
 
-    def _parse_oscal_document(self, data):
+    def _parse_single_component(self, data):
         """
-        Parse a saved OSCAL Component Definition JSON file back into the
-        internal component list, including any control-implementations.
+        Parse one OSCAL Component Definition JSON file and extract the
+        first component from it as an internal dict.
+
+        Since we now save one component per file, each file will normally
+        have exactly one entry in its 'components' array. This method
+        extracts that component and returns it ready to be appended to
+        self._components. It does NOT reset the component list — that is
+        intentional so multiple files can be loaded one after another.
+
+        Parameters:
+            data - A Python dict from json.load() of a saved component file.
+
+        Returns:
+            A component dict in the internal format, or None if the file
+            contains no components.
         """
         root = data.get("component-definition", {})
-        meta = root.get("metadata", {})
+        raw  = root.get("components", [])
+        if not raw:
+            return None
 
-        self._file_uuid = root.get("uuid", new_uuid())
-        self._file_title.set(meta.get("title", ""))
-        self._file_version.set(meta.get("version", "1.0"))
+        # Take the first (normally only) component in the file
+        c = raw[0]
 
-        # Update the toolbar display label
-        loaded_title = meta.get("title", "")
-        self._file_title_lbl.config(
-            text=loaded_title if loaded_title
-            else "(enter component type and title below)",
-            fg=self._colors["TEXT"] if loaded_title else self._colors["SUBTEXT"],
-            font=("Helvetica", 10),
+        all_props   = c.get("props", [])
+        status_prop = next(
+            (p for p in all_props if p.get("name") == "operational-status"),
+            None
         )
+        # Separate out the status prop from the user-defined props
+        user_props = [
+            {"name": p["name"], "value": p["value"],
+             "remarks": p.get("remarks", "")}
+            for p in all_props
+            if p.get("name") != "operational-status"
+        ]
 
-        self._components = []
-        for c in root.get("components", []):
-            # Props — separate status prop from user-defined ones
-            all_props   = c.get("props", [])
-            status_prop = next(
-                (p for p in all_props if p.get("name") == "operational-status"),
-                None
-            )
-            user_props = [
-                {"name": p["name"], "value": p["value"],
-                 "remarks": p.get("remarks", "")}
-                for p in all_props
-                if p.get("name") != "operational-status"
-            ]
+        roles = [
+            {"role_id": r.get("role-id", ""), "remarks": r.get("remarks", "")}
+            for r in c.get("responsible-roles", [])
+        ]
 
-            # Roles
-            roles = [
-                {"role_id": r.get("role-id", ""), "remarks": r.get("remarks", "")}
-                for r in c.get("responsible-roles", [])
-            ]
+        # Flatten OSCAL control-implementations back to {control_id: description}
+        ctrl_responses = {}
+        for ci in c.get("control-implementations", []):
+            for req in ci.get("implemented-requirements", []):
+                ctrl_id = req.get("control-id", "")
+                desc    = req.get("description", "")
+                if ctrl_id and desc:
+                    ctrl_responses[ctrl_id] = desc
 
-            # Control responses — flatten from the OSCAL structure back to a
-            # simple {control_id: description} dict for the form.
-            ctrl_responses = {}
-            for ci in c.get("control-implementations", []):
-                for req in ci.get("implemented-requirements", []):
-                    ctrl_id = req.get("control-id", "")
-                    desc    = req.get("description", "")
-                    if ctrl_id and desc:
-                        ctrl_responses[ctrl_id] = desc
+        return {
+            "uuid":           c.get("uuid", new_uuid()),
+            "title":          c.get("title", ""),
+            "type":           c.get("type", COMPONENT_TYPES[0]),
+            "description":    c.get("description", ""),
+            "purpose":        c.get("purpose", ""),
+            "status":         status_prop["value"] if status_prop else COMPONENT_STATUS[0],
+            "status_remarks": status_prop.get("remarks", "") if status_prop else "",
+            "remarks":        c.get("remarks", ""),
+            "props":          user_props,
+            "roles":          roles,
+            "ctrl_responses": ctrl_responses,
+        }
 
-            comp = {
-                "uuid":           c.get("uuid", new_uuid()),
-                "title":          c.get("title", ""),
-                "type":           c.get("type", COMPONENT_TYPES[0]),
-                "description":    c.get("description", ""),
-                "purpose":        c.get("purpose", ""),
-                "status":         status_prop["value"] if status_prop
-                                  else COMPONENT_STATUS[0],
-                "status_remarks": status_prop.get("remarks", "")
-                                  if status_prop else "",
-                "remarks":        c.get("remarks", ""),
-                "props":          user_props,
-                "roles":          roles,
-                "ctrl_responses": ctrl_responses,
-            }
-            self._components.append(comp)
+    def _load_component_from_path(self, path):
+        """
+        Load one component from a JSON file at the given path and append
+        it to self._components.
+
+        This is the shared core used by both _open_files() and
+        _open_folder(). Returns True on success, False if the file was
+        skipped (not a valid component definition, or a duplicate UUID).
+
+        Parameters:
+            path - A string or Path object pointing to a JSON file.
+        """
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            # Cannot read the file or it is not valid JSON — skip it silently
+            return False
+
+        if "component-definition" not in data:
+            # Not a component definition file — skip silently
+            return False
+
+        comp = self._parse_single_component(data)
+        if comp is None:
+            return False
+
+        # Skip duplicate UUIDs — prevents loading the same file twice if
+        # the user accidentally selects it again or opens a folder that
+        # contains a file already in the list.
+        existing_uuids = {c["uuid"] for c in self._components}
+        if comp["uuid"] in existing_uuids:
+            return False
+
+        self._components.append(comp)
+        return True
 
     # =========================================================================
     # FILE ACTIONS
@@ -1861,26 +1907,21 @@ class ComponentTab(tk.Frame):
         """
         Validate that the currently selected component is ready to save.
 
-        Returns a list of error strings. An empty list means the component
-        is valid and can be saved.
-
-        Only the selected component is checked — each component is saved
-        as its own file, so other components in the list are irrelevant.
+        Returns a list of error strings. An empty list means ready to save.
+        Only the selected component is checked because each is saved as its
+        own independent file.
         """
         errors = []
 
-        # Must have a component selected to save
         if self._selected_index is None:
-            errors.append("No component is selected. Select a component from the list first.")
+            errors.append("No component is selected. Select one from the list first.")
             return errors
 
         comp = self._components[self._selected_index]
 
-        # Title is required by the OSCAL schema (defined-component assembly)
+        # Both title and description are required by the OSCAL schema
         if not comp.get("title", "").strip():
             errors.append("Component Title is required (Section 1).")
-
-        # Description is required by the OSCAL schema
         if not comp.get("description", "").strip():
             errors.append("Component Description is required (Section 2).")
 
@@ -1893,16 +1934,10 @@ class ComponentTab(tk.Frame):
 
         Each component is saved as a separate file — one component per file.
         The filename is auto-generated from the component type and title.
-
-        This fixes the previous behaviour where all components in the list
-        were written to the same file, which was not the intended workflow.
         """
-        # First collect the current form state into the component dict
-        # so any unsaved typing is included in the saved file.
         if self._selected_index is not None:
             self._collect_into(self._selected_index)
 
-        # Validate only the selected component
         errors = self._validate_selected()
         if errors:
             messagebox.showerror(
@@ -1912,16 +1947,12 @@ class ComponentTab(tk.Frame):
             )
             return
 
-        comp = self._components[self._selected_index]
-
-        # Auto-generate the suggested filename from the component type + title.
-        # e.g. type="hardware", title="My Firewall" → "hardware_My_Firewall.json"
+        comp       = self._components[self._selected_index]
         comp_type  = comp.get("type", "").strip()
         comp_title = comp.get("title", "").strip()
+
         if comp_type and comp_title:
-            # Replace spaces with underscores to make a safe filename
-            safe_title   = comp_title.replace(" ", "_")
-            initial_file = f"{comp_type}_{safe_title}.json"
+            initial_file = f"{comp_type}_{comp_title.replace(' ', '_')}.json"
         else:
             initial_file = "component_definition.json"
 
@@ -1932,82 +1963,136 @@ class ComponentTab(tk.Frame):
             initialfile=initial_file,
         )
         if not path:
-            return   # User cancelled
+            return
 
-        # Build the OSCAL document for this single component and write it
         doc = self._build_single_component_oscal(comp)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
-        # Mark this component as saved (clear the dirty flag for it)
         self._dirty = False
         fname = Path(path).name
-        self._status_lbl.config(
-            text=f"Saved: {fname}", fg=self._colors["GREEN"]
-        )
+        self._status_lbl.config(text=f"Saved: {fname}", fg=self._colors["GREEN"])
         self._set_status(f"Component saved: {fname}")
         messagebox.showinfo(
             "Component Saved",
             f"Component '{comp_title}' saved successfully:\n{path}"
         )
 
-    def _open_file(self):
-        """Open a saved OSCAL Component Definition file for editing."""
-        if self._dirty and self._components:
-            if not messagebox.askyesno(
-                "Unsaved changes",
-                "You have unsaved changes. Open a new file and discard them?"
-            ):
-                return
+    def _open_files(self):
+        """
+        Open one or more component JSON files selected by the user.
 
-        path = filedialog.askopenfilename(
-            title="Open OSCAL Component Definition",
+        Each file's component is APPENDED to the current component list —
+        existing components are kept. The user can select multiple files
+        at once using Ctrl+click or Shift+click in the file browser.
+        Duplicate components (same UUID) are silently skipped.
+        """
+        # askopenfilenames (plural) returns a tuple of selected paths,
+        # or an empty tuple if the user cancelled. The user can select
+        # multiple files in one dialog using Ctrl+click / Shift+click.
+        paths = filedialog.askopenfilenames(
+            title="Open Component File(s) — Ctrl+click to select multiple",
             filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
         )
-        if not path:
+        if not paths:
             return
 
-        try:
-            with open(path, encoding="utf-8") as f:
-                data = json.load(f)
-        except (json.JSONDecodeError, OSError) as exc:
-            messagebox.showerror("Failed to open file", str(exc))
+        added   = 0
+        skipped = 0
+        for path in paths:
+            if self._load_component_from_path(path):
+                added += 1
+            else:
+                skipped += 1
+
+        self._after_open(added, skipped)
+
+    def _open_folder(self):
+        """
+        Open a folder and load every valid component JSON file inside it.
+
+        Each file's component is APPENDED to the current component list.
+        Files that are not valid OSCAL Component Definition documents are
+        silently ignored. Duplicate UUIDs are also skipped.
+        """
+        folder = filedialog.askdirectory(
+            title="Open Folder — loads all component JSON files inside"
+        )
+        if not folder:
             return
 
-        if "component-definition" not in data:
-            messagebox.showerror(
-                "Invalid file",
-                "Missing 'component-definition' key — not an OSCAL Component Definition."
+        # Path.glob("*.json") finds all .json files in the folder (not recursive).
+        # sorted() makes the order consistent across operating systems.
+        json_files = sorted(Path(folder).glob("*.json"))
+        if not json_files:
+            messagebox.showinfo(
+                "No JSON files found",
+                f"No .json files were found in:\n{folder}"
             )
             return
 
-        self._parse_oscal_document(data)
+        added   = 0
+        skipped = 0
+        for path in json_files:
+            if self._load_component_from_path(path):
+                added += 1
+            else:
+                skipped += 1
+
+        self._after_open(added, skipped)
+
+    def _after_open(self, added, skipped):
+        """
+        Shared cleanup after _open_files() or _open_folder() finishes.
+
+        Rebuilds the component list widget, clears the selection, shows
+        the placeholder, and updates the status bar with a summary message.
+
+        Parameters:
+            added   - Number of components successfully added
+            skipped - Number of files skipped (not valid or duplicate)
+        """
         self._selected_index = None
-        self._ctrl_responses  = {}
+        self._ctrl_responses = {}
         self._refresh_list()
         self._show_form_placeholder()
 
-        self._dirty = False
-        fname = Path(path).name
-        self._status_lbl.config(text=f"Opened: {fname}", fg=self._colors["BLUE"])
-        self._set_status(f"Component file opened: {fname}")
+        total = len(self._components)
+        if added == 0:
+            msg = "No new components loaded (files may already be in the list)."
+            self._status_lbl.config(text=msg, fg=self._colors["YELLOW"])
+        elif skipped > 0:
+            msg = (f"Added {added} component{'s' if added != 1 else ''}, "
+                   f"skipped {skipped} (not valid or duplicate). "
+                   f"{total} total.")
+            self._status_lbl.config(text=msg, fg=self._colors["BLUE"])
+        else:
+            msg = (f"Loaded {added} component{'s' if added != 1 else ''}. "
+                   f"{total} total in list.")
+            self._status_lbl.config(text=msg, fg=self._colors["BLUE"])
+
+        self._set_status(msg)
 
     def _new_file(self):
-        """Clear everything and start a fresh component definition file."""
+        """
+        Clear all components from the list and start fresh.
+        Prompts for confirmation if there are unsaved changes.
+        """
         if self._dirty and self._components:
             if not messagebox.askyesno(
-                "Unsaved changes",
-                "You have unsaved changes. Start a new file and discard them?"
+                "Clear all components?",
+                "This will remove all components from the list.\n"
+                "Any unsaved changes will be lost. Continue?"
             ):
                 return
 
-        self._file_uuid       = new_uuid()
+        self._file_uuid      = new_uuid()
         self._file_title.set("")
         self._file_version.set("1.0")
-        self._components      = []
-        self._selected_index  = None
-        self._ctrl_responses  = {}
-        self._dirty           = False
+        self._components     = []
+        self._selected_index = None
+        self._ctrl_responses = {}
+        self._dirty          = False
 
         self._file_title_lbl.config(
             text="(enter component type and title below)",
@@ -2017,6 +2102,6 @@ class ComponentTab(tk.Frame):
         self._show_form_placeholder()
 
         self._status_lbl.config(
-            text="New file  (unsaved)", fg=self._colors["SUBTEXT"]
+            text="Cleared — ready for new components.", fg=self._colors["SUBTEXT"]
         )
-        self._set_status("New component definition file started.")
+        self._set_status("Component list cleared.")
