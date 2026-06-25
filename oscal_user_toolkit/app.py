@@ -88,15 +88,8 @@ class OSCALApp(tk.Tk):
         # None means "nothing loaded yet".
         self._catalog = None    # The loaded catalog dict (from models.load_catalog)
         self._profile = None    # The loaded profile dict (from models.load_profile)
-
-        # StringVars for the toolbar filter controls.
-        # tkinter StringVar objects automatically update linked widgets.
-        self._selected_class = tk.StringVar(value="All")
-        self._search_var     = tk.StringVar()
-
-        # trace_add("write", ...) calls _on_search every time the search box changes.
-        # This enables live filtering as the user types.
-        self._search_var.trace_add("write", self._on_search)
+        # Note: the class filter, search box and control count all live inside
+        # CatalogTab now — they are only relevant to the catalog viewer.
 
         # ── Build the GUI ─────────────────────────────────────────────────────
         # Each method below creates one layer of the UI.
@@ -183,13 +176,15 @@ class OSCALApp(tk.Tk):
           - Open Profile button (yellow)
           - Clear Profile button (disabled until a profile is loaded)
           - App title label
-          - Class filter dropdown (right side)
-          - Search box (right side)
+
+        The class filter dropdown, search box, and control count have moved
+        into the Catalog Viewer tab (catalog_tab.py) where they belong —
+        they are only relevant when browsing the catalog.
         """
         C  = COLORS
         tb = tk.Frame(self, bg=C["HEADER_BG"], height=54)
         tb.pack(fill="x", side="top")
-        tb.pack_propagate(False)   # Keep the toolbar at exactly 54px tall
+        tb.pack_propagate(False)
 
         # ── Left-side buttons ─────────────────────────────────────────────────
         tk.Button(
@@ -213,7 +208,7 @@ class OSCALApp(tk.Tk):
             bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
             relief="flat", padx=10, pady=6, cursor="hand2",
             state="disabled",              # Greyed out until a profile is loaded
-            disabledforeground="#555570",  # Colour when disabled
+            disabledforeground="#555570",
         )
         self._clear_profile_btn.pack(side="left", pady=10)
 
@@ -223,44 +218,6 @@ class OSCALApp(tk.Tk):
             bg=C["HEADER_BG"], fg=C["TEXT"],
             font=("Helvetica", 14, "bold"),
         ).pack(side="left", padx=12)
-
-        # ── Right-side controls (packed right-to-left) ────────────────────────
-        # Note: pack(side="right") items appear in reverse order visually,
-        # so we pack the rightmost item first.
-
-        # Search box icon
-        tk.Label(
-            tb, text="🔍", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 13),
-        ).pack(side="right", padx=(0, 6))
-
-        # Search text entry — linked to _search_var which triggers _on_search
-        tk.Entry(
-            tb, textvariable=self._search_var,
-            bg=C["SIDEBAR_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-            relief="flat", font=("Helvetica", 11), width=22,
-        ).pack(side="right", padx=(0, 12), ipady=4)
-
-        tk.Label(
-            tb, text="Search:", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11),
-        ).pack(side="right")
-
-        # Class filter dropdown — lets user show only ISM-control or ISM-principle
-        self._class_combo = ttk.Combobox(
-            tb, textvariable=self._selected_class,
-            values=["All"],    # Populated properly after a catalog is loaded
-            state="readonly",  # User can only select, not type
-            width=18,
-        )
-        self._class_combo.pack(side="right", padx=(0, 8), pady=14)
-        # Call _on_filter whenever the user picks a different class
-        self._class_combo.bind("<<ComboboxSelected>>", self._on_filter)
-
-        tk.Label(
-            tb, text="Class:", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11),
-        ).pack(side="right", padx=(16, 4))
 
     # =========================================================================
     # INFO PANEL
@@ -432,14 +389,14 @@ class OSCALApp(tk.Tk):
         Create the status bar — a thin strip at the very bottom of the window
         that shows messages like "Loaded catalog: ISM_catalog.json".
 
-        It also shows a control count on the right side.
+        The control count has moved into the Catalog Viewer tab toolbar,
+        where it is more contextually relevant.
         """
         C  = COLORS
         sb = tk.Frame(self, bg=C["HEADER_BG"], height=26)
         sb.pack(fill="x", side="bottom")
-        sb.pack_propagate(False)   # Keep exactly 26px tall
+        sb.pack_propagate(False)
 
-        # Left side: general status message
         self._status_lbl = tk.Label(
             sb,
             text="No catalog loaded — click '📂 Open Catalog' to begin.",
@@ -447,14 +404,6 @@ class OSCALApp(tk.Tk):
             font=("Helvetica", 10), anchor="w",
         )
         self._status_lbl.pack(side="left", padx=10)
-
-        # Right side: "Showing X of Y controls"
-        self._count_lbl = tk.Label(
-            sb, text="",
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 10), anchor="e",
-        )
-        self._count_lbl.pack(side="right", padx=10)
 
     # =========================================================================
     # FILE LOADING
@@ -488,19 +437,12 @@ class OSCALApp(tk.Tk):
         self._catalog = catalog
         self._profile = None   # Loading a new catalog clears the profile
 
-        # Update the class filter dropdown with the classes found in this catalog
-        classes = sorted({c["class"] for c in catalog["controls"] if c["class"]})
-        self._class_combo["values"] = ["All"] + classes
-        self._selected_class.set("All")
-        self._search_var.set("")   # Clear the search box
-
         # ── Update the catalog info card ──────────────────────────────────────
         self._cat_title_lbl.config(text=catalog["title"], fg=C["TEXT"])
         self._cat_version_lbl.config(text=catalog["version"])
         self._cat_oscal_lbl.config(text=catalog["oscal_version"])
         self._cat_published_lbl.config(text=catalog["published"])
         self._cat_modified_lbl.config(text=catalog["last_modified"])
-        # Show the total number of controls in the catalog
         self._cat_controls_lbl.config(text=str(len(catalog["controls"])))
 
         # ── Reset the profile info card (profile was cleared above) ───────────
@@ -509,18 +451,16 @@ class OSCALApp(tk.Tk):
                     self._prof_published_lbl, self._prof_modified_lbl,
                     self._prof_controls_lbl):
             lbl.config(text="—")
-        # Disable Clear Profile (no profile to clear)
         self._clear_profile_btn.config(state="disabled")
 
         # ── Tell the tabs about the new data ─────────────────────────────────
-        # load_controls() replaces the tree contents with the full control list
+        # load_controls() hands the full control list to the CatalogTab, which
+        # also resets its own class filter, search box, and count label.
         self._catalog_tab.load_controls(catalog["controls"])
         self._ssp_tab.refresh_profile_box()
-        # Notify the component tab so it can re-evaluate the guard condition
         self._component_tab.on_catalog_or_profile_changed()
 
         self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
-        self._update_count()
 
     def _open_profile(self):
         """
@@ -568,8 +508,9 @@ class OSCALApp(tk.Tk):
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()
 
-        # Re-apply all filters — the profile filter is now active
-        self._apply_filters()
+        # Tell the CatalogTab to filter by the new profile's control IDs.
+        # The tab keeps its own class filter and search term unchanged.
+        self._catalog_tab.apply_profile(profile["ids"])
         self._status_lbl.config(text=f"Profile applied: {Path(path).name}")
 
     def _clear_profile(self):
@@ -592,8 +533,9 @@ class OSCALApp(tk.Tk):
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()
 
-        # Re-apply filters — profile filter is now inactive
-        self._apply_filters()
+        # Remove the profile filter — pass None so all controls are shown.
+        # The tab keeps its own class filter and search term unchanged.
+        self._catalog_tab.apply_profile(None)
         self._status_lbl.config(text="Profile cleared — showing full catalog.")
 
     # =========================================================================
@@ -602,56 +544,16 @@ class OSCALApp(tk.Tk):
 
     def _apply_filters(self):
         """
-        Pass the current filter settings to the CatalogTab so it can
-        update which controls are shown in the list.
+        Tell the CatalogTab to re-apply its filters using the current profile.
 
-        This is called whenever any filter changes:
-          - Profile loaded/cleared    → different set of control IDs
-          - Class dropdown changed    → different class filter
-          - User types in search box  → different search term
+        The class filter and search term are now owned entirely by CatalogTab —
+        this method only needs to pass through the profile IDs so the tab
+        knows which controls to include or exclude.
         """
         if not self._catalog:
-            return   # Nothing to filter if no catalog is loaded
+            return
 
-        # Get the profile's control IDs (or None if no profile is loaded)
+        # Pass the profile's control IDs (or None for no profile filter).
+        # CatalogTab combines this with its own class and search filters.
         profile_ids = self._profile["ids"] if self._profile else None
-
-        # Delegate filtering to the CatalogTab — it owns the tree widget
-        self._catalog_tab.apply_filters(
-            profile_ids  = profile_ids,
-            class_filter = self._selected_class.get(),
-            search_term  = self._search_var.get(),
-        )
-        # Update the status bar count
-        self._update_count()
-
-    def _on_filter(self, _event=None):
-        """Called by the class dropdown when the user selects a class."""
-        self._apply_filters()
-
-    def _on_search(self, *_args):
-        """
-        Called automatically whenever the search box content changes.
-        The *_args accepts the arguments tkinter passes but we don't use them.
-        """
-        self._apply_filters()
-
-    def _update_count(self):
-        """
-        Update the control count label in the status bar.
-
-        Shows either "1150 controls" or "Showing 42 of 1150 controls"
-        depending on whether any filtering is active.
-        """
-        # Ask the catalog tab for the current counts
-        total, shown = self._catalog_tab.control_count()
-
-        if total == 0:
-            # No catalog loaded yet
-            self._count_lbl.config(text="")
-        elif shown == total:
-            # No filtering active — show everything
-            self._count_lbl.config(text=f"{total} controls")
-        else:
-            # Filtered — show the subset count
-            self._count_lbl.config(text=f"Showing {shown} of {total} controls")
+        self._catalog_tab.apply_profile(profile_ids)
