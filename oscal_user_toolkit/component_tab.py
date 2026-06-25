@@ -224,7 +224,7 @@ class ComponentTab(tk.Frame):
         tb.pack_propagate(False)
 
         tk.Button(
-            tb, text="💾  Save File", command=self._save_file,
+            tb, text="💾  Save Component", command=self._save_file,
             bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
             activebackground="#8cd39a", activeforeground=C["BG"],
@@ -871,7 +871,7 @@ class ComponentTab(tk.Frame):
         tk.Label(
             save_resp_row,
             text="  Saves to memory — click '✔ Apply Component Changes' to keep,\n"
-                 "  then '💾 Save File' to write to disk.",
+                 "  then '💾 Save Component' to write to disk.",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 8, "italic"),
         ).pack(side="left", padx=8)
 
@@ -888,7 +888,7 @@ class ComponentTab(tk.Frame):
         ).pack(side="left")
         tk.Label(
             apply_row,
-            text="  (Saves to memory — use '💾 Save File' to write to disk)",
+            text="  (Saves to memory — use '💾 Save Component' to write to disk)",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
         ).pack(side="left", padx=8)
 
@@ -1651,21 +1651,27 @@ class ComponentTab(tk.Frame):
     # OSCAL JSON CONVERSION
     # =========================================================================
 
-    def _build_oscal_document(self):
+    def _build_single_component_oscal(self, comp):
         """
-        Convert the in-memory component list into a valid OSCAL Component
-        Definition JSON document, including the control-implementations section.
+        Convert ONE component dict into a valid OSCAL Component Definition
+        JSON document containing only that single component.
 
-        The OSCAL structure for control implementations is:
-          control-implementations[]
-            uuid, source, description     ← one group per catalog/profile
-            implemented-requirements[]
-              uuid, control-id, description  ← one per control with a response
+        Per the OSCAL schema (oscal_component_metaschema.xml), a
+        component-definition file MAY contain multiple components, but
+        the intended workflow here is one component per file so each
+        component is independently referenceable and shareable.
+
+        Parameters:
+            comp - A single component dict from self._components
+
+        Returns:
+            A nested Python dict ready to be written as JSON.
         """
         now = now_iso()
 
-        # Determine the source URI for the control implementations.
-        # This points to the profile (preferred) or catalog as a fallback.
+        # Determine the source URI for control-implementations.
+        # The schema requires a URI pointing to the profile or catalog
+        # that defines the controls being implemented.
         profile = self._get_profile()
         catalog = self._get_catalog()
         if profile and profile.get("filepath"):
@@ -1675,90 +1681,105 @@ class ComponentTab(tk.Frame):
         else:
             source_href = "PROFILE_OR_CATALOG_HREF"
 
-        oscal_components = []
-        for comp in self._components:
+        # ── Build the single OSCAL component entry ────────────────────────────
 
-            # ── Basic fields ──────────────────────────────────────────────────
-            c = {
-                "uuid":        comp["uuid"],
-                "type":        comp.get("type", "software"),
-                "title":       comp.get("title", ""),
-                "description": comp.get("description", ""),
-            }
-            if comp.get("purpose"):
-                c["purpose"] = comp["purpose"]
+        # Required fields — uuid, type, title, description are all mandatory
+        # per the defined-component assembly in the schema.
+        c = {
+            "uuid":        comp["uuid"],
+            "type":        comp.get("type", "software"),
+            "title":       comp.get("title", ""),
+            "description": comp.get("description", ""),
+        }
 
-            # ── Props (including status) ───────────────────────────────────────
-            props = []
-            if comp.get("status"):
-                p = {"name": "operational-status", "value": comp["status"]}
-                if comp.get("status_remarks"):
-                    p["remarks"] = comp["status_remarks"]
-                props.append(p)
-            for prop in comp.get("props", []):
-                entry = {"name": prop["name"], "value": prop["value"]}
-                if prop.get("remarks"):
-                    entry["remarks"] = prop["remarks"]
-                props.append(entry)
-            if props:
-                c["props"] = props
+        # Optional fields — only included when the user provided a value,
+        # keeping the output clean and schema-conformant.
+        if comp.get("purpose"):
+            c["purpose"] = comp["purpose"]
 
-            # ── Responsible roles ─────────────────────────────────────────────
-            roles_list = []
-            for role in comp.get("roles", []):
-                r = {"role-id": role["role_id"]}
-                if role.get("remarks"):
-                    r["remarks"] = role["remarks"]
-                roles_list.append(r)
-            if roles_list:
-                c["responsible-roles"] = roles_list
+        # ── Props ─────────────────────────────────────────────────────────────
+        # The schema allows props on a component. We add the operational
+        # status as a prop named "operational-status", plus any user-defined
+        # props. The schema defines allowed prop names but also allows others
+        # (allow-other="yes").
+        props = []
+        if comp.get("status"):
+            p = {"name": "operational-status", "value": comp["status"]}
+            if comp.get("status_remarks"):
+                p["remarks"] = comp["status_remarks"]
+            props.append(p)
+        for prop in comp.get("props", []):
+            entry = {"name": prop["name"], "value": prop["value"]}
+            if prop.get("remarks"):
+                entry["remarks"] = prop["remarks"]
+            props.append(entry)
+        if props:
+            c["props"] = props
 
-            # ── Control implementations ───────────────────────────────────────
-            # Build one implemented-requirement per control that has a response.
-            ctrl_responses = comp.get("ctrl_responses", {})
-            implemented = []
-            for ctrl_id, description in ctrl_responses.items():
-                if description.strip():
-                    implemented.append({
-                        "uuid":        new_uuid(),
-                        "control-id":  ctrl_id,
-                        "description": description.strip(),
-                    })
+        # ── Responsible roles ─────────────────────────────────────────────────
+        # The schema uses "role-id" (hyphenated) in JSON output.
+        # Our internal format uses "role_id" (underscored) for Python safety.
+        roles_list = []
+        for role in comp.get("roles", []):
+            r = {"role-id": role["role_id"]}
+            if role.get("remarks"):
+                r["remarks"] = role["remarks"]
+            roles_list.append(r)
+        if roles_list:
+            c["responsible-roles"] = roles_list
 
-            # Only include the control-implementations block if there are
-            # at least one implemented requirement to add.
-            if implemented:
-                # Group all implemented requirements under a single
-                # control-implementation entry that references the source profile.
-                c["control-implementations"] = [
-                    {
-                        "uuid":        new_uuid(),
-                        "source":      source_href,
-                        "description": (
-                            f"Control implementations for "
-                            f"{comp.get('title', 'this component')}."
-                        ),
-                        "implemented-requirements": implemented,
-                    }
-                ]
+        # ── Control implementations ───────────────────────────────────────────
+        # The schema requires each control-implementation to have:
+        #   - uuid (required)
+        #   - source (required) — URI pointing to the profile/catalog
+        #   - description (required)
+        #   - implemented-requirements[] (at least one)
+        #     Each requirement needs: uuid, control-id, description
+        ctrl_responses = comp.get("ctrl_responses", {})
+        implemented = []
+        for ctrl_id, description in ctrl_responses.items():
+            if description.strip():
+                implemented.append({
+                    "uuid":        new_uuid(),
+                    "control-id":  ctrl_id,
+                    "description": description.strip(),
+                })
 
-            # ── Remarks ───────────────────────────────────────────────────────
-            if comp.get("remarks"):
-                c["remarks"] = comp["remarks"]
+        # Only include the control-implementations block when at least one
+        # control response has been written — the schema makes it optional.
+        if implemented:
+            c["control-implementations"] = [
+                {
+                    "uuid":        new_uuid(),
+                    "source":      source_href,
+                    "description": (
+                        f"Control implementations for "
+                        f"{comp.get('title', 'this component')}."
+                    ),
+                    "implemented-requirements": implemented,
+                }
+            ]
 
-            oscal_components.append(c)
+        if comp.get("remarks"):
+            c["remarks"] = comp["remarks"]
+
+        # ── Assemble the full OSCAL component-definition document ─────────────
+        # The file-level title is derived from the component type and title
+        # so the file is clearly identified without opening it.
+        file_title = self._file_title.get().strip() or comp.get("title", "Component Definition")
 
         doc = {
             "component-definition": {
                 "uuid": self._file_uuid,
                 "metadata": {
-                    "title":         self._file_title.get().strip()
-                                     or "Component Definition",
+                    "title":         file_title,
                     "last-modified": now,
                     "version":       self._file_version.get().strip() or "1.0",
                     "oscal-version": "1.1.2",
                 },
-                **({"components": oscal_components} if oscal_components else {}),
+                # The schema requires components to be in an array.
+                # We always write exactly one component per file.
+                "components": [c],
             }
         }
         return doc
@@ -1836,39 +1857,71 @@ class ComponentTab(tk.Frame):
     # FILE ACTIONS
     # =========================================================================
 
-    def _validate(self):
-        """Return a list of error strings. Empty list = ready to save."""
+    def _validate_selected(self):
+        """
+        Validate that the currently selected component is ready to save.
+
+        Returns a list of error strings. An empty list means the component
+        is valid and can be saved.
+
+        Only the selected component is checked — each component is saved
+        as its own file, so other components in the list are irrelevant.
+        """
         errors = []
-        if not self._file_title.get().strip():
-            errors.append("File Title is required (fill in the type and title fields).")
-        if not self._components:
-            errors.append("At least one component must be added.")
-        for i, comp in enumerate(self._components, start=1):
-            if not comp.get("title", "").strip():
-                errors.append(f"Component {i}: Title is required.")
-            if not comp.get("description", "").strip():
-                errors.append(f"Component {i}: Description is required.")
+
+        # Must have a component selected to save
+        if self._selected_index is None:
+            errors.append("No component is selected. Select a component from the list first.")
+            return errors
+
+        comp = self._components[self._selected_index]
+
+        # Title is required by the OSCAL schema (defined-component assembly)
+        if not comp.get("title", "").strip():
+            errors.append("Component Title is required (Section 1).")
+
+        # Description is required by the OSCAL schema
+        if not comp.get("description", "").strip():
+            errors.append("Component Description is required (Section 2).")
+
         return errors
 
     def _save_file(self):
-        """Validate and save all components to an OSCAL JSON file."""
+        """
+        Validate and save the CURRENTLY SELECTED component to its own
+        OSCAL Component Definition JSON file.
+
+        Each component is saved as a separate file — one component per file.
+        The filename is auto-generated from the component type and title.
+
+        This fixes the previous behaviour where all components in the list
+        were written to the same file, which was not the intended workflow.
+        """
+        # First collect the current form state into the component dict
+        # so any unsaved typing is included in the saved file.
         if self._selected_index is not None:
             self._collect_into(self._selected_index)
 
-        errors = self._validate()
+        # Validate only the selected component
+        errors = self._validate_selected()
         if errors:
             messagebox.showerror(
-                "Cannot save",
-                "Please fix the following:\n\n" +
+                "Cannot save component",
+                "Please fix the following before saving:\n\n" +
                 "\n".join(f"• {e}" for e in errors)
             )
             return
 
-        # Auto-generate the suggested filename
-        comp_type  = self._v_type.get().strip()  if hasattr(self, "_v_type")  else ""
-        comp_title = self._v_title.get().strip() if hasattr(self, "_v_title") else ""
+        comp = self._components[self._selected_index]
+
+        # Auto-generate the suggested filename from the component type + title.
+        # e.g. type="hardware", title="My Firewall" → "hardware_My_Firewall.json"
+        comp_type  = comp.get("type", "").strip()
+        comp_title = comp.get("title", "").strip()
         if comp_type and comp_title:
-            initial_file = f"{comp_type}_{comp_title.replace(' ', '_')}.json"
+            # Replace spaces with underscores to make a safe filename
+            safe_title   = comp_title.replace(" ", "_")
+            initial_file = f"{comp_type}_{safe_title}.json"
         else:
             initial_file = "component_definition.json"
 
@@ -1879,17 +1932,24 @@ class ComponentTab(tk.Frame):
             initialfile=initial_file,
         )
         if not path:
-            return
+            return   # User cancelled
 
-        doc = self._build_oscal_document()
+        # Build the OSCAL document for this single component and write it
+        doc = self._build_single_component_oscal(comp)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
+        # Mark this component as saved (clear the dirty flag for it)
         self._dirty = False
         fname = Path(path).name
-        self._status_lbl.config(text=f"Saved: {fname}", fg=self._colors["GREEN"])
-        self._set_status(f"Component file saved: {fname}")
-        messagebox.showinfo("Saved", f"Component definition saved:\n{path}")
+        self._status_lbl.config(
+            text=f"Saved: {fname}", fg=self._colors["GREEN"]
+        )
+        self._set_status(f"Component saved: {fname}")
+        messagebox.showinfo(
+            "Component Saved",
+            f"Component '{comp_title}' saved successfully:\n{path}"
+        )
 
     def _open_file(self):
         """Open a saved OSCAL Component Definition file for editing."""

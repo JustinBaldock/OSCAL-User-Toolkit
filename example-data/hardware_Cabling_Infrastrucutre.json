@@ -9,43 +9,6 @@
     },
     "components": [
       {
-        "uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
-        "type": "service",
-        "title": "Active Directory",
-        "description": "Provide authenciation to all devices and provide group policy to Windows computers.",
-        "purpose": "Provide authenciation to all devices and provide group policy to Windows computers.",
-        "props": [
-          {
-            "name": "operational-status",
-            "value": "operational"
-          }
-        ],
-        "control-implementations": [
-          {
-            "uuid": "ac6f4c8d-d505-440f-8b61-26362ed4a79f",
-            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
-            "description": "Control implementations for Active Directory.",
-            "implemented-requirements": [
-              {
-                "uuid": "8fb74ff6-b599-420f-965f-953a9d6459e0",
-                "control-id": "ism-1055",
-                "description": "AD has a group policy applied to all Windows computers that disables LAN Manager and NT LAN Manager authenication."
-              },
-              {
-                "uuid": "271e9ef1-1a6b-485d-b270-667d53d27018",
-                "control-id": "ism-1546",
-                "description": "All users must authenicate against AD before being provided access to systems and resources."
-              },
-              {
-                "uuid": "8183a80a-7773-431f-b18b-39a2445bcbd6",
-                "control-id": "ism-0417",
-                "description": "Currently the system is using single-factor authenciation using passwords."
-              }
-            ]
-          }
-        ]
-      },
-      {
         "uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
         "type": "hardware",
         "title": "Cabling Infrastrucutre",
