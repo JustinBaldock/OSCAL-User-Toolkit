@@ -214,6 +214,11 @@ class ComponentTab(tk.Frame):
         Auto-generate the file title from the component type and title,
         then update both the toolbar display label and self._file_title.
 
+        This method is also responsible for keeping the component list on
+        the left in sync — whenever the type or title changes, the matching
+        list entry is renamed immediately so it always reflects the current
+        values without the user needing to click 'Apply'.
+
         This method is called automatically whenever the Component Title
         or Component Type fields change (via StringVar traces).
 
@@ -270,6 +275,26 @@ class ComponentTab(tk.Frame):
                 font=("Helvetica", 10, "italic"),
             )
             self._file_title.set("")
+
+        # ── Keep the left-hand component list entry in sync ───────────────────
+        # If a component is currently selected, update just that one row in the
+        # Listbox so the user sees the new name immediately as they type.
+        # We do this instead of rebuilding the whole list to avoid flicker and
+        # losing the current selection.
+        if self._selected_index is not None:
+            # Build the display string the same way _refresh_list does
+            title   = comp_title or "(untitled)"
+            display = f"{title}  [{comp_type}]" if comp_type else title
+
+            # Listbox.delete + insert is the standard way to update one entry.
+            # We delete the old entry at the selected index and insert the new
+            # text at the same position.
+            self._comp_listbox.delete(self._selected_index)
+            self._comp_listbox.insert(self._selected_index, display)
+
+            # Restore the selection highlight (delete + insert clears it)
+            self._comp_listbox.selection_set(self._selected_index)
+            self._comp_listbox.see(self._selected_index)
 
     def _build(self):
         """
