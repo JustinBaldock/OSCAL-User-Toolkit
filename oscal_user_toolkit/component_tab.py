@@ -209,6 +209,68 @@ class ComponentTab(tk.Frame):
     # PRIVATE BUILD METHODS
     # =========================================================================
 
+    def _update_file_title(self, *_args):
+        """
+        Auto-generate the file title from the component type and title,
+        then update both the toolbar display label and self._file_title.
+
+        This method is called automatically whenever the Component Title
+        or Component Type fields change (via StringVar traces).
+
+        The generated title format is:  "<type> - <title>"
+        For example: "hardware - My Firewall"
+
+        The generated filename format is: "<type>_<title_with_underscores>.json"
+        For example: "hardware_My_Firewall.json"
+
+        If either field is empty, a placeholder prompt is shown instead.
+        """
+        # Read the current values from both fields.
+        # .strip() removes any leading/trailing whitespace the user may have typed.
+        comp_type  = self._v_type.get().strip()
+        comp_title = self._v_title.get().strip()
+
+        if comp_type and comp_title:
+            # Both fields have content — build the auto title
+            # e.g. "hardware - My Firewall"
+            auto_title = f"{comp_type} - {comp_title}"
+
+            # Build a filesystem-safe filename:
+            #   1. Replace spaces with underscores  ("My Firewall" → "My_Firewall")
+            #   2. Combine type and sanitised title ("hardware_My_Firewall")
+            safe_title = comp_title.replace(" ", "_")
+            auto_filename = f"{comp_type}_{safe_title}.json"
+
+            # Update the toolbar label — show both the human title and the filename
+            self._file_title_lbl.config(
+                text=f"{auto_title}  →  {auto_filename}",
+                fg=self._colors["TEXT"],
+                font=("Helvetica", 10),
+            )
+
+            # Store the generated title in _file_title so _build_oscal_document
+            # can use it as the metadata title when saving.
+            self._file_title.set(auto_title)
+
+        elif comp_type or comp_title:
+            # Only one field has content — show a partial prompt
+            self._file_title_lbl.config(
+                text="(enter both component type and title to generate filename)",
+                fg=self._colors["SUBTEXT"],
+                font=("Helvetica", 10, "italic"),
+            )
+            # Set a partial title so saving still has something to show
+            self._file_title.set(comp_type or comp_title)
+
+        else:
+            # Neither field has content — show the initial placeholder
+            self._file_title_lbl.config(
+                text="(enter component type and title below)",
+                fg=self._colors["SUBTEXT"],
+                font=("Helvetica", 10, "italic"),
+            )
+            self._file_title.set("")
+
     def _build(self):
         """
         Create the overall layout:
@@ -253,20 +315,23 @@ class ComponentTab(tk.Frame):
             side="left", fill="y", padx=4, pady=6
         )
 
-        # ── File-level metadata fields ────────────────────────────────────────
-        # These fields describe the whole component definition file,
-        # not any individual component.
+        # ── Auto-generated file title display ─────────────────────────────────
+        # The file title is NOT typed manually — it is generated automatically
+        # from the component type and title entered in the form below.
+        # We show it here so the user can always see what the file will be named.
         tk.Label(
-            tb, text="File Title:",
+            tb, text="File:",
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
         ).pack(side="left", padx=(8, 4))
 
-        tk.Entry(
-            tb, textvariable=self._file_title, width=34,
-            bg=C["SIDEBAR_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-            relief="flat", font=("Helvetica", 10),
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        ).pack(side="left", ipady=3, pady=10)
+        # This label is updated by _update_file_title() whenever the
+        # component type or title fields change.
+        self._file_title_lbl = tk.Label(
+            tb, text="(enter component type and title below)",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 10, "italic"),
+        )
+        self._file_title_lbl.pack(side="left", padx=(0, 8))
 
         tk.Label(
             tb, text="  Version:",
@@ -541,6 +606,17 @@ class ComponentTab(tk.Frame):
         # Component type dropdown — required by the OSCAL schema
         self._v_type = tk.StringVar(value=COMPONENT_TYPES[0])
         combo("Component Type *", self._v_type, COMPONENT_TYPES, width=28)
+
+        # ── Auto-filename traces ───────────────────────────────────────────────
+        # trace_add("write", callback) means: call callback whenever this
+        # StringVar's value changes (i.e. the user types or picks from dropdown).
+        # We attach the same callback to BOTH variables so updating either one
+        # refreshes the generated filename in the toolbar.
+        #
+        # The *_args in _update_file_title absorbs the three arguments that
+        # tkinter passes to every trace callback (variable name, index, mode).
+        self._v_title.trace_add("write", self._update_file_title)
+        self._v_type.trace_add("write",  self._update_file_title)
 
         field("Purpose", self._v_purpose, width=50)
 
@@ -1357,6 +1433,23 @@ class ComponentTab(tk.Frame):
         self._file_title.set(meta.get("title", ""))
         self._file_version.set(meta.get("version", "1.0"))
 
+        # Update the toolbar display label to show the loaded file's title.
+        # When the user selects a component from the list, _update_file_title
+        # will fire and overwrite this — that is the correct behaviour.
+        loaded_title = meta.get("title", "")
+        if loaded_title:
+            self._file_title_lbl.config(
+                text=loaded_title,
+                fg=self._colors["TEXT"],
+                font=("Helvetica", 10),
+            )
+        else:
+            self._file_title_lbl.config(
+                text="(enter component type and title below)",
+                fg=self._colors["SUBTEXT"],
+                font=("Helvetica", 10, "italic"),
+            )
+
         # ── Parse each component ──────────────────────────────────────────────
         self._components = []
         for c in root.get("components", []):
@@ -1445,18 +1538,25 @@ class ComponentTab(tk.Frame):
             )
             return
 
-        # Suggest a filename based on the file title
-        safe_name = (
-            self._file_title.get().strip()
-            .replace(" ", "_")
-            .replace("/", "-")
-            or "component_definition"
-        )
+        # Suggest a filename based on the auto-generated name in the toolbar.
+        # _update_file_title() keeps self._file_title in sync with the type
+        # and title fields, so we derive the filename the same way.
+        comp_type  = self._v_type.get().strip()  if self._v_type  else ""
+        comp_title = self._v_title.get().strip() if self._v_title else ""
+
+        if comp_type and comp_title:
+            # Build the same safe filename as _update_file_title does
+            safe_title    = comp_title.replace(" ", "_")
+            initial_file  = f"{comp_type}_{safe_title}.json"
+        else:
+            # Fall back to a generic name if fields are somehow empty
+            initial_file  = "component_definition.json"
+
         path = filedialog.asksaveasfilename(
             title="Save OSCAL Component Definition",
             defaultextension=".json",
             filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-            initialfile=f"{safe_name}.json",
+            initialfile=initial_file,
         )
         if not path:
             return   # User cancelled
@@ -1540,6 +1640,13 @@ class ComponentTab(tk.Frame):
         self._components      = []
         self._selected_index  = None
         self._dirty           = False
+
+        # Reset the toolbar filename display to its placeholder text
+        self._file_title_lbl.config(
+            text="(enter component type and title below)",
+            fg=self._colors["SUBTEXT"],
+            font=("Helvetica", 10, "italic"),
+        )
 
         # Clear the list and hide the form
         self._refresh_list()
