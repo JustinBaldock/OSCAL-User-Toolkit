@@ -25,6 +25,7 @@ add (toolbar, notebook, etc.) goes inside it.
 """
 
 import json        # For parsing JSON files and error handling
+import zipfile
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path   # Cross-platform file path handling
@@ -96,11 +97,48 @@ class OSCALApp(tk.Tk):
         # Each method below creates one layer of the UI.
         # Order matters: statusbar must be packed before the notebook
         # so that it appears at the bottom.
+        self._oscal_versions    = self._scan_oscal_versions()
+        self._oscal_version_var = tk.StringVar(
+            value=self._oscal_versions[0] if self._oscal_versions else "No versions found"
+        )
+
         self._style_ttk()       # Apply custom colours to ttk widgets
         self._build_toolbar()   # Top bar with Open Catalog/Profile buttons
         self._build_info_panel()# Cards showing catalog and profile metadata
         self._build_notebook()  # Tabbed area with CatalogTab and SSPTab
         self._build_statusbar() # Bottom bar with status message
+
+    # =========================================================================
+    # OSCAL VERSION DISCOVERY
+    # =========================================================================
+
+    def _scan_oscal_versions(self):
+        """
+        Scan the oscal/ folder (sibling of this package) for zip files and
+        return a sorted list of version labels derived from their filenames.
+
+        A file named 'oscal-1.2.2.zip' becomes the label 'v1.2.2'.
+        Versions are sorted newest-first so the dropdown defaults to the
+        latest available version.
+
+        Returns an empty list if the folder does not exist or contains no zips.
+        """
+        oscal_dir = Path(__file__).parent.parent / "oscal"
+        if not oscal_dir.is_dir():
+            return []
+
+        versions = []
+        for path in oscal_dir.glob("*.zip"):
+            if zipfile.is_zipfile(path):
+                # Strip leading 'oscal-' and trailing '.zip', e.g. 'oscal-1.2.2.zip' → '1.2.2'
+                name = path.stem  # 'oscal-1.2.2'
+                label = name.removeprefix("oscal-")  # '1.2.2'
+                versions.append((label, path))
+
+        # Sort by parsed version tuple so '1.2.10' > '1.2.2' correctly
+        versions.sort(key=lambda x: [int(p) for p in x[0].split(".") if p.isdigit()], reverse=True)
+        self._oscal_version_paths = {label: path for label, path in versions}
+        return [f"v{label}" for label, _ in versions]
 
     # =========================================================================
     # STYLING
@@ -186,6 +224,23 @@ class OSCALApp(tk.Tk):
         tb = tk.Frame(self, bg=C["HEADER_BG"], height=54)
         tb.pack(fill="x", side="top")
         tb.pack_propagate(False)
+
+        # ── OSCAL version selector ────────────────────────────────────────────
+        tk.Label(
+            tb, text="OSCAL Version:",
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 11),
+        ).pack(side="left", padx=(14, 4), pady=10)
+
+        version_box = ttk.Combobox(
+            tb,
+            textvariable=self._oscal_version_var,
+            values=self._oscal_versions,
+            state="readonly",
+            width=9,
+            font=("Helvetica", 11),
+        )
+        version_box.pack(side="left", padx=(0, 14), pady=10)
 
         # ── Left-side buttons ─────────────────────────────────────────────────
         tk.Button(
