@@ -8,313 +8,221 @@ files.
 WHAT IS AN OSCAL COMPONENT?
 -----------------------------
 A component describes a piece of a system that helps implement security
-controls. Components can be:
-  - Software  (e.g. an operating system, a web application)
-  - Hardware  (e.g. a firewall, a server)
-  - Service   (e.g. an authentication service, a logging service)
-  - Policy    (e.g. an access control policy document)
-  - Process   (e.g. a patch management process)
-  - Procedure (e.g. a backup procedure)
-  - Plan      (e.g. an incident response plan)
-  - Guidance  (e.g. a configuration guide)
-  - Standard  (e.g. a security standard)
-  - Validation (e.g. a compliance validation activity)
+controls. Components can be software, hardware, services, policies,
+processes, procedures, plans, guidance, standards, or validation activities.
 
 Each component definition file can contain one or more components.
-The file is saved as JSON and follows the OSCAL Component Definition
-schema (oscal_component_metaschema.xml).
+Components can declare how they implement specific controls from a catalog
+via the 'control-implementations' section — a core part of the schema.
 
-DESIGN PATTERN
---------------
-ComponentTab inherits from tk.Frame, making it a proper GUI widget.
-It manages all its own state and only talks to the rest of the app
-through injected callback functions (get_catalog, get_profile,
-set_status) — the same pattern used by CatalogTab and SSPTab.
+STRUCTURE OF A COMPONENT (per oscal_component_metaschema.xml):
+  component
+    ├── title, type, description, purpose, remarks  (basic info)
+    ├── props[]                                      (metadata properties)
+    ├── responsible-roles[]                          (who is accountable)
+    └── control-implementations[]                   (how controls are met)
+          ├── uuid, source, description              (group-level info)
+          └── implemented-requirements[]             (one per control)
+                ├── uuid, control-id                 (which control)
+                └── description                      (how it is implemented)
 
-The tab has two panes side by side:
-  LEFT   — A list of components added to the current file
-  RIGHT  — A form to edit the selected component's details
+CATALOG + PROFILE GUARD
+------------------------
+Before any editing is allowed, the tab checks that both an OSCAL catalog
+and an OSCAL profile have been loaded by the user. This is required because:
+  - The catalog provides the full list of available controls
+  - The profile defines which subset of controls apply to this system
+  - Without both, the control-implementations section cannot be populated
+
+If either is missing, a clear message is shown and editing is blocked
+until the user loads both files via the main toolbar.
 """
 
-import json       # Reading and writing JSON files
+import json
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from pathlib import Path   # Cross-platform file path handling
+from pathlib import Path
 
-# Import utility functions from our data models module
 from .models import new_uuid, now_iso
 
 # =============================================================================
-# CONSTANTS — Allowed values defined by the OSCAL Component schema
-# These lists populate dropdown menus so users pick valid values.
+# CONSTANTS — Allowed values from the OSCAL Component schema
 # =============================================================================
 
-# Component types defined in the OSCAL component metaschema.
-# Each type describes the nature of the component.
 COMPONENT_TYPES = [
-    "software",     # Implemented in code (applications, operating systems)
-    "hardware",     # Physical or virtual hardware devices
-    "service",      # An external or internal service (APIs, cloud services)
-    "policy",       # A documented policy (e.g. access control policy)
-    "process",      # A repeatable business or technical process
-    "procedure",    # A step-by-step procedure document
-    "plan",         # A formal plan document (e.g. incident response plan)
-    "guidance",     # Guidance document (e.g. configuration guide)
-    "standard",     # A technical or security standard
-    "validation",   # A validation or audit activity
-    "interconnection",  # A system interconnection
+    "software",       # Applications, operating systems
+    "hardware",       # Physical or virtual hardware devices
+    "service",        # External or internal services (APIs, cloud)
+    "policy",         # Documented policy
+    "process",        # Repeatable business or technical process
+    "procedure",      # Step-by-step procedure document
+    "plan",           # Formal plan (e.g. incident response)
+    "guidance",       # Guidance document (e.g. configuration guide)
+    "standard",       # Technical or security standard
+    "validation",     # Validation or audit activity
+    "interconnection", # System interconnection
 ]
 
-# Operational status values — describes the lifecycle state of the component
 COMPONENT_STATUS = [
-    "under-development",          # Being built or planned
-    "operational",                # In active use
-    "disposition",                # Being retired
-    "other",                      # None of the above
+    "under-development",         # Being built or planned
+    "operational",               # In active use
+    "disposition",               # Being retired
+    "other",                     # None of the above
 ]
 
-# Role IDs that can be assigned to people responsible for the component.
-# These come from the OSCAL allowed-values constraints in the schema.
 RESPONSIBLE_ROLES = [
-    "asset-owner",                # Person/org that owns the asset
-    "asset-administrator",        # Person/org that administers the asset
-    "security-operations",        # Security operations team
-    "network-operations",         # Network operations team
-    "incident-response",          # Incident response team
-    "help-desk",                  # Help desk / support team
-    "configuration-management",   # Configuration management team
-    "maintainer",                 # Person/org maintaining the component
-    "provider",                   # Person/org providing the component
-    "system-owner",               # Overall system owner
-    "isso",                       # Information System Security Officer
-    "authorizing-official",       # Person who authorises the system
+    "asset-owner",               # Owns the asset
+    "asset-administrator",       # Administers the asset
+    "security-operations",       # Security operations team
+    "network-operations",        # Network operations team
+    "incident-response",         # Incident response team
+    "help-desk",                 # Help desk / support
+    "configuration-management",  # Configuration management
+    "maintainer",                # Maintains the component
+    "provider",                  # Provides the component
+    "system-owner",              # Overall system owner
+    "isso",                      # Information System Security Officer
+    "authorizing-official",      # Authorises the system
 ]
 
-# Common property names allowed on components by the OSCAL schema.
-# Properties add structured metadata to a component.
 PROP_NAMES = [
-    "asset-type",              # Type of asset (e.g. "os", "database")
-    "asset-id",                # Asset identifier / tag number
-    "asset-tag",               # Physical asset tag
-    "public",                  # Is the component publicly accessible? (yes/no)
-    "virtual",                 # Is the component virtualised? (yes/no)
-    "implementation-point",    # internal or external to the system boundary
-    "allows-authenticated-scan", # Does it allow authenticated scans? (yes/no)
-    "baseline-configuration-name", # Name of the baseline configuration
-    "release-date",            # Date the component was released
-    "version",                 # Component version number
-    "patch-level",             # Current patch level
-    "model",                   # Hardware/software model identifier
-    "fqdn",                    # Fully qualified domain name
-    "uri",                     # URI identifying the component
-    "scan-type",               # Type of security scan used
+    "asset-type", "asset-id", "asset-tag", "public", "virtual",
+    "implementation-point", "allows-authenticated-scan",
+    "baseline-configuration-name", "release-date", "version",
+    "patch-level", "model", "fqdn", "uri", "scan-type",
 ]
 
-# Yes/No values used for boolean-style properties
-YES_NO_VALUES = ["yes", "no"]
-
-# Implementation point values
+YES_NO_VALUES     = ["yes", "no"]
 IMPL_POINT_VALUES = ["internal", "external"]
-
-# Asset type values
 ASSET_TYPE_VALUES = [
-    "os",             # Operating system
-    "database",       # Database system
-    "web-server",     # Web server
-    "dns-server",     # DNS server
-    "email-server",   # Email server
-    "directory-server", # Directory / LDAP server
-    "pbx",            # Private Branch Exchange (telephony)
-    "firewall",       # Firewall appliance or software
-    "router",         # Network router
-    "switch",         # Network switch
-    "storage-array",  # Storage array / NAS / SAN
-    "appliance",      # Dedicated hardware appliance
+    "os", "database", "web-server", "dns-server", "email-server",
+    "directory-server", "pbx", "firewall", "router", "switch",
+    "storage-array", "appliance",
 ]
+
+# Colour used for the "response written" dot in the control list
+DOT_DONE    = "●"   # Filled circle  — response has been written
+DOT_PARTIAL = "◑"   # Half circle    — response started but short
+DOT_EMPTY   = "○"   # Empty circle   — no response yet
 
 
 class ComponentTab(tk.Frame):
     """
     A self-contained OSCAL Component Definition editor panel.
 
-    The tab is split into two panes:
-      LEFT  — Component list showing all components in the current file,
-              with New / Delete / Save File / Open File buttons.
-      RIGHT — Component detail form for editing the selected component.
-
-    Each component has:
-      - Basic info:       title, type, description, purpose, remarks
-      - Status:           operational status
-      - Properties:       flexible key-value metadata table
-      - Responsible Roles: who is accountable for this component
+    Layout:
+      TOP     — Toolbar (Save, Open, New buttons + auto filename display)
+      MIDDLE  — Gate panel (shown when catalog/profile not loaded)
+              OR split pane:
+                LEFT   — Component list + Add/Delete buttons
+                RIGHT  — Scrollable component editing form (7 sections)
     """
 
     def __init__(self, parent, colors, get_catalog, get_profile, set_status):
         """
-        Set up the ComponentTab panel.
+        Initialise the ComponentTab.
 
         Parameters:
-            parent      - The parent widget (the ttk.Notebook)
+            parent      - The ttk.Notebook this tab lives inside
             colors      - Shared colour dictionary from app.py
             get_catalog - Callback: returns the loaded catalog dict or None
             get_profile - Callback: returns the loaded profile dict or None
-            set_status  - Callback: updates the main window status bar
+            set_status  - Callback: updates the main window status bar text
         """
-        # Initialise the underlying tk.Frame
         super().__init__(parent, bg=colors["BG"])
 
-        # Store references to things we were given
         self._colors      = colors
         self._get_catalog = get_catalog
         self._get_profile = get_profile
         self._set_status  = set_status
 
-        # ── Component file state ──────────────────────────────────────────────
-        # A component definition file contains metadata and a list of components.
-        # We store everything here and only convert to OSCAL JSON on save.
-
-        # File-level metadata
-        self._file_uuid  = new_uuid()   # Unique ID for the whole file
-        self._file_title = tk.StringVar(value="")
+        # ── File-level state ──────────────────────────────────────────────────
+        self._file_uuid    = new_uuid()          # UUID for the whole file
+        self._file_title   = tk.StringVar(value="")
         self._file_version = tk.StringVar(value="1.0")
 
-        # List of component dicts — each represents one OSCAL component.
-        # When the user clicks a component in the left list, we load its
-        # data into the right-hand form for editing.
-        self._components = []
+        # ── Component list state ──────────────────────────────────────────────
+        self._components     = []   # List of component dicts
+        self._selected_index = None # Index of the currently selected component
+        self._dirty          = False
 
-        # Index of the currently selected component in self._components,
-        # or None if nothing is selected.
-        self._selected_index = None
+        # ── Control implementation state ──────────────────────────────────────
+        # _ctrl_responses maps control_id → response text for the currently
+        # selected component. It is loaded from the component dict whenever
+        # the user selects a component, and saved back when they switch away
+        # or click Apply.
+        self._ctrl_responses    = {}   # {control_id: description_string}
+        self._selected_ctrl_id  = None # ID of the control row currently shown
 
-        # Track whether the file has unsaved changes
-        self._dirty = False
-
-        # Build all the GUI widgets
+        # Build the GUI
         self._build()
 
     # =========================================================================
-    # PUBLIC API — called by app.py
+    # PUBLIC API — called by app.py when catalog/profile state changes
     # =========================================================================
 
-    def on_catalog_loaded(self):
+    def on_catalog_or_profile_changed(self):
         """
-        Called by the app when a new catalog is loaded.
-        Currently a no-op but available for future Stage 2 integration
-        (e.g. populating control-id dropdowns from the catalog).
+        Called by the main app whenever the catalog or profile is loaded,
+        cleared, or changed.
+
+        This re-evaluates the guard condition and either shows the editing
+        pane (if both are loaded) or the gate panel (if either is missing).
+        It also refreshes the control list in Section 7 if a component is
+        currently being edited.
         """
-        pass   # Nothing to do yet — placeholder for Stage 2
-
-    # =========================================================================
-    # PRIVATE BUILD METHODS
-    # =========================================================================
-
-    def _update_file_title(self, *_args):
-        """
-        Auto-generate the file title from the component type and title,
-        then update both the toolbar display label and self._file_title.
-
-        This method is also responsible for keeping the component list on
-        the left in sync — whenever the type or title changes, the matching
-        list entry is renamed immediately so it always reflects the current
-        values without the user needing to click 'Apply'.
-
-        This method is called automatically whenever the Component Title
-        or Component Type fields change (via StringVar traces).
-
-        The generated title format is:  "<type> - <title>"
-        For example: "hardware - My Firewall"
-
-        The generated filename format is: "<type>_<title_with_underscores>.json"
-        For example: "hardware_My_Firewall.json"
-
-        If either field is empty, a placeholder prompt is shown instead.
-        """
-        # Read the current values from both fields.
-        # .strip() removes any leading/trailing whitespace the user may have typed.
-        comp_type  = self._v_type.get().strip()
-        comp_title = self._v_title.get().strip()
-
-        if comp_type and comp_title:
-            # Both fields have content — build the auto title
-            # e.g. "hardware - My Firewall"
-            auto_title = f"{comp_type} - {comp_title}"
-
-            # Build a filesystem-safe filename:
-            #   1. Replace spaces with underscores  ("My Firewall" → "My_Firewall")
-            #   2. Combine type and sanitised title ("hardware_My_Firewall")
-            safe_title = comp_title.replace(" ", "_")
-            auto_filename = f"{comp_type}_{safe_title}.json"
-
-            # Update the toolbar label — show both the human title and the filename
-            self._file_title_lbl.config(
-                text=f"{auto_title}  →  {auto_filename}",
-                fg=self._colors["TEXT"],
-                font=("Helvetica", 10),
-            )
-
-            # Store the generated title in _file_title so _build_oscal_document
-            # can use it as the metadata title when saving.
-            self._file_title.set(auto_title)
-
-        elif comp_type or comp_title:
-            # Only one field has content — show a partial prompt
-            self._file_title_lbl.config(
-                text="(enter both component type and title to generate filename)",
-                fg=self._colors["SUBTEXT"],
-                font=("Helvetica", 10, "italic"),
-            )
-            # Set a partial title so saving still has something to show
-            self._file_title.set(comp_type or comp_title)
-
+        if self._ready():
+            # Both catalog and profile are loaded — show the editor
+            self._gate_frame.pack_forget()
+            self._body_pane.pack(fill="both", expand=True)
+            self._update_gate_label()  # Keep the label current for next time
+            # If a component is being edited, refresh its control list
+            if self._selected_index is not None:
+                self._refresh_control_list()
         else:
-            # Neither field has content — show the initial placeholder
-            self._file_title_lbl.config(
-                text="(enter component type and title below)",
-                fg=self._colors["SUBTEXT"],
-                font=("Helvetica", 10, "italic"),
-            )
-            self._file_title.set("")
+            # Missing catalog or profile — hide editor, show gate
+            self._body_pane.pack_forget()
+            self._gate_frame.pack(fill="both", expand=True)
+            self._update_gate_label()
 
-        # ── Keep the left-hand component list entry in sync ───────────────────
-        # If a component is currently selected, update just that one row in the
-        # Listbox so the user sees the new name immediately as they type.
-        # We do this instead of rebuilding the whole list to avoid flicker and
-        # losing the current selection.
-        if self._selected_index is not None:
-            # Build the display string the same way _refresh_list does
-            title   = comp_title or "(untitled)"
-            display = f"{title}  [{comp_type}]" if comp_type else title
+    # =========================================================================
+    # GUARD CHECK
+    # =========================================================================
 
-            # Listbox.delete + insert is the standard way to update one entry.
-            # We delete the old entry at the selected index and insert the new
-            # text at the same position.
-            self._comp_listbox.delete(self._selected_index)
-            self._comp_listbox.insert(self._selected_index, display)
+    def _ready(self):
+        """
+        Return True only when both a catalog AND a profile are loaded.
 
-            # Restore the selection highlight (delete + insert clears it)
-            self._comp_listbox.selection_set(self._selected_index)
-            self._comp_listbox.see(self._selected_index)
+        This is the gate condition — editing is only permitted when both
+        are available so that Section 7 can show the correct set of controls.
+        """
+        return self._get_catalog() is not None and self._get_profile() is not None
+
+    # =========================================================================
+    # BUILD — top-level layout
+    # =========================================================================
 
     def _build(self):
-        """
-        Create the overall layout:
-          - Top toolbar (New Component, Save File, Open File buttons)
-          - Below: a horizontal split pane with list on left, form on right
-        """
+        """Create the toolbar, then the gate panel, then the editing body."""
         self._build_toolbar()
+        self._build_gate_panel()
         self._build_body()
+        # Show whichever layer is appropriate right now
+        self.on_catalog_or_profile_changed()
+
+    # =========================================================================
+    # TOOLBAR
+    # =========================================================================
 
     def _build_toolbar(self):
         """
-        Create the tab toolbar with file-level controls and metadata fields.
+        Top bar with Save / Open / New buttons and the auto-filename display.
         """
         C  = self._colors
         tb = tk.Frame(self, bg=C["CARD_BG"], height=52)
         tb.pack(fill="x", side="top")
-        tb.pack_propagate(False)   # Fix the toolbar height at 52 pixels
+        tb.pack_propagate(False)
 
-        # ── File action buttons ───────────────────────────────────────────────
         tk.Button(
             tb, text="💾  Save File", command=self._save_file,
             bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 11, "bold"),
@@ -335,33 +243,23 @@ class ComponentTab(tk.Frame):
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 12), pady=8)
 
-        # ── Vertical separator ────────────────────────────────────────────────
+        # Visual separator
         tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
             side="left", fill="y", padx=4, pady=6
         )
 
-        # ── Auto-generated file title display ─────────────────────────────────
-        # The file title is NOT typed manually — it is generated automatically
-        # from the component type and title entered in the form below.
-        # We show it here so the user can always see what the file will be named.
-        tk.Label(
-            tb, text="File:",
-            bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
-        ).pack(side="left", padx=(8, 4))
+        # Auto-generated filename display (read-only, updated by _update_file_title)
+        tk.Label(tb, text="File:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left", padx=(8, 4))
 
-        # This label is updated by _update_file_title() whenever the
-        # component type or title fields change.
         self._file_title_lbl = tk.Label(
-            tb, text="(enter component type and title below)",
-            bg=C["CARD_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 10, "italic"),
+            tb, text="(load a catalog and profile, then add a component)",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._file_title_lbl.pack(side="left", padx=(0, 8))
 
-        tk.Label(
-            tb, text="  Version:",
-            bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
-        ).pack(side="left", padx=(8, 4))
+        tk.Label(tb, text="  Version:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left", padx=(8, 4))
 
         tk.Entry(
             tb, textvariable=self._file_version, width=8,
@@ -370,139 +268,211 @@ class ComponentTab(tk.Frame):
             highlightthickness=1, highlightbackground=C["HEADER_BG"],
         ).pack(side="left", ipady=3, pady=10)
 
-        # ── Status label (right side) ─────────────────────────────────────────
         self._status_lbl = tk.Label(
-            tb, text="No file loaded",
-            bg=C["CARD_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 10, "italic"),
+            tb, text="Load a catalog and profile to begin",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._status_lbl.pack(side="right", padx=12)
 
+    # =========================================================================
+    # GATE PANEL — shown when catalog or profile is not loaded
+    # =========================================================================
+
+    def _build_gate_panel(self):
+        """
+        Build the gate panel that blocks editing until both a catalog and
+        a profile have been loaded.
+
+        The panel shows exactly what is missing and directs the user to
+        the Open Catalog / Open Profile buttons in the main toolbar.
+        """
+        C = self._colors
+
+        # This frame fills the whole tab body when shown.
+        # It is hidden (_gate_frame.pack_forget()) once both files are loaded.
+        self._gate_frame = tk.Frame(self, bg=C["BG"])
+        # (Will be shown/hidden by on_catalog_or_profile_changed)
+
+        # Centre everything vertically
+        inner = tk.Frame(self._gate_frame, bg=C["BG"])
+        inner.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Lock icon and heading
+        tk.Label(
+            inner, text="🔒",
+            bg=C["BG"], fg=C["YELLOW"],
+            font=("Helvetica", 48),
+        ).pack(pady=(0, 10))
+
+        tk.Label(
+            inner, text="Catalog and Profile Required",
+            bg=C["BG"], fg=C["TEXT"],
+            font=("Helvetica", 16, "bold"),
+        ).pack()
+
+        tk.Label(
+            inner,
+            text="The Component Editor needs both an OSCAL catalog and an OSCAL\n"
+                 "profile to be loaded before components can be created or edited.\n\n"
+                 "This ensures the control list in Section 7 shows the correct\n"
+                 "controls for your system baseline.",
+            bg=C["BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 11), justify="center",
+        ).pack(pady=(8, 20))
+
+        # Dynamic status label — shows exactly what is still missing
+        # Updated by _update_gate_label() whenever the catalog/profile changes
+        self._gate_status_lbl = tk.Label(
+            inner, text="",
+            bg=C["BG"], fg=C["RED"],
+            font=("Helvetica", 11, "bold"), justify="center",
+        )
+        self._gate_status_lbl.pack()
+
+        tk.Label(
+            inner,
+            text="Use the  📂 Open Catalog  and  🔖 Open Profile  buttons\n"
+                 "in the toolbar at the top of the window.",
+            bg=C["BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 10, "italic"), justify="center",
+        ).pack(pady=(16, 0))
+
+        # Run the label update once to set the initial text
+        self._update_gate_label()
+
+    def _update_gate_label(self):
+        """
+        Update the gate panel status label to show exactly what is missing.
+        Called whenever the catalog or profile state changes.
+        """
+        catalog = self._get_catalog()
+        profile = self._get_profile()
+
+        if not catalog and not profile:
+            msg = "❌  No catalog loaded\n❌  No profile loaded"
+        elif not catalog:
+            msg = "❌  No catalog loaded\n✅  Profile loaded"
+        elif not profile:
+            msg = "✅  Catalog loaded\n❌  No profile loaded"
+        else:
+            msg = "✅  Catalog loaded\n✅  Profile loaded"
+
+        # _gate_status_lbl may not exist yet during initial _build() call
+        if hasattr(self, "_gate_status_lbl"):
+            self._gate_status_lbl.config(text=msg)
+
+    # =========================================================================
+    # BODY — split pane with component list + editing form
+    # =========================================================================
+
     def _build_body(self):
         """
-        Create the main body: a horizontal PanedWindow (split view) with
-        the component list on the left and the detail form on the right.
+        Build the main editing area: a horizontal split pane with the
+        component list on the left and the detail form on the right.
+
+        This is hidden behind the gate panel until both files are loaded.
         """
-        C    = self._colors
-        pane = tk.PanedWindow(
+        C = self._colors
+
+        # Store as an instance variable so on_catalog_or_profile_changed
+        # can show/hide it
+        self._body_pane = tk.PanedWindow(
             self, orient="horizontal",
             bg=C["BG"], sashwidth=5, sashrelief="flat",
         )
-        pane.pack(fill="both", expand=True)
+        # Not packed yet — shown by on_catalog_or_profile_changed
 
-        self._build_component_list(pane)
-        self._build_detail_form(pane)
+        self._build_component_list(self._body_pane)
+        self._build_detail_form(self._body_pane)
+
+    # =========================================================================
+    # LEFT PANE — component list
+    # =========================================================================
 
     def _build_component_list(self, pane):
-        """
-        Build the LEFT pane: a list of components with Add/Delete buttons.
-        """
+        """Build the left pane: component list with Add/Delete buttons."""
         C    = self._colors
         left = tk.Frame(pane, bg=C["SIDEBAR_BG"])
         pane.add(left, minsize=240, width=280)
 
-        # ── Heading ───────────────────────────────────────────────────────────
+        # Heading
         hdr = tk.Frame(left, bg=C["HEADER_BG"])
         hdr.pack(fill="x")
-        tk.Label(
-            hdr, text="⚙  Components",
-            bg=C["HEADER_BG"], fg=C["ACCENT"],
-            font=("Helvetica", 11, "bold"), anchor="w",
-        ).pack(side="left", padx=10, pady=8)
+        tk.Label(hdr, text="⚙  Components", bg=C["HEADER_BG"], fg=C["ACCENT"],
+                 font=("Helvetica", 11, "bold"), anchor="w",
+                 ).pack(side="left", padx=10, pady=8)
 
-        # ── Add / Delete buttons ──────────────────────────────────────────────
+        # Add / Delete buttons
         btn_row = tk.Frame(left, bg=C["SIDEBAR_BG"])
         btn_row.pack(fill="x", padx=8, pady=6)
+        tk.Button(btn_row, text="＋  Add Component",
+                  command=self._add_component,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  activebackground="#b4befe", activeforeground=C["BG"],
+                  ).pack(side="left")
+        tk.Button(btn_row, text="✕ Delete",
+                  command=self._delete_component,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="right")
 
-        tk.Button(
-            btn_row, text="＋  Add Component",
-            command=self._add_component,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 10, "bold"),
-            relief="flat", padx=8, pady=3, cursor="hand2",
-            activebackground="#b4befe", activeforeground=C["BG"],
-        ).pack(side="left")
-
-        tk.Button(
-            btn_row, text="✕ Delete",
-            command=self._delete_component,
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
-            relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="right")
-
-        # ── Component listbox ─────────────────────────────────────────────────
-        # We use a Listbox here (simpler than Treeview for a single-column list)
+        # Listbox
         list_frame = tk.Frame(left, bg=C["SIDEBAR_BG"])
         list_frame.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-
         self._comp_listbox = tk.Listbox(
             list_frame,
             bg=C["SIDEBAR_BG"], fg=C["TEXT"],
             selectbackground=C["ACCENT"], selectforeground=C["BG"],
             font=("Helvetica", 11), relief="flat",
-            activestyle="none",   # Removes the dotted border on hover
-            highlightthickness=0,
+            activestyle="none", highlightthickness=0,
         )
-        vsb = ttk.Scrollbar(
-            list_frame, orient="vertical", command=self._comp_listbox.yview
-        )
+        vsb = ttk.Scrollbar(list_frame, orient="vertical",
+                            command=self._comp_listbox.yview)
         self._comp_listbox.configure(yscrollcommand=vsb.set)
         self._comp_listbox.pack(side="left", fill="both", expand=True)
         vsb.pack(side="right", fill="y")
-
-        # When the user clicks a component in the list, load it into the form
         self._comp_listbox.bind("<<ListboxSelect>>", self._on_list_select)
+
+    # =========================================================================
+    # RIGHT PANE — scrollable detail form
+    # =========================================================================
 
     def _build_detail_form(self, pane):
         """
-        Build the RIGHT pane: a scrollable form for editing a component.
-        The form is initially blank and populated when the user selects
-        a component from the left list or adds a new one.
+        Build the right pane: a scrollable canvas containing the component
+        editing form. The form has seven sections.
         """
         C     = self._colors
         right = tk.Frame(pane, bg=C["BG"])
         pane.add(right, minsize=500)
 
-        # ── Canvas for scrolling ──────────────────────────────────────────────
-        # The form can be longer than the visible area, so we wrap it in a
-        # Canvas + Scrollbar (same pattern as the SSP Editor form).
         canvas = tk.Canvas(right, bg=C["BG"], highlightthickness=0)
         vsb    = ttk.Scrollbar(right, orient="vertical", command=canvas.yview)
         canvas.configure(yscrollcommand=vsb.set)
         vsb.pack(side="right", fill="y")
         canvas.pack(fill="both", expand=True)
 
-        # Inner frame that holds all the form widgets
         self._form_frame = tk.Frame(canvas, bg=C["BG"])
         self._form_win   = canvas.create_window(
             (0, 0), window=self._form_frame, anchor="nw"
         )
-
-        # Update scroll region whenever the form grows or shrinks
         self._form_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
-        # Keep the form as wide as the canvas panel
         canvas.bind(
             "<Configure>",
             lambda e: canvas.itemconfig(self._form_win, width=e.width)
         )
         self._detail_canvas = canvas
-
-        # Mouse-wheel scrolling for the detail form
         canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
-        # Build the form widgets inside the inner frame
         self._build_form_widgets(self._form_frame)
-
-        # Show a placeholder until the user selects a component
         self._show_form_placeholder()
 
     def _on_mousewheel(self, event):
-        """
-        Scroll the detail form when the user rolls the mouse wheel,
-        but only when tab index 1 (this tab) is active.
-        """
+        """Scroll the detail canvas on mouse-wheel, only when this tab is active."""
         try:
             nb = self.master
             if hasattr(nb, "index") and nb.index("current") == 1:
@@ -512,258 +482,200 @@ class ComponentTab(tk.Frame):
         except Exception:
             pass
 
+    # =========================================================================
+    # FORM WIDGET CONSTRUCTION
+    # =========================================================================
+
     def _build_form_widgets(self, parent):
         """
-        Create all the form fields inside the scrollable detail pane.
-        These widgets are always present; we show/hide the placeholder
-        label to indicate whether a component is loaded for editing.
+        Create all sections of the component editing form.
+        The form is always present but hidden behind _placeholder_lbl
+        until a component is selected.
         """
         C = self._colors
-        P = dict(padx=20)   # Standard horizontal padding for all sections
+        P = dict(padx=20)   # Standard horizontal padding
 
-        # ── Helper: coloured section heading ──────────────────────────────────
+        # ── Local helpers ─────────────────────────────────────────────────────
+
         def section(title):
-            """Add a dark header bar with a section title."""
+            """Dark header bar for a section."""
             hdr = tk.Frame(parent, bg=C["HEADER_BG"])
             hdr.pack(fill="x", **P, pady=(16, 4))
-            tk.Label(
-                hdr, text=title,
-                bg=C["HEADER_BG"], fg=C["ACCENT"],
-                font=("Helvetica", 11, "bold"), anchor="w",
-            ).pack(side="left", padx=10, pady=5)
+            tk.Label(hdr, text=title, bg=C["HEADER_BG"], fg=C["ACCENT"],
+                     font=("Helvetica", 11, "bold"), anchor="w",
+                     ).pack(side="left", padx=10, pady=5)
 
-        # ── Helper: single-line text entry ────────────────────────────────────
         def field(label, var, width=50):
-            """
-            Add a label + Entry widget row.
-            'var' is a tk.StringVar — changes to the Entry update it automatically.
-            """
+            """Label + Entry row linked to a StringVar."""
             row = tk.Frame(parent, bg=C["BG"])
             row.pack(fill="x", **P, pady=3)
-            tk.Label(
-                row, text=label,
-                bg=C["BG"], fg=C["SUBTEXT"],
-                font=("Helvetica", 11), width=20, anchor="w",
-            ).pack(side="left")
-            tk.Entry(
-                row, textvariable=var, width=width,
-                bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-                relief="flat", font=("Helvetica", 11),
-                highlightthickness=1, highlightbackground=C["HEADER_BG"],
-            ).pack(side="left", ipady=3, fill="x", expand=True)
+            tk.Label(row, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=20, anchor="w",
+                     ).pack(side="left")
+            tk.Entry(row, textvariable=var, width=width,
+                     bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                     relief="flat", font=("Helvetica", 11),
+                     highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                     ).pack(side="left", ipady=3, fill="x", expand=True)
 
-        # ── Helper: dropdown (combobox) ────────────────────────────────────────
         def combo(label, var, values, width=30):
-            """
-            Add a label + read-only dropdown.
-            'var' is a tk.StringVar linked to the combobox selection.
-            """
+            """Label + read-only Combobox row linked to a StringVar."""
             row = tk.Frame(parent, bg=C["BG"])
             row.pack(fill="x", **P, pady=3)
-            tk.Label(
-                row, text=label,
-                bg=C["BG"], fg=C["SUBTEXT"],
-                font=("Helvetica", 11), width=20, anchor="w",
-            ).pack(side="left")
-            ttk.Combobox(
-                row, textvariable=var, values=values,
-                state="readonly", width=width,
-            ).pack(side="left")
+            tk.Label(row, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=20, anchor="w",
+                     ).pack(side="left")
+            ttk.Combobox(row, textvariable=var, values=values,
+                         state="readonly", width=width,
+                         ).pack(side="left")
 
-        # ── Helper: multi-line text area ───────────────────────────────────────
         def textbox(label, height=4):
-            """
-            Add a label above a multi-line Text widget.
-            Returns the Text widget so callers can read/write content.
-            """
-            tk.Label(
-                parent, text=label,
-                bg=C["BG"], fg=C["SUBTEXT"],
-                font=("Helvetica", 11),
-            ).pack(anchor="w", **P, pady=(6, 2))
-            border = tk.Frame(
-                parent, bg=C["HEADER_BG"],
-                highlightthickness=1, highlightbackground=C["HEADER_BG"]
-            )
+            """Label + multi-line Text widget. Returns the Text widget."""
+            if label:
+                tk.Label(parent, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                         font=("Helvetica", 11),
+                         ).pack(anchor="w", **P, pady=(6, 2))
+            border = tk.Frame(parent, bg=C["HEADER_BG"],
+                              highlightthickness=1,
+                              highlightbackground=C["HEADER_BG"])
             border.pack(fill="x", **P, pady=2)
-            t = tk.Text(
-                border,
-                bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-                relief="flat", font=("Helvetica", 11), height=height,
-                wrap="word", padx=8, pady=6,
-            )
+            t = tk.Text(border, bg=C["CARD_BG"], fg=C["TEXT"],
+                        insertbackground=C["TEXT"],
+                        relief="flat", font=("Helvetica", 11), height=height,
+                        wrap="word", padx=8, pady=6)
             t.pack(fill="both")
             return t
 
-        # ── Placeholder label (shown when no component is selected) ───────────
+        # ── Placeholder (shown when nothing is selected) ──────────────────────
         self._placeholder_lbl = tk.Label(
             parent,
-            text="Add a component using the '＋ Add Component' button,\n"
+            text="Add a component using '＋ Add Component',\n"
                  "or open an existing file with '📂 Open File'.",
             bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 12, "italic"),
-            justify="center",
+            font=("Helvetica", 12, "italic"), justify="center",
         )
         self._placeholder_lbl.pack(pady=60, padx=40)
 
-        # ── Wrapper frame — hidden until a component is selected ──────────────
-        # We put all real form content inside this frame so we can
-        # show/hide it as a unit by packing/unpacking it.
+        # All real form content lives inside _form_content, which is shown
+        # and hidden as a unit by _show_form_placeholder/_show_component_form.
         self._form_content = tk.Frame(parent, bg=C["BG"])
-        # (Not packed yet — shown by _show_component_form)
+        # (Not packed yet)
 
-        # Work inside _form_content from now on
+        # From this point all widgets go inside _form_content, not parent
         parent = self._form_content
 
-        # =============================================================
-        # SECTION 1: BASIC INFORMATION
-        # =============================================================
+        # =====================================================================
+        # SECTION 1 — BASIC INFORMATION
+        # =====================================================================
         section("1 ·  Basic Information")
 
-        # StringVars for the simple text fields
-        # We store them as instance variables so _collect() and _populate()
-        # can read/write them without needing to find the widgets again.
         self._v_title   = tk.StringVar()
         self._v_purpose = tk.StringVar()
 
         field("Component Title *", self._v_title, width=50)
 
-        # Component type dropdown — required by the OSCAL schema
         self._v_type = tk.StringVar(value=COMPONENT_TYPES[0])
         combo("Component Type *", self._v_type, COMPONENT_TYPES, width=28)
 
-        # ── Auto-filename traces ───────────────────────────────────────────────
-        # trace_add("write", callback) means: call callback whenever this
-        # StringVar's value changes (i.e. the user types or picks from dropdown).
-        # We attach the same callback to BOTH variables so updating either one
-        # refreshes the generated filename in the toolbar.
-        #
-        # The *_args in _update_file_title absorbs the three arguments that
-        # tkinter passes to every trace callback (variable name, index, mode).
+        field("Purpose", self._v_purpose, width=50)
+
+        # Wire up auto-filename and list-rename traces.
+        # trace_add("write", fn) calls fn whenever the StringVar changes.
         self._v_title.trace_add("write", self._update_file_title)
         self._v_type.trace_add("write",  self._update_file_title)
 
-        field("Purpose", self._v_purpose, width=50)
+        tk.Label(parent, text="  * Required fields",
+                 bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
 
-        tk.Label(
-            parent,
-            text="  * Required fields",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
-
-        # =============================================================
-        # SECTION 2: DESCRIPTION
-        # =============================================================
+        # =====================================================================
+        # SECTION 2 — DESCRIPTION
+        # =====================================================================
         section("2 ·  Description")
-        tk.Label(
-            parent,
-            text="  A description of the component, including information about its function.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
+        tk.Label(parent,
+                 text="  A description of the component and its function.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
         self._v_description = textbox("Component Description *", height=4)
 
-        # =============================================================
-        # SECTION 3: OPERATIONAL STATUS
-        # =============================================================
+        # =====================================================================
+        # SECTION 3 — OPERATIONAL STATUS
+        # =====================================================================
         section("3 ·  Operational Status")
-        tk.Label(
-            parent,
-            text="  The lifecycle state of this component.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
-
+        tk.Label(parent, text="  The lifecycle state of this component.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
         self._v_status  = tk.StringVar(value=COMPONENT_STATUS[0])
         self._v_remarks = tk.StringVar()
-
         combo("Status *", self._v_status, COMPONENT_STATUS, width=28)
         field("Status Remarks", self._v_remarks, width=50)
 
-        # =============================================================
-        # SECTION 4: PROPERTIES
-        # =============================================================
+        # =====================================================================
+        # SECTION 4 — PROPERTIES
+        # =====================================================================
         section("4 ·  Properties")
-        tk.Label(
-            parent,
-            text="  Properties add structured metadata to the component.\n"
-                 "  Each property has a name, a value, and an optional remark.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
+        tk.Label(parent,
+                 text="  Structured metadata (name/value pairs) about the component.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
 
-        # Frame containing the Add/Remove buttons + table
-        prop_frame = tk.Frame(
-            parent, bg=C["CARD_BG"],
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        )
+        prop_frame = tk.Frame(parent, bg=C["CARD_BG"],
+                              highlightthickness=1,
+                              highlightbackground=C["HEADER_BG"])
         prop_frame.pack(fill="x", padx=20, pady=6)
+        prop_btn = tk.Frame(prop_frame, bg=C["CARD_BG"])
+        prop_btn.pack(fill="x", padx=8, pady=6)
+        tk.Button(prop_btn, text="＋  Add Property",
+                  command=self._add_property,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(prop_btn, text="✕  Remove Selected",
+                  command=self._remove_property,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
 
-        prop_btn_row = tk.Frame(prop_frame, bg=C["CARD_BG"])
-        prop_btn_row.pack(fill="x", padx=8, pady=6)
-
-        tk.Button(
-            prop_btn_row, text="＋  Add Property",
-            command=self._add_property,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
-            relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="left")
-
-        tk.Button(
-            prop_btn_row, text="✕  Remove Selected",
-            command=self._remove_property,
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
-            relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="left", padx=8)
-
-        # Treeview table showing existing properties
-        prop_cols = ("name", "value", "remarks")
         self._prop_tree = ttk.Treeview(
-            prop_frame, columns=prop_cols,
+            prop_frame, columns=("name", "value", "remarks"),
             show="headings", height=4, selectmode="browse",
         )
-        self._prop_tree.heading("name",    text="Property Name", anchor="w")
-        self._prop_tree.heading("value",   text="Value",         anchor="w")
-        self._prop_tree.heading("remarks", text="Remarks",       anchor="w")
-        self._prop_tree.column("name",    width=200, anchor="w")
-        self._prop_tree.column("value",   width=180, anchor="w")
-        self._prop_tree.column("remarks", width=200, anchor="w", stretch=True)
+        for col, heading, w, stretch in [
+            ("name",    "Property Name", 200, False),
+            ("value",   "Value",         180, False),
+            ("remarks", "Remarks",       200, True),
+        ]:
+            self._prop_tree.heading(col, text=heading, anchor="w")
+            self._prop_tree.column(col, width=w, anchor="w", stretch=stretch)
         self._prop_tree.pack(fill="x", padx=8, pady=(0, 8))
 
-        # =============================================================
-        # SECTION 5: RESPONSIBLE ROLES
-        # =============================================================
+        # =====================================================================
+        # SECTION 5 — RESPONSIBLE ROLES
+        # =====================================================================
         section("5 ·  Responsible Roles")
-        tk.Label(
-            parent,
-            text="  Define who is responsible for this component.\n"
-                 "  Each role can optionally list party UUIDs (people/orgs).",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
+        tk.Label(parent, text="  Who is accountable for this component.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
 
-        role_frame = tk.Frame(
-            parent, bg=C["CARD_BG"],
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        )
+        role_frame = tk.Frame(parent, bg=C["CARD_BG"],
+                              highlightthickness=1,
+                              highlightbackground=C["HEADER_BG"])
         role_frame.pack(fill="x", padx=20, pady=6)
+        role_btn = tk.Frame(role_frame, bg=C["CARD_BG"])
+        role_btn.pack(fill="x", padx=8, pady=6)
+        tk.Button(role_btn, text="＋  Add Role", command=self._add_role,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(role_btn, text="✕  Remove Selected",
+                  command=self._remove_role,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
 
-        role_btn_row = tk.Frame(role_frame, bg=C["CARD_BG"])
-        role_btn_row.pack(fill="x", padx=8, pady=6)
-
-        tk.Button(
-            role_btn_row, text="＋  Add Role",
-            command=self._add_role,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
-            relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="left")
-
-        tk.Button(
-            role_btn_row, text="✕  Remove Selected",
-            command=self._remove_role,
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
-            relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="left", padx=8)
-
-        role_cols = ("role_id", "remarks")
         self._role_tree = ttk.Treeview(
-            role_frame, columns=role_cols,
+            role_frame, columns=("role_id", "remarks"),
             show="headings", height=4, selectmode="browse",
         )
         self._role_tree.heading("role_id",  text="Role ID",  anchor="w")
@@ -772,24 +684,158 @@ class ComponentTab(tk.Frame):
         self._role_tree.column("remarks",  width=340, anchor="w", stretch=True)
         self._role_tree.pack(fill="x", padx=8, pady=(0, 8))
 
-        # =============================================================
-        # SECTION 6: REMARKS
-        # =============================================================
+        # =====================================================================
+        # SECTION 6 — REMARKS
+        # =====================================================================
         section("6 ·  Remarks  (optional)")
-        tk.Label(
-            parent,
-            text="  Additional notes about this component.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
+        tk.Label(parent, text="  Additional notes about this component.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
         self._v_remarks_text = textbox("", height=3)
 
-        # ── Save Component button (bottom of form) ────────────────────────────
-        # This saves the form values back into the component dict in memory.
-        # It does NOT write to disk — use 'Save File' for that.
-        save_btn_row = tk.Frame(parent, bg=C["BG"])
-        save_btn_row.pack(fill="x", padx=20, pady=(16, 8))
+        # =====================================================================
+        # SECTION 7 — CONTROL IMPLEMENTATIONS
+        # =====================================================================
+        section("7 ·  Control Implementations")
+        tk.Label(
+            parent,
+            text="  Select a control from the list and describe how this component\n"
+                 "  implements it. Controls are drawn from the loaded profile.\n"
+                 "  Dot legend:  ● = response written   ○ = no response yet",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        ).pack(anchor="w", padx=20)
+
+        # This section uses an inner horizontal split:
+        #   LEFT  — scrollable list of controls from the profile
+        #   RIGHT — text editor for the implementation description
+
+        ctrl_outer = tk.Frame(parent, bg=C["CARD_BG"],
+                              highlightthickness=1,
+                              highlightbackground=C["HEADER_BG"])
+        ctrl_outer.pack(fill="both", expand=True, padx=20, pady=6)
+
+        ctrl_pane = tk.PanedWindow(ctrl_outer, orient="horizontal",
+                                   bg=C["CARD_BG"], sashwidth=4,
+                                   sashrelief="flat")
+        ctrl_pane.pack(fill="both", expand=True)
+
+        # ── Left sub-pane: control list ───────────────────────────────────────
+        ctrl_left = tk.Frame(ctrl_pane, bg=C["SIDEBAR_BG"])
+        ctrl_pane.add(ctrl_left, minsize=200, width=280)
+
+        # Search box to filter the control list
+        search_row = tk.Frame(ctrl_left, bg=C["SIDEBAR_BG"])
+        search_row.pack(fill="x", padx=6, pady=6)
+        tk.Label(search_row, text="🔍", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(side="left")
+        self._ctrl_search_var = tk.StringVar()
+        self._ctrl_search_var.trace_add("write", self._on_ctrl_search)
+        tk.Entry(search_row, textvariable=self._ctrl_search_var,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10),
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).pack(side="left", fill="x", expand=True, ipady=3, padx=(4, 0))
+
+        # Control Treeview — two columns: dot indicator and control label
+        ctrl_list_frame = tk.Frame(ctrl_left, bg=C["SIDEBAR_BG"])
+        ctrl_list_frame.pack(fill="both", expand=True, padx=6, pady=(0, 6))
+
+        self._ctrl_tree = ttk.Treeview(
+            ctrl_list_frame,
+            columns=("dot", "label", "title"),
+            show="headings",
+            selectmode="browse",
+        )
+        self._ctrl_tree.heading("dot",   text="",             anchor="center")
+        self._ctrl_tree.heading("label", text="ID / Label",   anchor="w")
+        self._ctrl_tree.heading("title", text="Statement",    anchor="w")
+        self._ctrl_tree.column("dot",   width=24,  minwidth=24,  anchor="center", stretch=False)
+        self._ctrl_tree.column("label", width=100, minwidth=80,  anchor="w",     stretch=False)
+        self._ctrl_tree.column("title", width=200, minwidth=100, anchor="w",     stretch=True)
+
+        # Colour the dot column: green for done, grey for empty
+        self._ctrl_tree.tag_configure("done",  foreground=C["GREEN"])
+        self._ctrl_tree.tag_configure("empty", foreground=C["SUBTEXT"])
+
+        ctrl_vsb = ttk.Scrollbar(ctrl_list_frame, orient="vertical",
+                                 command=self._ctrl_tree.yview)
+        self._ctrl_tree.configure(yscrollcommand=ctrl_vsb.set)
+        self._ctrl_tree.pack(side="left", fill="both", expand=True)
+        ctrl_vsb.pack(side="right", fill="y")
+
+        self._ctrl_tree.bind("<<TreeviewSelect>>", self._on_ctrl_select)
+
+        # Progress counter below the list
+        self._ctrl_progress_lbl = tk.Label(
+            ctrl_left, text="",
+            bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9),
+        )
+        self._ctrl_progress_lbl.pack(pady=(0, 6))
+
+        # ── Right sub-pane: implementation response editor ────────────────────
+        ctrl_right = tk.Frame(ctrl_pane, bg=C["BG"])
+        ctrl_pane.add(ctrl_right, minsize=300)
+
+        # Header showing the selected control's statement (read-only reference)
+        self._ctrl_stmt_lbl = tk.Label(
+            ctrl_right,
+            text="Select a control from the list to write an implementation response.",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 10, "italic"),
+            wraplength=380, justify="left", anchor="nw",
+        )
+        self._ctrl_stmt_lbl.pack(fill="x", padx=8, pady=(8, 4))
+
+        # Separator
+        tk.Frame(ctrl_right, bg=C["HEADER_BG"], height=1).pack(
+            fill="x", padx=8, pady=4
+        )
+
+        # Label for the response text area
+        tk.Label(
+            ctrl_right,
+            text="How does this component implement this control?",
+            bg=C["BG"], fg=C["ACCENT"],
+            font=("Helvetica", 10, "bold"),
+        ).pack(anchor="w", padx=8, pady=(4, 2))
+
+        # Multi-line text area for writing the implementation response
+        resp_border = tk.Frame(ctrl_right, bg=C["HEADER_BG"],
+                               highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        resp_border.pack(fill="both", expand=True, padx=8, pady=(0, 4))
+        self._ctrl_response_text = tk.Text(
+            resp_border,
+            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+            relief="flat", font=("Helvetica", 11),
+            wrap="word", padx=8, pady=6,
+        )
+        self._ctrl_response_text.pack(fill="both", expand=True)
+
+        # Save Response button — writes the text into _ctrl_responses dict
+        save_resp_row = tk.Frame(ctrl_right, bg=C["BG"])
+        save_resp_row.pack(fill="x", padx=8, pady=(4, 8))
         tk.Button(
-            save_btn_row,
+            save_resp_row,
+            text="✔  Save Response",
+            command=self._save_ctrl_response,
+            bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=4, cursor="hand2",
+            activebackground="#8cd39a", activeforeground=C["BG"],
+        ).pack(side="left")
+        tk.Label(
+            save_resp_row,
+            text="  Saves to memory — click '✔ Apply Component Changes' to keep,\n"
+                 "  then '💾 Save File' to write to disk.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 8, "italic"),
+        ).pack(side="left", padx=8)
+
+        # ── Apply + bottom padding ────────────────────────────────────────────
+        apply_row = tk.Frame(parent, bg=C["BG"])
+        apply_row.pack(fill="x", padx=20, pady=(16, 8))
+        tk.Button(
+            apply_row,
             text="✔  Apply Component Changes",
             command=self._apply_component,
             bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
@@ -797,12 +843,11 @@ class ComponentTab(tk.Frame):
             activebackground="#b4befe", activeforeground=C["BG"],
         ).pack(side="left")
         tk.Label(
-            save_btn_row,
-            text="  (Saves to memory — use 'Save File' to write to disk)",
+            apply_row,
+            text="  (Saves to memory — use '💾 Save File' to write to disk)",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
         ).pack(side="left", padx=8)
 
-        # Bottom padding
         tk.Frame(parent, bg=C["BG"], height=30).pack()
 
     # =========================================================================
@@ -810,128 +855,142 @@ class ComponentTab(tk.Frame):
     # =========================================================================
 
     def _show_form_placeholder(self):
-        """
-        Hide the component editing form and show the placeholder message.
-        Called when no component is selected.
-        """
-        # Unpack (hide) the form content frame
+        """Hide the form and show the 'add a component' placeholder."""
         self._form_content.pack_forget()
-        # Show the placeholder label
         self._placeholder_lbl.pack(pady=60, padx=40)
 
     def _show_component_form(self):
-        """
-        Hide the placeholder and show the component editing form.
-        Called when a component is selected or a new one is added.
-        """
-        # Hide the placeholder label
+        """Hide the placeholder and show the editing form."""
         self._placeholder_lbl.pack_forget()
-        # Show the form content
         self._form_content.pack(fill="both", expand=True)
+
+    # =========================================================================
+    # AUTO FILENAME + LIST RENAME
+    # =========================================================================
+
+    def _update_file_title(self, *_args):
+        """
+        Called automatically by StringVar traces whenever the Component Title
+        or Component Type fields change.
+
+        Does two things:
+          1. Updates the toolbar filename display label
+          2. Renames the currently selected entry in the left component list
+        """
+        comp_type  = self._v_type.get().strip()  if hasattr(self, "_v_type")  else ""
+        comp_title = self._v_title.get().strip() if hasattr(self, "_v_title") else ""
+
+        if comp_type and comp_title:
+            auto_title    = f"{comp_type} - {comp_title}"
+            safe_title    = comp_title.replace(" ", "_")
+            auto_filename = f"{comp_type}_{safe_title}.json"
+            self._file_title_lbl.config(
+                text=f"{auto_title}  →  {auto_filename}",
+                fg=self._colors["TEXT"], font=("Helvetica", 10),
+            )
+            self._file_title.set(auto_title)
+        elif comp_type or comp_title:
+            self._file_title_lbl.config(
+                text="(enter both type and title to generate filename)",
+                fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
+            )
+            self._file_title.set(comp_type or comp_title)
+        else:
+            self._file_title_lbl.config(
+                text="(enter component type and title below)",
+                fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
+            )
+            self._file_title.set("")
+
+        # ── Update the matching Listbox entry in real time ────────────────────
+        if self._selected_index is not None:
+            title   = comp_title or "(untitled)"
+            display = f"{title}  [{comp_type}]" if comp_type else title
+            self._comp_listbox.delete(self._selected_index)
+            self._comp_listbox.insert(self._selected_index, display)
+            self._comp_listbox.selection_set(self._selected_index)
+            self._comp_listbox.see(self._selected_index)
 
     # =========================================================================
     # COMPONENT LIST MANAGEMENT
     # =========================================================================
 
     def _refresh_list(self):
-        """
-        Rebuild the left-hand Listbox from self._components.
-        Called after any change to the components list.
-        """
-        self._comp_listbox.delete(0, "end")   # Clear all existing entries
-
+        """Rebuild the Listbox from self._components."""
+        self._comp_listbox.delete(0, "end")
         for comp in self._components:
-            # Display the component title (or a placeholder if blank)
             title   = comp.get("title", "").strip() or "(untitled)"
             c_type  = comp.get("type", "")
-            # Show title + type in brackets, e.g. "My Firewall  [hardware]"
             display = f"{title}  [{c_type}]" if c_type else title
             self._comp_listbox.insert("end", display)
 
     def _on_list_select(self, _event=None):
         """
         Called when the user clicks a component in the left list.
-        Saves any pending changes to the previously selected component,
-        then loads the newly selected one into the form.
+        Saves the current form state, then loads the selected component.
         """
-        # selection() returns a tuple of selected indices (we allow only one)
         sel = self._comp_listbox.curselection()
         if not sel:
             return
-
         new_index = int(sel[0])
-
-        # If there was a previous selection, save its current form state first
-        # so we don't lose unsaved typing when switching between components.
-        if self._selected_index is not None:
-            self._collect_into(self._selected_index)
-
-        # Load the newly selected component's data into the form
-        self._selected_index = new_index
-        self._populate_from(new_index)
-        self._show_component_form()
-
-    def _add_component(self):
-        """
-        Create a new blank component, add it to the list, and select it.
-        """
-        # Build a minimal component dict with required defaults
-        new_comp = {
-            "uuid":        new_uuid(),
-            "title":       "",
-            "type":        COMPONENT_TYPES[0],   # Default to "software"
-            "description": "",
-            "purpose":     "",
-            "status":      COMPONENT_STATUS[0],  # Default to "under-development"
-            "status_remarks": "",
-            "remarks":     "",
-            "props":       [],   # List of property dicts
-            "roles":       [],   # List of responsible-role dicts
-        }
-        self._components.append(new_comp)
-        self._dirty = True
-
-        # Rebuild the list widget to show the new entry
-        self._refresh_list()
-
-        # Automatically select the new component (last in the list)
-        new_index = len(self._components) - 1
-        self._comp_listbox.selection_clear(0, "end")
-        self._comp_listbox.selection_set(new_index)
-        self._comp_listbox.see(new_index)   # Scroll to make it visible
 
         # Save any pending changes from the previously selected component
         if self._selected_index is not None:
             self._collect_into(self._selected_index)
 
-        # Load the new blank component into the form
         self._selected_index = new_index
         self._populate_from(new_index)
         self._show_component_form()
 
-        self._status_lbl.config(text="New component added", fg=self._colors["ACCENT"])
+    def _add_component(self):
+        """Create a new blank component, add it to the list, and select it."""
+        new_comp = {
+            "uuid":            new_uuid(),
+            "title":           "",
+            "type":            COMPONENT_TYPES[0],
+            "description":     "",
+            "purpose":         "",
+            "status":          COMPONENT_STATUS[0],
+            "status_remarks":  "",
+            "remarks":         "",
+            "props":           [],
+            "roles":           [],
+            "ctrl_responses":  {},   # {control_id: description_string}
+        }
+        self._components.append(new_comp)
+        self._dirty = True
+        self._refresh_list()
+
+        new_index = len(self._components) - 1
+        self._comp_listbox.selection_clear(0, "end")
+        self._comp_listbox.selection_set(new_index)
+        self._comp_listbox.see(new_index)
+
+        if self._selected_index is not None:
+            self._collect_into(self._selected_index)
+
+        self._selected_index = new_index
+        self._populate_from(new_index)
+        self._show_component_form()
+        self._status_lbl.config(
+            text="New component added", fg=self._colors["ACCENT"]
+        )
 
     def _delete_component(self):
-        """
-        Delete the currently selected component after asking for confirmation.
-        """
+        """Delete the currently selected component after confirmation."""
         if self._selected_index is None:
             messagebox.showinfo("No selection", "Please select a component to delete.")
             return
-
         title = self._components[self._selected_index].get("title", "(untitled)")
         if not messagebox.askyesno(
             "Delete component?",
-            f"Delete the component '{title}'? This cannot be undone."
+            f"Delete '{title}'? This cannot be undone."
         ):
             return
-
-        # Remove from the list
         self._components.pop(self._selected_index)
         self._selected_index = None
+        self._ctrl_responses  = {}
         self._dirty = True
-
-        # Rebuild the list and hide the form
         self._refresh_list()
         self._show_form_placeholder()
         self._status_lbl.config(
@@ -944,271 +1003,451 @@ class ComponentTab(tk.Frame):
 
     def _populate_from(self, index):
         """
-        Load the component at self._components[index] into the form widgets.
-
-        Parameters:
-            index - The integer index into self._components
+        Load self._components[index] into all form widgets.
+        Called when the user selects a component from the list.
         """
         comp = self._components[index]
 
-        # ── Simple text fields (StringVar) ────────────────────────────────────
+        # ── Simple fields ─────────────────────────────────────────────────────
         self._v_title.set(comp.get("title", ""))
         self._v_type.set(comp.get("type", COMPONENT_TYPES[0]))
         self._v_purpose.set(comp.get("purpose", ""))
         self._v_status.set(comp.get("status", COMPONENT_STATUS[0]))
         self._v_remarks.set(comp.get("status_remarks", ""))
 
-        # ── Multi-line Text widgets ────────────────────────────────────────────
-        # Clear then insert — .get("1.0", "end-1c") would read content
-        self._v_description.delete("1.0", "end")
-        desc = comp.get("description", "")
-        if desc:
-            self._v_description.insert("1.0", desc)
-
-        self._v_remarks_text.delete("1.0", "end")
-        remarks = comp.get("remarks", "")
-        if remarks:
-            self._v_remarks_text.insert("1.0", remarks)
+        # ── Text areas ────────────────────────────────────────────────────────
+        for widget, key in [
+            (self._v_description,  "description"),
+            (self._v_remarks_text, "remarks"),
+        ]:
+            widget.delete("1.0", "end")
+            val = comp.get(key, "")
+            if val:
+                widget.insert("1.0", val)
 
         # ── Properties table ──────────────────────────────────────────────────
         self._prop_tree.delete(*self._prop_tree.get_children())
         for prop in comp.get("props", []):
             self._prop_tree.insert("", "end", values=(
-                prop.get("name", ""),
-                prop.get("value", ""),
-                prop.get("remarks", ""),
+                prop.get("name", ""), prop.get("value", ""), prop.get("remarks", "")
             ))
 
-        # ── Responsible roles table ───────────────────────────────────────────
+        # ── Roles table ───────────────────────────────────────────────────────
         self._role_tree.delete(*self._role_tree.get_children())
         for role in comp.get("roles", []):
             self._role_tree.insert("", "end", values=(
-                role.get("role_id", ""),
-                role.get("remarks", ""),
+                role.get("role_id", ""), role.get("remarks", "")
             ))
+
+        # ── Control responses ─────────────────────────────────────────────────
+        # Load the saved responses for this component into _ctrl_responses,
+        # then rebuild the control list to show the correct dot indicators.
+        self._ctrl_responses   = dict(comp.get("ctrl_responses", {}))
+        self._selected_ctrl_id = None
+
+        # Clear the response editor
+        self._ctrl_response_text.delete("1.0", "end")
+        self._ctrl_stmt_lbl.config(
+            text="Select a control from the list to write an implementation response.",
+            fg=self._colors["SUBTEXT"],
+        )
+        # Clear the search box when switching components
+        self._ctrl_search_var.set("")
+        self._refresh_control_list()
 
     def _collect_into(self, index):
         """
-        Read all form widget values and store them in self._components[index].
-
-        This is called before switching between components and before saving,
-        to make sure the in-memory data matches what is shown on screen.
-
-        Parameters:
-            index - The integer index into self._components
+        Read all form widget values and write them into self._components[index].
+        Called before switching components and before saving.
         """
         comp = self._components[index]
 
-        # Read StringVar fields (these update automatically, but we read
-        # them explicitly for clarity)
         comp["title"]          = self._v_title.get().strip()
         comp["type"]           = self._v_type.get()
         comp["purpose"]        = self._v_purpose.get().strip()
         comp["status"]         = self._v_status.get()
         comp["status_remarks"] = self._v_remarks.get().strip()
+        comp["description"]    = self._v_description.get("1.0", "end-1c").strip()
+        comp["remarks"]        = self._v_remarks_text.get("1.0", "end-1c").strip()
 
-        # Read multi-line Text widgets
-        # "1.0" = start, "end-1c" = end minus the trailing newline character
-        comp["description"] = self._v_description.get("1.0", "end-1c").strip()
-        comp["remarks"]     = self._v_remarks_text.get("1.0", "end-1c").strip()
+        # Save any unsaved response for the currently displayed control
+        if self._selected_ctrl_id:
+            text = self._ctrl_response_text.get("1.0", "end-1c").strip()
+            if text:
+                self._ctrl_responses[self._selected_ctrl_id] = text
+            else:
+                # If the user cleared the response, remove it
+                self._ctrl_responses.pop(self._selected_ctrl_id, None)
 
-        # Properties are already stored in self._components[index]["props"]
-        # by _add_property/_remove_property, so no need to re-read the tree.
-        # Same for roles.
-
+        # Write the responses dict back into the component
+        comp["ctrl_responses"] = dict(self._ctrl_responses)
         self._dirty = True
 
     def _apply_component(self):
         """
-        Save the current form values into the selected component's dict,
-        then refresh the list (in case the title changed).
-
-        This keeps everything in memory — it does NOT write to disk.
-        Use 'Save File' to write the JSON file.
+        Save the current form into the selected component's dict and refresh
+        the list. Does NOT write to disk.
         """
         if self._selected_index is None:
             return
-
         self._collect_into(self._selected_index)
-        self._refresh_list()   # Title may have changed
-
-        # Restore the listbox selection (refresh clears it)
+        self._refresh_list()
         self._comp_listbox.selection_set(self._selected_index)
-
+        self._refresh_control_list()   # Update dots after saving
         self._status_lbl.config(
             text="Component changes applied  (not yet saved to disk)",
             fg=self._colors["YELLOW"],
         )
 
     # =========================================================================
-    # PROPERTY MANAGEMENT
+    # CONTROL IMPLEMENTATION — Section 7
     # =========================================================================
 
-    def _add_property(self):
+    def _get_profile_controls(self):
         """
-        Show a dialog to collect property details and add a new row
-        to the properties table.
+        Return the list of control dicts from the catalog that are included
+        in the currently loaded profile.
 
-        Properties are name/value pairs with an optional remark.
-        The schema defines a specific set of allowed property names,
-        but also allows others ("allow-other=yes" in the schema).
+        This is the list shown in the Section 7 control list.
+        Each dict is the same format as in models.collect_controls().
+
+        Returns:
+            A list of control dicts, filtered to only those in the profile.
+            Returns an empty list if catalog or profile is not loaded.
         """
-        if self._selected_index is None:
-            messagebox.showinfo("No component", "Please select or add a component first.")
+        catalog = self._get_catalog()
+        profile = self._get_profile()
+        if not catalog or not profile:
+            return []
+
+        # profile["ids"] is a set of control ID strings
+        # catalog["controls"] is the flat list from models.collect_controls()
+        profile_ids = profile["ids"]
+        return [c for c in catalog["controls"] if c["id"] in profile_ids]
+
+    def _refresh_control_list(self, search_term=""):
+        """
+        Rebuild the Section 7 control list from the profile controls,
+        applying an optional search filter.
+
+        Each row shows:
+          - A coloured dot (● green = response written, ○ grey = no response)
+          - The control label (e.g. "ism-1130" or "GOV-01")
+          - The control statement (the requirement text)
+
+        Parameters:
+            search_term - Optional text to filter controls by label or statement
+        """
+        self._ctrl_tree.delete(*self._ctrl_tree.get_children())
+        controls = self._get_profile_controls()
+
+        # Apply search filter if provided
+        term = search_term.lower().strip()
+        if term:
+            controls = [
+                c for c in controls
+                if term in c["label"].lower()
+                or term in c["statement"].lower()
+                or term in c["id"].lower()
+            ]
+
+        # Count how many controls have responses (for the progress label)
+        total_controls = len(self._get_profile_controls())
+        done_count = sum(
+            1 for ctrl in self._get_profile_controls()
+            if self._ctrl_responses.get(ctrl["id"], "").strip()
+        )
+
+        for ctrl in controls:
+            ctrl_id  = ctrl["id"]
+            response = self._ctrl_responses.get(ctrl_id, "").strip()
+            has_resp = bool(response)
+
+            # Choose the dot symbol and colour tag
+            dot = DOT_DONE if has_resp else DOT_EMPTY
+            tag = "done"   if has_resp else "empty"
+
+            # Use the statement as the row text (most meaningful for ism-NNNN controls)
+            display_title = ctrl["statement"] or ctrl["title"]
+
+            self._ctrl_tree.insert(
+                "", "end",
+                iid=ctrl_id,   # Use the control ID as the row identifier
+                values=(dot, ctrl["label"], display_title),
+                tags=(tag,),
+            )
+
+        # Update progress label
+        if total_controls > 0:
+            self._ctrl_progress_lbl.config(
+                text=f"{done_count} of {total_controls} controls have responses"
+            )
+        else:
+            self._ctrl_progress_lbl.config(text="")
+
+    def _on_ctrl_search(self, *_args):
+        """
+        Called when the user types in the Section 7 search box.
+        Filters the control list to matching controls.
+        """
+        self._refresh_control_list(self._ctrl_search_var.get())
+
+    def _on_ctrl_select(self, _event=None):
+        """
+        Called when the user clicks a control in the Section 7 list.
+
+        Saves any response currently in the text editor for the previously
+        selected control, then loads the response for the newly selected one.
+        """
+        # Save current response text before switching controls
+        if self._selected_ctrl_id:
+            current_text = self._ctrl_response_text.get("1.0", "end-1c").strip()
+            if current_text:
+                self._ctrl_responses[self._selected_ctrl_id] = current_text
+            else:
+                self._ctrl_responses.pop(self._selected_ctrl_id, None)
+
+        # Find which control was just selected
+        sel = self._ctrl_tree.selection()
+        if not sel:
             return
 
+        # The iid of each row is the control ID (set in _refresh_control_list)
+        ctrl_id = sel[0]
+        self._selected_ctrl_id = ctrl_id
+
+        # Find this control's full dict so we can show its statement
+        catalog  = self._get_catalog()
+        ctrl_dict = None
+        if catalog:
+            ctrl_dict = next(
+                (c for c in catalog["controls"] if c["id"] == ctrl_id), None
+            )
+
+        # Update the statement label (read-only reference at the top)
+        if ctrl_dict:
+            label     = ctrl_dict.get("label", ctrl_id)
+            statement = ctrl_dict.get("statement", ctrl_dict.get("title", ""))
+            self._ctrl_stmt_lbl.config(
+                text=f"[{label}]  {statement}",
+                fg=self._colors["TEXT"],
+            )
+        else:
+            self._ctrl_stmt_lbl.config(
+                text=ctrl_id, fg=self._colors["SUBTEXT"]
+            )
+
+        # Load any existing response into the text editor
+        self._ctrl_response_text.delete("1.0", "end")
+        existing = self._ctrl_responses.get(ctrl_id, "")
+        if existing:
+            self._ctrl_response_text.insert("1.0", existing)
+
+        # Move focus to the text editor so the user can start typing immediately
+        self._ctrl_response_text.focus_set()
+
+    def _save_ctrl_response(self):
+        """
+        Save the response currently in the text editor for the selected control.
+
+        This updates the in-memory _ctrl_responses dict and refreshes the
+        dot indicators in the list. The data is not written to disk until
+        the user clicks 'Apply Component Changes' and then 'Save File'.
+        """
+        if not self._selected_ctrl_id:
+            messagebox.showinfo(
+                "No control selected",
+                "Please select a control from the list first."
+            )
+            return
+
+        text = self._ctrl_response_text.get("1.0", "end-1c").strip()
+        if text:
+            self._ctrl_responses[self._selected_ctrl_id] = text
+        else:
+            # Empty response — remove the entry entirely
+            self._ctrl_responses.pop(self._selected_ctrl_id, None)
+
+        # Refresh the list to update the dot indicator for this control
+        self._refresh_control_list(self._ctrl_search_var.get())
+
+        # Re-select the same control so the user can keep editing or move on
+        if self._selected_ctrl_id in [
+            self._ctrl_tree.item(iid)["values"][1]
+            for iid in self._ctrl_tree.get_children()
+        ]:
+            try:
+                self._ctrl_tree.selection_set(self._selected_ctrl_id)
+                self._ctrl_tree.see(self._selected_ctrl_id)
+            except Exception:
+                pass
+
+        self._dirty = True
+        self._status_lbl.config(
+            text="Response saved to memory — click 'Apply' then 'Save File'",
+            fg=self._colors["YELLOW"],
+        )
+
+    # =========================================================================
+    # PROPERTY AND ROLE DIALOGS
+    # =========================================================================
+
+    def _dialog(self, title, fields):
+        """
+        Show a generic modal dialog to collect field values.
+
+        Parameters:
+            title  - Window title
+            fields - List of (label, key, default, choices_or_None) tuples
+
+        Returns:
+            A {key: value} dict, or None if cancelled.
+        """
+        C   = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title(title)
+        dlg.configure(bg=C["BG"])
+        dlg.resizable(False, False)
+        dlg.grab_set()
+
+        vars_ = {}
+        for label, key, default, choices in fields:
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=5)
+            tk.Label(row, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=22, anchor="w",
+                     ).pack(side="left")
+            v = tk.StringVar(value=default)
+            vars_[key] = v
+            if choices:
+                ttk.Combobox(row, textvariable=v, values=choices,
+                             state="readonly", width=28).pack(side="left")
+            else:
+                tk.Entry(row, textvariable=v, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), width=32,
+                         highlightthickness=1,
+                         highlightbackground=C["HEADER_BG"],
+                         ).pack(side="left", ipady=3)
+
+        result = {}
+        def _ok():
+            for k, v in vars_.items():
+                result[k] = v.get().strip()
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_property(self):
+        """Show the property dialog and add the result to the table."""
+        if self._selected_index is None:
+            messagebox.showinfo("No component",
+                                "Please select or add a component first.")
+            return
         result = self._property_dialog()
         if not result:
-            return   # User cancelled
-
-        # Add to the in-memory component dict
+            return
         self._components[self._selected_index]["props"].append(result)
-
-        # Add a row to the table widget
         self._prop_tree.insert("", "end", values=(
-            result["name"],
-            result["value"],
-            result.get("remarks", ""),
+            result["name"], result["value"], result.get("remarks", "")
         ))
         self._dirty = True
 
     def _remove_property(self):
-        """Remove the selected row from the properties table."""
+        """Remove the selected property row."""
         sel = self._prop_tree.selection()
         if not sel:
             return
         idx = self._prop_tree.index(sel[0])
-        # Remove from in-memory list
         if self._selected_index is not None:
             self._components[self._selected_index]["props"].pop(idx)
-        # Remove from the table widget
         self._prop_tree.delete(sel[0])
         self._dirty = True
 
     def _property_dialog(self, existing=None):
         """
-        Show a modal dialog for adding or editing a property.
-
-        The dialog shows:
-          - A dropdown for the property name (from OSCAL schema)
-          - A value field (with contextual options based on the name chosen)
-          - An optional remarks field
-
-        Parameters:
-            existing - A dict of existing values to pre-fill (for editing),
-                       or None for a new property.
-
-        Returns:
-            A dict {"name": ..., "value": ..., "remarks": ...}
-            or None if the user cancelled.
+        Show a modal dialog for adding a property.
+        The value widget adapts (dropdown vs free entry) based on the name.
         """
         C   = self._colors
         dlg = tk.Toplevel(self)
         dlg.title("Add Property")
         dlg.configure(bg=C["BG"])
         dlg.resizable(False, False)
-        dlg.grab_set()   # Make the dialog modal
+        dlg.grab_set()
 
-        # ── Property Name dropdown ─────────────────────────────────────────────
-        name_row = tk.Frame(dlg, bg=C["BG"])
-        name_row.pack(fill="x", padx=20, pady=8)
-        tk.Label(
-            name_row, text="Property Name *",
-            bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11), width=18, anchor="w",
-        ).pack(side="left")
+        # Property name dropdown
+        row1 = tk.Frame(dlg, bg=C["BG"])
+        row1.pack(fill="x", padx=20, pady=8)
+        tk.Label(row1, text="Property Name *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
         v_name = tk.StringVar(value=(existing or {}).get("name", PROP_NAMES[0]))
-        name_combo = ttk.Combobox(
-            name_row, textvariable=v_name,
-            values=PROP_NAMES,
-            state="normal",   # Allow typing a custom name not in the list
-            width=28,
-        )
-        name_combo.pack(side="left")
+        ttk.Combobox(row1, textvariable=v_name, values=PROP_NAMES,
+                     state="normal", width=28).pack(side="left")
 
-        # ── Value field — changes based on selected property name ─────────────
-        # Some property names have a fixed set of allowed values (dropdowns);
-        # others accept any text (free entry).
-        value_row = tk.Frame(dlg, bg=C["BG"])
-        value_row.pack(fill="x", padx=20, pady=4)
-        tk.Label(
-            value_row, text="Value *",
-            bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11), width=18, anchor="w",
-        ).pack(side="left")
+        # Value widget — swaps between dropdown and entry based on name
+        row2 = tk.Frame(dlg, bg=C["BG"])
+        row2.pack(fill="x", padx=20, pady=4)
+        tk.Label(row2, text="Value *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+        v_value = tk.StringVar(value=(existing or {}).get("value", ""))
+        val_frame = tk.Frame(row2, bg=C["BG"])
+        val_frame.pack(side="left", fill="x", expand=True)
 
-        v_value    = tk.StringVar(value=(existing or {}).get("value", ""))
-        # We'll swap between a Combobox and an Entry depending on the name chosen.
-        # value_widget_frame holds whichever widget is currently shown.
-        value_widget_frame = tk.Frame(value_row, bg=C["BG"])
-        value_widget_frame.pack(side="left", fill="x", expand=True)
+        val_combo = ttk.Combobox(val_frame, textvariable=v_value,
+                                 state="readonly", width=28)
+        val_entry = tk.Entry(val_frame, textvariable=v_value, width=32,
+                             bg=C["CARD_BG"], fg=C["TEXT"],
+                             insertbackground=C["TEXT"], relief="flat",
+                             font=("Helvetica", 11), highlightthickness=1,
+                             highlightbackground=C["HEADER_BG"])
 
-        # Create both widget types upfront; show/hide them as needed
-        value_combo = ttk.Combobox(
-            value_widget_frame, textvariable=v_value, state="readonly", width=28
-        )
-        value_entry = tk.Entry(
-            value_widget_frame, textvariable=v_value, width=32,
-            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-            relief="flat", font=("Helvetica", 11),
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        )
-
-        # Map property names to their allowed values (from the schema)
-        # Keys not listed here use a free-text Entry instead.
         VALUE_OPTIONS = {
-            "public":                   YES_NO_VALUES,
-            "virtual":                  YES_NO_VALUES,
+            "public":                    YES_NO_VALUES,
+            "virtual":                   YES_NO_VALUES,
             "allows-authenticated-scan": YES_NO_VALUES,
-            "implementation-point":     IMPL_POINT_VALUES,
-            "asset-type":               ASSET_TYPE_VALUES,
+            "implementation-point":      IMPL_POINT_VALUES,
+            "asset-type":                ASSET_TYPE_VALUES,
         }
 
-        def refresh_value_widget(*_):
-            """
-            Called when the user changes the property name dropdown.
-            Swaps between a value dropdown and a free-text entry.
-            """
+        def refresh_value(*_):
             name = v_name.get()
-            options = VALUE_OPTIONS.get(name)
-            if options:
-                # Show the combobox with the appropriate options
-                value_entry.pack_forget()
-                value_combo.configure(values=options)
-                v_value.set(options[0])   # Pre-select the first option
-                value_combo.pack(side="left")
+            opts = VALUE_OPTIONS.get(name)
+            if opts:
+                val_entry.pack_forget()
+                val_combo.configure(values=opts)
+                v_value.set(opts[0])
+                val_combo.pack(side="left")
             else:
-                # Show the free-text entry
-                value_combo.pack_forget()
+                val_combo.pack_forget()
                 v_value.set("")
-                value_entry.pack(side="left", ipady=3)
+                val_entry.pack(side="left", ipady=3)
 
-        # Wire up the name dropdown to refresh the value widget
-        v_name.trace_add("write", refresh_value_widget)
-        # Call once to set the initial state
-        refresh_value_widget()
+        v_name.trace_add("write", refresh_value)
+        refresh_value()
 
-        # ── Remarks field (optional) ───────────────────────────────────────────
-        rem_row = tk.Frame(dlg, bg=C["BG"])
-        rem_row.pack(fill="x", padx=20, pady=4)
-        tk.Label(
-            rem_row, text="Remarks",
-            bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11), width=18, anchor="w",
-        ).pack(side="left")
+        # Remarks
+        row3 = tk.Frame(dlg, bg=C["BG"])
+        row3.pack(fill="x", padx=20, pady=4)
+        tk.Label(row3, text="Remarks", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
         v_remarks = tk.StringVar(value=(existing or {}).get("remarks", ""))
-        tk.Entry(
-            rem_row, textvariable=v_remarks, width=32,
-            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-            relief="flat", font=("Helvetica", 11),
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        ).pack(side="left", ipady=3)
+        tk.Entry(row3, textvariable=v_remarks, width=32,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
 
-        # ── OK / Cancel buttons ────────────────────────────────────────────────
         result = {}
-
         def _ok():
-            """Validate and close the dialog."""
             if not v_name.get().strip():
                 messagebox.showwarning("Required", "Property Name is required.")
                 return
@@ -1220,47 +1459,34 @@ class ComponentTab(tk.Frame):
             result["remarks"] = v_remarks.get().strip()
             dlg.destroy()
 
-        btn_row = tk.Frame(dlg, bg=C["BG"])
-        btn_row.pack(pady=12)
-        tk.Button(
-            btn_row, text="  OK  ", command=_ok,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
-            relief="flat", padx=10,
-        ).pack(side="left", padx=8)
-        tk.Button(
-            btn_row, text="Cancel", command=dlg.destroy,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
-            relief="flat", padx=10,
-        ).pack(side="left")
-
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
 
-    # =========================================================================
-    # RESPONSIBLE ROLE MANAGEMENT
-    # =========================================================================
-
     def _add_role(self):
-        """
-        Show a dialog to add a responsible role to the current component.
-        """
+        """Show the role dialog and add the result to the table."""
         if self._selected_index is None:
-            messagebox.showinfo("No component", "Please select or add a component first.")
+            messagebox.showinfo("No component",
+                                "Please select or add a component first.")
             return
-
         result = self._role_dialog()
         if not result:
             return
-
         self._components[self._selected_index]["roles"].append(result)
         self._role_tree.insert("", "end", values=(
-            result["role_id"],
-            result.get("remarks", ""),
+            result["role_id"], result.get("remarks", "")
         ))
         self._dirty = True
 
     def _remove_role(self):
-        """Remove the selected row from the responsible roles table."""
+        """Remove the selected role row."""
         sel = self._role_tree.selection()
         if not sel:
             return
@@ -1271,12 +1497,7 @@ class ComponentTab(tk.Frame):
         self._dirty = True
 
     def _role_dialog(self):
-        """
-        Show a modal dialog to collect a responsible role entry.
-
-        Returns:
-            A dict {"role_id": ..., "remarks": ...} or None if cancelled.
-        """
+        """Show a modal dialog to add a responsible role."""
         C   = self._colors
         dlg = tk.Toplevel(self)
         dlg.title("Add Responsible Role")
@@ -1284,40 +1505,25 @@ class ComponentTab(tk.Frame):
         dlg.resizable(False, False)
         dlg.grab_set()
 
-        # Role ID dropdown with all allowed values from the OSCAL schema
         row1 = tk.Frame(dlg, bg=C["BG"])
         row1.pack(fill="x", padx=20, pady=8)
-        tk.Label(
-            row1, text="Role ID *",
-            bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11), width=16, anchor="w",
-        ).pack(side="left")
+        tk.Label(row1, text="Role ID *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
         v_role = tk.StringVar(value=RESPONSIBLE_ROLES[0])
-        ttk.Combobox(
-            row1, textvariable=v_role,
-            values=RESPONSIBLE_ROLES,
-            state="normal",   # Allow typing a custom role not in the list
-            width=28,
-        ).pack(side="left")
+        ttk.Combobox(row1, textvariable=v_role, values=RESPONSIBLE_ROLES,
+                     state="normal", width=28).pack(side="left")
 
-        # Optional remarks
         row2 = tk.Frame(dlg, bg=C["BG"])
         row2.pack(fill="x", padx=20, pady=4)
-        tk.Label(
-            row2, text="Remarks",
-            bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11), width=16, anchor="w",
-        ).pack(side="left")
+        tk.Label(row2, text="Remarks", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
         v_remarks = tk.StringVar()
-        tk.Entry(
-            row2, textvariable=v_remarks, width=32,
-            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-            relief="flat", font=("Helvetica", 11),
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        ).pack(side="left", ipady=3)
+        tk.Entry(row2, textvariable=v_remarks, width=32,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
 
         result = {}
-
         def _ok():
             if not v_role.get().strip():
                 messagebox.showwarning("Required", "Role ID is required.")
@@ -1326,19 +1532,14 @@ class ComponentTab(tk.Frame):
             result["remarks"]  = v_remarks.get().strip()
             dlg.destroy()
 
-        btn_row = tk.Frame(dlg, bg=C["BG"])
-        btn_row.pack(pady=12)
-        tk.Button(
-            btn_row, text="  OK  ", command=_ok,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
-            relief="flat", padx=10,
-        ).pack(side="left", padx=8)
-        tk.Button(
-            btn_row, text="Cancel", command=dlg.destroy,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
-            relief="flat", padx=10,
-        ).pack(side="left")
-
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
 
@@ -1348,92 +1549,111 @@ class ComponentTab(tk.Frame):
 
     def _build_oscal_document(self):
         """
-        Convert the in-memory component list into a valid OSCAL
-        Component Definition JSON document (as a Python dictionary).
+        Convert the in-memory component list into a valid OSCAL Component
+        Definition JSON document, including the control-implementations section.
 
-        The structure follows the oscal_component_metaschema.xml schema:
-          component-definition
-            metadata
-            components[]
-              uuid, type, title, description, purpose
-              status (as a prop)
-              props[]
-              responsible-roles[]
-              remarks
+        The OSCAL structure for control implementations is:
+          control-implementations[]
+            uuid, source, description     ← one group per catalog/profile
+            implemented-requirements[]
+              uuid, control-id, description  ← one per control with a response
         """
         now = now_iso()
 
-        # ── Build the components list ─────────────────────────────────────────
+        # Determine the source URI for the control implementations.
+        # This points to the profile (preferred) or catalog as a fallback.
+        profile = self._get_profile()
+        catalog = self._get_catalog()
+        if profile and profile.get("filepath"):
+            source_href = Path(profile["filepath"]).name
+        elif catalog and catalog.get("filepath"):
+            source_href = Path(catalog["filepath"]).name
+        else:
+            source_href = "PROFILE_OR_CATALOG_HREF"
+
         oscal_components = []
         for comp in self._components:
-            # Start with the mandatory fields
+
+            # ── Basic fields ──────────────────────────────────────────────────
             c = {
                 "uuid":        comp["uuid"],
                 "type":        comp.get("type", "software"),
                 "title":       comp.get("title", ""),
                 "description": comp.get("description", ""),
             }
-
-            # Optional fields — only include if the user provided a value
             if comp.get("purpose"):
                 c["purpose"] = comp["purpose"]
 
-            # ── Props — from user-added properties ─────────────────────────
-            # We also add the operational status as a prop, which is the
-            # standard OSCAL way to convey component status.
+            # ── Props (including status) ───────────────────────────────────────
             props = []
-
-            # Add status as a prop if provided
             if comp.get("status"):
-                props.append({
-                    "name":  "operational-status",
-                    "value": comp["status"],
-                    # Include remarks on the status prop if provided
-                    **({"remarks": comp["status_remarks"]}
-                       if comp.get("status_remarks") else {}),
-                })
-
-            # Add user-defined properties
+                p = {"name": "operational-status", "value": comp["status"]}
+                if comp.get("status_remarks"):
+                    p["remarks"] = comp["status_remarks"]
+                props.append(p)
             for prop in comp.get("props", []):
-                entry = {
-                    "name":  prop["name"],
-                    "value": prop["value"],
-                }
+                entry = {"name": prop["name"], "value": prop["value"]}
                 if prop.get("remarks"):
                     entry["remarks"] = prop["remarks"]
                 props.append(entry)
-
             if props:
                 c["props"] = props
 
-            # ── Responsible roles ──────────────────────────────────────────
+            # ── Responsible roles ─────────────────────────────────────────────
             roles_list = []
             for role in comp.get("roles", []):
                 r = {"role-id": role["role_id"]}
                 if role.get("remarks"):
                     r["remarks"] = role["remarks"]
                 roles_list.append(r)
-
             if roles_list:
                 c["responsible-roles"] = roles_list
 
-            # ── Remarks ───────────────────────────────────────────────────
+            # ── Control implementations ───────────────────────────────────────
+            # Build one implemented-requirement per control that has a response.
+            ctrl_responses = comp.get("ctrl_responses", {})
+            implemented = []
+            for ctrl_id, description in ctrl_responses.items():
+                if description.strip():
+                    implemented.append({
+                        "uuid":        new_uuid(),
+                        "control-id":  ctrl_id,
+                        "description": description.strip(),
+                    })
+
+            # Only include the control-implementations block if there are
+            # at least one implemented requirement to add.
+            if implemented:
+                # Group all implemented requirements under a single
+                # control-implementation entry that references the source profile.
+                c["control-implementations"] = [
+                    {
+                        "uuid":        new_uuid(),
+                        "source":      source_href,
+                        "description": (
+                            f"Control implementations for "
+                            f"{comp.get('title', 'this component')}."
+                        ),
+                        "implemented-requirements": implemented,
+                    }
+                ]
+
+            # ── Remarks ───────────────────────────────────────────────────────
             if comp.get("remarks"):
                 c["remarks"] = comp["remarks"]
 
             oscal_components.append(c)
 
-        # ── Assemble the full OSCAL document ──────────────────────────────────
         doc = {
             "component-definition": {
                 "uuid": self._file_uuid,
                 "metadata": {
-                    "title":         self._file_title.get().strip() or "Component Definition",
+                    "title":         self._file_title.get().strip()
+                                     or "Component Definition",
                     "last-modified": now,
                     "version":       self._file_version.get().strip() or "1.0",
-                    "oscal-version": "1.1.2",   # OSCAL schema version we target
+                    "oscal-version": "1.1.2",
                 },
-                # Only include the components key if there are components to add
                 **({"components": oscal_components} if oscal_components else {}),
             }
         }
@@ -1441,50 +1661,33 @@ class ComponentTab(tk.Frame):
 
     def _parse_oscal_document(self, data):
         """
-        Parse a saved OSCAL Component Definition JSON document back into
-        our internal component list format.
-
-        This is the reverse of _build_oscal_document — it lets users
-        re-open a saved file to continue editing.
-
-        Parameters:
-            data - A Python dictionary from json.load() of a saved file.
+        Parse a saved OSCAL Component Definition JSON file back into the
+        internal component list, including any control-implementations.
         """
         root = data.get("component-definition", {})
         meta = root.get("metadata", {})
 
-        # Restore file-level metadata
         self._file_uuid = root.get("uuid", new_uuid())
         self._file_title.set(meta.get("title", ""))
         self._file_version.set(meta.get("version", "1.0"))
 
-        # Update the toolbar display label to show the loaded file's title.
-        # When the user selects a component from the list, _update_file_title
-        # will fire and overwrite this — that is the correct behaviour.
+        # Update the toolbar display label
         loaded_title = meta.get("title", "")
-        if loaded_title:
-            self._file_title_lbl.config(
-                text=loaded_title,
-                fg=self._colors["TEXT"],
-                font=("Helvetica", 10),
-            )
-        else:
-            self._file_title_lbl.config(
-                text="(enter component type and title below)",
-                fg=self._colors["SUBTEXT"],
-                font=("Helvetica", 10, "italic"),
-            )
+        self._file_title_lbl.config(
+            text=loaded_title if loaded_title
+            else "(enter component type and title below)",
+            fg=self._colors["TEXT"] if loaded_title else self._colors["SUBTEXT"],
+            font=("Helvetica", 10),
+        )
 
-        # ── Parse each component ──────────────────────────────────────────────
         self._components = []
         for c in root.get("components", []):
-            # Read props back, separating the status prop from user-defined ones
-            all_props = c.get("props", [])
+            # Props — separate status prop from user-defined ones
+            all_props   = c.get("props", [])
             status_prop = next(
                 (p for p in all_props if p.get("name") == "operational-status"),
                 None
             )
-            # Everything except the status prop goes into user properties
             user_props = [
                 {"name": p["name"], "value": p["value"],
                  "remarks": p.get("remarks", "")}
@@ -1492,11 +1695,21 @@ class ComponentTab(tk.Frame):
                 if p.get("name") != "operational-status"
             ]
 
-            # Read responsible roles
+            # Roles
             roles = [
                 {"role_id": r.get("role-id", ""), "remarks": r.get("remarks", "")}
                 for r in c.get("responsible-roles", [])
             ]
+
+            # Control responses — flatten from the OSCAL structure back to a
+            # simple {control_id: description} dict for the form.
+            ctrl_responses = {}
+            for ci in c.get("control-implementations", []):
+                for req in ci.get("implemented-requirements", []):
+                    ctrl_id = req.get("control-id", "")
+                    desc    = req.get("description", "")
+                    if ctrl_id and desc:
+                        ctrl_responses[ctrl_id] = desc
 
             comp = {
                 "uuid":           c.get("uuid", new_uuid()),
@@ -1504,78 +1717,56 @@ class ComponentTab(tk.Frame):
                 "type":           c.get("type", COMPONENT_TYPES[0]),
                 "description":    c.get("description", ""),
                 "purpose":        c.get("purpose", ""),
-                "status":         status_prop["value"] if status_prop else COMPONENT_STATUS[0],
-                "status_remarks": status_prop.get("remarks", "") if status_prop else "",
+                "status":         status_prop["value"] if status_prop
+                                  else COMPONENT_STATUS[0],
+                "status_remarks": status_prop.get("remarks", "")
+                                  if status_prop else "",
                 "remarks":        c.get("remarks", ""),
                 "props":          user_props,
                 "roles":          roles,
+                "ctrl_responses": ctrl_responses,
             }
             self._components.append(comp)
 
     # =========================================================================
-    # FILE ACTIONS (Save, Open, New)
+    # FILE ACTIONS
     # =========================================================================
 
     def _validate(self):
-        """
-        Check that the file is ready to save.
-
-        Returns a list of error strings.
-        An empty list means everything is valid.
-        """
+        """Return a list of error strings. Empty list = ready to save."""
         errors = []
-
-        # The file must have a title
         if not self._file_title.get().strip():
-            errors.append("File Title is required (in the toolbar above).")
-
-        # There must be at least one component
+            errors.append("File Title is required (fill in the type and title fields).")
         if not self._components:
             errors.append("At least one component must be added.")
-
-        # Each component must have a title and description
         for i, comp in enumerate(self._components, start=1):
             if not comp.get("title", "").strip():
                 errors.append(f"Component {i}: Title is required.")
             if not comp.get("description", "").strip():
                 errors.append(f"Component {i}: Description is required.")
-
         return errors
 
     def _save_file(self):
-        """
-        Validate and save all components to an OSCAL Component Definition
-        JSON file chosen by the user.
-
-        The file is named after the file title by default.
-        """
-        # First, save the currently displayed form into its component dict
+        """Validate and save all components to an OSCAL JSON file."""
         if self._selected_index is not None:
             self._collect_into(self._selected_index)
 
-        # Validate
         errors = self._validate()
         if errors:
             messagebox.showerror(
                 "Cannot save",
-                "Please fix the following before saving:\n\n" +
+                "Please fix the following:\n\n" +
                 "\n".join(f"• {e}" for e in errors)
             )
             return
 
-        # Suggest a filename based on the auto-generated name in the toolbar.
-        # _update_file_title() keeps self._file_title in sync with the type
-        # and title fields, so we derive the filename the same way.
-        comp_type  = self._v_type.get().strip()  if self._v_type  else ""
-        comp_title = self._v_title.get().strip() if self._v_title else ""
-
+        # Auto-generate the suggested filename
+        comp_type  = self._v_type.get().strip()  if hasattr(self, "_v_type")  else ""
+        comp_title = self._v_title.get().strip() if hasattr(self, "_v_title") else ""
         if comp_type and comp_title:
-            # Build the same safe filename as _update_file_title does
-            safe_title    = comp_title.replace(" ", "_")
-            initial_file  = f"{comp_type}_{safe_title}.json"
+            initial_file = f"{comp_type}_{comp_title.replace(' ', '_')}.json"
         else:
-            # Fall back to a generic name if fields are somehow empty
-            initial_file  = "component_definition.json"
+            initial_file = "component_definition.json"
 
         path = filedialog.asksaveasfilename(
             title="Save OSCAL Component Definition",
@@ -1584,27 +1775,20 @@ class ComponentTab(tk.Frame):
             initialfile=initial_file,
         )
         if not path:
-            return   # User cancelled
+            return
 
-        # Build the OSCAL document structure and write it to disk
         doc = self._build_oscal_document()
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
         self._dirty = False
         fname = Path(path).name
-        self._status_lbl.config(
-            text=f"Saved: {fname}", fg=self._colors["GREEN"]
-        )
+        self._status_lbl.config(text=f"Saved: {fname}", fg=self._colors["GREEN"])
         self._set_status(f"Component file saved: {fname}")
         messagebox.showinfo("Saved", f"Component definition saved:\n{path}")
 
     def _open_file(self):
-        """
-        Ask the user to select a saved OSCAL Component Definition JSON file
-        and load it for editing.
-        """
-        # Warn if there are unsaved changes
+        """Open a saved OSCAL Component Definition file for editing."""
         if self._dirty and self._components:
             if not messagebox.askyesno(
                 "Unsaved changes",
@@ -1626,7 +1810,6 @@ class ComponentTab(tk.Frame):
             messagebox.showerror("Failed to open file", str(exc))
             return
 
-        # Validate that this is actually a component definition file
         if "component-definition" not in data:
             messagebox.showerror(
                 "Invalid file",
@@ -1634,11 +1817,9 @@ class ComponentTab(tk.Frame):
             )
             return
 
-        # Parse the file into our internal format
         self._parse_oscal_document(data)
-
-        # Reset selection and rebuild the list
         self._selected_index = None
+        self._ctrl_responses  = {}
         self._refresh_list()
         self._show_form_placeholder()
 
@@ -1648,9 +1829,7 @@ class ComponentTab(tk.Frame):
         self._set_status(f"Component file opened: {fname}")
 
     def _new_file(self):
-        """
-        Clear everything and start a fresh component definition file.
-        """
+        """Clear everything and start a fresh component definition file."""
         if self._dirty and self._components:
             if not messagebox.askyesno(
                 "Unsaved changes",
@@ -1658,22 +1837,18 @@ class ComponentTab(tk.Frame):
             ):
                 return
 
-        # Reset all state to defaults
-        self._file_uuid  = new_uuid()
+        self._file_uuid       = new_uuid()
         self._file_title.set("")
         self._file_version.set("1.0")
         self._components      = []
         self._selected_index  = None
+        self._ctrl_responses  = {}
         self._dirty           = False
 
-        # Reset the toolbar filename display to its placeholder text
         self._file_title_lbl.config(
             text="(enter component type and title below)",
-            fg=self._colors["SUBTEXT"],
-            font=("Helvetica", 10, "italic"),
+            fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
-
-        # Clear the list and hide the form
         self._refresh_list()
         self._show_form_placeholder()
 

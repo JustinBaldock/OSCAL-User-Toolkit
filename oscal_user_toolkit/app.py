@@ -515,8 +515,9 @@ class OSCALApp(tk.Tk):
         # ── Tell the tabs about the new data ─────────────────────────────────
         # load_controls() replaces the tree contents with the full control list
         self._catalog_tab.load_controls(catalog["controls"])
-        # Update the SSP tab's profile info box (will show the warning)
         self._ssp_tab.refresh_profile_box()
+        # Notify the component tab so it can re-evaluate the guard condition
+        self._component_tab.on_catalog_or_profile_changed()
 
         self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
         self._update_count()
@@ -564,8 +565,8 @@ class OSCALApp(tk.Tk):
         # Show how many controls this profile selects
         self._prof_controls_lbl.config(text=str(len(profile["ids"])))
 
-        # Tell the SSP tab to update its profile info box
         self._ssp_tab.refresh_profile_box()
+        self._component_tab.on_catalog_or_profile_changed()
 
         # Re-apply all filters — the profile filter is now active
         self._apply_filters()
@@ -588,10 +589,10 @@ class OSCALApp(tk.Tk):
                     self._prof_controls_lbl):
             lbl.config(text="—")
 
-        # Tell the SSP tab to show the "no profile" warning
         self._ssp_tab.refresh_profile_box()
+        self._component_tab.on_catalog_or_profile_changed()
 
-        # Re-apply filters — profile filter is now inactive, shows all controls
+        # Re-apply filters — profile filter is now inactive
         self._apply_filters()
         self._status_lbl.config(text="Profile cleared — showing full catalog.")
 
