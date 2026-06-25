@@ -35,6 +35,7 @@ from .models import load_catalog, load_profile
 # Import the two tab classes
 from .catalog_tab import CatalogTab
 from .ssp_tab import SSPTab
+from .component_tab import ComponentTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -393,6 +394,21 @@ class OSCALApp(tk.Tk):
             get_catalog= lambda: self._catalog,
         )
         nb.add(self._catalog_tab, text="📋  Catalog Viewer")
+
+        # ── Component Editor tab ──────────────────────────────────────────────
+        # This tab sits BETWEEN Catalog Viewer and SSP Editor.
+        # It lets users create and save OSCAL Component Definition JSON files.
+        self._component_tab = ComponentTab(
+            parent     = nb,
+            colors     = COLORS,
+            # The component tab can read the catalog for future control lookups
+            get_catalog= lambda: self._catalog,
+            # The component tab can read the profile for future filtering
+            get_profile= lambda: self._profile,
+            # Let the component tab update the main window status bar
+            set_status = lambda msg: self._status_lbl.config(text=msg),
+        )
+        nb.add(self._component_tab, text="⚙  Component Editor")
 
         # ── SSP Editor tab ────────────────────────────────────────────────────
         self._ssp_tab = SSPTab(
