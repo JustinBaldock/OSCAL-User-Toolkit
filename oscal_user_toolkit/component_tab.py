@@ -154,12 +154,34 @@ class ComponentTab(tk.Frame):
         self._ctrl_responses    = {}   # {control_id: description_string}
         self._selected_ctrl_id  = None # ID of the control row currently shown
 
+        # ── External notification hook ────────────────────────────────────────
+        # Called whenever self._components changes (add, delete, open, clear).
+        # The app sets this after construction so the Capability Editor tab
+        # can re-evaluate its guard condition whenever the component list
+        # grows or shrinks. Starts as a no-op lambda so it is always safe
+        # to call regardless of whether the hook has been registered yet.
+        self._on_components_changed = lambda: None
+
         # Build the GUI
         self._build()
 
     # =========================================================================
     # PUBLIC API — called by app.py when catalog/profile state changes
     # =========================================================================
+
+    def set_on_components_changed(self, callback):
+        """
+        Register a callback that fires whenever the component list changes.
+
+        Called by app.py after both the ComponentTab and CapabilityTab have
+        been constructed, so the Capability Editor can re-evaluate its guard
+        condition (which requires at least one component to be loaded).
+
+        Parameters:
+            callback - A zero-argument callable, e.g.
+                       lambda: self._capability_tab.on_state_changed()
+        """
+        self._on_components_changed = callback
 
     def on_catalog_or_profile_changed(self):
         """
@@ -1030,6 +1052,9 @@ class ComponentTab(tk.Frame):
         self._status_lbl.config(
             text="New component added", fg=self._colors["ACCENT"]
         )
+        # Notify the Capability Editor so it can re-evaluate its guard condition
+        # (it requires at least one component to be loaded before editing)
+        self._on_components_changed()
 
     def _delete_component(self):
         """Delete the currently selected component after confirmation."""
@@ -1051,6 +1076,8 @@ class ComponentTab(tk.Frame):
         self._status_lbl.config(
             text="Component deleted", fg=self._colors["SUBTEXT"]
         )
+        # Component count changed — let the Capability Editor re-check its guard
+        self._on_components_changed()
 
     # =========================================================================
     # FORM POPULATION AND DATA COLLECTION
@@ -2072,8 +2099,8 @@ class ComponentTab(tk.Frame):
             self._status_lbl.config(text=msg, fg=self._colors["BLUE"])
 
         self._set_status(msg)
-
-    def _new_file(self):
+        # Component list changed — let the Capability Editor re-check its guard
+        self._on_components_changed()
         """
         Clear all components from the list and start fresh.
         Prompts for confirmation if there are unsaved changes.
@@ -2105,3 +2132,5 @@ class ComponentTab(tk.Frame):
             text="Cleared — ready for new components.", fg=self._colors["SUBTEXT"]
         )
         self._set_status("Component list cleared.")
+        # Components were cleared — Capability Editor guard may now block editing
+        self._on_components_changed()

@@ -381,6 +381,13 @@ class OSCALApp(tk.Tk):
         )
         nb.add(self._capability_tab, text="🔗  Capability Editor")
 
+        # Wire up the component-change notification so the Capability Editor
+        # re-evaluates its guard whenever the component list grows or shrinks.
+        # This must be done AFTER both tabs exist (they reference each other).
+        self._component_tab.set_on_components_changed(
+            self._capability_tab.on_state_changed
+        )
+
         # ── SSP Editor tab ────────────────────────────────────────────────────
         self._ssp_tab = SSPTab(
             parent     = nb,
