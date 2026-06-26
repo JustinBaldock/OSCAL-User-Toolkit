@@ -60,7 +60,8 @@ from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
-                     refresh_ctrl_list, validate_oscal_file)
+                     refresh_ctrl_list, validate_oscal_file,
+                     get_source_href, get_profile_controls)
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -88,17 +89,23 @@ class CapabilityTab(tk.Frame):
 
     def __init__(self, parent, colors,
                  get_catalog, get_components, get_profile, set_status,
-                 get_oscal_version=None, get_oscal_zip_path=None):
+                 get_oscal_version=None, get_oscal_zip_path=None,
+                 add_component=None):
         """
         Initialise the CapabilityTab.
 
         Parameters:
-            parent         - The ttk.Notebook this tab lives inside
-            colors         - Shared colour dictionary from app.py
-            get_catalog    - Callback: returns catalog dict or None
-            get_components - Callback: returns list of component dicts
-            get_profile    - Callback: returns profile dict or None
-            set_status     - Callback: updates the main window status bar
+            parent            - The ttk.Notebook this tab lives inside
+            colors            - Shared colour dictionary from app.py
+            get_catalog       - Callback: returns catalog dict or None
+            get_components    - Callback: returns list of component dicts
+            get_profile       - Callback: returns profile dict or None
+            set_status        - Callback: updates the main window status bar
+            get_oscal_version - Callback: returns the selected OSCAL version string
+            get_oscal_zip_path- Callback: returns the path to the OSCAL schema zip
+            add_component     - Callback: ComponentTab.add_component(comp) — used
+                                when loading a capability file to import its bundled
+                                member components into the Component Editor's list
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -109,6 +116,10 @@ class CapabilityTab(tk.Frame):
         self._set_status          = set_status
         self._get_oscal_version   = get_oscal_version   or (lambda: "1.1.2")
         self._get_oscal_zip_path  = get_oscal_zip_path  or (lambda: None)
+        # add_component is ComponentTab.add_component — importing bundled
+        # components via this method keeps CapabilityTab decoupled from
+        # ComponentTab's internal data structure.
+        self._add_component       = add_component or (lambda comp: None)
 
         # ── File-level state ──────────────────────────────────────────────────
         # Each saved capability gets its own component-definition file.
@@ -156,8 +167,10 @@ class CapabilityTab(tk.Frame):
         """
         if not hasattr(self, "_gate_frame"):
             return
-        # Resync inherited controls for every capability — component responses
-        # may have changed in the Component Editor since last call.
+        # Component responses can be edited in the Component Editor at any time.
+        # CapabilityTab has no per-edit callback into ComponentTab, so we rebuild
+        # every capability's inherited control list on every global state change
+        # (catalog load, profile load, component add/remove) to stay consistent.
         for cap in self._capabilities:
             self._resync_inherited_for_cap(cap)
 
@@ -477,12 +490,16 @@ class CapabilityTab(tk.Frame):
 
     def _on_mousewheel(self, event):
         """
-        Scroll the canvas on mouse-wheel, but only when the Capability
-        Editor tab (index 3) is the active tab in the main notebook.
+        Scroll the canvas on mouse-wheel, only when this tab is active.
+
+        bind_all fires on every tab, so we compare the notebook's currently
+        selected widget against str(self). This is resilient to tab reordering
+        — unlike a hardcoded tab index which silently breaks if tabs are ever
+        added, removed, or rearranged.
         """
         try:
             nb = self.master   # The main ttk.Notebook
-            if hasattr(nb, "index") and nb.index("current") == 3:
+            if hasattr(nb, "select") and nb.select() == str(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass
@@ -1199,6 +1216,36 @@ class CapabilityTab(tk.Frame):
         self._refresh_list()
         self._dirty = True
 
+    def _make_dialog(self, title, width=420):
+        """
+        Create and return a modal Toplevel dialog.
+
+        Shared skeleton for every dialog in this tab — handles window creation,
+        styling, and modal behaviour so dialog methods don't repeat boilerplate.
+
+        The caller adds content widgets, then calls wait_window(dlg) to block
+        until the user closes the dialog.
+
+        Parameters:
+            title - The dialog window title
+            width - Window width in pixels (height auto-adjusts to content)
+
+        Returns:
+            A configured tk.Toplevel ready for content widgets.
+        """
+        C   = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title(title)
+        dlg.configure(bg=C["BG"])
+        dlg.resizable(False, False)
+        # transient keeps the dialog on top of the main window
+        dlg.transient(self)
+        # grab_set makes the dialog modal — all input goes to the dialog until
+        # it is closed. Without this the user could keep clicking behind it.
+        dlg.grab_set()
+        dlg.geometry(f"{width}x1")
+        return dlg
+
     def _member_dialog(self, available):
         """
         Show a modal dialog to select a component and provide its role
@@ -1211,11 +1258,7 @@ class CapabilityTab(tk.Frame):
             {"uuid": str, "description": str} or None if the user cancelled.
         """
         C   = self._colors
-        dlg = tk.Toplevel(self)
-        dlg.title("Add Member Component")
-        dlg.configure(bg=C["BG"])
-        dlg.resizable(False, False)
-        dlg.grab_set()   # Make modal
+        dlg = self._make_dialog("Add Member Component", width=480)
 
         tk.Label(
             dlg, text="Select a component to add to this capability:",
@@ -1283,20 +1326,8 @@ class CapabilityTab(tk.Frame):
     # =========================================================================
 
     def _get_controls(self):
-        """
-        Return the list of controls to show in Section 3.
-
-        If a profile is loaded, only controls in the profile are shown.
-        Otherwise, all controls from the catalog are shown.
-        This mirrors the approach used in the Component Editor.
-        """
-        catalog = self._get_catalog()
-        if not catalog:
-            return []
-        profile = self._get_profile()
-        if profile and profile.get("ids"):
-            return [c for c in catalog["controls"] if c["id"] in profile["ids"]]
-        return catalog["controls"]
+        """Return the controls to show in Section 3 (shared logic in models.py)."""
+        return get_profile_controls(self._get_catalog(), self._get_profile())
 
     def _refresh_ctrl_list(self, search_term=""):
         """Rebuild both control list tabs from the current catalog/profile controls.
@@ -1474,15 +1505,8 @@ class CapabilityTab(tk.Frame):
         now          = now_iso()
         oscal_ver    = self._get_oscal_version()   # e.g. "1.2.2"
 
-        # Source URI for control-implementations.source (required by schema)
-        profile = self._get_profile()
-        catalog = self._get_catalog()
-        if profile and profile.get("filepath"):
-            source_href = Path(profile["filepath"]).name
-        elif catalog and catalog.get("filepath"):
-            source_href = Path(catalog["filepath"]).name
-        else:
-            source_href = "PROFILE_OR_CATALOG_HREF"
+        # Resolve source URI for control-implementations (shared helper).
+        source_href = get_source_href(self._get_profile(), self._get_catalog())
 
         # ── Member components (must be bundled for UUID resolution) ───────────
         member_uuids = set(cap.get("member_uuids", []))
@@ -1759,30 +1783,30 @@ class CapabilityTab(tk.Frame):
         }
 
         # ── Import bundled components into the Component Editor ───────────────
-        # The saved file bundles member components so UUIDs resolve. Load any
-        # that are not already open so re-sync can find them immediately.
-        existing_comp_uuids = {c["uuid"] for c in self._get_components()}
+        # The saved capability file bundles its member components so that
+        # component-uuid references resolve within the same document.
+        # We import any bundled components that aren't already open so that
+        # inherited control re-sync works immediately after loading.
+        # self._add_component() is ComponentTab.add_component() — using this
+        # public method keeps CapabilityTab decoupled from ComponentTab internals.
         for oscal_comp in cd.get("components", []):
             uid = oscal_comp.get("uuid", "")
-            if uid and uid not in existing_comp_uuids:
-                title = oscal_comp.get("title", "")
-                desc  = oscal_comp.get("description", "")
-                ctype = oscal_comp.get("type", "software")
-                ctrl_resps = {}
-                for impl in oscal_comp.get("control-implementations", []):
-                    for req in impl.get("implemented-requirements", []):
-                        cid  = req.get("control-id", "")
-                        cdsc = req.get("description", "")
-                        if cid:
-                            ctrl_resps[cid] = cdsc
-                self._get_components().append({
-                    "uuid":           uid,
-                    "title":          title,
-                    "description":    desc,
-                    "type":           ctype,
-                    "ctrl_responses": ctrl_resps,
-                })
-                existing_comp_uuids.add(uid)
+            if not uid:
+                continue
+            ctrl_resps = {}
+            for impl in oscal_comp.get("control-implementations", []):
+                for req in impl.get("implemented-requirements", []):
+                    cid  = req.get("control-id", "")
+                    cdsc = req.get("description", "")
+                    if cid:
+                        ctrl_resps[cid] = cdsc
+            self._add_component({
+                "uuid":           uid,
+                "title":          oscal_comp.get("title", ""),
+                "description":    oscal_comp.get("description", ""),
+                "type":           oscal_comp.get("type", "software"),
+                "ctrl_responses": ctrl_resps,
+            })
 
         self._capabilities.append(cap)
         # Resolve source_component_title for inherited entries now that

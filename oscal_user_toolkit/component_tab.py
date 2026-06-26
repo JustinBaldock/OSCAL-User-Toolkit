@@ -42,7 +42,8 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
-from .models import new_uuid, now_iso, build_component_oscal_entry, refresh_ctrl_list
+from .models import (new_uuid, now_iso, build_component_oscal_entry,
+                     refresh_ctrl_list, get_source_href, get_profile_controls)
 
 # =============================================================================
 # CONSTANTS — Allowed values from the OSCAL Component schema
@@ -100,9 +101,8 @@ ASSET_TYPE_VALUES = [
 ]
 
 # Colour used for the "response written" dot in the control list
-DOT_DONE    = "●"   # Filled circle  — response has been written
-DOT_PARTIAL = "◑"   # Half circle    — response started but short
-DOT_EMPTY   = "○"   # Empty circle   — no response yet
+DOT_DONE  = "●"   # Filled circle — response has been written
+DOT_EMPTY = "○"   # Empty circle  — no response yet
 
 
 class ComponentTab(tk.Frame):
@@ -181,6 +181,27 @@ class ComponentTab(tk.Frame):
                        lambda: self._capability_tab.on_state_changed()
         """
         self._on_components_changed = callback
+
+    def add_component(self, comp):
+        """
+        Add a component dict to the list if its UUID is not already present.
+
+        Called by CapabilityTab when loading a capability file that has bundled
+        member components. Importing them here means they are immediately
+        available to the Capability Editor for control inheritance re-sync,
+        and also visible to the user if they switch to this tab.
+
+        Parameters:
+            comp - A component dict with at least 'uuid', 'title', 'type',
+                   'description', and 'ctrl_responses' keys.
+
+        Returns:
+            True if the component was added, False if the UUID already existed.
+        """
+        if any(c["uuid"] == comp["uuid"] for c in self._components):
+            return False
+        self._components.append(comp)
+        return True
 
     def on_catalog_or_profile_changed(self):
         """
@@ -495,10 +516,17 @@ class ComponentTab(tk.Frame):
         self._show_form_placeholder()
 
     def _on_mousewheel(self, event):
-        """Scroll the detail canvas on mouse-wheel, only when this tab is active."""
+        """Scroll the detail canvas on mouse-wheel, only when this tab is active.
+
+        bind_all means this fires regardless of which tab is visible, so we
+        check whether THIS tab is the currently selected one before scrolling.
+        Comparing nb.select() against str(self) is resilient to tab reordering
+        — unlike hardcoding a tab index number which silently breaks if tabs
+        are ever added, removed, or reordered.
+        """
         try:
             nb = self.master
-            if hasattr(nb, "index") and nb.index("current") == 1:
+            if hasattr(nb, "select") and nb.select() == str(self):
                 self._detail_canvas.yview_scroll(
                     int(-1 * (event.delta / 120)), "units"
                 )
@@ -602,8 +630,9 @@ class ComponentTab(tk.Frame):
 
         field("Purpose", self._v_purpose, width=50)
 
-        # Wire up auto-filename and list-rename traces.
-        # trace_add("write", fn) calls fn whenever the StringVar changes.
+        # trace_add("write", fn) calls fn every time the StringVar's value
+        # changes — this makes the toolbar filename label and the component
+        # list entry update live as the user types, without needing a button.
         self._v_title.trace_add("write", self._update_file_title)
         self._v_type.trace_add("write",  self._update_file_title)
 
@@ -1176,25 +1205,8 @@ class ComponentTab(tk.Frame):
     # =========================================================================
 
     def _get_profile_controls(self):
-        """
-        Return the control list shown in the Section 7 control panel.
-
-        If a profile is loaded, returns only the controls whose IDs appear in
-        the profile's baseline.  If no profile is loaded, falls back to the
-        full catalog control list so components can still be created and saved.
-
-        Returns an empty list only when no catalog is loaded.
-        """
-        catalog = self._get_catalog()
-        if not catalog:
-            return []
-
-        profile = self._get_profile()
-        if not profile:
-            return catalog["controls"]
-
-        profile_ids = profile["ids"]
-        return [c for c in catalog["controls"] if c["id"] in profile_ids]
+        """Return the controls to show in Section 7 (shared logic in models.py)."""
+        return get_profile_controls(self._get_catalog(), self._get_profile())
 
     def _on_ctrl_tab_changed(self, _event=None):
         """
@@ -1342,6 +1354,45 @@ class ComponentTab(tk.Frame):
     # PROPERTY AND ROLE DIALOGS
     # =========================================================================
 
+    def _make_dialog(self, title, width=400):
+        """
+        Create and return a modal Toplevel dialog centred over the app window.
+
+        This is the shared skeleton used by _property_dialog, _role_dialog,
+        and any other dialogs in this tab. It handles the boilerplate that
+        would otherwise be copy-pasted into every dialog method:
+          - Creating the Toplevel window
+          - Setting its background colour
+          - Making it modal (grab_set blocks input to all other windows)
+          - Making it non-resizable
+
+        The caller is responsible for:
+          - Adding content widgets to the returned window
+          - Calling dlg.destroy() when done (usually in an _ok() closure)
+          - Calling self.wait_window(dlg) to block until the user closes it
+
+        Parameters:
+            title - The dialog window title
+            width - Window width in pixels (height auto-adjusts to content)
+
+        Returns:
+            A configured tk.Toplevel instance ready for content to be added.
+        """
+        C   = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title(title)
+        dlg.configure(bg=C["BG"])
+        dlg.resizable(False, False)
+        # transient keeps the dialog on top of its parent window even when
+        # the parent is clicked — prevents the dialog from disappearing behind
+        dlg.transient(self)
+        # grab_set makes the dialog modal: all mouse/keyboard input is directed
+        # to this dialog until it is closed. Without this, the user could keep
+        # clicking the main window while the dialog is open.
+        dlg.grab_set()
+        dlg.geometry(f"{width}x1")   # height snaps to content after widgets are added
+        return dlg
+
     def _dialog(self, title, fields):
         """
         Show a generic modal dialog to collect field values.
@@ -1429,11 +1480,7 @@ class ComponentTab(tk.Frame):
         The value widget adapts (dropdown vs free entry) based on the name.
         """
         C   = self._colors
-        dlg = tk.Toplevel(self)
-        dlg.title("Add Property")
-        dlg.configure(bg=C["BG"])
-        dlg.resizable(False, False)
-        dlg.grab_set()
+        dlg = self._make_dialog("Add Property", width=420)
 
         # Property name dropdown
         row1 = tk.Frame(dlg, bg=C["BG"])
@@ -1549,11 +1596,7 @@ class ComponentTab(tk.Frame):
     def _role_dialog(self):
         """Show a modal dialog to add a responsible role."""
         C   = self._colors
-        dlg = tk.Toplevel(self)
-        dlg.title("Add Responsible Role")
-        dlg.configure(bg=C["BG"])
-        dlg.resizable(False, False)
-        dlg.grab_set()
+        dlg = self._make_dialog("Add Responsible Role", width=400)
 
         row1 = tk.Frame(dlg, bg=C["BG"])
         row1.pack(fill="x", padx=20, pady=8)
@@ -1615,17 +1658,8 @@ class ComponentTab(tk.Frame):
         """
         now = now_iso()
 
-        # Determine the source URI for control-implementations.
-        # The schema requires a URI pointing to the profile or catalog
-        # that defines the controls being implemented.
-        profile = self._get_profile()
-        catalog = self._get_catalog()
-        if profile and profile.get("filepath"):
-            source_href = Path(profile["filepath"]).name
-        elif catalog and catalog.get("filepath"):
-            source_href = Path(catalog["filepath"]).name
-        else:
-            source_href = "PROFILE_OR_CATALOG_HREF"
+        # Resolve the source URI for control-implementations (shared helper).
+        source_href = get_source_href(self._get_profile(), self._get_catalog())
 
         # ── Build the single OSCAL component entry ────────────────────────────
         c = build_component_oscal_entry(comp, source_href)

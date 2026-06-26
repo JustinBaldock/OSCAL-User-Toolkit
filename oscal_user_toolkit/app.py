@@ -435,6 +435,9 @@ class OSCALApp(tk.Tk):
             get_oscal_zip_path  = lambda: self._oscal_version_paths.get(
                 self._oscal_version_var.get().lstrip("v")
             ),
+            # Allows CapabilityTab to import bundled components from saved
+            # capability files directly into ComponentTab's live list.
+            add_component       = self._component_tab.add_component,
         )
         nb.add(self._capability_tab, text="🔗  Capability Editor")
 

@@ -287,7 +287,13 @@ class CatalogTab(tk.Frame):
         vsb.pack(side="right", fill="y")
         self._canvas.pack(fill="both", expand=True)
 
-        # Inner frame placed inside the canvas at position (0,0)
+        # ── Why a Canvas instead of a plain Frame? ────────────────────────────
+        # Tkinter has no native scrollable Frame widget. The standard workaround
+        # is:
+        #   1. Create a Canvas (which supports scrolling natively).
+        #   2. Place a regular Frame inside it using create_window().
+        #   3. Scroll the canvas — the Frame content scrolls with it.
+        # The canvas itself stays fixed in place; only self._detail scrolls.
         self._detail = tk.Frame(self._canvas, bg=C["BG"])
         self._win = self._canvas.create_window(
             (0, 0), window=self._detail, anchor="nw"

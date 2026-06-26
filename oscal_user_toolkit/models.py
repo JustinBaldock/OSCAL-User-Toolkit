@@ -879,6 +879,65 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
         progress_lbl.config(text="")
 
 
+def get_source_href(profile, catalog):
+    """
+    Return the filename to use as the control-implementations 'source' URI.
+
+    The OSCAL component schema requires a 'source' field on every
+    control-implementations block. It should point to the catalog or profile
+    that defines the controls being implemented.
+
+    Preference order:
+      1. The profile filename (if a profile is loaded)
+      2. The catalog filename (if only a catalog is loaded)
+      3. A placeholder string (if neither is loaded — file will be incomplete)
+
+    Parameters:
+        profile - The loaded profile dict (with a 'filepath' key), or None
+        catalog - The loaded catalog dict (with a 'filepath' key), or None
+
+    Returns:
+        A filename string, e.g. "ISM_profile.json" or "PROFILE_OR_CATALOG_HREF"
+    """
+    if profile and profile.get("filepath"):
+        return Path(profile["filepath"]).name
+    if catalog and catalog.get("filepath"):
+        return Path(catalog["filepath"]).name
+    return "PROFILE_OR_CATALOG_HREF"
+
+
+def get_profile_controls(catalog, profile):
+    """
+    Return the list of controls to display in the control implementation panel.
+
+    Used by both ComponentTab and CapabilityTab so the filtering logic lives
+    in one place.
+
+    If a profile is loaded, only controls whose IDs appear in the profile's
+    baseline are returned — this is the standard OSCAL workflow where a
+    profile tailors a catalog to a specific context (e.g. a classification
+    level or system type).
+
+    If no profile is loaded, all catalog controls are returned so the user
+    can still create and save components without needing a profile.
+
+    Parameters:
+        catalog - The loaded catalog dict (from load_catalog()), or None
+        profile - The loaded profile dict (from load_profile()), or None
+
+    Returns:
+        A list of control dicts. Empty list if no catalog is loaded.
+    """
+    if not catalog:
+        return []
+    if not profile:
+        # No profile loaded — fall back to the full catalog
+        return catalog["controls"]
+    # Filter to only controls whose IDs are in the profile's selected set.
+    # profile["ids"] is a Python set, so 'in' here is O(1) — very fast.
+    return [c for c in catalog["controls"] if c["id"] in profile["ids"]]
+
+
 def build_component_oscal_entry(comp, source_href):
     """
     Convert one internal component dict into an OSCAL defined-component dict.
