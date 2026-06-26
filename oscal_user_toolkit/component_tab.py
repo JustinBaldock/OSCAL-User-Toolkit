@@ -1766,8 +1766,12 @@ class ComponentTab(tk.Frame):
         dlg = self._make_dialog("Add Protocol", width=480)
 
         # ── Protocol name (free-entry combobox) ───────────────────────────────
+        tk.Label(dlg,
+                 text="Select a common protocol from the list or type your own name.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20, pady=(8, 2))
         row1 = tk.Frame(dlg, bg=C["BG"])
-        row1.pack(fill="x", padx=20, pady=8)
+        row1.pack(fill="x", padx=20, pady=(0, 8))
         tk.Label(row1, text="Protocol Name *", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
         v_name = tk.StringVar(value=(existing or {}).get("name", ""))
