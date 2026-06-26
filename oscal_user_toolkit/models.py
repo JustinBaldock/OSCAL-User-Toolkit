@@ -1157,15 +1157,22 @@ def build_component_oscal_entry(comp, source_href):
 # so the document has a navigable structure and can be used as a formal report.
 # =============================================================================
 
-def build_ssp_docx(ssp):
+def build_ssp_docx(ssp, catalog=None):
     """
     Build and return a python-docx Document object from an internal SSP dict.
 
     The caller is responsible for saving the Document to a file path:
-        doc = build_ssp_docx(ssp)
+        doc = build_ssp_docx(ssp, catalog)
         doc.save("my_ssp.docx")
 
     Returns None if python-docx is not installed (caller should warn the user).
+
+    Parameters:
+        ssp     - internal SSP dict (from empty_ssp / parse_ssp_file)
+        catalog - internal catalog dict (from load_catalog), or None.
+                  When provided, Section 8 control implementations are sorted
+                  and grouped by catalog guideline heading in catalog order.
+                  When None, controls are listed in the order they were added.
 
     The document structure mirrors the SSP Editor sections:
         Cover — system name, version, date, status
@@ -1176,7 +1183,7 @@ def build_ssp_docx(ssp):
         5. Roles (table)
         6. Parties / People & Organisations (table)
         7. System Components (table)
-        8. Control Implementations (one subsection per control)
+        8. Control Implementations (grouped by guideline when catalog provided)
     """
     if not _DOCX_AVAILABLE:
         return None
@@ -1356,18 +1363,24 @@ def build_ssp_docx(ssp):
 
     # ────────────────────────────────────────────────────────────────────────
     # SECTION 8 — CONTROL IMPLEMENTATIONS
-    # Each control gets a Heading 2 sub-section; each by-component entry
-    # is a table row so it is easy to compare multiple components side by side.
+    # When a catalog is provided, controls are sorted and grouped under their
+    # catalog guideline headings in catalog order. Controls in the SSP that
+    # do not appear in the catalog (e.g. from a different catalog version) are
+    # collected into an "Other Controls" group at the end.
+    # Each control gets a Heading 2; each by-component entry is a table row.
     # ────────────────────────────────────────────────────────────────────────
     ctrl_impls = ssp.get("ctrl_implementations", [])
     doc.add_heading("8.  Control Implementations", level=1)
+
     if ctrl_impls:
-        # Build a lookup from component UUID to title for readable output
+        # Lookup: component UUID → display title
         comp_titles = {
             c["uuid"]: c.get("title", c["uuid"])
             for c in ssp.get("components", [])
         }
-        for ci in ctrl_impls:
+
+        def _write_ctrl_impl(ci):
+            """Write one control's heading + by-component table."""
             ctrl_id = ci.get("control_id", "")
             doc.add_heading(ctrl_id, level=2)
             if ci.get("remarks"):
@@ -1385,11 +1398,48 @@ def build_ssp_docx(ssp):
                     row.cells[1].text = bc.get("impl_status", "")
                     row.cells[2].text = bc.get("description", "")
                     if bc.get("remarks"):
-                        # Append remarks as italic text below the description
                         p = row.cells[2].add_paragraph(bc["remarks"])
                         p.runs[0].italic = True
             else:
                 doc.add_paragraph("(No component responses recorded)")
+
+        if catalog:
+            # ── Catalog-ordered output ────────────────────────────────────
+            # Build an index: control_id → ctrl_impl dict for fast lookup.
+            impl_index = {ci["control_id"]: ci for ci in ctrl_impls}
+
+            # Walk the catalog controls in their natural order, grouping by
+            # guideline. A new Heading 1 sub-section is added each time the
+            # guideline changes.
+            current_guideline = None
+            written_ids = set()
+
+            for ctrl in catalog.get("controls", []):
+                ctrl_id   = ctrl.get("id", "")
+                guideline = ctrl.get("guideline", "")
+
+                if ctrl_id not in impl_index:
+                    continue  # This control has no SSP entry — skip it.
+
+                # Emit a new guideline heading when the group changes.
+                if guideline != current_guideline:
+                    current_guideline = guideline
+                    doc.add_heading(guideline or "Ungrouped Controls", level=1)
+
+                _write_ctrl_impl(impl_index[ctrl_id])
+                written_ids.add(ctrl_id)
+
+            # Any SSP controls not found in the catalog go into a final group.
+            leftover = [ci for ci in ctrl_impls
+                        if ci["control_id"] not in written_ids]
+            if leftover:
+                doc.add_heading("Other Controls", level=1)
+                for ci in leftover:
+                    _write_ctrl_impl(ci)
+        else:
+            # ── No catalog: list controls in the order they were added ────
+            for ci in ctrl_impls:
+                _write_ctrl_impl(ci)
     else:
         doc.add_paragraph("(No control implementations defined)")
 
