@@ -30,6 +30,14 @@ try:
 except ImportError:
     _JSONSCHEMA_AVAILABLE = False
 
+try:
+    from docx import Document
+    from docx.shared import Pt, RGBColor, Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    _DOCX_AVAILABLE = True
+except ImportError:
+    _DOCX_AVAILABLE = False
+
 
 # =============================================================================
 # OSCAL CATALOG PARSING HELPERS
@@ -1140,3 +1148,249 @@ def build_component_oscal_entry(comp, source_href):
         c["remarks"] = comp["remarks"]
 
     return c
+
+
+# =============================================================================
+# SSP WORD DOCUMENT EXPORT
+# Converts the internal SSP dictionary into a formatted Microsoft Word (.docx)
+# file using the python-docx library. Each SSP section becomes a Word heading
+# so the document has a navigable structure and can be used as a formal report.
+# =============================================================================
+
+def build_ssp_docx(ssp):
+    """
+    Build and return a python-docx Document object from an internal SSP dict.
+
+    The caller is responsible for saving the Document to a file path:
+        doc = build_ssp_docx(ssp)
+        doc.save("my_ssp.docx")
+
+    Returns None if python-docx is not installed (caller should warn the user).
+
+    The document structure mirrors the SSP Editor sections:
+        Cover — system name, version, date, status
+        1. System Characteristics
+        2. Authorization Boundary
+        3. Network Architecture & Data Flow
+        4. Information Types (table)
+        5. Roles (table)
+        6. Parties / People & Organisations (table)
+        7. System Components (table)
+        8. Control Implementations (one subsection per control)
+    """
+    if not _DOCX_AVAILABLE:
+        return None
+
+    doc = Document()
+
+    # ── Helper: apply a consistent style to every table ──────────────────────
+    # "Table Grid" is a built-in Word style that draws borders on all cells.
+    def styled_table(cols):
+        t = doc.add_table(rows=0, cols=cols)
+        t.style = "Table Grid"
+        return t
+
+    # ── Helper: add a header row to a table with bold, shaded cells ──────────
+    def add_header_row(table, headings):
+        row = table.add_row()
+        for i, heading in enumerate(headings):
+            cell = row.cells[i]
+            cell.text = heading
+            # Bold the heading text
+            for run in cell.paragraphs[0].runs:
+                run.bold = True
+            # Light grey background using XML shading
+            from docx.oxml.ns import qn
+            from docx.oxml import OxmlElement
+            shd = OxmlElement("w:shd")
+            shd.set(qn("w:val"), "clear")
+            shd.set(qn("w:color"), "auto")
+            shd.set(qn("w:fill"), "D9D9D9")
+            cell._tc.get_or_add_tcPr().append(shd)
+
+    # ── Helper: add a labelled paragraph (bold label + plain value) ──────────
+    def labelled(label, value):
+        if not value:
+            return
+        p = doc.add_paragraph()
+        p.add_run(label + ": ").bold = True
+        p.add_run(value)
+
+    # ────────────────────────────────────────────────────────────────────────
+    # COVER
+    # ────────────────────────────────────────────────────────────────────────
+    title = doc.add_heading(ssp.get("system_name") or "System Security Plan", 0)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    sub = doc.add_paragraph()
+    sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    sub.add_run("System Security Plan").bold = True
+
+    doc.add_paragraph()  # blank line
+    labelled("Version",         ssp.get("version", ""))
+    labelled("Date",            ssp.get("date", ""))
+    labelled("Status",          ssp.get("status", ""))
+    labelled("System ID",       ssp.get("system_id", ""))
+    labelled("Security Level",  ssp.get("security_sensitivity_level", ""))
+
+    doc.add_page_break()
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 1 — SYSTEM CHARACTERISTICS
+    # ────────────────────────────────────────────────────────────────────────
+    doc.add_heading("1.  System Characteristics", level=1)
+    labelled("System Name",        ssp.get("system_name", ""))
+    labelled("System ID",          ssp.get("system_id", ""))
+    labelled("Version",            ssp.get("version", ""))
+    labelled("Date",               ssp.get("date", ""))
+    labelled("Operational Status", ssp.get("status", ""))
+
+    desc = ssp.get("system_description", "")
+    if desc:
+        doc.add_heading("System Description", level=2)
+        doc.add_paragraph(desc)
+
+    status_remarks = ssp.get("status_remarks", "")
+    if status_remarks:
+        doc.add_heading("Status Remarks", level=2)
+        doc.add_paragraph(status_remarks)
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 2 — AUTHORIZATION BOUNDARY
+    # ────────────────────────────────────────────────────────────────────────
+    doc.add_heading("2.  Authorization Boundary", level=1)
+    boundary = ssp.get("auth_boundary_description", "")
+    doc.add_paragraph(boundary if boundary else "(Not specified)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 3 — NETWORK ARCHITECTURE & DATA FLOW
+    # ────────────────────────────────────────────────────────────────────────
+    network = ssp.get("network_architecture", "")
+    dataflow = ssp.get("data_flow", "")
+    if network or dataflow:
+        doc.add_heading("3.  Network Architecture & Data Flow", level=1)
+        if network:
+            doc.add_heading("Network Architecture", level=2)
+            doc.add_paragraph(network)
+        if dataflow:
+            doc.add_heading("Data Flow", level=2)
+            doc.add_paragraph(dataflow)
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 4 — INFORMATION TYPES
+    # ────────────────────────────────────────────────────────────────────────
+    info_types = ssp.get("information_types", [])
+    doc.add_heading("4.  Information Types", level=1)
+    if info_types:
+        t = styled_table(5)
+        add_header_row(t, ["Title", "Description", "Confidentiality", "Integrity", "Availability"])
+        for it in info_types:
+            row = t.add_row()
+            row.cells[0].text = it.get("title", "")
+            row.cells[1].text = it.get("description", "")
+            row.cells[2].text = it.get("c_impact", "")
+            row.cells[3].text = it.get("i_impact", "")
+            row.cells[4].text = it.get("a_impact", "")
+    else:
+        doc.add_paragraph("(No information types defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 5 — ROLES
+    # ────────────────────────────────────────────────────────────────────────
+    roles = ssp.get("roles", [])
+    doc.add_heading("5.  Roles", level=1)
+    if roles:
+        t = styled_table(2)
+        add_header_row(t, ["Role ID", "Title"])
+        for r in roles:
+            row = t.add_row()
+            row.cells[0].text = r.get("role_id", "")
+            row.cells[1].text = r.get("title", "")
+    else:
+        doc.add_paragraph("(No roles defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 6 — PARTIES / PEOPLE & ORGANISATIONS
+    # ────────────────────────────────────────────────────────────────────────
+    parties = ssp.get("parties", [])
+    doc.add_heading("6.  Parties", level=1)
+    if parties:
+        t = styled_table(4)
+        add_header_row(t, ["Type", "Name", "Email", "Phone"])
+        for p in parties:
+            row = t.add_row()
+            row.cells[0].text = p.get("type", "")
+            row.cells[1].text = p.get("name", "")
+            row.cells[2].text = p.get("email", "")
+            row.cells[3].text = p.get("phone", "")
+    else:
+        doc.add_paragraph("(No parties defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 7 — SYSTEM COMPONENTS
+    # ────────────────────────────────────────────────────────────────────────
+    components = ssp.get("components", [])
+    doc.add_heading("7.  System Components", level=1)
+    if components:
+        t = styled_table(4)
+        add_header_row(t, ["Title", "Type", "Status", "Description"])
+        for comp in components:
+            row = t.add_row()
+            row.cells[0].text = comp.get("title", "")
+            row.cells[1].text = comp.get("type", "")
+            row.cells[2].text = comp.get("status", "")
+            row.cells[3].text = comp.get("description", "")
+        # Add purpose/remarks as sub-paragraphs for components that have them
+        for comp in components:
+            if comp.get("purpose") or comp.get("remarks"):
+                doc.add_heading(comp.get("title", "Component"), level=2)
+                if comp.get("purpose"):
+                    labelled("Purpose", comp["purpose"])
+                if comp.get("responsible_roles"):
+                    labelled("Responsible Roles",
+                             ", ".join(comp["responsible_roles"]))
+                if comp.get("remarks"):
+                    labelled("Remarks", comp["remarks"])
+    else:
+        doc.add_paragraph("(No components defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 8 — CONTROL IMPLEMENTATIONS
+    # Each control gets a Heading 2 sub-section; each by-component entry
+    # is a table row so it is easy to compare multiple components side by side.
+    # ────────────────────────────────────────────────────────────────────────
+    ctrl_impls = ssp.get("ctrl_implementations", [])
+    doc.add_heading("8.  Control Implementations", level=1)
+    if ctrl_impls:
+        # Build a lookup from component UUID to title for readable output
+        comp_titles = {
+            c["uuid"]: c.get("title", c["uuid"])
+            for c in ssp.get("components", [])
+        }
+        for ci in ctrl_impls:
+            ctrl_id = ci.get("control_id", "")
+            doc.add_heading(ctrl_id, level=2)
+            if ci.get("remarks"):
+                doc.add_paragraph(ci["remarks"])
+            bcs = ci.get("by_components", [])
+            if bcs:
+                t = styled_table(3)
+                add_header_row(t, ["Component", "Status", "Description"])
+                for bc in bcs:
+                    comp_name = comp_titles.get(
+                        bc.get("component_uuid", ""), bc.get("component_uuid", "")
+                    )
+                    row = t.add_row()
+                    row.cells[0].text = comp_name
+                    row.cells[1].text = bc.get("impl_status", "")
+                    row.cells[2].text = bc.get("description", "")
+                    if bc.get("remarks"):
+                        # Append remarks as italic text below the description
+                        p = row.cells[2].add_paragraph(bc["remarks"])
+                        p.runs[0].italic = True
+            else:
+                doc.add_paragraph("(No component responses recorded)")
+    else:
+        doc.add_paragraph("(No control implementations defined)")
+
+    return doc

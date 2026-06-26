@@ -32,6 +32,7 @@ from pathlib import Path   # Cross-platform file path handling
 from .models import (
     empty_ssp,         # Creates a blank SSP dictionary
     build_oscal_ssp,   # Converts our dict to OSCAL JSON format
+    build_ssp_docx,    # Converts our dict to a Word (.docx) document
     parse_ssp_file,    # Reads a saved SSP back into our dict format
     validate_ssp,      # Checks required fields before saving
     new_uuid,          # Generates a unique ID string
@@ -201,6 +202,12 @@ class SSPTab(tk.Frame):
 
         tk.Button(
             tb, text="🆕  New SSP", command=self._new,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(0, 8), pady=8)
+
+        tk.Button(
+            tb, text="📄  Export DOCX", command=self._export_docx,
             bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 8), pady=8)
@@ -1719,8 +1726,53 @@ class SSPTab(tk.Frame):
         self._refresh_bycomp_tree()
 
     # =========================================================================
-    # SAVE / OPEN / NEW ACTIONS
+    # SAVE / OPEN / NEW / EXPORT ACTIONS
     # =========================================================================
+
+    def _export_docx(self):
+        """
+        Export the current SSP form data to a Microsoft Word (.docx) file.
+
+        Collects the current form values (same as saving), asks the user where
+        to save the file, then calls build_ssp_docx() to build and write it.
+        build_ssp_docx returns None when python-docx is not installed, in which
+        case we show an install hint instead of crashing.
+        """
+        self._collect()
+
+        # Suggest a filename derived from the system name
+        system_name = self._ssp.get("system_name", "SSP").replace(" ", "_")
+        default_name = f"{system_name}.docx"
+
+        path = filedialog.asksaveasfilename(
+            title="Export SSP as Word Document",
+            defaultextension=".docx",
+            initialfile=default_name,
+            filetypes=[("Word Document", "*.docx"), ("All files", "*.*")],
+        )
+        if not path:
+            return   # User cancelled
+
+        doc = build_ssp_docx(self._ssp)
+        if doc is None:
+            # python-docx was not available when the module was imported
+            messagebox.showerror(
+                "python-docx not installed",
+                "Export to Word requires the python-docx library.\n\n"
+                "Install it with:\n    pip install python-docx\n\n"
+                "Then restart the application.",
+            )
+            return
+
+        try:
+            doc.save(path)
+            self._set_status(f"Exported: {Path(path).name}")
+            messagebox.showinfo(
+                "Export Complete",
+                f"SSP exported to:\n{path}",
+            )
+        except OSError as exc:
+            messagebox.showerror("Export Failed", str(exc))
 
     def _save(self):
         """
