@@ -216,13 +216,27 @@ class CapabilityTab(tk.Frame):
         tb.pack(fill="x", side="top")
         tb.pack_propagate(False)   # Keep the bar at a fixed 52-pixel height
 
+        # Open one or more capability JSON files
+        tk.Button(
+            tb, text="📂  Open File(s)", command=self._open_files,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=12, pady=8)
+
+        # Open a folder and load every capability JSON inside it
+        tk.Button(
+            tb, text="📁  Open Folder", command=self._open_folder,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(0, 4), pady=8)
+
         # Save the selected capability (bundles member components in same file)
         tk.Button(
             tb, text="💾  Save Capability", command=self._save_capability,
             bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
             activebackground="#8cd39a", activeforeground=C["BG"],
-        ).pack(side="left", padx=12, pady=8)
+        ).pack(side="left", padx=(8, 4), pady=8)
 
         # Clear all capabilities and start fresh
         tk.Button(
@@ -1672,6 +1686,160 @@ class CapabilityTab(tk.Frame):
             f"  Capability-level responses: {n_cap_level}\n\n"
             f"{path}"
         )
+
+    def _load_capability_from_path(self, path):
+        """
+        Load one capability from a JSON file and append it to self._capabilities.
+
+        Parses the OSCAL component-definition structure produced by
+        _build_oscal_document(). Also imports any bundled member components
+        into the Component Editor (via self._get_components()) so that
+        inherited control responses can be re-synced immediately.
+
+        Returns True on success, False if the file was skipped (not a valid
+        capability file, or a duplicate UUID).
+        """
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return False
+
+        cd = data.get("component-definition", {})
+        caps = cd.get("capabilities", [])
+        if not caps:
+            return False   # No capability section — not a capability file
+
+        # Skip if this capability UUID is already loaded
+        existing_uuids = {c["uuid"] for c in self._capabilities}
+        oscal_cap = caps[0]
+        if oscal_cap.get("uuid") in existing_uuids:
+            return False
+
+        # ── Rebuild the in-memory capability dict ─────────────────────────────
+        member_uuids    = []
+        member_descs    = {}
+        for inc in oscal_cap.get("incorporates-components", []):
+            uid = inc.get("component-uuid", "")
+            if uid:
+                member_uuids.append(uid)
+                member_descs[uid] = inc.get("description", "")
+
+        # Separate inherited (has source-component-uuid prop) from capability-level
+        ctrl_responses  = {}
+        inherited       = []
+        for impl in oscal_cap.get("control-implementations", []):
+            for req in impl.get("implemented-requirements", []):
+                ctrl_id = req.get("control-id", "")
+                desc    = req.get("description", "")
+                src_uuid = next(
+                    (p["value"] for p in req.get("props", [])
+                     if p.get("name") == "source-component-uuid"),
+                    None,
+                )
+                if src_uuid:
+                    inherited.append({
+                        "ctrl_id":                ctrl_id,
+                        "description":            desc,
+                        "source_component_uuid":  src_uuid,
+                        "source_component_title": "",   # resolved by resync below
+                    })
+                else:
+                    ctrl_responses[ctrl_id] = desc
+
+        cap = {
+            "uuid":                    oscal_cap.get("uuid", new_uuid()),
+            "name":                    oscal_cap.get("name", ""),
+            "description":             oscal_cap.get("description", ""),
+            "remarks":                 oscal_cap.get("remarks", ""),
+            "member_uuids":            member_uuids,
+            "member_descriptions":     member_descs,
+            "ctrl_responses":          ctrl_responses,
+            "inherited_ctrl_responses": inherited,
+        }
+
+        # ── Import bundled components into the Component Editor ───────────────
+        # The saved file bundles member components so UUIDs resolve. Load any
+        # that are not already open so re-sync can find them immediately.
+        existing_comp_uuids = {c["uuid"] for c in self._get_components()}
+        for oscal_comp in cd.get("components", []):
+            uid = oscal_comp.get("uuid", "")
+            if uid and uid not in existing_comp_uuids:
+                title = oscal_comp.get("title", "")
+                desc  = oscal_comp.get("description", "")
+                ctype = oscal_comp.get("type", "software")
+                ctrl_resps = {}
+                for impl in oscal_comp.get("control-implementations", []):
+                    for req in impl.get("implemented-requirements", []):
+                        cid  = req.get("control-id", "")
+                        cdsc = req.get("description", "")
+                        if cid:
+                            ctrl_resps[cid] = cdsc
+                self._get_components().append({
+                    "uuid":           uid,
+                    "title":          title,
+                    "description":    desc,
+                    "type":           ctype,
+                    "ctrl_responses": ctrl_resps,
+                })
+                existing_comp_uuids.add(uid)
+
+        self._capabilities.append(cap)
+        # Resolve source_component_title for inherited entries now that
+        # bundled components have been added to the component list.
+        self._resync_inherited_for_cap(cap)
+        return True
+
+    def _open_files(self):
+        """Open one or more capability JSON files selected by the user."""
+        paths = filedialog.askopenfilenames(
+            title="Open Capability File(s) — Ctrl+click to select multiple",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not paths:
+            return
+        added = skipped = 0
+        for path in paths:
+            if self._load_capability_from_path(path):
+                added += 1
+            else:
+                skipped += 1
+        self._after_open(added, skipped)
+
+    def _open_folder(self):
+        """Open a folder and load every valid capability JSON file inside it."""
+        folder = filedialog.askdirectory(
+            title="Open Folder — loads all capability JSON files inside"
+        )
+        if not folder:
+            return
+        json_files = sorted(Path(folder).glob("*.json"))
+        if not json_files:
+            messagebox.showinfo(
+                "No JSON files found",
+                f"No .json files were found in:\n{folder}"
+            )
+            return
+        added = skipped = 0
+        for path in json_files:
+            if self._load_capability_from_path(path):
+                added += 1
+            else:
+                skipped += 1
+        self._after_open(added, skipped)
+
+    def _after_open(self, added, skipped):
+        """Shared cleanup after _open_files() or _open_folder() finishes."""
+        self._refresh_list()
+        # Auto-select the first loaded capability if nothing was selected before
+        if self._sel_index is None and self._capabilities:
+            self._sel_index = 0
+            self._populate_from(0)
+        msg = f"Loaded {added} capability file(s)"
+        if skipped:
+            msg += f" ({skipped} skipped — duplicates or invalid files)"
+        self._status_lbl.config(text=msg, fg=self._colors["GREEN"])
+        self._set_status(msg)
 
     def _clear_all(self):
         """Clear all capabilities and start fresh, with confirmation."""
