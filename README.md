@@ -49,8 +49,10 @@ The result is a library of audited, reusable building blocks. As the library gro
 - Create OSCAL System Security Plan documents
 - Capture system characteristics, authorization boundary, network architecture, and data flow descriptions
 - Manage roles, parties, and information types with CIA impact levels
+- Define system components and document how each one implements individual security controls
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
 - Saves a self-documenting SSP that records the profile title, version, and filename in the back-matter section
+- **Export to Word** — generate a formatted `.docx` report from the SSP, with control implementations grouped and sorted under catalog guideline headings (requires `python-docx`)
 
 ### Schema Validation
 - Bundled OSCAL release zips (1.1.2, 1.2.0, 1.2.2) — select the target version from the toolbar
@@ -79,9 +81,10 @@ The result is a library of audited, reusable building blocks. As the library gro
 - Python 3.10 or later
 - tkinter (included with standard Python on Windows and macOS; on Linux install `python3-tk`)
 - `jsonschema` *(optional)* — enables schema validation on open/save
+- `python-docx` *(optional)* — enables the **Export to Word** button in the SSP Editor
 
 ```bash
-pip install jsonschema
+pip install jsonschema python-docx
 ```
 
 ### Installation
@@ -92,7 +95,7 @@ cd OSCAL-Processor
 python main.py
 ```
 
-No other installation steps are required. All core functionality uses Python's standard library.
+No installation steps beyond the optional packages above are required. All core functionality uses Python's standard library. If an optional package is not installed, the feature that depends on it is gracefully disabled with an informative message rather than crashing.
 
 ### OSCAL Schema Zips
 
