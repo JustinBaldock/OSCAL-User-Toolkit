@@ -1,0 +1,26 @@
+{
+  "component-definition": {
+    "uuid": "499e14f8-ffac-46bb-bbda-0100e566529e",
+    "metadata": {
+      "title": "service - Windows Fileshare Network I:",
+      "last-modified": "2026-06-26T07:31:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "d1c0fb4d-24e5-4d5c-ad4c-68ac05b252a7",
+        "type": "service",
+        "title": "Windows Fileshare Network I:",
+        "description": "This is the primary fileshare for normal uses. It provides general information fileshare service.",
+        "purpose": "The Windows fileshare mapped as I:",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ]
+      }
+    ]
+  }
+}

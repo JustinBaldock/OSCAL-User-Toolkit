@@ -1390,7 +1390,7 @@ class ComponentTab(tk.Frame):
         # to this dialog until it is closed. Without this, the user could keep
         # clicking the main window while the dialog is open.
         dlg.grab_set()
-        dlg.geometry(f"{width}x1")   # height snaps to content after widgets are added
+        dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
         return dlg
 
     def _dialog(self, title, fields):

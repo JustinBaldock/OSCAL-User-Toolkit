@@ -1245,7 +1245,7 @@ class CapabilityTab(tk.Frame):
         # grab_set makes the dialog modal — all input goes to the dialog until
         # it is closed. Without this the user could keep clicking behind it.
         dlg.grab_set()
-        dlg.geometry(f"{width}x1")
+        dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
         return dlg
 
     def _member_dialog(self, available):

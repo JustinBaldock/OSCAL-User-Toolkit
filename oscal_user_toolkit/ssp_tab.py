@@ -940,7 +940,7 @@ class SSPTab(tk.Frame):
         dlg.resizable(False, False)
         dlg.transient(self)
         dlg.grab_set()
-        dlg.geometry(f"{width}x1")
+        dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
         return dlg
 
     # =========================================================================
