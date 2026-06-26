@@ -30,19 +30,44 @@ from pathlib import Path   # Cross-platform file path handling
 # Import our data functions from the models module.
 # The dot before 'models' means "look in the same package folder".
 from .models import (
-    empty_ssp,        # Creates a blank SSP dictionary
-    build_oscal_ssp,  # Converts our dict to OSCAL JSON format
-    parse_ssp_file,   # Reads a saved SSP back into our dict format
-    validate_ssp,     # Checks required fields before saving
-    new_uuid,         # Generates a unique ID string
+    empty_ssp,         # Creates a blank SSP dictionary
+    build_oscal_ssp,   # Converts our dict to OSCAL JSON format
+    parse_ssp_file,    # Reads a saved SSP back into our dict format
+    validate_ssp,      # Checks required fields before saving
+    new_uuid,          # Generates a unique ID string
+    refresh_ctrl_list, # Shared All/Applied control-list renderer (Section 9)
 )
+
+
+# =============================================================================
+# CONSTANTS — allowed values from the OSCAL SSP schema
+# =============================================================================
+
+# Component type enum for SSP system-implementation components (Section 8).
+# Note this differs from the component-definition enum: an SSP may NOT use
+# "this-system" here (that one is auto-generated), so it is omitted.
+SSP_COMPONENT_TYPES = [
+    "software", "hardware", "service", "policy", "physical",
+    "process-procedure", "plan", "guidance", "standard",
+    "validation", "network", "system", "interconnection",
+]
+
+# implementation-status state enum for a by-component entry (Section 9).
+IMPL_STATUS_VALUES = [
+    "implemented", "partial", "planned", "alternative", "not-applicable",
+]
+
+# Operational status enum for an SSP component's status.state (Section 8).
+SSP_COMPONENT_STATUS = [
+    "under-development", "operational", "disposition", "other",
+]
 
 
 class SSPTab(tk.Frame):
     """
     A self-contained SSP editor panel.
 
-    The panel contains a scrollable form divided into seven sections:
+    The panel contains a scrollable form divided into nine sections:
         1. SSP Metadata
         2. System Characteristics
         3. Authorization Boundary
@@ -50,18 +75,25 @@ class SSPTab(tk.Frame):
         5. Information Types (table)
         6. Roles (table)
         7. Parties / People & Organisations (table)
+        8. System Components (table + import)
+        9. Control Implementations (control list + by-component entries)
     """
 
-    def __init__(self, parent, colors, get_profile, get_catalog, set_status):
+    def __init__(self, parent, colors, get_profile, get_catalog, set_status,
+                 get_components=None):
         """
         Set up the SSPTab panel.
 
         Parameters:
-            parent      - The parent widget (the ttk.Notebook)
-            colors      - Shared colour dictionary from app.py
-            get_profile - Callback: returns the loaded profile dict or None
-            get_catalog - Callback: returns the loaded catalog dict or None
-            set_status  - Callback: set_status("message") updates the status bar
+            parent         - The parent widget (the ttk.Notebook)
+            colors         - Shared colour dictionary from app.py
+            get_profile    - Callback: returns the loaded profile dict or None
+            get_catalog    - Callback: returns the loaded catalog dict or None
+            set_status     - Callback: set_status("message") updates the status bar
+            get_components - Optional callback returning ComponentTab's live list
+                             of component dicts, used to import components into
+                             Section 8. Defaults to a no-op returning an empty
+                             list so the tab works even if the hook is not wired.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -70,10 +102,20 @@ class SSPTab(tk.Frame):
         self._get_profile = get_profile
         self._get_catalog = get_catalog
         self._set_status  = set_status
+        self._get_components = get_components or (lambda: [])
 
         # The SSP data is stored as a plain Python dictionary.
         # All form widgets read from and write to this dictionary.
         self._ssp = empty_ssp()
+
+        # ── Section 8 & 9 working state ───────────────────────────────────────
+        # These mirror the lists inside self._ssp while the form is open, so the
+        # tables and dialogs can mutate them directly without touching the
+        # canonical dict until _collect() runs.
+        self._ssp_components = []   # mirrors ssp["components"]
+        self._ssp_ctrl_impls = []   # mirrors ssp["ctrl_implementations"]
+        self._sel_comp_index = None # selected component row in Section 8
+        self._sel_ctrl_id    = None # selected control id in Section 9
 
         # _ssp_vars holds tkinter StringVar objects, one per form text field.
         # A StringVar is a special variable that automatically updates the
@@ -239,13 +281,17 @@ class SSPTab(tk.Frame):
 
     def _on_mousewheel(self, event):
         """
-        Scroll the form canvas when the user rolls the mouse wheel,
-        but only when the SSP tab (tab index 1) is currently selected.
+        Scroll the form canvas when the user rolls the mouse wheel, but only
+        when the SSP tab is the currently selected one.
+
+        bind_all means this fires regardless of which tab is visible, so we
+        compare nb.select() against str(self) to confirm THIS tab is active.
+        That is resilient to tab reordering — unlike hardcoding a tab index,
+        which silently breaks if tabs are added, removed, or reordered.
         """
         try:
-            # self.master is the Notebook widget
             nb = self.master
-            if hasattr(nb, "index") and nb.index("current") == 3:
+            if hasattr(nb, "select") and nb.select() == str(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass   # Silently ignore any errors (e.g. during startup)
@@ -516,8 +562,269 @@ class SSPTab(tk.Frame):
             list_key = "parties",
         )
 
+        # ── 8. System Components ──────────────────────────────────────────────
+        self._build_section8(parent, section)
+
+        # ── 9. Control Implementations ────────────────────────────────────────
+        self._build_section9(parent, section)
+
         # Bottom padding so the last section is not flush against the edge
         tk.Frame(parent, bg=C["BG"], height=40).pack()
+
+    # =========================================================================
+    # SECTION 8 — SYSTEM COMPONENTS
+    # =========================================================================
+
+    def _build_section8(self, parent, section):
+        """
+        Build Section 8: a toolbar of actions plus a Treeview listing the
+        system's components.
+
+        Parameters:
+            parent  - The scrollable form frame
+            section - The local 'section' header helper from _build_form
+        """
+        C = self._colors
+
+        section("8 ·  System Components")
+        tk.Label(
+            parent,
+            text="  The components that make up this system (software, hardware,\n"
+                 "  services, etc.). Add them by hand, or import existing component\n"
+                 "  files — or pull them straight from the Component Editor.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            justify="left",
+        ).pack(anchor="w", padx=28)
+
+        # ── Toolbar of component actions ──────────────────────────────────────
+        comp8_btn = tk.Frame(parent, bg=C["BG"])
+        comp8_btn.pack(fill="x", padx=28, pady=4)
+        tk.Button(
+            comp8_btn, text="＋  Add Component", command=self._add_ssp_component,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            comp8_btn, text="📂  Import File(s)",
+            command=self._import_components_from_files,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+        tk.Button(
+            comp8_btn, text="📁  Import Folder",
+            command=self._import_components_from_folder,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+        tk.Button(
+            comp8_btn, text="✏  Edit Selected", command=self._edit_ssp_component,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+        tk.Button(
+            comp8_btn, text="✕  Remove", command=self._remove_ssp_component,
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+
+        # ── Component table ───────────────────────────────────────────────────
+        comp8_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        comp8_frame.pack(fill="x", padx=28, pady=6)
+        self._comp8_tree = ttk.Treeview(
+            comp8_frame,
+            columns=("type", "title", "status", "description"),
+            show="headings", height=6, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("type",        "Type",        100, False),
+            ("title",       "Title",       180, False),
+            ("status",      "Status",      120, False),
+            ("description", "Description", 300, True),
+        ]:
+            self._comp8_tree.heading(col, text=heading, anchor="w")
+            self._comp8_tree.column(col, width=w, anchor="w", stretch=stretch)
+        self._comp8_tree.pack(fill="x", padx=8, pady=8)
+
+    # =========================================================================
+    # SECTION 9 — CONTROL IMPLEMENTATIONS
+    # =========================================================================
+
+    def _build_section9(self, parent, section):
+        """
+        Build Section 9: a two-pane area. The left pane is a tabbed control
+        list (All / Applied), the right pane shows the by-component entries
+        for the selected control.
+
+        If no catalog is loaded there are no controls to implement, so we show
+        a placeholder instead of the two-pane editor. _refresh_ctrl9_list also
+        guards on the catalog, so the editor stays inert until one is loaded.
+
+        Parameters:
+            parent  - The scrollable form frame
+            section - The local 'section' header helper from _build_form
+        """
+        C = self._colors
+
+        section("9 ·  Control Implementations")
+        tk.Label(
+            parent,
+            text="  For each control, describe how the system's components implement\n"
+                 "  it. Select a control on the left, then add one by-component entry\n"
+                 "  per component that contributes.   ● = has entries   ○ = none yet",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            justify="left",
+        ).pack(anchor="w", padx=28)
+
+        ctrl9_outer = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        ctrl9_outer.pack(fill="both", expand=True, padx=28, pady=6)
+
+        # Placeholder shown when no catalog is loaded (no controls to work with).
+        self._ctrl9_placeholder = tk.Label(
+            ctrl9_outer,
+            text="Load a catalog (and optionally a profile) to implement controls.",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 11, "italic"),
+        )
+        self._ctrl9_placeholder.pack(padx=20, pady=30)
+
+        # The actual two-pane editor lives inside _ctrl9_body, shown/hidden
+        # as a unit by _refresh_ctrl9_list depending on whether a catalog exists.
+        self._ctrl9_body = tk.Frame(ctrl9_outer, bg=C["CARD_BG"])
+        # (Not packed yet — _refresh_ctrl9_list decides.)
+
+        ctrl9_pane = tk.PanedWindow(
+            self._ctrl9_body, orient="horizontal",
+            bg=C["CARD_BG"], sashwidth=4, sashrelief="flat",
+        )
+        ctrl9_pane.pack(fill="both", expand=True)
+
+        # ── LEFT: tabbed control list (mirrors ComponentTab Section 7) ─────────
+        ctrl9_left = tk.Frame(ctrl9_pane, bg=C["SIDEBAR_BG"])
+        ctrl9_pane.add(ctrl9_left, minsize=220, width=320)
+
+        # Search box filters the All Controls tab.
+        search_row = tk.Frame(ctrl9_left, bg=C["SIDEBAR_BG"])
+        search_row.pack(fill="x", padx=6, pady=6)
+        tk.Label(search_row, text="🔍", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(side="left")
+        self._ctrl9_search_var = tk.StringVar()
+        self._ctrl9_search_var.trace_add("write", self._on_ctrl9_search)
+        tk.Entry(
+            search_row, textvariable=self._ctrl9_search_var,
+            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+            relief="flat", font=("Helvetica", 10),
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        ).pack(side="left", fill="x", expand=True, ipady=3, padx=(4, 0))
+
+        self._ctrl9_notebook = ttk.Notebook(ctrl9_left)
+        self._ctrl9_notebook.pack(fill="both", expand=True, padx=4, pady=(0, 2))
+
+        def make_ctrl9_tree(tab_parent):
+            """Build a dot/label/statement Treeview inside a notebook tab."""
+            frame = tk.Frame(tab_parent, bg=C["SIDEBAR_BG"])
+            frame.pack(fill="both", expand=True)
+            tree = ttk.Treeview(
+                frame, columns=("dot", "label", "title"),
+                show="headings", selectmode="browse",
+            )
+            tree.heading("dot",   text="",           anchor="center")
+            tree.heading("label", text="ID / Label", anchor="w")
+            tree.heading("title", text="Statement",  anchor="w")
+            tree.column("dot",   width=24,  minwidth=24,  anchor="center", stretch=False)
+            tree.column("label", width=100, minwidth=80,  anchor="w",      stretch=False)
+            tree.column("title", width=180, minwidth=100, anchor="w",      stretch=True)
+            tree.tag_configure("done",  foreground=C["GREEN"])
+            tree.tag_configure("empty", foreground=C["SUBTEXT"])
+            vsb = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+            tree.configure(yscrollcommand=vsb.set)
+            tree.pack(side="left", fill="both", expand=True)
+            vsb.pack(side="right", fill="y")
+            tree.bind("<<TreeviewSelect>>", self._on_ctrl9_select)
+            return tree
+
+        all_tab = tk.Frame(self._ctrl9_notebook, bg=C["SIDEBAR_BG"])
+        self._ctrl9_notebook.add(all_tab, text="All Controls")
+        self._ctrl9_tree = make_ctrl9_tree(all_tab)
+
+        applied_tab = tk.Frame(self._ctrl9_notebook, bg=C["SIDEBAR_BG"])
+        self._ctrl9_notebook.add(applied_tab, text="Applied Controls")
+        self._applied9_tree = make_ctrl9_tree(applied_tab)
+
+        # Clear the search and rebuild when the user switches tabs.
+        self._ctrl9_notebook.bind(
+            "<<NotebookTabChanged>>",
+            lambda _e: (self._ctrl9_search_var.set(""), self._refresh_ctrl9_list()),
+        )
+
+        # Progress counter — MUST exist before any _refresh_ctrl9_list call.
+        self._ctrl9_progress_lbl = tk.Label(
+            ctrl9_left, text="", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9),
+        )
+        self._ctrl9_progress_lbl.pack(pady=(2, 6))
+
+        # ── RIGHT: by-component entries for the selected control ───────────────
+        ctrl9_right = tk.Frame(ctrl9_pane, bg=C["BG"])
+        ctrl9_pane.add(ctrl9_right, minsize=300)
+
+        self._ctrl9_stmt_lbl = tk.Label(
+            ctrl9_right,
+            text="Select a control from the list to add implementation entries.",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
+            wraplength=380, justify="left", anchor="nw",
+        )
+        self._ctrl9_stmt_lbl.pack(fill="x", padx=8, pady=(8, 4))
+
+        tk.Frame(ctrl9_right, bg=C["HEADER_BG"], height=1).pack(
+            fill="x", padx=8, pady=4
+        )
+
+        # Buttons to manage by-component entries.
+        bycomp_btn = tk.Frame(ctrl9_right, bg=C["BG"])
+        bycomp_btn.pack(fill="x", padx=8, pady=(4, 4))
+        tk.Button(
+            bycomp_btn, text="＋  Add Entry", command=self._add_bycomp_entry,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            bycomp_btn, text="✏  Edit Selected", command=self._edit_bycomp_entry,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+        tk.Button(
+            bycomp_btn, text="✕  Remove", command=self._remove_bycomp_entry,
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+
+        # By-component entries table for the selected control.
+        bycomp_frame = tk.Frame(
+            ctrl9_right, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        bycomp_frame.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        self._bycomp_tree = ttk.Treeview(
+            bycomp_frame, columns=("component", "status", "description"),
+            show="headings", height=5, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("component",   "Component",   160, False),
+            ("status",      "Status",      120, False),
+            ("description", "Description", 240, True),
+        ]:
+            self._bycomp_tree.heading(col, text=heading, anchor="w")
+            self._bycomp_tree.column(col, width=w, anchor="w", stretch=stretch)
+        self._bycomp_tree.pack(fill="both", expand=True, padx=8, pady=8)
+
+        # Render the initial state (placeholder vs editor + empty trees).
+        self._refresh_ctrl9_list()
 
     # =========================================================================
     # MODAL DIALOG HELPER
@@ -605,6 +912,614 @@ class SSPTab(tk.Frame):
         dlg.wait_window()
 
         # Return the populated result dict, or None if Cancel was clicked
+        return result if result else None
+
+    def _make_dialog(self, title, width=420):
+        """
+        Create and return a modal Toplevel dialog (same skeleton used by
+        ComponentTab and CapabilityTab).
+
+        The caller adds its own content widgets, then calls self.wait_window(dlg)
+        to block until the dialog closes. grab_set makes the dialog modal;
+        transient keeps it above its parent. The height snaps to its content
+        once widgets are packed.
+        """
+        C   = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title(title)
+        dlg.configure(bg=C["BG"])
+        dlg.resizable(False, False)
+        dlg.transient(self)
+        dlg.grab_set()
+        dlg.geometry(f"{width}x1")
+        return dlg
+
+    # =========================================================================
+    # SECTION 8 — SYSTEM COMPONENT METHODS
+    # =========================================================================
+
+    def _refresh_comp8_tree(self):
+        """Clear and repopulate the Section 8 component table from memory."""
+        self._comp8_tree.delete(*self._comp8_tree.get_children())
+        for comp in self._ssp_components:
+            self._comp8_tree.insert("", "end", values=(
+                comp.get("type", ""),
+                comp.get("title", ""),
+                comp.get("status", ""),
+                comp.get("description", ""),
+            ))
+
+    def _add_ssp_component(self):
+        """Show the component dialog and append the result to Section 8."""
+        comp = self._ssp_component_dialog()
+        if not comp:
+            return
+        self._ssp_components.append(comp)
+        self._refresh_comp8_tree()
+
+    def _edit_ssp_component(self):
+        """Edit the selected Section 8 component in place."""
+        sel = self._comp8_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a component to edit.")
+            return
+        idx = self._comp8_tree.index(sel[0])
+        updated = self._ssp_component_dialog(existing=self._ssp_components[idx])
+        if not updated:
+            return
+        # Preserve the original UUID so any Section 9 references stay valid.
+        updated["uuid"] = self._ssp_components[idx]["uuid"]
+        self._ssp_components[idx] = updated
+        self._refresh_comp8_tree()
+        # A component's title may have changed — refresh the by-component table.
+        self._refresh_bycomp_tree()
+
+    def _remove_ssp_component(self):
+        """
+        Remove the selected component and any Section 9 by-component entries
+        that reference it (those entries would otherwise dangle).
+        """
+        sel = self._comp8_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a component to remove.")
+            return
+        idx = self._comp8_tree.index(sel[0])
+        removed_uuid = self._ssp_components[idx]["uuid"]
+        self._ssp_components.pop(idx)
+
+        # Drop any by-component entries that referenced the removed component,
+        # then drop any control implementation left with no entries at all.
+        for ci in self._ssp_ctrl_impls:
+            ci["by_components"] = [
+                bc for bc in ci["by_components"]
+                if bc.get("component_uuid") != removed_uuid
+            ]
+        self._ssp_ctrl_impls[:] = [
+            ci for ci in self._ssp_ctrl_impls if ci["by_components"]
+        ]
+
+        self._refresh_comp8_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+        self._refresh_bycomp_tree()
+
+    def _add_ssp_component_dict(self, comp_dict):
+        """
+        Append a component dict to Section 8 if its UUID is not already present.
+
+        Returns True if added, False if a component with that UUID already
+        exists (so imports never create duplicates).
+        """
+        if any(c["uuid"] == comp_dict["uuid"] for c in self._ssp_components):
+            return False
+        self._ssp_components.append(comp_dict)
+        return True
+
+    def _import_component_file(self, path):
+        """
+        Read one OSCAL component-definition file and import every component it
+        defines into Section 8.
+
+        Returns True if at least one component was added, False otherwise
+        (unreadable file, wrong type, or all UUIDs already present).
+        """
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return False
+
+        comps = data.get("component-definition", {}).get("components", [])
+        added_any = False
+        for c in comps:
+            # OSCAL stores operational status as a prop; pull it back out.
+            status_prop = next(
+                (p for p in c.get("props", [])
+                 if p.get("name") == "operational-status"),
+                None,
+            )
+            roles = [r.get("role-id", "")
+                     for r in c.get("responsible-roles", [])]
+            comp_dict = {
+                "uuid":              c.get("uuid", new_uuid()),
+                "type":              c.get("type", "software"),
+                "title":             c.get("title", ""),
+                "description":       c.get("description", ""),
+                "purpose":           c.get("purpose", ""),
+                "status":            status_prop["value"] if status_prop
+                                     else "operational",
+                "status_remarks":    status_prop.get("remarks", "")
+                                     if status_prop else "",
+                "responsible_roles": [r for r in roles if r],
+                "remarks":           c.get("remarks", ""),
+            }
+            if self._add_ssp_component_dict(comp_dict):
+                added_any = True
+        return added_any
+
+    def _import_components_from_files(self):
+        """Import components from one or more chosen component JSON files."""
+        paths = filedialog.askopenfilenames(
+            title="Import Component File(s)",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not paths:
+            return
+        added = skipped = 0
+        for path in paths:
+            if self._import_component_file(path):
+                added += 1
+            else:
+                skipped += 1
+        self._refresh_comp8_tree()
+        self._set_status(
+            f"Imported components from {added} file(s); skipped {skipped}."
+        )
+
+    def _import_components_from_folder(self):
+        """Import components from every JSON file in a chosen folder."""
+        folder = filedialog.askdirectory(
+            title="Import Components — loads all JSON files in the folder"
+        )
+        if not folder:
+            return
+        added = skipped = 0
+        for path in sorted(Path(folder).glob("*.json")):
+            if self._import_component_file(path):
+                added += 1
+            else:
+                skipped += 1
+        self._refresh_comp8_tree()
+        self._set_status(
+            f"Imported components from {added} file(s); skipped {skipped}."
+        )
+
+    def _ssp_component_dialog(self, existing=None):
+        """
+        Modal dialog to add or edit an SSP component (Section 8).
+
+        Parameters:
+            existing - An existing component dict to pre-fill (edit mode), or
+                       None to start blank (add mode).
+
+        Returns:
+            A component dict (with a generated uuid in add mode), or None if
+            the user cancelled or left a required field blank.
+        """
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Component" if existing else "Add Component", width=460
+        )
+
+        def labelled(parent, text, width=18):
+            """Pack a label and return the row frame for the input widget."""
+            row = tk.Frame(parent, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=width, anchor="w",
+                     ).pack(side="left")
+            return row
+
+        def entry(row, var, width=40):
+            tk.Entry(row, textvariable=var, width=width,
+                     bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                     relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                     highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        # Title
+        v_title = tk.StringVar(value=e.get("title", ""))
+        entry(labelled(dlg, "Title *"), v_title)
+
+        # Type
+        v_type = tk.StringVar(value=e.get("type", SSP_COMPONENT_TYPES[0]))
+        ttk.Combobox(labelled(dlg, "Type *"), textvariable=v_type,
+                     values=SSP_COMPONENT_TYPES, state="readonly",
+                     width=28).pack(side="left")
+
+        # Description (multi-line)
+        tk.Label(dlg, text="Description *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(6, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=3, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
+
+        # Purpose
+        v_purpose = tk.StringVar(value=e.get("purpose", ""))
+        entry(labelled(dlg, "Purpose"), v_purpose)
+
+        # Status
+        v_status = tk.StringVar(value=e.get("status", SSP_COMPONENT_STATUS[0]))
+        ttk.Combobox(labelled(dlg, "Status *"), textvariable=v_status,
+                     values=SSP_COMPONENT_STATUS, state="readonly",
+                     width=28).pack(side="left")
+
+        # Status remarks
+        v_status_rem = tk.StringVar(value=e.get("status_remarks", ""))
+        entry(labelled(dlg, "Status Remarks"), v_status_rem)
+
+        # Responsible roles (comma-separated role IDs)
+        v_roles = tk.StringVar(
+            value=", ".join(e.get("responsible_roles", []))
+        )
+        entry(labelled(dlg, "Responsible Roles"), v_roles)
+
+        # Remarks
+        v_remarks = tk.StringVar(value=e.get("remarks", ""))
+        entry(labelled(dlg, "Remarks"), v_remarks)
+
+        result = {}
+
+        def _ok():
+            title = v_title.get().strip()
+            desc  = t_desc.get("1.0", "end-1c").strip()
+            if not title:
+                messagebox.showwarning("Required", "Title is required.")
+                return
+            if not desc:
+                messagebox.showwarning("Required", "Description is required.")
+                return
+            # Split the comma-separated role IDs, dropping blanks.
+            roles = [r.strip() for r in v_roles.get().split(",") if r.strip()]
+            result.update({
+                "uuid":              e.get("uuid") or new_uuid(),
+                "type":              v_type.get(),
+                "title":             title,
+                "description":       desc,
+                "purpose":           v_purpose.get().strip(),
+                "status":            v_status.get(),
+                "status_remarks":    v_status_rem.get().strip(),
+                "responsible_roles": roles,
+                "remarks":           v_remarks.get().strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    # =========================================================================
+    # SECTION 9 — CONTROL IMPLEMENTATION METHODS
+    # =========================================================================
+
+    def _ctrl9_responses(self):
+        """
+        Build the {control_id: non-empty-string} dict refresh_ctrl_list needs
+        to draw the 'applied' dot. A control counts as applied when it has at
+        least one by-component entry; we use "○" as a placeholder marker for
+        controls with an entry list but (defensively) no usable description.
+        """
+        return {
+            ci["control_id"]: (
+                ci["by_components"][0]["description"]
+                if ci["by_components"] and ci["by_components"][0].get("description")
+                else ("○" if ci["by_components"] else "")
+            )
+            for ci in self._ssp_ctrl_impls
+        }
+
+    def _refresh_ctrl9_list(self, search_term=""):
+        """
+        Rebuild the All/Applied control lists in Section 9.
+
+        Guarded on the catalog: with no catalog there are no controls, so we
+        show the placeholder and hide the two-pane editor instead.
+        """
+        if not self._get_catalog():
+            self._ctrl9_body.pack_forget()
+            self._ctrl9_placeholder.pack(padx=20, pady=30)
+            return
+
+        # Catalog present — show the editor.
+        self._ctrl9_placeholder.pack_forget()
+        self._ctrl9_body.pack(fill="both", expand=True)
+
+        from .models import get_profile_controls
+        refresh_ctrl_list(
+            ctrl_responses=self._ctrl9_responses(),
+            all_controls=get_profile_controls(
+                self._get_catalog(), self._get_profile()
+            ),
+            search_term=search_term,
+            ctrl_tree=self._ctrl9_tree,
+            applied_tree=self._applied9_tree,
+            notebook=self._ctrl9_notebook,
+            progress_lbl=self._ctrl9_progress_lbl,
+        )
+
+    def _on_ctrl9_search(self, *_args):
+        """Filter the All Controls tab as the user types."""
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+
+    def _on_ctrl9_select(self, _event=None):
+        """
+        Handle a click in either control tree. Works out which tree fired,
+        clears the other's selection, records the control id, updates the
+        statement label, and refreshes the by-component table.
+        """
+        ctrl_id = None
+        for tree in (self._ctrl9_tree, self._applied9_tree):
+            sel = tree.selection()
+            if sel:
+                ctrl_id = sel[0]   # iid is the control id
+                other = (self._applied9_tree
+                         if tree is self._ctrl9_tree else self._ctrl9_tree)
+                other.selection_remove(*other.selection())
+                break
+        if ctrl_id is None:
+            return
+
+        self._sel_ctrl_id = ctrl_id
+
+        # Show the control's label and statement for reference.
+        catalog = self._get_catalog()
+        ctrl_dict = None
+        if catalog:
+            ctrl_dict = next(
+                (c for c in catalog["controls"] if c["id"] == ctrl_id), None
+            )
+        if ctrl_dict:
+            label     = ctrl_dict.get("label", ctrl_id)
+            statement = ctrl_dict.get("statement", ctrl_dict.get("title", ""))
+            self._ctrl9_stmt_lbl.config(
+                text=f"[{label}]  {statement}", fg=self._colors["TEXT"]
+            )
+        else:
+            self._ctrl9_stmt_lbl.config(text=ctrl_id, fg=self._colors["SUBTEXT"])
+
+        self._refresh_bycomp_tree()
+
+    def _find_ctrl_impl(self, ctrl_id):
+        """Return the ctrl_implementation entry for ctrl_id, or None."""
+        return next(
+            (ci for ci in self._ssp_ctrl_impls if ci["control_id"] == ctrl_id),
+            None,
+        )
+
+    def _comp_title_for_uuid(self, comp_uuid):
+        """Return a component's title for display, falling back to its UUID."""
+        for c in self._ssp_components:
+            if c["uuid"] == comp_uuid:
+                return c.get("title", "") or comp_uuid
+        return comp_uuid
+
+    def _refresh_bycomp_tree(self):
+        """Repopulate the by-component table for the selected control."""
+        self._bycomp_tree.delete(*self._bycomp_tree.get_children())
+        if not self._sel_ctrl_id:
+            return
+        ci = self._find_ctrl_impl(self._sel_ctrl_id)
+        if not ci:
+            return
+        for bc in ci["by_components"]:
+            self._bycomp_tree.insert("", "end", values=(
+                self._comp_title_for_uuid(bc.get("component_uuid", "")),
+                bc.get("impl_status", ""),
+                bc.get("description", ""),
+            ))
+
+    def _add_bycomp_entry(self):
+        """
+        Add a by-component entry for the selected control. Requires a control
+        to be selected and at least one component to exist in Section 8.
+        """
+        if not self._sel_ctrl_id:
+            messagebox.showinfo(
+                "No control selected", "Select a control from the list first."
+            )
+            return
+        bc = self._bycomp_dialog()
+        if not bc:
+            return
+        # Find or create the control implementation entry, then append.
+        ci = self._find_ctrl_impl(self._sel_ctrl_id)
+        if ci is None:
+            ci = {"control_id": self._sel_ctrl_id, "remarks": "",
+                  "by_components": []}
+            self._ssp_ctrl_impls.append(ci)
+        ci["by_components"].append(bc)
+        self._refresh_bycomp_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+        # Keep the row selected so the by-component table stays in view.
+        self._reselect_ctrl9(self._sel_ctrl_id)
+
+    def _edit_bycomp_entry(self):
+        """Edit the selected by-component entry in place."""
+        if not self._sel_ctrl_id:
+            return
+        sel = self._bycomp_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an entry to edit.")
+            return
+        ci = self._find_ctrl_impl(self._sel_ctrl_id)
+        if not ci:
+            return
+        idx = self._bycomp_tree.index(sel[0])
+        updated = self._bycomp_dialog(existing=ci["by_components"][idx])
+        if not updated:
+            return
+        # Preserve the entry UUID so the OSCAL by-component identity is stable.
+        updated["uuid"] = ci["by_components"][idx]["uuid"]
+        ci["by_components"][idx] = updated
+        self._refresh_bycomp_tree()
+
+    def _remove_bycomp_entry(self):
+        """Remove the selected by-component entry; drop the control if empty."""
+        if not self._sel_ctrl_id:
+            return
+        sel = self._bycomp_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an entry to remove.")
+            return
+        ci = self._find_ctrl_impl(self._sel_ctrl_id)
+        if not ci:
+            return
+        idx = self._bycomp_tree.index(sel[0])
+        ci["by_components"].pop(idx)
+        # A control with no entries is removed entirely so its dot clears.
+        if not ci["by_components"]:
+            self._ssp_ctrl_impls.remove(ci)
+        self._refresh_bycomp_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+        self._reselect_ctrl9(self._sel_ctrl_id)
+
+    def _reselect_ctrl9(self, ctrl_id):
+        """
+        Restore the row selection for ctrl_id in whichever control tab is
+        currently visible, so dot/count refreshes do not lose the selection.
+        """
+        active_tab = self._ctrl9_notebook.index("current")
+        tree = self._ctrl9_tree if active_tab == 0 else self._applied9_tree
+        try:
+            tree.selection_set(ctrl_id)
+            tree.see(ctrl_id)
+        except Exception:
+            pass   # Row may not exist in the Applied tab after a removal
+
+    def _bycomp_dialog(self, existing=None):
+        """
+        Modal dialog to add or edit a by-component implementation entry.
+
+        Requires at least one component in Section 8 (you cannot implement a
+        control with no component). If none exist, prompts the user and returns
+        None.
+
+        Parameters:
+            existing - An existing by-component dict to pre-fill, or None.
+
+        Returns:
+            A by-component dict (with a generated uuid in add mode), or None.
+        """
+        if not self._ssp_components:
+            messagebox.showinfo(
+                "No components",
+                "Add at least one component in Section 8 before describing\n"
+                "how it implements a control."
+            )
+            return None
+
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Implementation Entry" if existing else "Add Implementation Entry",
+            width=460,
+        )
+
+        # Build "Title [type]" labels mapped to component UUIDs.
+        choices = []
+        label_to_uuid = {}
+        for c in self._ssp_components:
+            label = f"{c.get('title', '(untitled)')} [{c.get('type', '')}]"
+            choices.append(label)
+            label_to_uuid[label] = c["uuid"]
+
+        # Pre-select the existing component if editing.
+        default_label = choices[0]
+        if e.get("component_uuid"):
+            for lbl, u in label_to_uuid.items():
+                if u == e["component_uuid"]:
+                    default_label = lbl
+                    break
+
+        def labelled(text, width=18):
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=width, anchor="w",
+                     ).pack(side="left")
+            return row
+
+        # Component
+        v_comp = tk.StringVar(value=default_label)
+        ttk.Combobox(labelled("Component *"), textvariable=v_comp,
+                     values=choices, state="readonly", width=30).pack(side="left")
+
+        # Implementation status
+        v_status = tk.StringVar(value=e.get("impl_status", IMPL_STATUS_VALUES[0]))
+        ttk.Combobox(labelled("Implementation Status *"), textvariable=v_status,
+                     values=IMPL_STATUS_VALUES, state="readonly",
+                     width=30).pack(side="left")
+
+        # Description (multi-line)
+        tk.Label(dlg, text="Description *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(6, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=4, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
+
+        # Remarks
+        v_remarks = tk.StringVar(value=e.get("remarks", ""))
+        rr = labelled("Remarks")
+        tk.Entry(rr, textvariable=v_remarks, width=40,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        result = {}
+
+        def _ok():
+            desc = t_desc.get("1.0", "end-1c").strip()
+            if not desc:
+                messagebox.showwarning("Required", "Description is required.")
+                return
+            result.update({
+                "uuid":           e.get("uuid") or new_uuid(),
+                "component_uuid": label_to_uuid[v_comp.get()],
+                "description":    desc,
+                "impl_status":    v_status.get(),
+                "remarks":        v_remarks.get().strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
         return result if result else None
 
     # =========================================================================
@@ -698,6 +1613,11 @@ class SSPTab(tk.Frame):
         # Note: table data (roles, parties, info_types) is updated in real-time
         # by _add_* and _remove_* methods, so no collection needed here.
 
+        # Sections 8 & 9 are edited in their own working lists; copy them back
+        # into the canonical SSP dict so they are included when building OSCAL.
+        self._ssp["components"]           = self._ssp_components
+        self._ssp["ctrl_implementations"] = self._ssp_ctrl_impls
+
     def _populate(self):
         """
         Write values from self._ssp into all form widgets.
@@ -753,6 +1673,16 @@ class SSPTab(tk.Frame):
             self._party_tree.insert("", "end",
                 values=(p["type"], p["name"], p.get("email", "")))
 
+        # ── Sections 8 & 9: load working lists and rebuild their widgets ──────
+        # list(...) makes shallow copies so editing the form does not mutate the
+        # parsed dict until _collect() copies them back.
+        self._ssp_components = list(ssp.get("components", []))
+        self._ssp_ctrl_impls = list(ssp.get("ctrl_implementations", []))
+        self._sel_ctrl_id    = None
+        self._refresh_comp8_tree()
+        self._refresh_ctrl9_list()
+        self._refresh_bycomp_tree()
+
     def _reset(self):
         """
         Clear all form widgets back to their default values.
@@ -778,6 +1708,15 @@ class SSPTab(tk.Frame):
         # Clear all tables
         for tree in (self._it_tree, self._role_tree, self._party_tree):
             tree.delete(*tree.get_children())
+
+        # ── Reset Sections 8 & 9 working state and widgets ───────────────────
+        self._ssp_components = []
+        self._ssp_ctrl_impls = []
+        self._sel_comp_index = None
+        self._sel_ctrl_id    = None
+        self._refresh_comp8_tree()
+        self._refresh_ctrl9_list()
+        self._refresh_bycomp_tree()
 
     # =========================================================================
     # SAVE / OPEN / NEW ACTIONS

@@ -345,6 +345,21 @@ def empty_ssp():
         "parties":          [],
         # Each info type: {"uuid", "title", "description", "c_impact", "i_impact", "a_impact"}
         "information_types": [],
+
+        # ── Section 8: System Components ──────────────────────────────────
+        # Each component is a dict with keys: uuid, type, title, description,
+        # purpose, status, status_remarks, responsible_roles (list of role-id
+        # strings), remarks. These become extra entries (alongside the
+        # auto-generated "this-system" component) in system-implementation.
+        "components":           [],
+
+        # ── Section 9: Control Implementations ───────────────────────────
+        # Each entry describes how the system implements one control:
+        #   {"control_id", "remarks", "by_components": [
+        #       {"uuid", "component_uuid", "description", "impl_status", "remarks"}
+        #   ]}
+        # These become the implemented-requirements of control-implementation.
+        "ctrl_implementations": [],
     }
 
 
@@ -462,6 +477,61 @@ def build_oscal_ssp(ssp, profile, catalog):
     # For a basic SSP, one component of type "this-system" is sufficient.
     component_uuid = new_uuid()
 
+    # ── Build the full system-implementation components list ──────────────────
+    # Always start with the auto-generated "this-system" component, then append
+    # each user-defined component from Section 8. Optional keys (purpose,
+    # status remarks, responsible-roles, remarks) are only included when present
+    # using the **({...} if cond else {}) idiom described above.
+    si_components = [{
+        "uuid":        component_uuid,
+        "type":        "this-system",
+        "title":       ssp.get("system_name", "This System"),
+        "description": ssp.get("system_description", ""),
+        "status":      {"state": ssp.get("status", "under-development")},
+    }]
+    for comp in ssp.get("components", []):
+        si_components.append({
+            "uuid":        comp["uuid"],
+            "type":        comp["type"],
+            "title":       comp["title"],
+            "description": comp["description"],
+            **({"purpose": comp["purpose"]} if comp.get("purpose") else {}),
+            "status": {
+                "state": comp["status"],
+                **({"remarks": comp["status_remarks"]}
+                   if comp.get("status_remarks") else {}),
+            },
+            **({"responsible-roles": [{"role-id": r}
+                                      for r in comp["responsible_roles"]]}
+               if comp.get("responsible_roles") else {}),
+            **({"remarks": comp["remarks"]} if comp.get("remarks") else {}),
+        })
+
+    # ── Build implemented-requirements from Section 9 ─────────────────────────
+    # Each ctrl_implementation maps to one implemented-requirement, with its
+    # by_components flattened into OSCAL by-component entries. If the user has
+    # not added any control implementations, we leave an empty list so the
+    # control-implementation block stays schema-valid.
+    implemented_requirements = [
+        {
+            "uuid":       new_uuid(),
+            "control-id": ci["control_id"],
+            "by-components": [
+                {
+                    "component-uuid": bc["component_uuid"],
+                    "uuid":           bc["uuid"],
+                    "description":    bc["description"],
+                    **({"implementation-status": {"state": bc["impl_status"]}}
+                       if bc.get("impl_status") else {}),
+                    **({"remarks": bc["remarks"]} if bc.get("remarks") else {}),
+                }
+                for bc in ci["by_components"]
+            ],
+            **({"remarks": ci["remarks"]} if ci.get("remarks") else {}),
+        }
+        for ci in ssp.get("ctrl_implementations", [])
+    ]
+
     # ── Assemble the final OSCAL document ────────────────────────────────────
     # The ** (double-star) operator unpacks a dictionary into keyword arguments.
     # Here we use it to conditionally include optional keys only when they
@@ -518,21 +588,19 @@ def build_oscal_ssp(ssp, profile, catalog):
                    if ssp.get("data_flow") else {}),
             },
 
-            # System implementation — the components that make up the system
+            # System implementation — the components that make up the system.
+            # Includes the auto-generated "this-system" component plus any
+            # user-defined components from Section 8.
             "system-implementation": {
-                "components": [{
-                    "uuid":        component_uuid,
-                    "type":        "this-system",
-                    "title":       ssp.get("system_name", "This System"),
-                    "description": ssp.get("system_description", ""),
-                    "status":      {"state": ssp.get("status", "under-development")},
-                }]
+                "components": si_components,
             },
 
-            # Control implementation — to be populated in Stage 2
+            # Control implementation — how the system's components implement
+            # each control (Section 9). The description is always present;
+            # implemented-requirements is empty until the user adds entries.
             "control-implementation": {
-                "description": "Control implementation statements will be added in Stage 2.",
-                "implemented-requirements": [],
+                "description": "Control implementation statements for this system.",
+                "implemented-requirements": implemented_requirements,
             },
 
             # Back-matter — reference documents (our profile/catalog entry goes here)
@@ -603,6 +671,60 @@ def parse_ssp_file(data):
             "a_impact": it.get("availability-impact",    {}).get("base", "fips-199-moderate"),
         })
 
+    # ── System components (Section 8) ─────────────────────────────────────────
+    # Read every component except the auto-generated "this-system" one, which
+    # we regenerate from the system characteristics when saving (so re-importing
+    # it would create a duplicate).
+    components = []
+    for c in root.get("system-implementation", {}).get("components", []):
+        if c.get("type") == "this-system":
+            continue
+        status_obj = c.get("status", {})
+        roles = [r.get("role-id", "") for r in c.get("responsible-roles", [])]
+        components.append({
+            "uuid":              c.get("uuid", new_uuid()),
+            "type":              c.get("type", "software"),
+            "title":             c.get("title", ""),
+            "description":       c.get("description", ""),
+            "purpose":           c.get("purpose", ""),
+            "status":            status_obj.get("state", "operational"),
+            "status_remarks":    status_obj.get("remarks", ""),
+            # Drop any empty role-id strings so the internal list stays clean
+            "responsible_roles": [r for r in roles if r],
+            "remarks":           c.get("remarks", ""),
+        })
+
+    # ── Control implementations (Section 9) ───────────────────────────────────
+    # Group the OSCAL implemented-requirements by control-id. A well-formed SSP
+    # has one implemented-requirement per control, but we deduplicate defensively
+    # so multiple entries for the same control merge their by-components.
+    ctrl_implementations = []
+    seen_ctrl_ids = {}   # control_id -> the entry dict already in the list
+    for ir in root.get("control-implementation", {}).get("implemented-requirements", []):
+        ctrl_id = ir.get("control-id", "")
+        if not ctrl_id:
+            continue
+        bcs = []
+        for bc in ir.get("by-components", []):
+            is_obj = bc.get("implementation-status", {})
+            bcs.append({
+                "uuid":           bc.get("uuid", new_uuid()),
+                "component_uuid": bc.get("component-uuid", ""),
+                "description":    bc.get("description", ""),
+                "impl_status":    is_obj.get("state", "implemented"),
+                "remarks":        bc.get("remarks", ""),
+            })
+        if ctrl_id in seen_ctrl_ids:
+            seen_ctrl_ids[ctrl_id]["by_components"].extend(bcs)
+        else:
+            entry = {
+                "control_id":    ctrl_id,
+                "remarks":       ir.get("remarks", ""),
+                "by_components": bcs,
+            }
+            seen_ctrl_ids[ctrl_id] = entry
+            ctrl_implementations.append(entry)
+
     # ── Resolve import-profile reference ──────────────────────────────────────
     import_href = root.get("import-profile", {}).get("href", "")
 
@@ -654,6 +776,8 @@ def parse_ssp_file(data):
         "roles":           roles,
         "parties":         parties,
         "information_types": info_types,
+        "components":           components,
+        "ctrl_implementations": ctrl_implementations,
         # Preserve the import href so it round-trips correctly on re-save
         "import_href":           import_href,
         # Preserve the back-matter UUID so it stays stable across edits

@@ -458,6 +458,8 @@ class OSCALApp(tk.Tk):
             get_catalog= lambda: self._catalog,
             # The SSP tab can update the main status bar via this callback
             set_status = lambda msg: self._status_lbl.config(text=msg),
+            # Lets Section 8 import components straight from the Component Editor
+            get_components = lambda: self._component_tab._components,
         )
         nb.add(self._ssp_tab, text="🛡  SSP Editor")
 

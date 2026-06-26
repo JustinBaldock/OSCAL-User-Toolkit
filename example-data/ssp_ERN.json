@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Network",
-      "last-modified": "2026-06-25T07:06:58Z",
+      "last-modified": "2026-06-26T06:16:57Z",
       "version": "0.1",
       "oscal-version": "1.1.2"
     },
@@ -57,10 +57,78 @@
     "system-implementation": {
       "components": [
         {
-          "uuid": "d3ea4982-ec86-4f2b-b1c9-42def3c2a3c3",
+          "uuid": "7c842a4d-4bb3-46e2-824c-586d873414b6",
           "type": "this-system",
           "title": "Example Research Network",
           "description": "This is a description of a small example network.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+          "type": "service",
+          "title": "Active Directory",
+          "description": "Provide authenciation to all devices and provide group policy to Windows computers.",
+          "purpose": "Provide authenciation to all devices and provide group policy to Windows computers.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "69089434-0a47-46cd-b249-a924ebf536bd",
+          "type": "policy",
+          "title": "System usage",
+          "description": "The system usage policy provides clear guidance for what the system will be used for.",
+          "purpose": "This policy describes how the system can be used by staff.",
+          "status": {
+            "state": "operational"
+          },
+          "responsible-roles": [
+            {
+              "role-id": "system-owner"
+            },
+            {
+              "role-id": "maintainer"
+            }
+          ]
+        },
+        {
+          "uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+          "type": "hardware",
+          "title": "Cabling Infrastrucutre",
+          "description": "All permament cabling infrastructure",
+          "purpose": "Provide connectivity between equipment",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "14e81bf8-7ff1-4857-a520-588d55bad0b4",
+          "type": "hardware",
+          "title": "Firewall central",
+          "description": "This is the networks primary firewall.",
+          "purpose": "The primary firewall",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+          "type": "hardware",
+          "title": "network encryptor ABC",
+          "description": "A hardware network encryptor that does abc.",
+          "purpose": "provide hardware based network encryption",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+          "type": "software",
+          "title": "Airlock Digital",
+          "description": "Airlock digital provides applicatoin allow listing and execution control of software.",
+          "purpose": "Provides application control solution",
           "status": {
             "state": "operational"
           }
@@ -68,7 +136,7 @@
       ]
     },
     "control-implementation": {
-      "description": "Control implementation statements will be added in Stage 2.",
+      "description": "Control implementation statements for this system.",
       "implemented-requirements": []
     },
     "back-matter": {
