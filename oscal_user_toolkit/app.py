@@ -425,14 +425,16 @@ class OSCALApp(tk.Tk):
         # Requires a catalog loaded AND at least one component in the
         # Component Editor before editing is allowed.
         self._capability_tab = CapabilityTab(
-            parent         = nb,
-            colors         = COLORS,
-            get_catalog    = lambda: self._catalog,
-            # Pass a live reference to the Component Editor's component list
-            # so the Capability tab always sees the current set of components.
-            get_components = lambda: self._component_tab._components,
-            get_profile    = lambda: self._profile,
-            set_status     = lambda msg: self._status_lbl.config(text=msg),
+            parent              = nb,
+            colors              = COLORS,
+            get_catalog         = lambda: self._catalog,
+            get_components      = lambda: self._component_tab._components,
+            get_profile         = lambda: self._profile,
+            set_status          = lambda msg: self._status_lbl.config(text=msg),
+            get_oscal_version   = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_oscal_zip_path  = lambda: self._oscal_version_paths.get(
+                self._oscal_version_var.get().lstrip("v")
+            ),
         )
         nb.add(self._capability_tab, text="🔗  Capability Editor")
 

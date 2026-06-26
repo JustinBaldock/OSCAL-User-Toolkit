@@ -1,0 +1,163 @@
+{
+  "component-definition": {
+    "uuid": "15fc3dae-9b55-4a2c-8a5e-82d2f95d12df",
+    "metadata": {
+      "title": "Capability: Remote office",
+      "last-modified": "2026-06-26T00:38:52Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+        "type": "hardware",
+        "title": "Cabling Infrastrucutre",
+        "description": "All permament cabling infrastructure",
+        "purpose": "Provide connectivity between equipment",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "2d7bfc80-2fca-4b84-81a7-6f5cfcc6ae7c",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Cabling Infrastrucutre.",
+            "implemented-requirements": [
+              {
+                "uuid": "81cd0ab5-443c-467e-8d01-0b3116df792c",
+                "control-id": "ism-0181",
+                "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards."
+              },
+              {
+                "uuid": "609098a3-81cd-48ee-ad7b-0e2f587113fa",
+                "control-id": "ism-1111",
+                "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre."
+              },
+              {
+                "uuid": "249dfe50-643d-4c5a-9892-ffa4deeee2ac",
+                "control-id": "ism-1820",
+                "description": "All fibre-optic and copper cables use a consistent colour."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+        "type": "hardware",
+        "title": "network encryptor ABC",
+        "description": "A hardware network encryptor that does abc.",
+        "purpose": "provide hardware based network encryption",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1a6ba80f-ded1-49dc-ae40-ce2e0728ed5d",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for network encryptor ABC.",
+            "implemented-requirements": [
+              {
+                "uuid": "f0f70b84-3cbb-42c9-9242-fc105c368986",
+                "control-id": "ism-0457",
+                "description": "This device means the cryptographic requirements."
+              },
+              {
+                "uuid": "340bcccc-0284-4d2a-ae78-63be091c1e5d",
+                "control-id": "ism-0465",
+                "description": "The common criteria evaluation certificate is document abc"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "85d36880-43b5-4559-8199-6f81b028e9fb",
+        "name": "Remote office",
+        "description": "The network provides access from remote offices.",
+        "incorporates-components": [
+          {
+            "component-uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+            "description": "This hardware ensures that all network communication is encrypted and only goes back to the main office."
+          },
+          {
+            "component-uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+            "description": "All office cabling follows the standard."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "cdc3d814-8ab2-4893-9d57-d9ec48c9071b",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for capability: Remote office. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "2f738d18-a2c2-455c-9902-787a3ed0232d",
+                "control-id": "ism-0457",
+                "description": "This device means the cryptographic requirements.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "82722e6a-b942-4c39-b6ef-e1184642c62d"
+                  }
+                ]
+              },
+              {
+                "uuid": "095ab2d0-7f24-4017-a292-9ff079db42c6",
+                "control-id": "ism-0465",
+                "description": "The common criteria evaluation certificate is document abc",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "82722e6a-b942-4c39-b6ef-e1184642c62d"
+                  }
+                ]
+              },
+              {
+                "uuid": "23b2067c-b988-486d-8c0a-12c024540ae0",
+                "control-id": "ism-0181",
+                "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "5c98eeba-85da-4f43-bb9a-d01b339b840b"
+                  }
+                ]
+              },
+              {
+                "uuid": "36aaa00a-3872-4a54-b7ad-aabda0599816",
+                "control-id": "ism-1111",
+                "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "5c98eeba-85da-4f43-bb9a-d01b339b840b"
+                  }
+                ]
+              },
+              {
+                "uuid": "845f8870-b334-49f5-9a14-5f8c735cc05f",
+                "control-id": "ism-1820",
+                "description": "All fibre-optic and copper cables use a consistent colour.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "5c98eeba-85da-4f43-bb9a-d01b339b840b"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

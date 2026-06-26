@@ -59,7 +59,8 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
-from .models import new_uuid, now_iso, build_component_oscal_entry, refresh_ctrl_list
+from .models import (new_uuid, now_iso, build_component_oscal_entry,
+                     refresh_ctrl_list, validate_oscal_file)
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -86,7 +87,8 @@ class CapabilityTab(tk.Frame):
     """
 
     def __init__(self, parent, colors,
-                 get_catalog, get_components, get_profile, set_status):
+                 get_catalog, get_components, get_profile, set_status,
+                 get_oscal_version=None, get_oscal_zip_path=None):
         """
         Initialise the CapabilityTab.
 
@@ -100,11 +102,13 @@ class CapabilityTab(tk.Frame):
         """
         super().__init__(parent, bg=colors["BG"])
 
-        self._colors         = colors
-        self._get_catalog    = get_catalog
-        self._get_components = get_components
-        self._get_profile    = get_profile
-        self._set_status     = set_status
+        self._colors              = colors
+        self._get_catalog         = get_catalog
+        self._get_components      = get_components
+        self._get_profile         = get_profile
+        self._set_status          = set_status
+        self._get_oscal_version   = get_oscal_version   or (lambda: "1.1.2")
+        self._get_oscal_zip_path  = get_oscal_zip_path  or (lambda: None)
 
         # ── File-level state ──────────────────────────────────────────────────
         # Each saved capability gets its own component-definition file.
@@ -114,13 +118,17 @@ class CapabilityTab(tk.Frame):
         # ── Capability list state ─────────────────────────────────────────────
         # Each capability dict in memory:
         # {
-        #   uuid:                str,
-        #   name:                str,
-        #   description:         str,
-        #   remarks:             str,
-        #   member_uuids:        [str, ...],    # component UUIDs
-        #   member_descriptions: {uuid: str},   # role of each member
-        #   ctrl_responses:      {ctrl_id: str} # capability-level responses
+        #   uuid:                    str,
+        #   name:                    str,
+        #   description:             str,
+        #   remarks:                 str,
+        #   member_uuids:            [str, ...],    # component UUIDs
+        #   member_descriptions:     {uuid: str},   # role of each member
+        #   ctrl_responses:          {ctrl_id: str} # capability-level responses
+        #   inherited_ctrl_responses: [             # synced from member components
+        #     { ctrl_id, description,
+        #       source_component_uuid, source_component_title }, ...
+        #   ]
         # }
         self._capabilities       = []
         self._sel_index          = None   # index into self._capabilities
@@ -148,14 +156,18 @@ class CapabilityTab(tk.Frame):
         """
         if not hasattr(self, "_gate_frame"):
             return
+        # Resync inherited controls for every capability — component responses
+        # may have changed in the Component Editor since last call.
+        for cap in self._capabilities:
+            self._resync_inherited_for_cap(cap)
+
         if self._ready():
             self._gate_frame.pack_forget()
             self._body_pane.pack(fill="both", expand=True)
             self._update_gate_label()
-            # If a capability is open, refresh its control list
-            # (the catalog or component list may have changed)
             if self._sel_index is not None:
-                self._refresh_ctrl_list()
+                # Reload the selected capability so inherited changes appear
+                self._populate_from(self._sel_index)
         else:
             self._body_pane.pack_forget()
             self._gate_frame.pack(fill="both", expand=True)
@@ -726,14 +738,14 @@ class CapabilityTab(tk.Frame):
         )
         self._progress_lbl.pack(pady=(2, 6))
 
-        # ── Right sub-pane: response text editor ──────────────────────────────
+        # ── Right sub-pane: response editor ───────────────────────────────────
         ctrl_right = tk.Frame(ctrl_pane, bg=C["BG"])
         ctrl_pane.add(ctrl_right, minsize=300)
 
-        # Shows the selected control's statement as a read-only reference
+        # Control statement — read-only reference label
         self._stmt_lbl = tk.Label(
             ctrl_right,
-            text="Select a control from the list to write a capability-level response.",
+            text="Select a control to see component contributions and write a capability-level response.",
             bg=C["CARD_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 10, "italic"),
             wraplength=380, justify="left", anchor="nw",
@@ -741,20 +753,53 @@ class CapabilityTab(tk.Frame):
         self._stmt_lbl.pack(fill="x", padx=8, pady=(8, 4))
 
         tk.Frame(ctrl_right, bg=C["HEADER_BG"], height=1).pack(
-            fill="x", padx=8, pady=4
+            fill="x", padx=8, pady=(4, 0)
         )
+
+        # ── Inherited contributions panel ─────────────────────────────────────
         tk.Label(
             ctrl_right,
-            text="How does this CAPABILITY implement this control?",
+            text="Contributions from member components:",
             bg=C["BG"], fg=C["TEAL"],
             font=("Helvetica", 10, "bold"),
-        ).pack(anchor="w", padx=8, pady=(4, 2))
+        ).pack(anchor="w", padx=8, pady=(6, 2))
 
-        # Multi-line text area for the response
+        inherited_border = tk.Frame(
+            ctrl_right, bg=C["HEADER_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        inherited_border.pack(fill="x", padx=8, pady=(0, 4))
+        self._inherited_text = tk.Text(
+            inherited_border,
+            bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+            relief="flat", font=("Helvetica", 10),
+            wrap="word", padx=8, pady=6,
+            height=5, state="disabled",
+        )
+        self._inherited_text.pack(fill="x")
+
+        tk.Frame(ctrl_right, bg=C["HEADER_BG"], height=1).pack(
+            fill="x", padx=8, pady=(2, 0)
+        )
+
+        # ── Capability-level response editor ──────────────────────────────────
+        tk.Label(
+            ctrl_right,
+            text="Capability-level synthesis (optional):",
+            bg=C["BG"], fg=C["TEAL"],
+            font=("Helvetica", 10, "bold"),
+        ).pack(anchor="w", padx=8, pady=(6, 2))
+        tk.Label(
+            ctrl_right,
+            text="  Describe what the COMBINATION of components provides that\n"
+                 "  no single component could claim independently.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        ).pack(anchor="w", padx=8)
+
         resp_border = tk.Frame(ctrl_right, bg=C["HEADER_BG"],
                                highlightthickness=1,
                                highlightbackground=C["HEADER_BG"])
-        resp_border.pack(fill="both", expand=True, padx=8, pady=(0, 4))
+        resp_border.pack(fill="both", expand=True, padx=8, pady=(4, 0))
         self._response_text = tk.Text(
             resp_border,
             bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
@@ -763,7 +808,6 @@ class CapabilityTab(tk.Frame):
         )
         self._response_text.pack(fill="both", expand=True)
 
-        # Save Response button
         save_row = tk.Frame(ctrl_right, bg=C["BG"])
         save_row.pack(fill="x", padx=8, pady=(4, 8))
         tk.Button(
@@ -846,13 +890,14 @@ class CapabilityTab(tk.Frame):
     def _add_capability(self):
         """Create a new blank capability, add it to the list, and select it."""
         new_cap = {
-            "uuid":                new_uuid(),
-            "name":                "",
-            "description":         "",
-            "remarks":             "",
-            "member_uuids":        [],
-            "member_descriptions": {},
-            "ctrl_responses":      {},
+            "uuid":                     new_uuid(),
+            "name":                     "",
+            "description":              "",
+            "remarks":                  "",
+            "member_uuids":             [],
+            "member_descriptions":      {},
+            "ctrl_responses":           {},
+            "inherited_ctrl_responses": [],
         }
         self._capabilities.append(new_cap)
         self._dirty = True
@@ -948,9 +993,14 @@ class CapabilityTab(tk.Frame):
         self._sel_ctrl_id    = None
         self._response_text.delete("1.0", "end")
         self._stmt_lbl.config(
-            text="Select a control from the list to write a capability-level response.",
+            text="Select a control to see component contributions and write a capability-level response.",
             fg=self._colors["SUBTEXT"],
         )
+        # Clear the inherited panel
+        self._inherited_text.config(state="normal")
+        self._inherited_text.delete("1.0", "end")
+        self._inherited_text.config(state="disabled")
+
         self._ctrl_search_var.set("")
         self._refresh_ctrl_list()
 
@@ -1015,6 +1065,49 @@ class CapabilityTab(tk.Frame):
             None
         )
 
+    def _resync_inherited_for_cap(self, cap):
+        """
+        Rebuild cap["inherited_ctrl_responses"] from scratch by reading the
+        ctrl_responses of every current member component.
+
+        Called whenever the member list changes or on_state_changed fires
+        (component responses may have been edited in the Component Editor).
+        """
+        inherited = []
+        for comp_uuid in cap.get("member_uuids", []):
+            comp = self._find_component(comp_uuid)
+            if not comp:
+                continue
+            for ctrl_id, desc in comp.get("ctrl_responses", {}).items():
+                if desc.strip():
+                    inherited.append({
+                        "ctrl_id":                ctrl_id,
+                        "description":            desc.strip(),
+                        "source_component_uuid":  comp["uuid"],
+                        "source_component_title": comp.get("title", ""),
+                    })
+        cap["inherited_ctrl_responses"] = inherited
+
+    def _merged_ctrl_responses(self):
+        """
+        Return a combined {ctrl_id: description} dict for dot-indicator display.
+
+        Merges inherited responses (from member components) with capability-level
+        responses so the All Controls tab correctly marks a control as done (●)
+        when ANY response — inherited or capability-level — exists for it.
+        """
+        merged = {}
+        if self._sel_index is None:
+            return merged
+        cap = self._capabilities[self._sel_index]
+        for entry in cap.get("inherited_ctrl_responses", []):
+            if entry["ctrl_id"] not in merged:
+                merged[entry["ctrl_id"]] = entry["description"]
+        for ctrl_id, desc in self._ctrl_responses.items():
+            if desc.strip():
+                merged[ctrl_id] = desc
+        return merged
+
     def _add_member(self):
         """
         Show a dialog to pick a component (from the Component Editor)
@@ -1065,6 +1158,9 @@ class CapabilityTab(tk.Frame):
                 role_desc,
             ))
 
+        # Pull control responses from the new member into inherited list
+        self._resync_inherited_for_cap(cap)
+        self._refresh_ctrl_list()
         self._refresh_list()
         self._dirty = True
 
@@ -1083,6 +1179,9 @@ class CapabilityTab(tk.Frame):
             cap.get("member_descriptions", {}).pop(comp_uuid, None)
 
         self._mem_tree.delete(comp_uuid)
+        if self._sel_index is not None:
+            self._resync_inherited_for_cap(self._capabilities[self._sel_index])
+        self._refresh_ctrl_list()
         self._refresh_list()
         self._dirty = True
 
@@ -1186,9 +1285,13 @@ class CapabilityTab(tk.Frame):
         return catalog["controls"]
 
     def _refresh_ctrl_list(self, search_term=""):
-        """Rebuild both control list tabs from the current catalog/profile controls."""
+        """Rebuild both control list tabs from the current catalog/profile controls.
+
+        Uses a merged dict so controls are marked ● when ANY response exists —
+        whether inherited from a member component or written at capability level.
+        """
         refresh_ctrl_list(
-            ctrl_responses=self._ctrl_responses,
+            ctrl_responses=self._merged_ctrl_responses(),
             all_controls=self._get_controls(),
             search_term=search_term,
             ctrl_tree=self._ctrl_tree,
@@ -1257,13 +1360,36 @@ class CapabilityTab(tk.Frame):
         else:
             self._stmt_lbl.config(text=ctrl_id, fg=self._colors["SUBTEXT"])
 
-        # Load existing response into the editor
+        # ── Populate inherited contributions panel ────────────────────────────
+        self._inherited_text.config(state="normal")
+        self._inherited_text.delete("1.0", "end")
+        inherited_entries = []
+        if self._sel_index is not None:
+            cap = self._capabilities[self._sel_index]
+            inherited_entries = [
+                e for e in cap.get("inherited_ctrl_responses", [])
+                if e["ctrl_id"] == ctrl_id
+            ]
+        if inherited_entries:
+            for entry in inherited_entries:
+                title = entry.get("source_component_title", "Unknown component")
+                desc  = entry.get("description", "")
+                self._inherited_text.insert("end", f"● {title}:\n  {desc}\n\n")
+        else:
+            self._inherited_text.insert(
+                "end",
+                "No member components have a response for this control.\n"
+                "Add a capability-level response below if this capability\n"
+                "addresses this control through the combination of its members.",
+            )
+        self._inherited_text.config(state="disabled")
+
+        # ── Load capability-level response into the editor ────────────────────
         self._response_text.delete("1.0", "end")
         existing = self._ctrl_responses.get(ctrl_id, "")
         if existing:
             self._response_text.insert("1.0", existing)
 
-        # Move focus to the editor so the user can start typing immediately
         self._response_text.focus_set()
 
     def _save_ctrl_response(self):
@@ -1312,9 +1438,18 @@ class CapabilityTab(tk.Frame):
         Convert one capability dict into a valid OSCAL Component Definition
         JSON document.
 
-        Per the schema, capability entries reference component UUIDs that
-        MUST resolve within the same component-definition document. So this
-        method bundles ALL member components alongside the capability.
+        Control implementations are emitted in OSCAL-conformant form:
+          - Controls inherited from member components appear as individual
+            implemented-requirement entries each carrying a prop:
+              {"name": "source-component-uuid", "value": "<comp-uuid>"}
+            This is the OSCAL extension mechanism for component attribution
+            at the component-definition level (by-component is an SSP concept).
+          - The same control-id may appear more than once when multiple member
+            components each contribute an independent response — the schema
+            permits this (no uniqueItems constraint on implemented-requirements).
+          - Capability-level responses appear without the source-component-uuid
+            prop, representing what the combined capability provides that no
+            single member component could claim alone.
 
         Parameters:
             cap - A capability dict from self._capabilities
@@ -1322,9 +1457,10 @@ class CapabilityTab(tk.Frame):
         Returns:
             A tuple of (document_dict, safe_filename_stem).
         """
-        now = now_iso()
+        now          = now_iso()
+        oscal_ver    = self._get_oscal_version()   # e.g. "1.2.2"
 
-        # Determine the source URI for control-implementations
+        # Source URI for control-implementations.source (required by schema)
         profile = self._get_profile()
         catalog = self._get_catalog()
         if profile and profile.get("filepath"):
@@ -1334,19 +1470,17 @@ class CapabilityTab(tk.Frame):
         else:
             source_href = "PROFILE_OR_CATALOG_HREF"
 
-        # ── Build member component entries ────────────────────────────────────
-        # Only include components that are referenced by this capability
+        # ── Member components (must be bundled for UUID resolution) ───────────
         member_uuids = set(cap.get("member_uuids", []))
         member_comps = [
             c for c in self._get_components() if c["uuid"] in member_uuids
         ]
-
         oscal_components = [
             build_component_oscal_entry(comp, source_href)
             for comp in member_comps
         ]
 
-        # ── Build the capability entry ─────────────────────────────────────────
+        # ── incorporates-components ───────────────────────────────────────────
         mem_descs    = cap.get("member_descriptions", {})
         incorporates = [
             {
@@ -1358,17 +1492,30 @@ class CapabilityTab(tk.Frame):
             for uid in cap.get("member_uuids", [])
         ]
 
-        # Capability-level control implementations
-        cap_implemented = [
-            {
-                "uuid":        new_uuid(),
-                "control-id":  ctrl_id,
-                "description": desc.strip(),
-            }
-            for ctrl_id, desc in cap.get("ctrl_responses", {}).items()
-            if desc.strip()
-        ]
+        # ── implemented-requirements ──────────────────────────────────────────
+        # 1. One entry per component-control pair (inherited responses)
+        cap_implemented = []
+        for entry in cap.get("inherited_ctrl_responses", []):
+            cap_implemented.append({
+                "uuid":       new_uuid(),
+                "control-id": entry["ctrl_id"],
+                "description": entry["description"],
+                "props": [{
+                    "name":  "source-component-uuid",
+                    "value": entry["source_component_uuid"],
+                }],
+            })
 
+        # 2. One entry per capability-level response (no source-component prop)
+        for ctrl_id, desc in cap.get("ctrl_responses", {}).items():
+            if desc.strip():
+                cap_implemented.append({
+                    "uuid":        new_uuid(),
+                    "control-id":  ctrl_id,
+                    "description": desc.strip(),
+                })
+
+        # ── Capability object ─────────────────────────────────────────────────
         oscal_cap = {
             "uuid":        cap["uuid"],
             "name":        cap.get("name", ""),
@@ -1381,16 +1528,18 @@ class CapabilityTab(tk.Frame):
                 "uuid":        new_uuid(),
                 "source":      source_href,
                 "description": (
-                    f"Capability-level control implementations for "
-                    f"{cap.get('name', 'this capability')}."
+                    f"Control implementations for capability: "
+                    f"{cap.get('name', 'this capability')}. "
+                    f"Includes contributions from member components "
+                    f"(identified by source-component-uuid prop) and "
+                    f"capability-level synthesis where present."
                 ),
                 "implemented-requirements": cap_implemented,
             }]
         if cap.get("remarks"):
             oscal_cap["remarks"] = cap["remarks"]
 
-        # Build the filename stem: "capability_AccountManagement"
-        cap_name = cap.get("name", "capability").replace(" ", "_")
+        cap_name   = cap.get("name", "capability").replace(" ", "_")
         file_title = f"Capability: {cap.get('name', 'Unnamed Capability')}"
 
         doc = {
@@ -1400,11 +1549,9 @@ class CapabilityTab(tk.Frame):
                     "title":         file_title,
                     "last-modified": now,
                     "version":       self._file_version.get().strip() or "1.0",
-                    "oscal-version": "1.1.2",
+                    "oscal-version": oscal_ver,
                 },
-                # Member components must be present for UUID resolution
                 **({"components": oscal_components} if oscal_components else {}),
-                # The capability itself
                 "capabilities": [oscal_cap],
             }
         }
@@ -1485,11 +1632,32 @@ class CapabilityTab(tk.Frame):
             return   # User cancelled the save dialog
 
         doc, _ = self._build_oscal_document(cap)
+
+        # ── Schema validation ─────────────────────────────────────────────────
+        zip_path = self._get_oscal_zip_path()
+        if zip_path:
+            valid, errors = validate_oscal_file(
+                doc, "oscal_component_schema.json", zip_path
+            )
+            if not valid:
+                detail = "\n".join(errors)
+                proceed = messagebox.askyesno(
+                    "Schema validation failed",
+                    f"The capability document does not fully conform to the "
+                    f"OSCAL {self._get_oscal_version()} component schema.\n\n"
+                    f"{detail}\n\nSave anyway?",
+                    icon="warning",
+                )
+                if not proceed:
+                    return
+
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
         self._dirty = False
         n_comps     = len(cap.get("member_uuids", []))
+        n_inherited = len(cap.get("inherited_ctrl_responses", []))
+        n_cap_level = sum(1 for d in cap.get("ctrl_responses", {}).values() if d.strip())
         fname       = Path(path).name
 
         self._status_lbl.config(
@@ -1498,8 +1666,11 @@ class CapabilityTab(tk.Frame):
         self._set_status(f"Capability saved: {fname}")
         messagebox.showinfo(
             "Capability Saved",
-            f"Capability '{cap.get('name', '')}' saved with "
-            f"{n_comps} member component{'s' if n_comps != 1 else ''}:\n{path}"
+            f"Capability '{cap.get('name', '')}' saved.\n\n"
+            f"  Member components: {n_comps}\n"
+            f"  Inherited control responses: {n_inherited}\n"
+            f"  Capability-level responses: {n_cap_level}\n\n"
+            f"{path}"
         )
 
     def _clear_all(self):
