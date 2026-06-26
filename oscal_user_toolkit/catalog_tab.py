@@ -487,16 +487,6 @@ class CatalogTab(tk.Frame):
             font=("Helvetica", 12, "bold"), relief="flat",
         ).pack(side="left", padx=10, pady=8)
 
-        has_real_title = ctrl["title"] and not ctrl["title"].lower().startswith("control:")
-        hdr_lbl = tk.Label(
-            header,
-            text=ctrl["title"] if has_real_title else ctrl["statement"],
-            bg=C["HEADER_BG"], fg=C["TEXT"],
-            font=("Helvetica", 13, "bold"),
-            justify="left",
-        )
-        hdr_lbl.pack(side="left", padx=6, pady=8, fill="x", expand=True)
-        self._wrap_labels.append(hdr_lbl)
 
         # ── Metadata rows ─────────────────────────────────────────────────────
         self._row("Category", ctrl["path"], value_color=C["SUBTEXT"], italic=True)

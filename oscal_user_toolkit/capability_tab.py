@@ -232,15 +232,17 @@ class CapabilityTab(tk.Frame):
         # Open one or more capability JSON files
         tk.Button(
             tb, text="📂  Open File(s)", command=self._open_files,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=12, pady=8)
 
         # Open a folder and load every capability JSON inside it
         tk.Button(
             tb, text="📁  Open Folder", command=self._open_folder,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=(0, 4), pady=8)
 
         # Save the selected capability (bundles member components in same file)
