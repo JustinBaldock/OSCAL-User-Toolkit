@@ -1,0 +1,45 @@
+{
+  "component-definition": {
+    "uuid": "41eaa10d-8a6f-4dee-9149-596e202ba746",
+    "metadata": {
+      "title": "hardware - network encryptor ABC",
+      "last-modified": "2026-06-26T00:17:14Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+        "type": "hardware",
+        "title": "network encryptor ABC",
+        "description": "A hardware network encryptor that does abc.",
+        "purpose": "provide hardware based network encryption",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5a44f30c-2a3a-426b-85b0-b350a968a583",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for network encryptor ABC.",
+            "implemented-requirements": [
+              {
+                "uuid": "9f08538f-28d2-4569-9ace-cb3d405745b1",
+                "control-id": "ism-0457",
+                "description": "This device means the cryptographic requirements."
+              },
+              {
+                "uuid": "c3e6c67f-49f8-442c-835d-6ba3ab8a84dc",
+                "control-id": "ism-0465",
+                "description": "The common criteria evaluation certificate is document abc"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

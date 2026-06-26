@@ -28,10 +28,9 @@ STRUCTURE OF A COMPONENT (per oscal_component_metaschema.xml):
 
 CATALOG + PROFILE GUARD
 ------------------------
-Before any editing is allowed, the tab checks that both an OSCAL catalog
-and an OSCAL profile have been loaded by the user. This is required because:
-  - The catalog provides the full list of available controls
-  - The profile defines which subset of controls apply to this system
+Before any editing is allowed, the tab checks that an OSCAL catalog has been
+loaded. A profile is optional — if loaded it filters the control list in
+Section 7 to the profile's baseline; without one the full catalog is shown.
   - Without both, the control-implementations section cannot be populated
 
 If either is missing, a clear message is shown and editing is blocked
@@ -188,21 +187,20 @@ class ComponentTab(tk.Frame):
         Called by the main app whenever the catalog or profile is loaded,
         cleared, or changed.
 
-        This re-evaluates the guard condition and either shows the editing
-        pane (if both are loaded) or the gate panel (if either is missing).
-        It also refreshes the control list in Section 7 if a component is
-        currently being edited.
+        Re-evaluates the guard (catalog required) and shows either the editor
+        or the gate panel. Also refreshes the Section 7 control list so it
+        immediately reflects any profile change (filtered vs full catalog).
         """
         if self._ready():
-            # Both catalog and profile are loaded — show the editor
+            # Catalog is loaded — show the editor
             self._gate_frame.pack_forget()
             self._body_pane.pack(fill="both", expand=True)
-            self._update_gate_label()  # Keep the label current for next time
+            self._update_gate_label()
             # If a component is being edited, refresh its control list
             if self._selected_index is not None:
                 self._refresh_control_list()
         else:
-            # Missing catalog or profile — hide editor, show gate
+            # No catalog — hide editor, show gate
             self._body_pane.pack_forget()
             self._gate_frame.pack(fill="both", expand=True)
             self._update_gate_label()
@@ -213,12 +211,12 @@ class ComponentTab(tk.Frame):
 
     def _ready(self):
         """
-        Return True only when both a catalog AND a profile are loaded.
+        Return True when a catalog is loaded.
 
-        This is the gate condition — editing is only permitted when both
-        are available so that Section 7 can show the correct set of controls.
+        A profile is optional — if one is loaded, Section 7 shows only the
+        profile's controls; otherwise it shows the full catalog control list.
         """
-        return self._get_catalog() is not None and self._get_profile() is not None
+        return self._get_catalog() is not None
 
     # =========================================================================
     # BUILD — top-level layout
@@ -286,7 +284,7 @@ class ComponentTab(tk.Frame):
                  font=("Helvetica", 10)).pack(side="left", padx=(8, 4))
 
         self._file_title_lbl = tk.Label(
-            tb, text="(load a catalog and profile, then add a component)",
+            tb, text="(load a catalog, then add a component)",
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._file_title_lbl.pack(side="left", padx=(0, 8))
@@ -302,7 +300,7 @@ class ComponentTab(tk.Frame):
         ).pack(side="left", ipady=3, pady=10)
 
         self._status_lbl = tk.Label(
-            tb, text="Load a catalog and profile to begin",
+            tb, text="Load a catalog to begin",
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._status_lbl.pack(side="right", padx=12)
@@ -338,17 +336,17 @@ class ComponentTab(tk.Frame):
         ).pack(pady=(0, 10))
 
         tk.Label(
-            inner, text="Catalog and Profile Required",
+            inner, text="Catalog Required",
             bg=C["BG"], fg=C["TEXT"],
             font=("Helvetica", 16, "bold"),
         ).pack()
 
         tk.Label(
             inner,
-            text="The Component Editor needs both an OSCAL catalog and an OSCAL\n"
-                 "profile to be loaded before components can be created or edited.\n\n"
-                 "This ensures the control list in Section 7 shows the correct\n"
-                 "controls for your system baseline.",
+            text="The Component Editor needs an OSCAL catalog to be loaded\n"
+                 "before components can be created or edited.\n\n"
+                 "A profile is optional — if one is loaded, the control list in\n"
+                 "Section 7 will show only the controls in that profile's baseline.",
             bg=C["BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 11), justify="center",
         ).pack(pady=(8, 20))
@@ -375,24 +373,16 @@ class ComponentTab(tk.Frame):
 
     def _update_gate_label(self):
         """
-        Update the gate panel status label to show exactly what is missing.
+        Update the gate panel status label to show whether a catalog is loaded.
         Called whenever the catalog or profile state changes.
         """
-        catalog = self._get_catalog()
-        profile = self._get_profile()
-
-        if not catalog and not profile:
-            msg = "❌  No catalog loaded\n❌  No profile loaded"
-        elif not catalog:
-            msg = "❌  No catalog loaded\n✅  Profile loaded"
-        elif not profile:
-            msg = "✅  Catalog loaded\n❌  No profile loaded"
+        if not hasattr(self, "_gate_status_lbl"):
+            return
+        if self._get_catalog():
+            msg = "✅  Catalog loaded"
         else:
-            msg = "✅  Catalog loaded\n✅  Profile loaded"
-
-        # _gate_status_lbl may not exist yet during initial _build() call
-        if hasattr(self, "_gate_status_lbl"):
-            self._gate_status_lbl.config(text=msg)
+            msg = "❌  No catalog loaded"
+        self._gate_status_lbl.config(text=msg)
 
     # =========================================================================
     # BODY — split pane with component list + editing form
@@ -1187,23 +1177,22 @@ class ComponentTab(tk.Frame):
 
     def _get_profile_controls(self):
         """
-        Return the list of control dicts from the catalog that are included
-        in the currently loaded profile.
+        Return the control list shown in the Section 7 control panel.
 
-        This is the list shown in the Section 7 control list.
-        Each dict is the same format as in models.collect_controls().
+        If a profile is loaded, returns only the controls whose IDs appear in
+        the profile's baseline.  If no profile is loaded, falls back to the
+        full catalog control list so components can still be created and saved.
 
-        Returns:
-            A list of control dicts, filtered to only those in the profile.
-            Returns an empty list if catalog or profile is not loaded.
+        Returns an empty list only when no catalog is loaded.
         """
         catalog = self._get_catalog()
-        profile = self._get_profile()
-        if not catalog or not profile:
+        if not catalog:
             return []
 
-        # profile["ids"] is a set of control ID strings
-        # catalog["controls"] is the flat list from models.collect_controls()
+        profile = self._get_profile()
+        if not profile:
+            return catalog["controls"]
+
         profile_ids = profile["ids"]
         return [c for c in catalog["controls"] if c["id"] in profile_ids]
 
