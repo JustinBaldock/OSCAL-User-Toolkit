@@ -20,8 +20,15 @@ format that looks like Python dictionaries and lists.
 
 import json        # Reads and writes JSON files
 import uuid        # Generates universally unique identifiers (UUIDs)
+import zipfile
 from datetime import datetime, timezone   # Used to get the current date/time
 from pathlib import Path                  # Cross-platform file path handling
+
+try:
+    import jsonschema
+    _JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    _JSONSCHEMA_AVAILABLE = False
 
 
 # =============================================================================
@@ -725,6 +732,80 @@ def new_uuid():
     """
     # uuid.uuid4() generates a random UUID object; str() converts it to a string
     return str(uuid.uuid4())
+
+
+def _make_oscal_validator(schema):
+    """
+    Build a jsonschema Draft7Validator that tolerates ECMA-262 regex patterns.
+
+    OSCAL schemas use regex syntax (e.g. \\p{L}) that Python's re module does
+    not support.  Rather than crashing or silently skipping all pattern checks,
+    we wrap the 'pattern' keyword so that any pattern Python cannot compile is
+    simply skipped — the field is treated as valid for that check only.
+    """
+    import re
+
+    def _pattern(validator, patrn, instance, schema):
+        if not isinstance(instance, str):
+            return
+        try:
+            if not re.search(patrn, instance):
+                yield jsonschema.ValidationError(
+                    f"{instance!r} does not match {patrn!r}"
+                )
+        except re.error:
+            pass  # ECMA-262 pattern Python can't compile — skip the check
+
+    OSCALValidator = jsonschema.validators.extend(
+        jsonschema.Draft7Validator,
+        {"pattern": _pattern},
+    )
+    return OSCALValidator(schema)
+
+
+def validate_oscal_file(data, schema_name, zip_path):
+    """
+    Validate a parsed OSCAL JSON dict against the schema bundled in a zip.
+
+    Parameters:
+        data        - Parsed JSON dict (the raw file contents, not our internal
+                      representation — call this before load_catalog etc.)
+        schema_name - Filename inside the zip's json/schema/ folder, e.g.
+                      'oscal_catalog_schema.json'
+        zip_path    - pathlib.Path to the OSCAL release zip file
+
+    Returns:
+        (valid: bool, errors: list[str])
+        valid  — True if the file passes schema validation (or jsonschema is
+                 not installed), False if there are violations.
+        errors — Human-readable error messages, one per violation (empty when
+                 valid is True).  At most 10 errors are returned so the dialog
+                 stays readable.
+    """
+    if not _JSONSCHEMA_AVAILABLE:
+        return True, []
+
+    schema_path = f"json/schema/{schema_name}"
+    try:
+        with zipfile.ZipFile(zip_path) as zf:
+            with zf.open(schema_path) as f:
+                schema = json.load(f)
+    except (KeyError, zipfile.BadZipFile) as exc:
+        return True, [f"Could not read schema from zip: {exc}"]
+
+    validator = _make_oscal_validator(schema)
+    errors = sorted(validator.iter_errors(data), key=lambda e: list(e.path))
+
+    if not errors:
+        return True, []
+
+    messages = []
+    for err in errors[:10]:
+        location = " → ".join(str(p) for p in err.absolute_path) or "(root)"
+        messages.append(f"• {location}: {err.message}")
+    if len(errors) > 10:
+        messages.append(f"  … and {len(errors) - 10} more error(s).")
+    return False, messages
 
 
 def refresh_ctrl_list(ctrl_responses, all_controls, search_term,

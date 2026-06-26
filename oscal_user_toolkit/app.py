@@ -31,7 +31,7 @@ from tkinter import ttk, filedialog, messagebox
 from pathlib import Path   # Cross-platform file path handling
 
 # Import the data-loading functions from our models module
-from .models import load_catalog, load_profile
+from .models import load_catalog, load_profile, validate_oscal_file
 
 # Import the two tab classes
 from .catalog_tab import CatalogTab
@@ -509,12 +509,38 @@ class OSCALApp(tk.Tk):
         if not path:
             return   # User cancelled — do nothing
 
+        # Try to parse the raw JSON first so we can validate it before loading.
+        try:
+            with open(path, encoding="utf-8") as f:
+                raw = json.load(f)
+        except json.JSONDecodeError as exc:
+            messagebox.showerror("Failed to load catalog", str(exc))
+            return
+
+        # ── Schema validation ─────────────────────────────────────────────────
+        # Use the schema bundled in the selected OSCAL version zip.
+        version_label = self._oscal_version_var.get().lstrip("v")  # e.g. '1.2.2'
+        zip_path = self._oscal_version_paths.get(version_label)
+        if zip_path:
+            valid, errors = validate_oscal_file(
+                raw, "oscal_catalog_schema.json", zip_path
+            )
+            if not valid:
+                detail = "\n".join(errors)
+                proceed = messagebox.askyesno(
+                    "Schema validation failed",
+                    f"This file does not fully conform to the OSCAL {version_label} "
+                    f"catalog schema.\n\n{detail}\n\n"
+                    "Load it anyway?",
+                    icon="warning",
+                )
+                if not proceed:
+                    return
+
         # Try to load the file. If it fails, show an error message.
         try:
             catalog = load_catalog(path)
-        except (json.JSONDecodeError, KeyError, ValueError) as exc:
-            # json.JSONDecodeError: file is not valid JSON
-            # KeyError / ValueError: file doesn't have the right OSCAL structure
+        except (KeyError, ValueError) as exc:
             messagebox.showerror("Failed to load catalog", str(exc))
             return
 
