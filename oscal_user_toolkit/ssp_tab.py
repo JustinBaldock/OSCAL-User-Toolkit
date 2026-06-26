@@ -1065,13 +1065,14 @@ class SSPTab(tk.Frame):
                 "responsible_roles": [r for r in roles if r],
                 "remarks":           c.get("remarks", ""),
             }
-            if self._add_ssp_component_dict(comp_dict):
+            was_added = self._add_ssp_component_dict(comp_dict)
+            if was_added:
                 added_any = True
-                # Import the component's control responses into Section 9 as
-                # by-component entries. Each implemented-requirement with a
-                # non-empty description becomes one by-component entry under
-                # the matching control-id, attributed to this component.
-                self._import_ctrl_responses(comp_dict["uuid"], c)
+            # Always import ctrl_responses, even if the component UUID already
+            # existed. This lets the user re-import a component file to
+            # populate Section 9 for an SSP that was saved before Section 9
+            # existed — without duplicating the component in Section 8.
+            self._import_ctrl_responses(comp_dict["uuid"], c)
         return added_any
 
     def _import_ctrl_responses(self, comp_uuid, oscal_component):
@@ -1742,9 +1743,78 @@ class SSPTab(tk.Frame):
         self._ssp_components = list(ssp.get("components", []))
         self._ssp_ctrl_impls = list(ssp.get("ctrl_implementations", []))
         self._sel_ctrl_id    = None
+
+        # If the SSP was saved before Section 9 existed (or was saved without
+        # any control implementations), try to auto-populate _ssp_ctrl_impls
+        # from the Component Editor's currently-loaded components. This lets
+        # the user open an old SSP and immediately see Applied Controls without
+        # having to re-import their component files.
+        if not self._ssp_ctrl_impls and self._ssp_components:
+            self._rebuild_ctrl_impls_from_component_editor()
+
         self._refresh_comp8_tree()
         self._refresh_ctrl9_list()
         self._refresh_bycomp_tree()
+
+    def _rebuild_ctrl_impls_from_component_editor(self):
+        """
+        Auto-populate _ssp_ctrl_impls by cross-referencing the SSP's components
+        against the Component Editor's currently-loaded components.
+
+        Called when opening an SSP that has components but no stored control
+        implementations — typically an SSP saved before Section 9 was added, or
+        one built manually without using the import-file feature.
+
+        For each component in the SSP whose UUID matches a component loaded in
+        the Component Editor, the component's ctrl_responses dict is walked and
+        converted into by-component entries. This is identical to what
+        _import_ctrl_responses does when importing from a file, but uses the
+        in-memory Component Editor data instead.
+
+        If the Component Editor has no components loaded, this is a no-op —
+        the user can still populate Section 9 manually or by re-importing files.
+        """
+        # Build a UUID → Component Editor component dict lookup
+        loaded = {c.get("uuid", ""): c for c in self._get_components()}
+        if not loaded:
+            return
+
+        for ssp_comp in self._ssp_components:
+            comp_uuid = ssp_comp.get("uuid", "")
+            if comp_uuid not in loaded:
+                continue
+
+            editor_comp = loaded[comp_uuid]
+            for ctrl_id, desc in editor_comp.get("ctrl_responses", {}).items():
+                if not desc.strip():
+                    continue
+
+                # Find or create the SSP-level entry for this control.
+                existing = next(
+                    (e for e in self._ssp_ctrl_impls
+                     if e["control_id"] == ctrl_id),
+                    None,
+                )
+                if existing is None:
+                    existing = {
+                        "control_id":    ctrl_id,
+                        "remarks":       "",
+                        "by_components": [],
+                    }
+                    self._ssp_ctrl_impls.append(existing)
+
+                # Guard against duplicates in case this method is called twice.
+                if any(bc["component_uuid"] == comp_uuid
+                       for bc in existing["by_components"]):
+                    continue
+
+                existing["by_components"].append({
+                    "uuid":           new_uuid(),
+                    "component_uuid": comp_uuid,
+                    "description":    desc,
+                    "impl_status":    "implemented",
+                    "remarks":        "",
+                })
 
     def _reset(self):
         """
