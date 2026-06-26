@@ -530,6 +530,56 @@ class SSPTab(tk.Frame):
         self._network  = textbox("Network Architecture", height=3)
         self._dataflow = textbox("Data Flow",            height=3)
 
+        # ── 4b. Data Flow Diagrams sub-table (optional) ───────────────────────
+        tk.Label(
+            parent,
+            text="Data Flow Diagrams  (optional — link to external diagram files)",
+            bg=C["BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 11),
+        ).pack(anchor="w", **P, pady=(8, 2))
+
+        diag_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        diag_frame.pack(fill="x", padx=28, pady=4)
+
+        diag_btn_row = tk.Frame(diag_frame, bg=C["CARD_BG"])
+        diag_btn_row.pack(fill="x", padx=8, pady=6)
+
+        tk.Button(
+            diag_btn_row, text="＋  Add Diagram",
+            command=self._add_diagram,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            diag_btn_row, text="✕  Remove",
+            command=self._remove_diagram,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+
+        diag_tree_frame = tk.Frame(diag_frame, bg=C["CARD_BG"])
+        diag_tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
+        self._diagram_tree = ttk.Treeview(
+            diag_tree_frame,
+            columns=("caption", "link"),
+            show="headings", height=3, selectmode="browse",
+        )
+        self._diagram_tree.heading("caption", text="Caption",    anchor="w")
+        self._diagram_tree.heading("link",    text="Link/Path",  anchor="w")
+        self._diagram_tree.column("caption", width=200, anchor="w", stretch=False)
+        self._diagram_tree.column("link",    width=340, anchor="w", stretch=True)
+
+        diag_scroll = ttk.Scrollbar(
+            diag_tree_frame, orient="vertical", command=self._diagram_tree.yview,
+        )
+        self._diagram_tree.configure(yscrollcommand=diag_scroll.set)
+        diag_scroll.pack(side="right", fill="y")
+        self._diagram_tree.pack(side="left", fill="x", expand=True)
+
         # ── 5. Information Types ──────────────────────────────────────────────
         # Stores the Treeview widget so _add_info_type/_collect/_populate
         # can insert/read rows.
@@ -537,14 +587,31 @@ class SSPTab(tk.Frame):
             title    = "5 ·  Information Types",
             hint     = "At least one information type is required by the OSCAL schema.",
             columns  = [
-                ("title",    "Information Type Title", 300, True),
-                ("c_impact", "Confidentiality",        120, False),
-                ("i_impact", "Integrity",              120, False),
-                ("a_impact", "Availability",           120, False),
+                ("title",      "Information Type Title", 220, True),
+                ("c_impact",   "Confidentiality",        110, False),
+                ("i_impact",   "Integrity",              110, False),
+                ("a_impact",   "Availability",           110, False),
+                ("components", "Components",             160, False),
             ],
             add_cmd  = self._add_info_type,
             list_key = "information_types",
         )
+        # Add Edit button to the info types toolbar (it_tree's parent toolbar)
+        # and bind double-click for editing.
+        it_parent = self._it_tree.master.master   # frame > card_frame > parent
+        # Find the btn_row (first child of the card frame)
+        it_card = self._it_tree.master
+        for child in it_card.winfo_children():
+            if isinstance(child, tk.Frame):
+                # This is the btn_row — add the Edit button here
+                tk.Button(
+                    child, text="✏  Edit Selected",
+                    command=self._edit_info_type,
+                    bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                    relief="flat", padx=10, pady=3, cursor="hand2",
+                ).pack(side="left", padx=8)
+                break
+        self._it_tree.bind("<Double-1>", lambda _e: self._edit_info_type())
 
         # ── 6. Roles ──────────────────────────────────────────────────────────
         self._role_tree = list_section(
@@ -1749,31 +1816,340 @@ class SSPTab(tk.Frame):
     # ADD ITEM METHODS (called when the user clicks an Add button)
     # =========================================================================
 
-    def _add_info_type(self):
-        """
-        Show a dialog to collect information type details, then add
-        the new entry to both the internal data dict and the table widget.
-        """
-        impacts = ["fips-199-low", "fips-199-moderate", "fips-199-high"]
-        res = self._dialog("Add Information Type", [
-            ("Title *",         "title",       "",                  None),
-            ("Description *",   "description", "",                  None),
-            ("Confidentiality", "c_impact",    "fips-199-moderate", impacts),
-            ("Integrity",       "i_impact",    "fips-199-moderate", impacts),
-            ("Availability",    "a_impact",    "fips-199-moderate", impacts),
-        ])
-        # If the user cancelled or left the title blank, do nothing
-        if not res or not res.get("title"):
+    # =========================================================================
+    # DIAGRAM METHODS (Section 4)
+    # =========================================================================
+
+    def _add_diagram(self):
+        """Show a dialog to add a data flow diagram reference."""
+        C   = self._colors
+        dlg = self._make_dialog("Add Diagram", width=500)
+
+        def lrow(text, width=18):
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=width, anchor="w").pack(side="left")
+            return row
+
+        v_caption = tk.StringVar()
+        tk.Entry(lrow("Caption *"), textvariable=v_caption, width=42,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        v_link = tk.StringVar()
+        tk.Entry(lrow("Link/Path *"), textvariable=v_link, width=42,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        v_desc = tk.StringVar()
+        tk.Entry(lrow("Description"), textvariable=v_desc, width=42,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        result = {}
+
+        def _ok():
+            caption = v_caption.get().strip()
+            link    = v_link.get().strip()
+            if not caption:
+                messagebox.showwarning("Required", "Caption is required.", parent=dlg)
+                return
+            if not link:
+                messagebox.showwarning("Required", "Link/Path is required.", parent=dlg)
+                return
+            result.update({
+                "uuid":        new_uuid(),
+                "caption":     caption,
+                "link":        link,
+                "description": v_desc.get().strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+
+        if result:
+            self._ssp["data_flow_diagrams"].append(result)
+            self._diagram_tree.insert("", "end", values=(result["caption"], result["link"]))
+
+    def _remove_diagram(self):
+        """Remove the selected diagram row."""
+        sel = self._diagram_tree.selection()
+        if not sel:
             return
-        # Every information type needs a unique ID
-        res["uuid"] = new_uuid()
-        # Add to our internal data list
-        self._ssp["information_types"].append(res)
-        # Add a row to the table widget
-        self._it_tree.insert(
-            "", "end",
-            values=(res["title"], res["c_impact"], res["i_impact"], res["a_impact"])
+        idx = self._diagram_tree.index(sel[0])
+        self._ssp["data_flow_diagrams"].pop(idx)
+        self._diagram_tree.delete(sel[0])
+
+    # =========================================================================
+    # INFORMATION TYPE METHODS (Section 5)
+    # =========================================================================
+
+    @staticmethod
+    def _it_row_values(it):
+        """Return the 5-element values tuple for inserting into self._it_tree."""
+        comps = ", ".join(f["component_title"] for f in it.get("component_flows", []))
+        return (
+            it["title"],
+            it.get("c_impact", ""),
+            it.get("i_impact", ""),
+            it.get("a_impact", ""),
+            comps or "—",
         )
+
+    def _info_type_dialog(self, existing=None):
+        """
+        Rich modal dialog for adding or editing an information type.
+
+        Parameters:
+            existing - An existing info type dict to pre-fill, or None.
+
+        Returns:
+            A dict {uuid, title, description, c_impact, i_impact, a_impact,
+                    component_flows} or None if cancelled.
+        """
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Information Type" if existing else "Add Information Type",
+            width=520,
+        )
+
+        impacts = ["fips-199-low", "fips-199-moderate", "fips-199-high"]
+        directions = ["inbound", "outbound", "internal", "bidirectional"]
+
+        def lrow(parent, text, width=18):
+            row = tk.Frame(parent, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=width, anchor="w").pack(side="left")
+            return row
+
+        def eentry(row, var, width=36):
+            tk.Entry(row, textvariable=var, width=width,
+                     bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                     relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                     highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        v_title = tk.StringVar(value=e.get("title", ""))
+        eentry(lrow(dlg, "Title *"), v_title)
+
+        v_desc = tk.StringVar(value=e.get("description", ""))
+        eentry(lrow(dlg, "Description *"), v_desc)
+
+        v_c = tk.StringVar(value=e.get("c_impact", "fips-199-moderate"))
+        ttk.Combobox(lrow(dlg, "Confidentiality"), textvariable=v_c,
+                     values=impacts, state="readonly", width=28).pack(side="left")
+
+        v_i = tk.StringVar(value=e.get("i_impact", "fips-199-moderate"))
+        ttk.Combobox(lrow(dlg, "Integrity"), textvariable=v_i,
+                     values=impacts, state="readonly", width=28).pack(side="left")
+
+        v_a = tk.StringVar(value=e.get("a_impact", "fips-199-moderate"))
+        ttk.Combobox(lrow(dlg, "Availability"), textvariable=v_a,
+                     values=impacts, state="readonly", width=28).pack(side="left")
+
+        # ── Component Data Flows card ──────────────────────────────────────────
+        flow_card = tk.Frame(
+            dlg, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        flow_card.pack(fill="x", padx=20, pady=8)
+
+        tk.Label(
+            flow_card,
+            text="Component Data Flows",
+            bg=C["CARD_BG"], fg=C["ACCENT"],
+            font=("Helvetica", 10, "bold"),
+        ).pack(anchor="w", padx=8, pady=(6, 0))
+        tk.Label(
+            flow_card,
+            text="Map which SSP components process, store, or transmit this information type.",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9, "italic"),
+        ).pack(anchor="w", padx=8, pady=(0, 4))
+
+        flow_btn_row = tk.Frame(flow_card, bg=C["CARD_BG"])
+        flow_btn_row.pack(fill="x", padx=8, pady=4)
+
+        # Inner treeview for flows
+        flow_tree_frame = tk.Frame(flow_card, bg=C["CARD_BG"])
+        flow_tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
+        flow_tree = ttk.Treeview(
+            flow_tree_frame,
+            columns=("component", "direction"),
+            show="headings", height=4, selectmode="browse",
+        )
+        flow_tree.heading("component",  text="Component",  anchor="w")
+        flow_tree.heading("direction",  text="Direction",  anchor="w")
+        flow_tree.column("component",  width=220, anchor="w", stretch=False)
+        flow_tree.column("direction",  width=120, anchor="w", stretch=False)
+        flow_tree.pack(side="left", fill="x", expand=True)
+
+        # Working list of flows (copy so cancel doesn't mutate original)
+        flows = list(e.get("component_flows", []))
+        for fl in flows:
+            flow_tree.insert("", "end", values=(fl["component_title"], fl["direction"]))
+
+        def _add_flow():
+            """Inner dialog: pick a component and direction."""
+            if not self._ssp_components:
+                messagebox.showinfo(
+                    "No components",
+                    "Add components in Section 8 before mapping data flows.",
+                    parent=dlg,
+                )
+                return
+            C2  = self._colors
+            d2  = self._make_dialog("Add Component Flow", width=380)
+
+            choices = []
+            label_to_uuid = {}
+            for comp in self._ssp_components:
+                lbl = comp.get("title", "(untitled)")
+                choices.append(lbl)
+                label_to_uuid[lbl] = comp["uuid"]
+
+            def lrow2(text):
+                row = tk.Frame(d2, bg=C2["BG"])
+                row.pack(fill="x", padx=20, pady=4)
+                tk.Label(row, text=text, bg=C2["BG"], fg=C2["SUBTEXT"],
+                         font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+                return row
+
+            v_comp = tk.StringVar(value=choices[0] if choices else "")
+            ttk.Combobox(lrow2("Component *"), textvariable=v_comp,
+                         values=choices, state="readonly", width=28).pack(side="left")
+
+            v_dir = tk.StringVar(value="internal")
+            ttk.Combobox(lrow2("Direction *"), textvariable=v_dir,
+                         values=directions, state="readonly", width=28).pack(side="left")
+
+            inner_result = {}
+
+            def _ok2():
+                comp_lbl = v_comp.get()
+                if not comp_lbl:
+                    messagebox.showwarning("Required", "Select a component.", parent=d2)
+                    return
+                inner_result.update({
+                    "component_uuid":  label_to_uuid[comp_lbl],
+                    "component_title": comp_lbl,
+                    "direction":       v_dir.get(),
+                })
+                d2.destroy()
+
+            btn2 = tk.Frame(d2, bg=C2["BG"])
+            btn2.pack(pady=12)
+            tk.Button(btn2, text="  OK  ", command=_ok2,
+                      bg=C2["ACCENT"], fg=C2["BG"], font=("Helvetica", 11, "bold"),
+                      relief="flat", padx=10).pack(side="left", padx=8)
+            tk.Button(btn2, text="Cancel", command=d2.destroy,
+                      bg=C2["HEADER_BG"], fg=C2["TEXT"], font=("Helvetica", 11),
+                      relief="flat", padx=10).pack(side="left")
+            d2.wait_window()
+
+            if inner_result:
+                flows.append(inner_result)
+                flow_tree.insert("", "end", values=(
+                    inner_result["component_title"], inner_result["direction"]
+                ))
+
+        def _remove_flow():
+            sel = flow_tree.selection()
+            if not sel:
+                return
+            idx = flow_tree.index(sel[0])
+            flows.pop(idx)
+            flow_tree.delete(sel[0])
+
+        tk.Button(
+            flow_btn_row, text="＋  Add",
+            command=_add_flow,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            flow_btn_row, text="✕  Remove",
+            command=_remove_flow,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+
+        # ── OK / Cancel ────────────────────────────────────────────────────────
+        result = {}
+
+        def _ok():
+            title = v_title.get().strip()
+            desc  = v_desc.get().strip()
+            if not title:
+                messagebox.showwarning("Required", "Title is required.", parent=dlg)
+                return
+            if not desc:
+                messagebox.showwarning("Required", "Description is required.", parent=dlg)
+                return
+            result.update({
+                "uuid":            e.get("uuid") or new_uuid(),
+                "title":           title,
+                "description":     desc,
+                "c_impact":        v_c.get(),
+                "i_impact":        v_i.get(),
+                "a_impact":        v_a.get(),
+                "component_flows": list(flows),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_info_type(self):
+        """Show the information type dialog and add the result."""
+        res = self._info_type_dialog()
+        if not res:
+            return
+        self._ssp["information_types"].append(res)
+        self._it_tree.insert("", "end", values=self._it_row_values(res))
+
+    def _edit_info_type(self):
+        """Edit the selected information type in place."""
+        sel = self._it_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an information type to edit.")
+            return
+        idx  = self._it_tree.index(sel[0])
+        item = self._ssp["information_types"][idx]
+        updated = self._info_type_dialog(existing=item)
+        if not updated:
+            return
+        self._ssp["information_types"][idx] = updated
+        # Replace the treeview row at the same position
+        self._it_tree.delete(sel[0])
+        # Re-insert at the same index using after/before tricks
+        children = self._it_tree.get_children()
+        if idx == 0 or not children:
+            self._it_tree.insert("", idx, values=self._it_row_values(updated))
+        else:
+            self._it_tree.insert("", idx, values=self._it_row_values(updated))
 
     def _add_role(self):
         """Show a dialog to add a role to the SSP."""
@@ -1875,15 +2251,15 @@ class SSPTab(tk.Frame):
             if val:
                 widget.insert("1.0", val)  # Insert at the very beginning
 
+        # Rebuild the diagram tree (Section 4)
+        self._diagram_tree.delete(*self._diagram_tree.get_children())
+        for d in ssp.get("data_flow_diagrams", []):
+            self._diagram_tree.insert("", "end", values=(d.get("caption", ""), d.get("link", "")))
+
         # Rebuild the information types table
         self._it_tree.delete(*self._it_tree.get_children())
         for it in ssp.get("information_types", []):
-            self._it_tree.insert("", "end", values=(
-                it["title"],
-                it.get("c_impact", "—"),
-                it.get("i_impact", "—"),
-                it.get("a_impact", "—"),
-            ))
+            self._it_tree.insert("", "end", values=self._it_row_values(it))
 
         # Rebuild the roles table
         self._role_tree.delete(*self._role_tree.get_children())
@@ -2029,8 +2405,9 @@ class SSPTab(tk.Frame):
             w.delete("1.0", "end")
 
         # Clear all tables
-        for tree in (self._it_tree, self._role_tree, self._party_tree):
+        for tree in (self._diagram_tree, self._it_tree, self._role_tree, self._party_tree):
             tree.delete(*tree.get_children())
+        self._ssp["data_flow_diagrams"] = []
 
         # ── Reset Sections 8 & 9 working state and widgets ───────────────────
         self._ssp_components = []

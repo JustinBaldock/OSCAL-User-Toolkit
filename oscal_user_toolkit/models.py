@@ -345,13 +345,15 @@ def empty_ssp():
         # ── Section 4: Network architecture & data flow (optional) ───────
         "network_architecture": "",
         "data_flow":            "",
+        "data_flow_diagrams":   [],   # list of {uuid, caption, link, description}
 
         # ── Sections 5-7: Lists — start empty, user adds entries ─────────
         # Each role is: {"role_id": str, "title": str}
         "roles":            [],
         # Each party is:  {"uuid": str, "type": str, "name": str, "email": str}
         "parties":          [],
-        # Each info type: {"uuid", "title", "description", "c_impact", "i_impact", "a_impact"}
+        # Each info type: {"uuid", "title", "description", "c_impact", "i_impact", "a_impact",
+        #                   "component_flows": [{"component_uuid", "component_title", "direction"}]}
         "information_types": [],
 
         # ── Section 8: System Components ──────────────────────────────────
@@ -416,6 +418,12 @@ def build_oscal_ssp(ssp, profile, catalog):
     # CIA = Confidentiality, Integrity, Availability — the three security pillars
     info_types = []
     for it in ssp.get("information_types", []):
+        # Build component-flow props (stored as OSCAL props with class="data-flow")
+        flow_props = []
+        for flow in it.get("component_flows", []):
+            flow_props.append({"name": "component-uuid",  "value": flow["component_uuid"],  "class": "data-flow"})
+            flow_props.append({"name": "flow-direction",   "value": flow["direction"],       "class": "data-flow"})
+            flow_props.append({"name": "component-title",  "value": flow["component_title"], "class": "data-flow"})
         info_types.append({
             "uuid":        it["uuid"],
             "title":       it["title"],
@@ -424,6 +432,7 @@ def build_oscal_ssp(ssp, profile, catalog):
             "confidentiality-impact": {"base": it.get("c_impact", "fips-199-moderate")},
             "integrity-impact":       {"base": it.get("i_impact", "fips-199-moderate")},
             "availability-impact":    {"base": it.get("a_impact", "fips-199-moderate")},
+            **({"props": flow_props} if flow_props else {}),
         })
 
     # ── Build the import-profile reference and back-matter resource ───────────
@@ -613,8 +622,18 @@ def build_oscal_ssp(ssp, profile, catalog):
                 # Network architecture and data flow are optional
                 **({"network-architecture": {"description": ssp["network_architecture"]}}
                    if ssp.get("network_architecture") else {}),
-                **({"data-flow": {"description": ssp["data_flow"]}}
-                   if ssp.get("data_flow") else {}),
+                **({"data-flow": {
+                    "description": ssp["data_flow"],
+                    **({"diagrams": [
+                        {
+                            "uuid": d["uuid"],
+                            **({"description": d["description"]} if d.get("description") else {}),
+                            "caption": d["caption"],
+                            "links": [{"href": d["link"], "rel": "diagram"}],
+                        }
+                        for d in ssp.get("data_flow_diagrams", [])
+                    ]} if ssp.get("data_flow_diagrams") else {}),
+                }} if (ssp.get("data_flow") or ssp.get("data_flow_diagrams")) else {}),
             },
 
             # System implementation — the components that make up the system.
@@ -690,6 +709,20 @@ def parse_ssp_file(data):
     # ── Information types ─────────────────────────────────────────────────────
     info_types = []
     for it in sc.get("system-information", {}).get("information-types", []):
+        # Parse component_flows back from props (groups of 3 with class="data-flow")
+        component_flows = []
+        props = [p for p in it.get("props", []) if p.get("class") == "data-flow"]
+        i = 0
+        while i + 2 < len(props):
+            if props[i].get("name") == "component-uuid":
+                component_flows.append({
+                    "component_uuid":  props[i]["value"],
+                    "direction":       props[i+1]["value"] if i+1 < len(props) else "internal",
+                    "component_title": props[i+2]["value"] if i+2 < len(props) else "",
+                })
+                i += 3
+            else:
+                i += 1
         info_types.append({
             "uuid":        it.get("uuid", new_uuid()),
             "title":       it.get("title", ""),
@@ -698,6 +731,7 @@ def parse_ssp_file(data):
             "c_impact": it.get("confidentiality-impact", {}).get("base", "fips-199-moderate"),
             "i_impact": it.get("integrity-impact",       {}).get("base", "fips-199-moderate"),
             "a_impact": it.get("availability-impact",    {}).get("base", "fips-199-moderate"),
+            "component_flows": component_flows,
         })
 
     # ── System components (Section 8) ─────────────────────────────────────────
@@ -771,6 +805,21 @@ def parse_ssp_file(data):
             seen_ctrl_ids[ctrl_id] = entry
             ctrl_implementations.append(entry)
 
+    # ── Data flow diagrams ────────────────────────────────────────────────────
+    data_flow_diagrams = []
+    for d in df.get("diagrams", []):
+        link = ""
+        for lnk in d.get("links", []):
+            if lnk.get("rel") == "diagram":
+                link = lnk.get("href", "")
+                break
+        data_flow_diagrams.append({
+            "uuid":        d.get("uuid", new_uuid()),
+            "caption":     d.get("caption", ""),
+            "link":        link,
+            "description": d.get("description", ""),
+        })
+
     # ── Resolve import-profile reference ──────────────────────────────────────
     import_href = root.get("import-profile", {}).get("href", "")
 
@@ -818,7 +867,8 @@ def parse_ssp_file(data):
         "status_remarks":  status.get("remarks", ""),
         "auth_boundary_description": ab.get("description", ""),
         "network_architecture": na.get("description", ""),
-        "data_flow":       df.get("description", ""),
+        "data_flow":            df.get("description", ""),
+        "data_flow_diagrams":   data_flow_diagrams,
         "roles":           roles,
         "parties":         parties,
         "information_types": info_types,
