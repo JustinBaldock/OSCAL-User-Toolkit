@@ -81,8 +81,8 @@ class OSCALApp(tk.Tk):
 
         # ── Window properties ─────────────────────────────────────────────────
         self.title("OSCAL User Toolkit")
-        self.geometry("1340x900")    # Initial width x height in pixels
-        self.minsize(1000, 700)      # Minimum window size (prevents squashing)
+        self.geometry("1400x900")    # Initial width x height in pixels
+        self.minsize(1200, 700)      # Minimum window size (prevents squashing)
         self.configure(bg=COLORS["BG"])
 
         # ── Application state ─────────────────────────────────────────────────

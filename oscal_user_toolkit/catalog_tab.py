@@ -67,11 +67,11 @@ class CatalogTab(tk.Frame):
         # Set by apply_profile() which is called by the main app.
         self._profile_ids = None
 
-        # StringVars for the class dropdown and search box.
-        # A StringVar is a special tkinter variable that automatically updates
-        # any widget it is linked to when its value changes.
-        self._selected_class = tk.StringVar(value="All")
-        self._search_var     = tk.StringVar()
+        # StringVars for filter dropdowns and the search box.
+        self._selected_class     = tk.StringVar(value="All")
+        self._selected_guideline = tk.StringVar(value="All")
+        self._search_var         = tk.StringVar()
+        self._wrap_labels        = []   # labels whose wraplength tracks canvas width
 
         # trace_add("write", fn) calls fn whenever the search box changes,
         # enabling live filtering as the user types.
@@ -98,12 +98,14 @@ class CatalogTab(tk.Frame):
         self._filtered_controls = list(controls)
         self._profile_ids       = None   # New catalog clears any profile filter
 
-        # Populate the class dropdown with every unique class in this catalog.
-        # set comprehension {} collects unique values; sorted() alphabetises them.
-        classes = sorted({c["class"] for c in controls if c["class"]})
-        self._class_combo["values"] = ["All"] + classes
+        # Populate filter dropdowns with unique values from this catalog.
+        classes    = sorted({c["class"]     for c in controls if c["class"]})
+        guidelines = sorted({c["guideline"] for c in controls if c.get("guideline")})
+        self._class_combo["values"]     = ["All"] + classes
+        self._guideline_combo["values"] = ["All"] + guidelines
         self._selected_class.set("All")
-        self._search_var.set("")   # Clear the search box
+        self._selected_guideline.set("All")
+        self._search_var.set("")
 
         self._populate_tree(controls)
         self._show_placeholder()
@@ -167,11 +169,26 @@ class CatalogTab(tk.Frame):
         self._class_combo = ttk.Combobox(
             tb, textvariable=self._selected_class,
             values=["All"],    # Populated by load_controls() after a catalog loads
-            state="readonly",  # User picks from the list, cannot type a custom value
-            width=18,
+            state="readonly",
+            width=14,
         )
         self._class_combo.pack(side="left", pady=8)
         self._class_combo.bind("<<ComboboxSelected>>", self._on_class_filter)
+
+        # ── Guideline filter ──────────────────────────────────────────────────
+        tk.Label(
+            tb, text="Guideline:", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 11),
+        ).pack(side="left", padx=(16, 4), pady=8)
+
+        self._guideline_combo = ttk.Combobox(
+            tb, textvariable=self._selected_guideline,
+            values=["All"],    # Populated by load_controls()
+            state="readonly",
+            width=32,
+        )
+        self._guideline_combo.pack(side="left", pady=8)
+        self._guideline_combo.bind("<<ComboboxSelected>>", self._on_guideline_filter)
 
         # ── Search box ────────────────────────────────────────────────────────
         tk.Label(
@@ -224,18 +241,20 @@ class CatalogTab(tk.Frame):
         """
         C    = self._colors
         left = tk.Frame(body, bg=C["SIDEBAR_BG"])
-        body.add(left, minsize=380, width=520)
+        body.add(left, minsize=600, width=850)
 
-        cols = ("label", "title", "class")
+        cols = ("label", "title", "class", "guideline")
         self._tree = ttk.Treeview(
             left, columns=cols, show="headings", selectmode="browse"
         )
-        self._tree.heading("label", text="ID / Label",        anchor="w")
-        self._tree.heading("title", text="Title / Statement", anchor="w")
-        self._tree.heading("class", text="Class",             anchor="w")
-        self._tree.column("label", width=120, minwidth=90,  anchor="w")
-        self._tree.column("title", width=310, minwidth=150, anchor="w", stretch=True)
-        self._tree.column("class", width=110, minwidth=90,  anchor="w")
+        self._tree.heading("label",     text="ID / Label",        anchor="w")
+        self._tree.heading("title",     text="Title / Statement", anchor="w")
+        self._tree.heading("class",     text="Class",             anchor="w")
+        self._tree.heading("guideline", text="Guideline",         anchor="w")
+        self._tree.column("label",     width=110, minwidth=80,  anchor="w", stretch=False)
+        self._tree.column("title",     width=260, minwidth=150, anchor="w", stretch=True)
+        self._tree.column("class",     width=110, minwidth=80,  anchor="w", stretch=False)
+        self._tree.column("guideline", width=260, minwidth=160, anchor="w", stretch=False)
 
         # Scrollbars must know which widget they scroll (command=...)
         # and the widget must know which scrollbar to update (yscrollcommand=...)
@@ -307,7 +326,12 @@ class CatalogTab(tk.Frame):
         if cls != "All":
             result = [c for c in result if c["class"] == cls]
 
-        # ── 3. Text search ────────────────────────────────────────────────────
+        # ── 3. Guideline filter ───────────────────────────────────────────────
+        guideline = self._selected_guideline.get()
+        if guideline != "All":
+            result = [c for c in result if c.get("guideline") == guideline]
+
+        # ── 4. Text search ────────────────────────────────────────────────────
         term = self._search_var.get().lower()
         if term:
             result = [
@@ -316,6 +340,7 @@ class CatalogTab(tk.Frame):
                 or term in c["label"].lower()
                 or term in c["statement"].lower()
                 or term in c["id"].lower()
+                or term in c.get("guideline", "").lower()
             ]
 
         self._populate_tree(result)
@@ -324,6 +349,10 @@ class CatalogTab(tk.Frame):
 
     def _on_class_filter(self, _event=None):
         """Called when the user picks a class from the dropdown."""
+        self._apply_filters()
+
+    def _on_guideline_filter(self, _event=None):
+        """Called when the user picks a guideline from the dropdown."""
         self._apply_filters()
 
     def _on_search(self, *_args):
@@ -379,7 +408,8 @@ class CatalogTab(tk.Frame):
             # iid= is the internal row ID (used in _tree_selected to find the ctrl)
             self._tree.insert(
                 "", "end", iid=str(i),
-                values=(ctrl["label"], display_title, ctrl["class"]),
+                values=(ctrl["label"], display_title, ctrl["class"],
+                        ctrl.get("guideline", "")),
                 tags=(tag,),
             )
 
@@ -436,6 +466,7 @@ class CatalogTab(tk.Frame):
         """
         for w in self._detail.winfo_children():
             w.destroy()
+        self._wrap_labels = []   # reset list so stale refs don't accumulate
         C   = self._colors
         pad = dict(padx=22)
 
@@ -451,13 +482,15 @@ class CatalogTab(tk.Frame):
         ).pack(side="left", padx=10, pady=8)
 
         has_real_title = ctrl["title"] and not ctrl["title"].lower().startswith("control:")
-        tk.Label(
+        hdr_lbl = tk.Label(
             header,
             text=ctrl["title"] if has_real_title else ctrl["statement"],
             bg=C["HEADER_BG"], fg=C["TEXT"],
             font=("Helvetica", 13, "bold"),
-            wraplength=480, justify="left",
-        ).pack(side="left", padx=6, pady=8, fill="x", expand=True)
+            justify="left",
+        )
+        hdr_lbl.pack(side="left", padx=6, pady=8, fill="x", expand=True)
+        self._wrap_labels.append(hdr_lbl)
 
         # ── Metadata rows ─────────────────────────────────────────────────────
         self._row("Category", ctrl["path"], value_color=C["SUBTEXT"], italic=True)
@@ -506,12 +539,14 @@ class CatalogTab(tk.Frame):
                 highlightthickness=1, highlightbackground=C["HEADER_BG"]
             )
             box.pack(fill="x", padx=22, pady=4)
-            tk.Label(
+            stmt_lbl = tk.Label(
                 box, text=ctrl["statement"],
                 bg=C["SIDEBAR_BG"], fg=C["TEXT"],
                 font=("Helvetica", 12),
-                wraplength=520, justify="left", anchor="nw",
-            ).pack(padx=14, pady=12, fill="x")
+                justify="left", anchor="nw",
+            )
+            stmt_lbl.pack(padx=14, pady=12, fill="x")
+            self._wrap_labels.append(stmt_lbl)
 
         tk.Frame(self._detail, bg=C["BG"], height=30).pack()
 
@@ -534,12 +569,14 @@ class CatalogTab(tk.Frame):
             font=("Helvetica", 11, "bold"),
             width=14, anchor="w",
         ).pack(side="left")
-        tk.Label(
+        val_lbl = tk.Label(
             frame, text=value,
             bg=C["BG"], fg=value_color or C["TEXT"],
             font=("Helvetica", 11, "italic") if italic else ("Helvetica", 11),
-            wraplength=500, justify="left", anchor="w",
-        ).pack(side="left", fill="x", expand=True)
+            justify="left", anchor="w",
+        )
+        val_lbl.pack(side="left", fill="x", expand=True)
+        self._wrap_labels.append(val_lbl)
 
     # =========================================================================
     # SCROLL HELPERS
@@ -550,8 +587,16 @@ class CatalogTab(tk.Frame):
         self._canvas.configure(scrollregion=self._canvas.bbox("all"))
 
     def _on_canvas_configure(self, event):
-        """Stretch the inner frame to match the canvas width."""
+        """Stretch the inner frame to match the canvas width and rewrap text labels."""
         self._canvas.itemconfig(self._win, width=event.width)
+        # Update wraplength for every label that was registered during _show_detail.
+        # 88px = 22px side padding × 2 + 44px for the fixed-width label column.
+        wrap = max(100, event.width - 88)
+        for lbl in getattr(self, "_wrap_labels", []):
+            try:
+                lbl.configure(wraplength=wrap)
+            except tk.TclError:
+                pass  # widget was destroyed when detail was cleared
 
     def _on_mousewheel(self, event):
         """

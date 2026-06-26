@@ -176,6 +176,9 @@ def collect_controls(obj, parent_titles=None):
             "essential_eight": get_prop(props, "essential-eight-applicability"),
             # " › ".join([...]) builds "Group › Sub-group › ..." breadcrumb text
             "path":            " › ".join(path),
+            # Top-level group title — e.g. "Guidelines for cyber security roles".
+            # This is the broadest category the control belongs to.
+            "guideline":       path[0] if path else "",
         })
 
     # Recurse into any sub-groups, passing the current path down
