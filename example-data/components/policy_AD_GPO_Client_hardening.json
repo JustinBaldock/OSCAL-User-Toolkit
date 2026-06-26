@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "f4bf844d-c727-4b5e-9c82-c348ee8d5d6c",
+    "metadata": {
+      "title": "policy - AD GPO Client hardening",
+      "last-modified": "2026-06-26T08:01:56Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "b541b5b3-e67a-495e-b8be-5ccb329ed128",
+        "type": "policy",
+        "title": "AD GPO Client hardening",
+        "description": "There is a Active Directory Group Policy called \"Client Hardening\" which on Windows desktops sets multiple settings.\n- Screen lock is set to activate after a 15 minutes of user inactivity",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner",
+            "remarks": "Activie Directory senior administrator"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b46e18b6-0b13-446e-8755-8ef87b4ab649",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for AD GPO Client hardening.",
+            "implemented-requirements": [
+              {
+                "uuid": "dccdcca9-4846-478c-a2b3-e07aefd8937a",
+                "control-id": "ism-0428",
+                "description": "The GPO sets the session logoff after 10 hours of user inactivity on all Windows desktop computers."
+              },
+              {
+                "uuid": "b0acc3a0-c51e-4988-a2d6-c0efc3047103",
+                "control-id": "ism-2012",
+                "description": "The GPO sets the windows screen lock to activate after 10 minutes of user inactivity on all Windows desktop computers."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

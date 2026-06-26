@@ -30,7 +30,7 @@ CATALOG + PROFILE GUARD
 ------------------------
 Before any editing is allowed, the tab checks that an OSCAL catalog has been
 loaded. A profile is optional — if loaded it filters the control list in
-Section 7 to the profile's baseline; without one the full catalog is shown.
+Section 8 to the profile's baseline; without one the full catalog is shown.
   - Without both, the control-implementations section cannot be populated
 
 If either is missing, a clear message is shown and editing is blocked
@@ -92,6 +92,13 @@ PROP_NAMES = [
     "patch-level", "model", "fqdn", "uri", "scan-type",
 ]
 
+COMMON_PROTOCOLS = [
+    "https", "http", "ssh", "ftp", "sftp", "smtp", "smtps",
+    "pop3", "pop3s", "imap", "imaps", "dns", "ntp", "snmp",
+    "syslog", "ldap", "ldaps", "kerberos", "rdp", "vnc",
+    "smb", "nfs", "iscsi", "radius", "tacacs+",
+]
+
 YES_NO_VALUES     = ["yes", "no"]
 IMPL_POINT_VALUES = ["internal", "external"]
 ASSET_TYPE_VALUES = [
@@ -114,7 +121,7 @@ class ComponentTab(tk.Frame):
       MIDDLE  — Gate panel (shown when catalog/profile not loaded)
               OR split pane:
                 LEFT   — Component list + Add/Delete buttons
-                RIGHT  — Scrollable component editing form (7 sections)
+                RIGHT  — Scrollable component editing form (8 sections)
     """
 
     def __init__(self, parent, colors, get_catalog, get_profile, set_status):
@@ -209,7 +216,7 @@ class ComponentTab(tk.Frame):
         cleared, or changed.
 
         Re-evaluates the guard (catalog required) and shows either the editor
-        or the gate panel. Also refreshes the Section 7 control list so it
+        or the gate panel. Also refreshes the Section 8 control list so it
         immediately reflects any profile change (filtered vs full catalog).
         """
         if self._ready():
@@ -367,7 +374,7 @@ class ComponentTab(tk.Frame):
             text="The Component Editor needs an OSCAL catalog to be loaded\n"
                  "before components can be created or edited.\n\n"
                  "A profile is optional — if one is loaded, the control list in\n"
-                 "Section 7 will show only the controls in that profile's baseline.",
+                 "Section 8 will show only the controls in that profile's baseline.",
             bg=C["BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 11), justify="center",
         ).pack(pady=(8, 20))
@@ -485,7 +492,7 @@ class ComponentTab(tk.Frame):
     def _build_detail_form(self, pane):
         """
         Build the right pane: a scrollable canvas containing the component
-        editing form. The form has seven sections.
+        editing form. The form has eight sections.
         """
         C     = self._colors
         right = tk.Frame(pane, bg=C["BG"])
@@ -737,18 +744,57 @@ class ComponentTab(tk.Frame):
         self._role_tree.pack(fill="x", padx=8, pady=(0, 8))
 
         # =====================================================================
-        # SECTION 6 — REMARKS
+        # SECTION 6 — PROTOCOLS
         # =====================================================================
-        section("6 ·  Remarks  (optional)")
+        section("6 ·  Protocols  (optional)")
+        tk.Label(parent,
+                 text="  Network protocols and port ranges this component exposes or uses.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
+
+        proto_frame = tk.Frame(parent, bg=C["CARD_BG"],
+                               highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        proto_frame.pack(fill="x", padx=20, pady=6)
+        proto_btn = tk.Frame(proto_frame, bg=C["CARD_BG"])
+        proto_btn.pack(fill="x", padx=8, pady=6)
+        tk.Button(proto_btn, text="＋  Add Protocol",
+                  command=self._add_protocol,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(proto_btn, text="✕  Remove Selected",
+                  command=self._remove_protocol,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
+
+        self._proto_tree = ttk.Treeview(
+            proto_frame, columns=("name", "title", "ports"),
+            show="headings", height=4, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("name",  "Protocol",    160, False),
+            ("title", "Title",       220, False),
+            ("ports", "Port Ranges", 300, True),
+        ]:
+            self._proto_tree.heading(col, text=heading, anchor="w")
+            self._proto_tree.column(col, width=w, anchor="w", stretch=stretch)
+        self._proto_tree.pack(fill="x", padx=8, pady=(0, 8))
+
+        # =====================================================================
+        # SECTION 7 — REMARKS
+        # =====================================================================
+        section("7 ·  Remarks  (optional)")
         tk.Label(parent, text="  Additional notes about this component.",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=20)
         self._v_remarks_text = textbox("", height=3)
 
         # =====================================================================
-        # SECTION 7 — CONTROL IMPLEMENTATIONS
+        # SECTION 8 — CONTROL IMPLEMENTATIONS
         # =====================================================================
-        section("7 ·  Control Implementations")
+        section("8 ·  Control Implementations")
         tk.Label(
             parent,
             text="  Select a control from the list and describe how this component\n"
@@ -1051,6 +1097,7 @@ class ComponentTab(tk.Frame):
             "remarks":         "",
             "props":           [],
             "roles":           [],
+            "protocols":       [],
             "ctrl_responses":  {},   # {control_id: description_string}
         }
         self._components.append(new_comp)
@@ -1138,6 +1185,15 @@ class ComponentTab(tk.Frame):
         for role in comp.get("roles", []):
             self._role_tree.insert("", "end", values=(
                 role.get("role_id", ""), role.get("remarks", "")
+            ))
+
+        # ── Protocols table ───────────────────────────────────────────────
+        self._proto_tree.delete(*self._proto_tree.get_children())
+        for proto in comp.get("protocols", []):
+            self._proto_tree.insert("", "end", values=(
+                proto.get("name", ""),
+                proto.get("title", ""),
+                self._format_port_ranges(proto.get("port_ranges", [])),
             ))
 
         # ── Control responses ─────────────────────────────────────────────────
@@ -1637,6 +1693,230 @@ class ComponentTab(tk.Frame):
         return result if result else None
 
     # =========================================================================
+    # PROTOCOLS — Section 6
+    # =========================================================================
+
+    def _format_port_ranges(self, port_ranges):
+        """
+        Return a short display string for a list of port-range dicts, e.g.
+        "TCP:443  TCP:80" or "TCP:8000-8080". Returns "—" for an empty list.
+        """
+        if not port_ranges:
+            return "—"
+        parts = []
+        for pr in port_ranges:
+            transport = pr.get("transport", "TCP")
+            start = pr.get("start")
+            end   = pr.get("end", start)
+            if start is None:
+                continue
+            # Collapse single-port ranges (start == end) to just the number
+            port = str(start) if end in (None, start) else f"{start}-{end}"
+            parts.append(f"{transport}:{port}")
+        return "  ".join(parts) if parts else "—"
+
+    def _refresh_proto_tree(self):
+        """Clear and repopulate the protocol tree from the current component."""
+        self._proto_tree.delete(*self._proto_tree.get_children())
+        if self._selected_index is None:
+            return
+        comp = self._components[self._selected_index]
+        for proto in comp.get("protocols", []):
+            self._proto_tree.insert("", "end", values=(
+                proto.get("name", ""),
+                proto.get("title", ""),
+                self._format_port_ranges(proto.get("port_ranges", [])),
+            ))
+
+    def _add_protocol(self):
+        """Show the protocol dialog and add the result to the table."""
+        if self._selected_index is None:
+            messagebox.showinfo("No component",
+                                "Please select or add a component first.")
+            return
+        result = self._protocol_dialog()
+        if not result:
+            return
+        comp = self._components[self._selected_index]
+        comp.setdefault("protocols", []).append(result)
+        self._refresh_proto_tree()
+        self._dirty = True
+
+    def _remove_protocol(self):
+        """Remove the selected protocol row."""
+        if self._selected_index is None:
+            return
+        sel = self._proto_tree.selection()
+        if not sel:
+            return
+        idx = self._proto_tree.index(sel[0])
+        comp = self._components[self._selected_index]
+        protocols = comp.setdefault("protocols", [])
+        if 0 <= idx < len(protocols):
+            protocols.pop(idx)
+        self._refresh_proto_tree()
+        self._dirty = True
+
+    def _protocol_dialog(self, existing=None):
+        """
+        Show a modal dialog for adding a protocol with its port ranges.
+        Returns a protocol dict or None if cancelled.
+        """
+        C   = self._colors
+        dlg = self._make_dialog("Add Protocol", width=480)
+
+        # ── Protocol name (free-entry combobox) ───────────────────────────────
+        row1 = tk.Frame(dlg, bg=C["BG"])
+        row1.pack(fill="x", padx=20, pady=8)
+        tk.Label(row1, text="Protocol Name *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
+        v_name = tk.StringVar(value=(existing or {}).get("name", ""))
+        ttk.Combobox(row1, textvariable=v_name, values=COMMON_PROTOCOLS,
+                     state="normal", width=28).pack(side="left")
+
+        # ── Title ──────────────────────────────────────────────────────────────
+        row2 = tk.Frame(dlg, bg=C["BG"])
+        row2.pack(fill="x", padx=20, pady=4)
+        tk.Label(row2, text="Title", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
+        v_title = tk.StringVar(value=(existing or {}).get("title", ""))
+        tk.Entry(row2, textvariable=v_title, width=36,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        # ── Port ranges section ──────────────────────────────────────────────
+        tk.Label(dlg, text="Port Ranges", bg=C["BG"], fg=C["ACCENT"],
+                 font=("Helvetica", 10, "bold")).pack(anchor="w", padx=20, pady=(10, 2))
+
+        pr_frame = tk.Frame(dlg, bg=C["BG"])
+        pr_frame.pack(fill="x", padx=20, pady=2)
+        pr_tree = ttk.Treeview(
+            pr_frame, columns=("start", "end", "transport", "remarks"),
+            show="headings", height=4, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("start",     "Start",     60,  False),
+            ("end",       "End",       60,  False),
+            ("transport", "Transport", 80,  False),
+            ("remarks",   "Remarks",   160, True),
+        ]:
+            pr_tree.heading(col, text=heading, anchor="w")
+            pr_tree.column(col, width=w, anchor="w", stretch=stretch)
+        pr_tree.pack(fill="x")
+
+        # Local list mirroring the inner treeview rows
+        port_ranges = []
+        for pr in (existing or {}).get("port_ranges", []):
+            port_ranges.append(dict(pr))
+            pr_tree.insert("", "end", values=(
+                pr.get("start", ""), pr.get("end", ""),
+                pr.get("transport", "TCP"), pr.get("remarks", ""),
+            ))
+
+        # ── Add-port-range entry row ──────────────────────────────────────────
+        add_row = tk.Frame(dlg, bg=C["BG"])
+        add_row.pack(fill="x", padx=20, pady=(6, 2))
+
+        tk.Label(add_row, text="Start", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left")
+        v_start = tk.StringVar()
+        tk.Entry(add_row, textvariable=v_start, width=6,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", padx=(2, 6))
+
+        tk.Label(add_row, text="End", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left")
+        v_end = tk.StringVar()
+        tk.Entry(add_row, textvariable=v_end, width=6,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", padx=(2, 6))
+
+        tk.Label(add_row, text="Transport", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left")
+        v_transport = tk.StringVar(value="TCP")
+        ttk.Combobox(add_row, textvariable=v_transport, values=["TCP", "UDP"],
+                     state="readonly", width=6).pack(side="left", padx=(2, 6))
+
+        tk.Label(add_row, text="Remarks", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left")
+        v_pr_remarks = tk.StringVar()
+        tk.Entry(add_row, textvariable=v_pr_remarks, width=20,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", padx=(2, 6))
+
+        def _add_pr():
+            start_raw = v_start.get().strip()
+            if not start_raw:
+                messagebox.showwarning("Required", "Start port is required.")
+                return
+            try:
+                start = int(start_raw)
+            except ValueError:
+                messagebox.showwarning("Invalid", "Start port must be a number.")
+                return
+            end_raw = v_end.get().strip()
+            if end_raw:
+                try:
+                    end = int(end_raw)
+                except ValueError:
+                    messagebox.showwarning("Invalid", "End port must be a number.")
+                    return
+            else:
+                end = start   # default end to the start port
+            transport = v_transport.get()
+            remarks   = v_pr_remarks.get().strip()
+            port_ranges.append({
+                "start": start, "end": end,
+                "transport": transport, "remarks": remarks,
+            })
+            pr_tree.insert("", "end", values=(start, end, transport, remarks))
+            # Clear entry fields for the next addition
+            v_start.set(""); v_end.set(""); v_pr_remarks.set("")
+
+        tk.Button(add_row, text="＋ Add", command=_add_pr,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  relief="flat", padx=8, cursor="hand2").pack(side="left")
+
+        def _remove_pr():
+            sel = pr_tree.selection()
+            if not sel:
+                return
+            idx = pr_tree.index(sel[0])
+            if 0 <= idx < len(port_ranges):
+                port_ranges.pop(idx)
+            pr_tree.delete(sel[0])
+
+        tk.Button(dlg, text="✕  Remove Selected Port Range", command=_remove_pr,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(anchor="w", padx=20, pady=(4, 2))
+
+        result = {}
+        def _ok():
+            if not v_name.get().strip():
+                messagebox.showwarning("Required", "Protocol Name is required.")
+                return
+            result["name"]        = v_name.get().strip()
+            result["title"]       = v_title.get().strip()
+            result["port_ranges"] = [dict(pr) for pr in port_ranges]
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    # =========================================================================
     # OSCAL JSON CONVERSION
     # =========================================================================
 
@@ -1729,6 +2009,23 @@ class ComponentTab(tk.Frame):
             for r in c.get("responsible-roles", [])
         ]
 
+        # Parse protocols
+        protocols = []
+        for proto in c.get("protocols", []):
+            prs = []
+            for pr in proto.get("port-ranges", []):
+                prs.append({
+                    "start":     pr.get("start", 0),
+                    "end":       pr.get("end",   pr.get("start", 0)),
+                    "transport": pr.get("transport", "TCP"),
+                    "remarks":   pr.get("remarks", ""),
+                })
+            protocols.append({
+                "name":        proto.get("name", ""),
+                "title":       proto.get("title", ""),
+                "port_ranges": prs,
+            })
+
         # Flatten OSCAL control-implementations back to {control_id: description}
         ctrl_responses = {}
         for ci in c.get("control-implementations", []):
@@ -1749,6 +2046,7 @@ class ComponentTab(tk.Frame):
             "remarks":        c.get("remarks", ""),
             "props":          user_props,
             "roles":          roles,
+            "protocols":      protocols,
             "ctrl_responses": ctrl_responses,
         }
 

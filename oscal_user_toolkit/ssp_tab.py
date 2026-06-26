@@ -577,6 +577,9 @@ class SSPTab(tk.Frame):
         # ── 9. Control Implementations ────────────────────────────────────────
         self._build_section9(parent, section)
 
+        # ── 10. Network Protocols ─────────────────────────────────────────────
+        self._build_section10(parent, section)
+
         # Bottom padding so the last section is not flush against the edge
         tk.Frame(parent, bg=C["BG"], height=40).pack()
 
@@ -636,16 +639,26 @@ class SSPTab(tk.Frame):
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
 
+        # ── Component counter ─────────────────────────────────────────────────
+        # Updated by _refresh_comp8_tree every time the list changes.
+        self._comp8_count_lbl = tk.Label(
+            parent, text="0 components",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            anchor="w",
+        )
+        self._comp8_count_lbl.pack(anchor="w", padx=28, pady=(0, 2))
+
         # ── Component table ───────────────────────────────────────────────────
         comp8_frame = tk.Frame(
             parent, bg=C["CARD_BG"],
             highlightthickness=1, highlightbackground=C["HEADER_BG"],
         )
-        comp8_frame.pack(fill="x", padx=28, pady=6)
+        comp8_frame.pack(fill="x", padx=28, pady=(0, 6))
+
         self._comp8_tree = ttk.Treeview(
             comp8_frame,
             columns=("type", "title", "status", "description"),
-            show="headings", height=6, selectmode="browse",
+            show="headings", height=8, selectmode="browse",
         )
         for col, heading, w, stretch in [
             ("type",        "Type",        100, False),
@@ -655,7 +668,18 @@ class SSPTab(tk.Frame):
         ]:
             self._comp8_tree.heading(col, text=heading, anchor="w")
             self._comp8_tree.column(col, width=w, anchor="w", stretch=stretch)
-        self._comp8_tree.pack(fill="x", padx=8, pady=8)
+
+        # Scrollbar — lets the user scroll when there are more than 8 components.
+        # yscrollcommand links the scrollbar to the treeview; the scrollbar's
+        # command links back so dragging the bar scrolls the treeview.
+        comp8_scroll = ttk.Scrollbar(
+            comp8_frame, orient="vertical", command=self._comp8_tree.yview,
+        )
+        self._comp8_tree.configure(yscrollcommand=comp8_scroll.set)
+
+        # Pack scrollbar on the right BEFORE the treeview fills the rest.
+        comp8_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._comp8_tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=8)
 
     # =========================================================================
     # SECTION 9 — CONTROL IMPLEMENTATIONS
@@ -836,6 +860,114 @@ class SSPTab(tk.Frame):
         self._refresh_ctrl9_list()
 
     # =========================================================================
+    # SECTION 10 — NETWORK PROTOCOLS
+    # =========================================================================
+
+    def _build_section10(self, parent, section):
+        """
+        Build Section 10: a read-only consolidated table of every network
+        protocol across all SSP components.  Data is inherited automatically
+        when components are imported; the table refreshes whenever the
+        component list changes.
+
+        Per the OSCAL schema, protocols live on individual
+        system-implementation.components[] entries — there is no top-level
+        protocol collection in the SSP.  This section provides a single view
+        that aggregates them for review.
+        """
+        C = self._colors
+
+        section("10 ·  Network Protocols")
+        tk.Label(
+            parent,
+            text="  Network protocols exposed or used by the system's components,\n"
+                 "  inherited automatically when component files are imported.\n"
+                 "  Per OSCAL, protocols are stored on each individual component.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            justify="left",
+        ).pack(anchor="w", padx=28)
+
+        # Counter label — shows total protocols across all components
+        self._proto10_count_lbl = tk.Label(
+            parent, text="0 protocols across 0 components",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            anchor="w",
+        )
+        self._proto10_count_lbl.pack(anchor="w", padx=28, pady=(4, 2))
+
+        # ── Protocol table ────────────────────────────────────────────────────
+        proto10_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        proto10_frame.pack(fill="x", padx=28, pady=(0, 6))
+
+        self._proto10_tree = ttk.Treeview(
+            proto10_frame,
+            columns=("component", "protocol", "title", "port_ranges"),
+            show="headings", height=8, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("component",  "Component",   160, False),
+            ("protocol",   "Protocol",    100, False),
+            ("title",      "Title",       140, False),
+            ("port_ranges","Port Ranges", 260, True),
+        ]:
+            self._proto10_tree.heading(col, text=heading, anchor="w")
+            self._proto10_tree.column(col, width=w, anchor="w", stretch=stretch)
+
+        proto10_scroll = ttk.Scrollbar(
+            proto10_frame, orient="vertical", command=self._proto10_tree.yview,
+        )
+        self._proto10_tree.configure(yscrollcommand=proto10_scroll.set)
+        proto10_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._proto10_tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=8)
+
+        self._refresh_proto10_tree()
+
+    def _format_port_ranges_ssp(self, port_ranges):
+        """Return a compact port-range summary, e.g. 'TCP:443  UDP:53  TCP:8000-8080'."""
+        parts = []
+        for pr in port_ranges:
+            start = pr.get("start", "")
+            end   = pr.get("end",   "")
+            trans = pr.get("transport", "TCP")
+            if start == end or not end:
+                parts.append(f"{trans}:{start}")
+            else:
+                parts.append(f"{trans}:{start}-{end}")
+        return "  ".join(parts) if parts else "—"
+
+    def _refresh_proto10_tree(self):
+        """Rebuild the Section 10 protocol table from the current component list."""
+        if not hasattr(self, "_proto10_tree"):
+            return
+        self._proto10_tree.delete(*self._proto10_tree.get_children())
+        total_protos = 0
+        comps_with_protos = set()
+        for comp in self._ssp_components:
+            protos = comp.get("protocols", [])
+            if not protos:
+                continue
+            comp_title = comp.get("title", comp.get("uuid", ""))
+            for proto in protos:
+                port_summary = self._format_port_ranges_ssp(proto.get("port_ranges", []))
+                self._proto10_tree.insert("", "end", values=(
+                    comp_title,
+                    proto.get("name", ""),
+                    proto.get("title", ""),
+                    port_summary,
+                ))
+                total_protos += 1
+                comps_with_protos.add(comp.get("uuid", comp_title))
+
+        n_comps = len(comps_with_protos)
+        self._proto10_count_lbl.config(
+            text=f"{total_protos} protocol{'s' if total_protos != 1 else ''} "
+                 f"across {n_comps} component{'s' if n_comps != 1 else ''}",
+        )
+
+    # =========================================================================
     # MODAL DIALOG HELPER
     # =========================================================================
 
@@ -948,7 +1080,7 @@ class SSPTab(tk.Frame):
     # =========================================================================
 
     def _refresh_comp8_tree(self):
-        """Clear and repopulate the Section 8 component table from memory."""
+        """Clear and repopulate the Section 8 component table and counter."""
         self._comp8_tree.delete(*self._comp8_tree.get_children())
         for comp in self._ssp_components:
             self._comp8_tree.insert("", "end", values=(
@@ -957,6 +1089,11 @@ class SSPTab(tk.Frame):
                 comp.get("status", ""),
                 comp.get("description", ""),
             ))
+        n = len(self._ssp_components)
+        self._comp8_count_lbl.config(
+            text=f"{n} component{'s' if n != 1 else ''}",
+        )
+        self._refresh_proto10_tree()
 
     def _add_ssp_component(self):
         """Show the component dialog and append the result to Section 8."""
@@ -1052,6 +1189,24 @@ class SSPTab(tk.Frame):
             )
             roles = [r.get("role-id", "")
                      for r in c.get("responsible-roles", [])]
+            # Carry over protocols defined in the component file so they
+            # appear in the SSP's protocol summary and OSCAL output.
+            protocols = []
+            for proto in c.get("protocols", []):
+                prs = [
+                    {
+                        "start":     pr.get("start", 0),
+                        "end":       pr.get("end", pr.get("start", 0)),
+                        "transport": pr.get("transport", "TCP"),
+                        "remarks":   pr.get("remarks", ""),
+                    }
+                    for pr in proto.get("port-ranges", [])
+                ]
+                protocols.append({
+                    "name":        proto.get("name", ""),
+                    "title":       proto.get("title", ""),
+                    "port_ranges": prs,
+                })
             comp_dict = {
                 "uuid":              c.get("uuid", new_uuid()),
                 "type":              c.get("type", "software"),
@@ -1063,6 +1218,7 @@ class SSPTab(tk.Frame):
                 "status_remarks":    status_prop.get("remarks", "")
                                      if status_prop else "",
                 "responsible_roles": [r for r in roles if r],
+                "protocols":         protocols,
                 "remarks":           c.get("remarks", ""),
             }
             was_added = self._add_ssp_component_dict(comp_dict)
@@ -1260,6 +1416,9 @@ class SSPTab(tk.Frame):
                 "status":            v_status.get(),
                 "status_remarks":    v_status_rem.get().strip(),
                 "responsible_roles": roles,
+                # Preserve any protocols already on the component; manual-add
+                # starts with an empty list (protocols come via import).
+                "protocols":         e.get("protocols", []),
                 "remarks":           v_remarks.get().strip(),
             })
             dlg.destroy()

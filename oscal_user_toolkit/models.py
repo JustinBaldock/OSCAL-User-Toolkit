@@ -498,6 +498,26 @@ def build_oscal_ssp(ssp, profile, catalog):
         "status":      {"state": ssp.get("status", "under-development")},
     }]
     for comp in ssp.get("components", []):
+        # Build the OSCAL protocols list from the internal port_ranges format.
+        # Each protocol gets a fresh UUID; port start/end are written as integers.
+        oscal_protocols = []
+        for proto in comp.get("protocols", []):
+            p = {"uuid": new_uuid(), "name": proto["name"]}
+            if proto.get("title"):
+                p["title"] = proto["title"]
+            prs = [
+                {k: v for k, v in {
+                    "start":     int(pr["start"]) if pr.get("start") is not None else None,
+                    "end":       int(pr["end"])   if pr.get("end")   is not None else None,
+                    "transport": pr.get("transport") or None,
+                    "remarks":   pr.get("remarks")   or None,
+                }.items() if v is not None}
+                for pr in proto.get("port_ranges", [])
+            ]
+            if prs:
+                p["port-ranges"] = prs
+            oscal_protocols.append(p)
+
         si_components.append({
             "uuid":        comp["uuid"],
             "type":        comp["type"],
@@ -512,6 +532,7 @@ def build_oscal_ssp(ssp, profile, catalog):
             **({"responsible-roles": [{"role-id": r}
                                       for r in comp["responsible_roles"]]}
                if comp.get("responsible_roles") else {}),
+            **({"protocols": oscal_protocols} if oscal_protocols else {}),
             **({"remarks": comp["remarks"]} if comp.get("remarks") else {}),
         })
 
@@ -689,6 +710,23 @@ def parse_ssp_file(data):
             continue
         status_obj = c.get("status", {})
         roles = [r.get("role-id", "") for r in c.get("responsible-roles", [])]
+        # Parse protocols back into the internal port_ranges format
+        protocols = []
+        for proto in c.get("protocols", []):
+            prs = [
+                {
+                    "start":     pr.get("start", 0),
+                    "end":       pr.get("end", pr.get("start", 0)),
+                    "transport": pr.get("transport", "TCP"),
+                    "remarks":   pr.get("remarks", ""),
+                }
+                for pr in proto.get("port-ranges", [])
+            ]
+            protocols.append({
+                "name":        proto.get("name", ""),
+                "title":       proto.get("title", ""),
+                "port_ranges": prs,
+            })
         components.append({
             "uuid":              c.get("uuid", new_uuid()),
             "type":              c.get("type", "software"),
@@ -697,8 +735,8 @@ def parse_ssp_file(data):
             "purpose":           c.get("purpose", ""),
             "status":            status_obj.get("state", "operational"),
             "status_remarks":    status_obj.get("remarks", ""),
-            # Drop any empty role-id strings so the internal list stays clean
             "responsible_roles": [r for r in roles if r],
+            "protocols":         protocols,
             "remarks":           c.get("remarks", ""),
         })
 
@@ -1122,6 +1160,34 @@ def build_component_oscal_entry(comp, source_href):
     ]
     if roles:
         c["responsible-roles"] = roles
+
+    # Protocols — network services this component exposes or uses
+    protocols = []
+    for proto in comp.get("protocols", []):
+        p = {
+            "uuid": new_uuid(),
+            "name": proto["name"],
+        }
+        if proto.get("title"):
+            p["title"] = proto["title"]
+        prs = []
+        for pr in proto.get("port_ranges", []):
+            pr_entry = {}
+            if pr.get("start") is not None:
+                pr_entry["start"] = int(pr["start"])
+            if pr.get("end") is not None:
+                pr_entry["end"] = int(pr["end"])
+            if pr.get("transport"):
+                pr_entry["transport"] = pr["transport"]
+            if pr.get("remarks"):
+                pr_entry["remarks"] = pr["remarks"]
+            if pr_entry:
+                prs.append(pr_entry)
+        if prs:
+            p["port-ranges"] = prs
+        protocols.append(p)
+    if protocols:
+        c["protocols"] = protocols
 
     # Control implementations — only include controls with a non-empty response
     implemented = [

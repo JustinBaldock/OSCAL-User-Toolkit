@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Network",
-      "last-modified": "2026-06-26T06:16:57Z",
+      "last-modified": "2026-06-26T08:05:57Z",
       "version": "0.1",
       "oscal-version": "1.1.2"
     },
@@ -57,7 +57,7 @@
     "system-implementation": {
       "components": [
         {
-          "uuid": "7c842a4d-4bb3-46e2-824c-586d873414b6",
+          "uuid": "a6d1c93a-3bc0-4f22-bc0f-b2d524391700",
           "type": "this-system",
           "title": "Example Research Network",
           "description": "This is a description of a small example network.",
@@ -132,22 +132,271 @@
           "status": {
             "state": "operational"
           }
+        },
+        {
+          "uuid": "b541b5b3-e67a-495e-b8be-5ccb329ed128",
+          "type": "policy",
+          "title": "AD GPO Client hardening",
+          "description": "There is a Active Directory Group Policy called \"Client Hardening\" which on Windows desktops sets multiple settings.\n- Screen lock is set to activate after a 15 minutes of user inactivity",
+          "status": {
+            "state": "operational"
+          },
+          "responsible-roles": [
+            {
+              "role-id": "asset-owner"
+            }
+          ]
+        },
+        {
+          "uuid": "d1c0fb4d-24e5-4d5c-ad4c-68ac05b252a7",
+          "type": "service",
+          "title": "Windows Fileshare Network I:",
+          "description": "This is the primary fileshare for normal uses. It provides general information fileshare service.",
+          "purpose": "The Windows fileshare mapped as I:",
+          "status": {
+            "state": "operational"
+          }
         }
       ]
     },
     "control-implementation": {
       "description": "Control implementation statements for this system.",
-      "implemented-requirements": []
+      "implemented-requirements": [
+        {
+          "uuid": "0b5928b7-1cea-4098-a6b9-516e83bcb7ed",
+          "control-id": "ism-1055",
+          "by-components": [
+            {
+              "component-uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+              "uuid": "b1cae30a-639d-42a6-9f1d-4f091d14c1d1",
+              "description": "AD has a group policy applied to all Windows computers that disables LAN Manager and NT LAN Manager authenication.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "4b77aa11-28bb-494d-b7b0-49ce0f939dd2",
+          "control-id": "ism-1546",
+          "by-components": [
+            {
+              "component-uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+              "uuid": "9dd812b4-2eb7-4902-9f93-0779785dfe4b",
+              "description": "All users must authenicate against AD before being provided access to systems and resources.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "41cbdc89-dd0b-43ab-8ee7-96b38ed70a00",
+          "control-id": "ism-0417",
+          "by-components": [
+            {
+              "component-uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+              "uuid": "b57fdda7-147e-401b-ae59-e3a27261e6d8",
+              "description": "Currently the system is using single-factor authenciation using passwords.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "14ad4141-b4dd-48d4-ae4e-b3f1d2485343",
+          "control-id": "ism-1864",
+          "by-components": [
+            {
+              "component-uuid": "69089434-0a47-46cd-b249-a924ebf536bd",
+              "uuid": "dbd748b2-f10c-4503-846c-77c32ff21d65",
+              "description": "A system usage policy exists and is checked and maintained yearly.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "e4cb3821-8bd4-437b-9e00-75908cc78d59",
+          "control-id": "ism-0181",
+          "by-components": [
+            {
+              "component-uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+              "uuid": "75cb5509-95a1-4d2d-8cc7-b9cdf1759eaf",
+              "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "5c27caf4-bd58-4338-a476-c103384312d4",
+          "control-id": "ism-1111",
+          "by-components": [
+            {
+              "component-uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+              "uuid": "83a753b6-8321-458f-b0d9-e9beecaab4b0",
+              "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "99e62c97-ed83-4944-a4ea-888baa9ff306",
+          "control-id": "ism-1820",
+          "by-components": [
+            {
+              "component-uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+              "uuid": "0b1b92f3-0dff-4745-8c0e-8dce39ea3a2a",
+              "description": "All fibre-optic and copper cables use a consistent colour.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "681a9ac9-8ef5-44d8-901b-ddfb7432fa80",
+          "control-id": "ism-0639",
+          "by-components": [
+            {
+              "component-uuid": "14e81bf8-7ff1-4857-a520-588d55bad0b4",
+              "uuid": "e2dc379b-97d9-4815-badf-4207d8788f5c",
+              "description": "The central Firewall is used to provide network segregation between different security domains.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "1a6c5292-6530-423e-8f64-3083f9072929",
+          "control-id": "ism-0457",
+          "by-components": [
+            {
+              "component-uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+              "uuid": "c42fa8c7-3e99-4c02-b509-941b1299bcad",
+              "description": "This device means the cryptographic requirements.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "6a2c968d-c189-48d4-b499-53c3647791b0",
+          "control-id": "ism-0465",
+          "by-components": [
+            {
+              "component-uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+              "uuid": "c24e965b-cc80-4821-ad7a-7f4e53898525",
+              "description": "The common criteria evaluation certificate is document abc",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "5504170f-eb86-4de2-9e0a-d02b55f87289",
+          "control-id": "ism-0843",
+          "by-components": [
+            {
+              "component-uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+              "uuid": "9d378f59-a5f1-44f4-98fe-731cede4c930",
+              "description": "Airlock Digital agent is installed on all Windows workstations via group policy. All workstations are configured in enforcement mode providing application control.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "5eb005f2-17df-44e6-87f0-737077c8fb8b",
+          "control-id": "ism-1656",
+          "by-components": [
+            {
+              "component-uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+              "uuid": "d3e7f486-f5bd-4517-bcde-831c573c4314",
+              "description": "Airlock Digital agent is installed on all non-internface facing servers. All servers are configured in enforcement mode providing applicaiton control.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "bcf92f44-6a4d-4765-9915-73cf1b3a60f1",
+          "control-id": "ism-0955",
+          "by-components": [
+            {
+              "component-uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+              "uuid": "e5691b91-0a43-4785-9dab-eb783a28f015",
+              "description": "Airlock Digital implements application control using cryptographic hash rules, publisher certificate rules and path rules.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "8af10b10-613d-4498-96a5-a6fc9f1be000",
+          "control-id": "ism-1471",
+          "by-components": [
+            {
+              "component-uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+              "uuid": "925c3ade-b3de-4bc2-a79f-d253b4733339",
+              "description": "Airlock digital  implemented application control using publisher certificate rules. Publisher names and product names are used.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "7175ee8a-791d-4c3f-9c14-cdede6530e34",
+          "control-id": "ism-0428",
+          "by-components": [
+            {
+              "component-uuid": "b541b5b3-e67a-495e-b8be-5ccb329ed128",
+              "uuid": "9ff695f5-2d49-42e7-a01e-291bb7111d1a",
+              "description": "The GPO sets the session logoff after 10 hours of user inactivity on all Windows desktop computers.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "f2f7aca9-67f4-4287-95a7-e215f440a14c",
+          "control-id": "ism-2012",
+          "by-components": [
+            {
+              "component-uuid": "b541b5b3-e67a-495e-b8be-5ccb329ed128",
+              "uuid": "2eeab264-938b-48e6-a68b-3731da7c6616",
+              "description": "The GPO sets the windows screen lock to activate after 10 minutes of user inactivity on all Windows desktop computers.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        }
+      ]
     },
     "back-matter": {
       "resources": [
         {
           "uuid": "d908cee1-e8bf-4087-8a19-194b2edbc039",
-          "title": "Information security manual non-classified Baseline",
+          "title": "Information security manual",
           "props": [
             {
               "name": "type",
-              "value": "profile"
+              "value": "catalog"
             },
             {
               "name": "version",
@@ -164,7 +413,7 @@
           ],
           "rlinks": [
             {
-              "href": "ISM_NON_CLASSIFIED-baseline_profile.json"
+              "href": "ISM_catalog.json"
             }
           ]
         }
