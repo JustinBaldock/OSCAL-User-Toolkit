@@ -1911,6 +1911,12 @@ class SSPTab(tk.Frame):
         if not self._ssp_ctrl_impls and self._ssp_components:
             self._rebuild_ctrl_impls_from_component_editor()
 
+        # Back-fill protocols for components that were saved without them
+        # (SSPs saved before protocol support was added, or components added
+        # manually).  Only fills components that have no protocols stored yet.
+        if self._ssp_components:
+            self._rebuild_protocols_from_component_editor()
+
         self._refresh_comp8_tree()
         self._refresh_ctrl9_list()
         self._refresh_bycomp_tree()
@@ -1974,6 +1980,31 @@ class SSPTab(tk.Frame):
                     "impl_status":    "implemented",
                     "remarks":        "",
                 })
+
+    def _rebuild_protocols_from_component_editor(self):
+        """
+        Auto-populate protocols on SSP components by cross-referencing their
+        UUIDs against the Component Editor's currently-loaded components.
+
+        Called when opening an SSP whose components have no protocols stored —
+        typically an SSP saved before protocol support was added, or one whose
+        components were added manually rather than imported from a file.
+
+        Mutates self._ssp_components in place: any component with an empty
+        protocols list whose UUID matches a loaded Component Editor component
+        gets its protocols replaced with the editor's current data.
+        If the Component Editor has no components loaded, this is a no-op.
+        """
+        loaded = {c.get("uuid", ""): c for c in self._get_components()}
+        if not loaded:
+            return
+        for ssp_comp in self._ssp_components:
+            # Only backfill components that have no protocols already stored.
+            if ssp_comp.get("protocols"):
+                continue
+            editor_comp = loaded.get(ssp_comp.get("uuid", ""))
+            if editor_comp and editor_comp.get("protocols"):
+                ssp_comp["protocols"] = editor_comp["protocols"]
 
     def _reset(self):
         """
