@@ -202,14 +202,16 @@ class SSPTab(tk.Frame):
 
         tk.Button(
             tb, text="🆕  New SSP", command=self._new,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
             tb, text="📄  Export DOCX", command=self._export_docx,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         # ── Visual separator line ─────────────────────────────────────────────
@@ -963,6 +965,9 @@ class SSPTab(tk.Frame):
             return
         self._ssp_components.append(comp)
         self._refresh_comp8_tree()
+        # Refresh Section 9 so the component is available in the by-component
+        # dropdown immediately, and dot indicators stay accurate.
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
 
     def _edit_ssp_component(self):
         """Edit the selected Section 8 component in place."""
@@ -1023,8 +1028,9 @@ class SSPTab(tk.Frame):
 
     def _import_component_file(self, path):
         """
-        Read one OSCAL component-definition file and import every component it
-        defines into Section 8.
+        Read one OSCAL component-definition file, import every component it
+        defines into Section 8, and automatically populate Section 9 with
+        by-component entries derived from each component's control responses.
 
         Returns True if at least one component was added, False otherwise
         (unreadable file, wrong type, or all UUIDs already present).
@@ -1061,7 +1067,55 @@ class SSPTab(tk.Frame):
             }
             if self._add_ssp_component_dict(comp_dict):
                 added_any = True
+                # Import the component's control responses into Section 9 as
+                # by-component entries. Each implemented-requirement with a
+                # non-empty description becomes one by-component entry under
+                # the matching control-id, attributed to this component.
+                self._import_ctrl_responses(comp_dict["uuid"], c)
         return added_any
+
+    def _import_ctrl_responses(self, comp_uuid, oscal_component):
+        """
+        Walk an OSCAL component's control-implementations and add a by-component
+        entry to _ssp_ctrl_impls for every control that has a description.
+
+        Skips any control for which this component already has a by-component
+        entry (so re-importing a file never duplicates responses).
+        """
+        for ci in oscal_component.get("control-implementations", []):
+            for ir in ci.get("implemented-requirements", []):
+                ctrl_id    = ir.get("control-id", "")
+                description = ir.get("description", "").strip()
+                if not ctrl_id or not description:
+                    continue
+
+                # Find or create the SSP-level ctrl_impl entry for this control.
+                existing = next(
+                    (e for e in self._ssp_ctrl_impls
+                     if e["control_id"] == ctrl_id),
+                    None,
+                )
+                if existing is None:
+                    existing = {
+                        "control_id":    ctrl_id,
+                        "remarks":       "",
+                        "by_components": [],
+                    }
+                    self._ssp_ctrl_impls.append(existing)
+
+                # Only add if this component does not already have an entry
+                # for this control (guards against importing the same file twice).
+                if any(bc["component_uuid"] == comp_uuid
+                       for bc in existing["by_components"]):
+                    continue
+
+                existing["by_components"].append({
+                    "uuid":           new_uuid(),
+                    "component_uuid": comp_uuid,
+                    "description":    description,
+                    "impl_status":    "implemented",
+                    "remarks":        "",
+                })
 
     def _import_components_from_files(self):
         """Import components from one or more chosen component JSON files."""
@@ -1078,6 +1132,7 @@ class SSPTab(tk.Frame):
             else:
                 skipped += 1
         self._refresh_comp8_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
         self._set_status(
             f"Imported components from {added} file(s); skipped {skipped}."
         )
@@ -1096,6 +1151,7 @@ class SSPTab(tk.Frame):
             else:
                 skipped += 1
         self._refresh_comp8_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
         self._set_status(
             f"Imported components from {added} file(s); skipped {skipped}."
         )
