@@ -48,6 +48,69 @@
               }
             ]
           }
+        ],
+        "protocols": [
+          {
+            "uuid": "a6de261d-e08f-4128-8133-576effc0dfae",
+            "name": "https",
+            "title": "HTTPS \u2014 Airlock Digital management console and agent-to-server communication",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "99fbe14b-f445-4f0e-986f-928dd5b4b60f",
+            "name": "airlock-agent",
+            "title": "Airlock Digital agent communication \u2014 Agent check-in and policy download",
+            "port-ranges": [
+              {
+                "start": 4433,
+                "end": 4433,
+                "transport": "TCP",
+                "remarks": "Default Airlock Digital agent port \u2014 confirm with vendor deployment guide; may use 443"
+              }
+            ]
+          },
+          {
+            "uuid": "6fa0d25a-03b2-42b6-a386-60b9f192ff4f",
+            "name": "syslog",
+            "title": "Syslog \u2014 Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "5ab834ad-ab77-400c-b0e1-a4f8eed62807",
+            "name": "ldaps",
+            "title": "LDAPS \u2014 Active Directory integration for Airlock Digital management console authentication",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "367c84ab-88df-4c0e-a579-aef225770441",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation for audit log timestamps",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
         ]
       }
     ]

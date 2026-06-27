@@ -33,6 +33,74 @@
               }
             ]
           }
+        ],
+        "protocols": [
+          {
+            "uuid": "a5149148-af5c-48ac-b617-ca8aa4f8fd62",
+            "name": "https",
+            "title": "HTTPS \u2014 Web-based management console",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "17dffd36-04d6-4ea8-8859-9990e0c9a353",
+            "name": "ssh",
+            "title": "SSH \u2014 Secure CLI management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2b0dad22-1704-4453-bd28-305009bf3f15",
+            "name": "snmp",
+            "title": "SNMP \u2014 Network monitoring (inbound queries / traps outbound)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP",
+                "remarks": "SNMP trap"
+              }
+            ]
+          },
+          {
+            "uuid": "c7b17d12-7cc5-4659-b675-9f2f46ccdb5d",
+            "name": "syslog",
+            "title": "Syslog \u2014 Security event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "6e24de35-f38d-4dec-aaa9-16433cbb17f0",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
         ]
       }
     ]

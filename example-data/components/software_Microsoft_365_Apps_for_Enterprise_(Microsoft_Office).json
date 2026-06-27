@@ -282,7 +282,7 @@
               {
                 "uuid": "99f203f1-6449-4e7a-b9df-29930ba27ffc",
                 "control-id": "ism-1872",
-                "description": "Multi-factor authentication for Microsoft 365 online services (Exchange Online, SharePoint Online, Teams) uses phishing-resistant methods — specifically FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication — enforced via Microsoft Entra Conditional Access policies requiring phishing-resistant MFA strength."
+                "description": "Multi-factor authentication for Microsoft 365 online services (Exchange Online, SharePoint Online, Teams) uses phishing-resistant methods \u2014 specifically FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication \u2014 enforced via Microsoft Entra Conditional Access policies requiring phishing-resistant MFA strength."
               },
               {
                 "uuid": "4e9e015a-f230-47ea-9e81-366c0abdf8ee",
@@ -323,6 +323,108 @@
                 "uuid": "d0ccaad8-eaf8-4b9b-8a80-a4700211e181",
                 "control-id": "ism-0917",
                 "description": "When malicious code is detected in Microsoft Office documents or macros (via Defender Antivirus, AMSI, or Defender for Office 365), the infected document is quarantined, the affected workstation is isolated from the network, previously connected media is scanned, and the incident is escalated per the cyber security incident response plan."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "8d6f6da2-6cf7-4fed-ba8c-7ae6b190c53f",
+            "name": "https",
+            "title": "HTTPS \u2014 All Microsoft 365 cloud services: Exchange Online, SharePoint Online, Teams, OneDrive, Entra ID, Intune, Microsoft Update",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "45e4919a-7b6e-41fa-8d66-56d2ca97c61e",
+            "name": "http",
+            "title": "HTTP \u2014 CRL/OCSP certificate validation, Office CDN (redirects to HTTPS), licensing",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "6b84e8a2-cb4d-4bfd-a429-50a075b2fee0",
+            "name": "smtps",
+            "title": "SMTP STARTTLS \u2014 Outlook outbound email relay to Exchange Online",
+            "port-ranges": [
+              {
+                "start": 587,
+                "end": 587,
+                "transport": "TCP",
+                "remarks": "SMTP submission with STARTTLS for Outlook connected to Exchange Online"
+              }
+            ]
+          },
+          {
+            "uuid": "03236619-b7f2-4f71-87b7-43fcd7c97adb",
+            "name": "teams-media",
+            "title": "Teams Media \u2014 Microsoft Teams real-time audio, video and screen sharing (SRTP over UDP)",
+            "port-ranges": [
+              {
+                "start": 3478,
+                "end": 3481,
+                "transport": "UDP",
+                "remarks": "Teams STUN/TURN and media UDP \u2014 required for optimal Teams audio/video quality"
+              },
+              {
+                "start": 3478,
+                "end": 3478,
+                "transport": "TCP",
+                "remarks": "Teams STUN over TCP fallback when UDP is blocked"
+              }
+            ]
+          },
+          {
+            "uuid": "bd84ffb1-2a2a-45b8-9171-aaf6db44de26",
+            "name": "teams-relay",
+            "title": "Teams Media Relay \u2014 Teams audio/video relay via Microsoft transport relays",
+            "port-ranges": [
+              {
+                "start": 50000,
+                "end": 59999,
+                "transport": "UDP",
+                "remarks": "Optimised Teams media \u2014 recommended to allow for best audio/video performance"
+              },
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP",
+                "remarks": "Fallback \u2014 Teams media tunnelled over HTTPS/443 when UDP ports are blocked"
+              }
+            ]
+          },
+          {
+            "uuid": "7fe89a11-c896-48c5-a936-695cadab0ad9",
+            "name": "imap4s",
+            "title": "IMAP4S \u2014 Secure IMAP (if IMAP4 access to Exchange Online is enabled and not blocked)",
+            "port-ranges": [
+              {
+                "start": 993,
+                "end": 993,
+                "transport": "TCP",
+                "remarks": "Blocked by default in the organisation \u2014 Exchange Online IMAP4 is disabled per policy"
+              }
+            ]
+          },
+          {
+            "uuid": "83fd22d4-d4c7-435f-9578-48f40292427f",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation (Windows Time service via domain controller or internet NTP)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
               }
             ]
           }

@@ -43,6 +43,177 @@
               }
             ]
           }
+        ],
+        "protocols": [
+          {
+            "uuid": "1a189a88-6787-4e8b-908d-a6a1d8a11682",
+            "name": "dns",
+            "title": "DNS \u2014 Active Directory integrated DNS (authoritative for the AD domain)",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "341d7e1e-5b4e-40e4-8831-7466828a6407",
+            "name": "kerberos",
+            "title": "Kerberos \u2014 Primary authentication protocol for the AD domain",
+            "port-ranges": [
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "UDP"
+              },
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "d1113695-b347-43b2-b16b-dd208e3b7d64",
+            "name": "rpc-epmap",
+            "title": "RPC Endpoint Mapper \u2014 Required for AD replication and RPC-based AD operations",
+            "port-ranges": [
+              {
+                "start": 135,
+                "end": 135,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "29828ff1-fc3f-492a-879e-a153d1fb4ca5",
+            "name": "ldap",
+            "title": "LDAP \u2014 Active Directory directory queries, user and computer object lookups",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              },
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "50325fd2-5bd9-4960-b71a-3c2ae3421831",
+            "name": "ldaps",
+            "title": "LDAPS \u2014 LDAP over TLS (required for secure bind and credential operations)",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b1df2df5-82d4-4aaf-b65b-77db3383906a",
+            "name": "smb",
+            "title": "SMB \u2014 SYSVOL and NETLOGON share access for Group Policy delivery",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "952cfe31-9eff-4f25-9b18-ec3af2b61771",
+            "name": "ntp",
+            "title": "NTP \u2014 Domain controller as Windows Time authoritative source (W32tm)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "f28bba93-174d-4ef1-b6ae-4408f51501f3",
+            "name": "ad-gc",
+            "title": "Active Directory Global Catalog \u2014 Forest-wide directory lookups",
+            "port-ranges": [
+              {
+                "start": 3268,
+                "end": 3268,
+                "transport": "TCP"
+              },
+              {
+                "start": 3269,
+                "end": 3269,
+                "transport": "TCP",
+                "remarks": "Global Catalog over LDAPS"
+              }
+            ]
+          },
+          {
+            "uuid": "e09bbc8d-a934-4736-a16e-9e2c3a69b8e6",
+            "name": "ad-replication",
+            "title": "AD Replication \u2014 RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
+            "port-ranges": [
+              {
+                "start": 49152,
+                "end": 65535,
+                "transport": "TCP",
+                "remarks": "Dynamic RPC high ports \u2014 restrict to DC-to-DC traffic only"
+              }
+            ]
+          },
+          {
+            "uuid": "384a3564-41e6-4ca3-940e-393b056ded54",
+            "name": "netbios-ns",
+            "title": "NetBIOS Name Service \u2014 Legacy NetBIOS name resolution (disable where possible)",
+            "port-ranges": [
+              {
+                "start": 137,
+                "end": 137,
+                "transport": "UDP",
+                "remarks": "Legacy \u2014 disable on all subnets where LLMNR/NetBIOS suppression is enforced"
+              }
+            ]
+          },
+          {
+            "uuid": "0b429c52-7e5c-47b7-9bca-a1759e2c2bfa",
+            "name": "netbios-dgm",
+            "title": "NetBIOS Datagram \u2014 Legacy NetBIOS datagram service",
+            "port-ranges": [
+              {
+                "start": 138,
+                "end": 138,
+                "transport": "UDP",
+                "remarks": "Legacy \u2014 disable on all subnets where LLMNR/NetBIOS suppression is enforced"
+              }
+            ]
+          },
+          {
+            "uuid": "e1d092c8-6226-4f8e-bf66-68c27e5e47ef",
+            "name": "netbios-ssn",
+            "title": "NetBIOS Session \u2014 Legacy NetBIOS session service",
+            "port-ranges": [
+              {
+                "start": 139,
+                "end": 139,
+                "transport": "TCP",
+                "remarks": "Legacy \u2014 disable where SMB over TCP/445 is used exclusively"
+              }
+            ]
+          }
         ]
       }
     ]
