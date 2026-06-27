@@ -1,0 +1,333 @@
+{
+  "component-definition": {
+    "uuid": "4daa9510-d561-4b94-8f88-d795d39dbed0",
+    "metadata": {
+      "title": "software - Microsoft 365 Apps for Enterprise (Microsoft Office)",
+      "last-modified": "2026-06-27T03:04:59Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "73e91a8b-bd2f-4ecc-8e7a-6f96dd27d9f2",
+        "type": "software",
+        "title": "Microsoft 365 Apps for Enterprise (Microsoft Office)",
+        "description": "Microsoft 365 Apps for Enterprise (formerly Office 365 ProPlus) is Microsoft's subscription-based office productivity suite for enterprise customers. It includes Word, Excel, PowerPoint, Outlook, OneNote, Access, and optionally Publisher, Visio and Project. Applications are installed locally on Windows endpoints and connect to Microsoft 365 cloud services including Exchange Online (email), SharePoint Online (document management), Microsoft Teams (collaboration), and OneDrive for Business (cloud storage).\n\nThis component definition covers both the locally-installed Office applications and the Microsoft 365 cloud services they connect to. Controls are implemented through Group Policy Objects, Microsoft Intune, Microsoft Defender for Endpoint (including ASR rules), Microsoft Entra ID Conditional Access, and Microsoft Defender for Office 365.",
+        "purpose": "Provides word processing, spreadsheet, presentation, email, instant messaging, video conferencing, document collaboration, and cloud storage capabilities for organisational personnel.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          },
+          {
+            "name": "asset-type",
+            "value": "software"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "product-name",
+            "value": "Microsoft 365 Apps for Enterprise"
+          },
+          {
+            "name": "product-family",
+            "value": "Microsoft Office"
+          },
+          {
+            "name": "version",
+            "value": "Current Channel (latest release)"
+          },
+          {
+            "name": "license-type",
+            "value": "Microsoft 365 E3 or E5 subscription"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Locally installed with cloud-connected services (hybrid)"
+          },
+          {
+            "name": "operating-environment",
+            "value": "Windows 10 version 1809 or later / Windows 11"
+          },
+          {
+            "name": "management-tooling",
+            "value": "Microsoft Intune, Group Policy, Configuration Manager"
+          },
+          {
+            "name": "endpoint-protection",
+            "value": "Microsoft Defender for Endpoint, Microsoft Defender for Office 365"
+          },
+          {
+            "name": "identity-platform",
+            "value": "Microsoft Entra ID (Azure Active Directory)"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "macro-reviewer"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5114bee4-4a4d-45d5-87ca-23b98ff62478",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft 365 Apps for Enterprise (Microsoft Office).",
+            "implemented-requirements": [
+              {
+                "uuid": "94cd91e4-5737-4d23-b7df-4ab5d2a0061a",
+                "control-id": "ism-1467",
+                "description": "Microsoft 365 Apps for Enterprise is kept current via Microsoft 365 update channels (Current Channel or Monthly Enterprise Channel). Deployment is managed through Microsoft Intune or Microsoft Endpoint Configuration Manager, ensuring the latest release of the Office productivity suite is installed on all workstations."
+              },
+              {
+                "uuid": "c49d34b6-9ced-487f-8fa3-2fc795b21a7c",
+                "control-id": "ism-1691",
+                "description": "Security patches and updates for Microsoft Office are applied within 48 hours of release when exploits exist in the wild. Deployment is automated through Microsoft Intune or Configuration Manager. Patch compliance status is tracked and reported centrally."
+              },
+              {
+                "uuid": "d8bf5daf-2e42-4a04-811f-a8030ae938bc",
+                "control-id": "ism-1692",
+                "description": "Security patches and updates for Microsoft Office are applied within two weeks of release where no active exploit exists in the wild. Automated deployment via Intune or Configuration Manager ensures compliance across the endpoint fleet."
+              },
+              {
+                "uuid": "0e325d32-526a-4c8f-bdad-b07465d83afc",
+                "control-id": "ism-1901",
+                "description": "Security patches and updates for Microsoft Office are applied within one month of release for lower-severity vulnerabilities. Deployment scheduling ensures all endpoints are updated within the required timeframe and compliance is verified via vulnerability scanning."
+              },
+              {
+                "uuid": "a739bfa8-eaad-436b-8ff5-f36108a99c03",
+                "control-id": "ism-1704",
+                "description": "Versions of Microsoft Office no longer supported by Microsoft are removed from all workstations before the end-of-support date. The organisation maintains a software lifecycle register tracking the support status of all deployed Office versions and plans upgrade cycles accordingly."
+              },
+              {
+                "uuid": "497f861a-3d2d-4e23-99de-d9f40af47f8d",
+                "control-id": "ism-1699",
+                "description": "A vulnerability scanner (such as Microsoft Defender Vulnerability Management or Tenable Nessus) is used at least weekly to identify missing patches or updates for Microsoft Office, its extensions, and integrated components across all managed workstations."
+              },
+              {
+                "uuid": "dbcb9146-0a5f-4a94-ac4c-1f5c38e5e58a",
+                "control-id": "ism-1671",
+                "description": "Microsoft Office macros are disabled by Group Policy for all users who do not have a documented and approved business requirement to use macros. The Group Policy setting 'Disable all macros without notification' is applied to Word, Excel, PowerPoint, Access, Visio and Project for all standard users."
+              },
+              {
+                "uuid": "f578861b-017f-472b-a3ed-5ba87b8059ee",
+                "control-id": "ism-1488",
+                "description": "Microsoft Office is configured via Group Policy to block macros in files that originate from the internet (files carrying the Mark of the Web). The Group Policy setting 'Block macros from running in Office files from the internet' is enabled for all Office applications including Word, Excel, PowerPoint, Access, and Publisher."
+              },
+              {
+                "uuid": "2d6920a0-f28e-49d7-9d49-87869e38e007",
+                "control-id": "ism-1672",
+                "description": "Microsoft Office macro antivirus scanning is enabled. Windows Defender Antivirus scans macro code within Office documents via the Antimalware Scan Interface (AMSI) integration before macro execution. AMSI integration is verified as enabled and not bypassed."
+              },
+              {
+                "uuid": "5019cb3a-f20a-4ea5-8f64-19cd41cacc25",
+                "control-id": "ism-1673",
+                "description": "Microsoft Office macros are blocked from making Win32 API calls via the Attack Surface Reduction rule 'Block Win32 API calls from Office macros' (ASR rule ID: 92e97fa1-2edf-4476-bdd6-9dd0b4dddc7b), enforced through Microsoft Defender for Endpoint policy in Block mode on all workstations."
+              },
+              {
+                "uuid": "bbfe91da-d832-4b90-875f-3880851af008",
+                "control-id": "ism-1674",
+                "description": "Only Microsoft Office macros that run from within a configured Trusted Location, or that are digitally signed by an organisation-approved trusted publisher, are permitted to execute. This restriction is enforced via Group Policy across all Office applications. Macros not meeting either criterion are silently blocked."
+              },
+              {
+                "uuid": "1d5b8b7c-458e-4709-86fb-21886ca403de",
+                "control-id": "ism-1890",
+                "description": "Before a macro is digitally signed by an approved publisher or placed in a Trusted Location, it is reviewed and assessed for malicious code by designated macro reviewers. A documented macro approval process is followed, with review records retained for audit purposes."
+              },
+              {
+                "uuid": "2c5581a8-b441-4f15-8e2b-06beaa304a28",
+                "control-id": "ism-1487",
+                "description": "Only privileged macro reviewer accounts responsible for validating that macros are free of malicious code are granted write and modify access to Trusted Location paths. Standard users have no write access to Trusted Locations. Permissions are enforced via NTFS ACLs and verified regularly."
+              },
+              {
+                "uuid": "b0575dcd-0764-4263-8414-caf43c724eca",
+                "control-id": "ism-1675",
+                "description": "Microsoft Office is configured to prevent macros digitally signed by untrusted publishers from being enabled by users via the Message Bar or Backstage View. The combination of Group Policy enforcing 'Disable all macros except digitally signed macros' and locking the Trust Center ensures untrusted-publisher macros are silently rejected."
+              },
+              {
+                "uuid": "2b46b604-f4f0-43aa-af20-1c5877556b90",
+                "control-id": "ism-1891",
+                "description": "Microsoft Office is configured to require V3 digital signatures (ECDSA or RSA-2048 or stronger) for trusted macros. Macros signed with deprecated V1 or V2 signatures cannot be enabled via the Message Bar or Backstage View. This is enforced via Group Policy."
+              },
+              {
+                "uuid": "9a71bfd9-aa03-423f-9b33-3d3682b8b05a",
+                "control-id": "ism-1676",
+                "description": "The Microsoft Office trusted publisher list is reviewed at least annually by the security team. Reviews confirm all publishers remain authorised, certificates have not expired or been revoked, and no unauthorised publishers have been added. Review findings and any removals are documented."
+              },
+              {
+                "uuid": "660d3cf0-fb14-4f13-a1eb-1a3ae31caab2",
+                "control-id": "ism-1489",
+                "description": "Microsoft Office macro security settings and Trust Center settings are enforced via Group Policy and cannot be modified by standard users. Group Policy settings take precedence over user-level Trust Center configuration for all Office applications."
+              },
+              {
+                "uuid": "e67e82b6-bea2-4505-a24d-9d0e5486178b",
+                "control-id": "ism-1542",
+                "description": "Microsoft Office is configured to prevent activation of Object Linking and Embedding (OLE) packages. The OLE package activation Group Policy setting is disabled across all Office applications. Dynamic Data Exchange (DDE) auto-start is also disabled via Group Policy to prevent code execution via embedded objects."
+              },
+              {
+                "uuid": "ed84e241-a68f-4c97-a484-e341191665f5",
+                "control-id": "ism-1667",
+                "description": "Microsoft Office is blocked from creating child processes via the Attack Surface Reduction rule 'Block all Office applications from creating child processes' (ASR rule ID: d4f940ab-401b-4efc-aadc-ad5f3c50688a). This rule is enforced through Microsoft Defender for Endpoint in Block mode on all managed workstations."
+              },
+              {
+                "uuid": "6d1d0572-5e15-400c-8f7c-6cf5d88be563",
+                "control-id": "ism-1668",
+                "description": "Microsoft Office is blocked from creating executable content via the ASR rule 'Block Office applications from creating executable content' (ASR rule ID: 3b576869-a4ec-4529-8536-b80a7769e899). This rule is enforced through Microsoft Defender for Endpoint in Block mode on all managed workstations."
+              },
+              {
+                "uuid": "f6d4c43b-c880-44f8-929a-b5b068f6b083",
+                "control-id": "ism-1669",
+                "description": "Microsoft Office is blocked from injecting code into other processes via the ASR rule 'Block Office applications from injecting code into other processes' (ASR rule ID: 75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84). This rule is enforced through Microsoft Defender for Endpoint in Block mode on all managed workstations."
+              },
+              {
+                "uuid": "c0ed8192-82c5-41a4-8e35-2dc2aec49cd7",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration baseline for Microsoft Office is developed, documented, and maintained based on the ASD Hardening Microsoft 365 Apps guide and the Microsoft Security Baseline for Microsoft 365 Apps. The baseline is implemented via Group Policy Objects and Intune configuration profiles, and reviewed and updated at least annually or when Microsoft releases significant hardening guidance updates."
+              },
+              {
+                "uuid": "23a967c7-8f9f-40ba-87bc-4ea1a2417316",
+                "control-id": "ism-1858",
+                "description": "Microsoft Office is hardened using ASD's Hardening Microsoft 365 Apps guidance and the Microsoft Security Baseline. Where ASD and Microsoft guidance conflict, ASD guidance takes precedence. Hardening measures include: disabling unused features (Flash, ActiveX, DDE, OLE packages), enabling Protected View for all file origins, configuring ASR rules, restricting Trust Center settings, and disabling legacy authentication protocols."
+              },
+              {
+                "uuid": "34ddc111-a3fc-441e-8663-e3db8d731c17",
+                "control-id": "ism-1235",
+                "description": "Microsoft Office add-ins and extensions (COM add-ins, VSTO add-ins, Office Store web add-ins) are restricted to an organisation-approved set via Group Policy. The 'List of managed add-ins' and 'Block all unmanaged add-ins' Group Policy settings are configured for each Office application. Installation of unapproved add-ins from the Office Store is blocked."
+              },
+              {
+                "uuid": "6e446b7a-c6c9-448a-aab1-10137b8b6959",
+                "control-id": "ism-0843",
+                "description": "Application control (Microsoft AppLocker, Windows Defender Application Control, or equivalent) is implemented on all workstations running Microsoft Office to restrict execution to an organisation-approved set of executables, libraries, scripts, and installers. Office processes and related file paths are included in the application control ruleset."
+              },
+              {
+                "uuid": "00d10a4b-7405-43e1-a784-f0f05eb88a68",
+                "control-id": "ism-1870",
+                "description": "Application control rules are applied to user profile directories and temporary folders used by Microsoft Office and its components (e.g. %APPDATA%\\Microsoft\\Office, %LOCALAPPDATA%\\Microsoft, %TEMP%, %TMP%), preventing execution of files written dynamically to these locations by potentially malicious Office documents or macros."
+              },
+              {
+                "uuid": "450a1483-7de6-44b2-8875-f0ac57038896",
+                "control-id": "ism-1657",
+                "description": "Application control restricts the execution of executables, dynamic-link libraries (DLLs), scripts, installers, HTML applications (HTA) and control panel applets spawned by or associated with Microsoft Office processes to an organisation-approved set. Unsigned or unapproved libraries loaded by Office processes are blocked."
+              },
+              {
+                "uuid": "594d4806-c485-4680-802c-31f450885376",
+                "control-id": "ism-0846",
+                "description": "Application control for Microsoft Office processes and Office-related paths cannot be disabled, bypassed or exempted by standard users or unprivileged accounts. Only local administrator accounts and designated break glass accounts are excluded from enforcement, and their use is centrally logged and monitored."
+              },
+              {
+                "uuid": "60219992-9717-45c9-9bde-69488f9859a1",
+                "control-id": "ism-1660",
+                "description": "Allowed and blocked application control events for Microsoft Office processes, add-ins, macros, and related executables are centrally logged to the organisation's SIEM. Alert rules are configured for high-volume blocking events or patterns consistent with macro-based malware activity."
+              },
+              {
+                "uuid": "34ae8006-2765-4ce4-9516-45bd4eded3e6",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus (or an approved third-party antivirus product) is deployed on all workstations running Microsoft Office with signature-based and heuristic-based detection enabled at a high sensitivity level. Antivirus signatures are updated at least daily. Real-time protection and on-access scanning of Office documents is enabled. AMSI integration with Office is active to enable real-time macro scanning."
+              },
+              {
+                "uuid": "e7aceb58-79a8-4ef4-bb7b-7dedd5262208",
+                "control-id": "ism-1234",
+                "description": "Email content filtering via Microsoft Defender for Office 365 Safe Attachments and Safe Links (or equivalent gateway) is implemented to inspect email bodies and attachments before delivery to Outlook. Macro-enabled Office files (e.g. .xlsm, .docm) from external senders are detonated in a sandbox. Attachments with dangerous file types are blocked. Safe Links rewrites URLs in emails and Office documents for real-time detonation checks."
+              },
+              {
+                "uuid": "e9f96600-33a5-4065-99f8-3a778b148048",
+                "control-id": "ism-1748",
+                "description": "Microsoft Outlook email client security settings are enforced via Group Policy and cannot be modified by standard users. Locked settings include: external content blocking (images, linked content), attachment handling rules, S/MIME configuration, junk email filtering level, and automatic download of external content."
+              },
+              {
+                "uuid": "9e7d4d35-d29e-4c2f-8b69-13b79f5f60b9",
+                "control-id": "ism-0963",
+                "description": "Web content filtering is implemented for content accessed through or linked from Microsoft Office applications via Microsoft Defender SmartScreen (enforced via Group Policy), Microsoft Defender for Endpoint web protection, and a web proxy. Malicious, high-risk, and non-business web categories are blocked."
+              },
+              {
+                "uuid": "f76f54ad-0b46-47ee-90cf-ec1381002509",
+                "control-id": "ism-1175",
+                "description": "Privileged accounts used to administer Microsoft Office Group Policy, manage the trusted publisher list, and write to Trusted Locations do not have access to Outlook email or general internet browsing. Separate standard user accounts are used for day-to-day Office productivity work."
+              },
+              {
+                "uuid": "d53d821a-5358-4db4-8e48-6e98128995a1",
+                "control-id": "ism-1507",
+                "description": "Requests for privileged access to Microsoft Office administration functions (Group Policy management, trusted publisher management, macro reviewer role, Trusted Location write access) are validated and approved through the organisation's formal access request process before access is provisioned."
+              },
+              {
+                "uuid": "a11053b4-fb79-4603-8ac0-235600796729",
+                "control-id": "ism-1508",
+                "description": "Privileged access to Microsoft Office administration is limited to the minimum required for each administrative role. Separation of duties is applied: Group Policy administrators, macro reviewers, and Trusted Location managers are distinct roles with separate accounts."
+              },
+              {
+                "uuid": "3f84ba6d-cdf9-474d-b3a1-8a9e070cd04e",
+                "control-id": "ism-0445",
+                "description": "Administrators of Microsoft Office Group Policy and macro policies are assigned dedicated privileged user accounts used solely for those administrative duties. These privileged accounts are not used for general Office productivity work, email, or web browsing."
+              },
+              {
+                "uuid": "fc42b93f-0044-4f70-b290-7f78060e1953",
+                "control-id": "ism-1173",
+                "description": "Phishing-resistant multi-factor authentication (FIDO2, Windows Hello for Business, or Certificate-based Authentication) is required for all privileged accounts used to administer Microsoft Office policies via Microsoft Intune, Microsoft 365 admin portals, or Group Policy management consoles. Enforced via Microsoft Entra Conditional Access."
+              },
+              {
+                "uuid": "3581800a-06aa-4e60-a2b0-8e34c28a4af9",
+                "control-id": "ism-1504",
+                "description": "Multi-factor authentication is required for all users authenticating to Microsoft 365 cloud services integrated with Office (Exchange Online, SharePoint Online, Teams, OneDrive for Business). MFA is enforced via Microsoft Entra Conditional Access policies for all organisational accounts accessing these services."
+              },
+              {
+                "uuid": "99f203f1-6449-4e7a-b9df-29930ba27ffc",
+                "control-id": "ism-1872",
+                "description": "Multi-factor authentication for Microsoft 365 online services (Exchange Online, SharePoint Online, Teams) uses phishing-resistant methods — specifically FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication — enforced via Microsoft Entra Conditional Access policies requiring phishing-resistant MFA strength."
+              },
+              {
+                "uuid": "4e9e015a-f230-47ea-9e81-366c0abdf8ee",
+                "control-id": "ism-1919",
+                "description": "When phishing-resistant MFA is enforced for Microsoft 365, legacy authentication protocols that do not support MFA (Basic Auth, NTLM, SMTP AUTH without SASL, POP3, IMAP4) are blocked via a Microsoft Entra Conditional Access policy targeting the 'Other clients' condition with a Block access grant."
+              },
+              {
+                "uuid": "bc093681-e167-4c3a-82d3-d09c3a180138",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (e.g. Microsoft Sentinel, Splunk, or equivalent SIEM) is implemented to receive and retain logs from Microsoft Office and Microsoft 365 services, including the Unified Audit Log, Microsoft Defender for Office 365 alerts, Microsoft Entra sign-in logs, and endpoint application control logs."
+              },
+              {
+                "uuid": "1f159357-c850-455a-888d-4fb1804a9719",
+                "control-id": "ism-0585",
+                "description": "For each security event logged from Microsoft Office and Microsoft 365, the following details are captured: date and time, relevant user account (UPN or SAM account), relevant filename or document path, event description, and the device or service involved."
+              },
+              {
+                "uuid": "f86ed31e-f25e-494f-9061-5e3f060b99b6",
+                "control-id": "ism-1683",
+                "description": "Successful and unsuccessful MFA authentication events for all Microsoft 365 accounts (Outlook, SharePoint, Teams, OneDrive, admin portals) are centrally logged in Microsoft Entra ID sign-in logs and forwarded to the SIEM for retention and monitoring."
+              },
+              {
+                "uuid": "2664a919-7169-4ede-99be-c035a501e502",
+                "control-id": "ism-1509",
+                "description": "Privileged access events related to Microsoft Office administration (Group Policy changes, trusted publisher list changes, Trusted Location changes, ASR rule modifications, add-in approval changes) are centrally logged and monitored for anomalous activity."
+              },
+              {
+                "uuid": "0cc283dd-503c-410b-8189-d48b184608b5",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan is maintained for Microsoft Office covering: establishment and maintenance of authorised Group Policy baselines, the trusted publisher review and approval process, Trusted Location management, approved add-in register management, ASR rule configuration, and the macro exception approval process."
+              },
+              {
+                "uuid": "4810bce1-35fd-4d32-ab67-86f99f8c27a6",
+                "control-id": "ism-1491",
+                "description": "Standard users are prevented by Group Policy from running script execution engines that may be invoked from Microsoft Office macros or through Office-linked scripts, including Windows Script Host (cscript.exe, wscript.exe), PowerShell (powershell.exe, pwsh.exe), and mshta.exe. This is enforced in conjunction with application control policy."
+              },
+              {
+                "uuid": "d0ccaad8-eaf8-4b9b-8a80-a4700211e181",
+                "control-id": "ism-0917",
+                "description": "When malicious code is detected in Microsoft Office documents or macros (via Defender Antivirus, AMSI, or Defender for Office 365), the infected document is quarantined, the affected workstation is isolated from the network, previously connected media is scanned, and the incident is escalated per the cyber security incident response plan."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

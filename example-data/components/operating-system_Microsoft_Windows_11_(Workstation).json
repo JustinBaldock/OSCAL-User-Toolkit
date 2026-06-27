@@ -1,0 +1,540 @@
+{
+  "component-definition": {
+    "uuid": "f3374cd8-0f10-4c24-a29b-45c97ea06777",
+    "metadata": {
+      "title": "operating-system - Microsoft Windows 11 (Workstation)",
+      "last-modified": "2026-06-27T03:42:08Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "dabc56b1-f23d-4876-9c4f-b2d71e0a5538",
+        "type": "operating-system",
+        "title": "Microsoft Windows 11 (Workstation)",
+        "description": "Microsoft Windows 11 is the workstation operating system deployed on organisation endpoints. Windows 11 enforces hardware security requirements at installation: TPM 2.0, UEFI with Secure Boot, 64-bit CPU with virtualisation extensions (for VBS/HVCI), and minimum 4GB RAM. These requirements enable Virtualization-Based Security (VBS), Hypervisor-Protected Code Integrity (HVCI / Memory Integrity), Windows Defender Credential Guard, and hardware-backed Windows Hello for Business by default.\n\nKey security features of Windows 11 leveraged by this implementation: Windows Defender Application Control (WDAC), Virtualization-Based Security (VBS), HVCI (Memory Integrity), Windows Defender Credential Guard, Windows Hello for Business (TPM 2.0 backed), BitLocker with XTS-AES-256, Microsoft Defender Antivirus with AMSI, Microsoft Defender for Endpoint (EDR), Windows Defender Firewall, LAPS (Local Administrator Password Solution), Protected Event Logging, and Secured-core PC features (DRTM, DMA protection) on compatible hardware.",
+        "purpose": "Workstation operating system for organisation end-users to perform day-to-day productivity tasks including web browsing, email, document creation, collaboration, and access to business applications and cloud services.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          },
+          {
+            "name": "asset-type",
+            "value": "operating-system"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "product-name",
+            "value": "Microsoft Windows 11"
+          },
+          {
+            "name": "product-family",
+            "value": "Windows"
+          },
+          {
+            "name": "version",
+            "value": "Windows 11 23H2 or later (annual feature update channel)"
+          },
+          {
+            "name": "editions",
+            "value": "Enterprise (required for WDAC, full Intune management); Education (equivalent to Enterprise)"
+          },
+          {
+            "name": "architecture",
+            "value": "x86-64 (64-bit) and ARM64"
+          },
+          {
+            "name": "hardware-requirements",
+            "value": "TPM 2.0, UEFI Secure Boot, VT-x/AMD-V (for VBS/HVCI), 64-bit CPU"
+          },
+          {
+            "name": "management-tooling",
+            "value": "Microsoft Intune (MDM), Windows Autopilot, Group Policy (hybrid-joined), Windows Update for Business"
+          },
+          {
+            "name": "endpoint-protection",
+            "value": "Microsoft Defender for Endpoint (EDR), Microsoft Defender Antivirus, WDAC, Windows Hello for Business"
+          },
+          {
+            "name": "identity-platform",
+            "value": "Microsoft Entra ID (cloud-native or hybrid-joined with Active Directory)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Physical workstations and approved virtual desktops; on-premises or cloud-managed"
+          },
+          {
+            "name": "soe-baseline-source",
+            "value": "ASD Hardening Windows 11 guidance + Microsoft Security Baseline for Windows 11"
+          },
+          {
+            "name": "licence-requirement",
+            "value": "Windows 11 Enterprise E3/E5 or Education A3/A5 (for WDAC and full Intune capabilities)"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "10b5d895-beaf-4ee8-afdc-a9fd5eb57619",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Windows 11 (Workstation).",
+            "implemented-requirements": [
+              {
+                "uuid": "e2c34b30-33ba-46b3-80f6-5426d5d99ac1",
+                "control-id": "ism-1743",
+                "description": "Windows 11 is selected as the workstation operating system on the basis that Microsoft has demonstrated commitment to Secure by Design and Secure by Default principles: the Microsoft Security Development Lifecycle (SDL), mandatory hardware security requirements (TPM 2.0, Secure Boot, UEFI, CPU virtualisation extensions), memory-safe features (Control Flow Guard, Hardware-enforced Stack Protection, CET), and a robust CVE disclosure and patching programme. Windows 11 enforces Secure Boot, TPM 2.0, and HVCI-compatible hardware as baseline requirements — controls that are optional in earlier Windows versions."
+              },
+              {
+                "uuid": "943ff32f-cdad-4772-8634-29886d7a3048",
+                "control-id": "ism-1407",
+                "description": "The latest release of Windows 11 (current annual feature update channel — Windows 11 23H2 or later) is used on all workstations within scope. Where a workstation cannot immediately upgrade to the latest release, the previous supported feature update (n-1) is permitted during a documented transition period not exceeding the Microsoft support end-date for that release. End-of-support dates for each Windows 11 release are tracked in the asset register and workstations on unsupported releases are flagged for immediate upgrade."
+              },
+              {
+                "uuid": "3bff1575-3fee-4fb2-9548-a977a9a6fa75",
+                "control-id": "ism-1408",
+                "description": "Windows 11 is deployed in its 64-bit (x86-64 / ARM64) form only. No 32-bit workstation operating system installations are permitted. This is enforced through the SOE build process and validated via Microsoft Intune compliance policies. Windows 11 does not ship in a 32-bit edition, making this a built-in platform guarantee."
+              },
+              {
+                "uuid": "3ed64a73-21b4-4ef7-a412-9021d459ece8",
+                "control-id": "ism-1406",
+                "description": "A Standard Operating Environment (SOE) is implemented for all Windows 11 workstations. The SOE baseline is defined, version-controlled, and deployed via Windows Autopilot with Microsoft Intune, or Microsoft Deployment Toolkit (MDT). All workstations are provisioned from the approved SOE with no deviation permitted without a change request. The SOE includes the approved application set, Group Policy baseline, WDAC/AppLocker policy, security tools (EDR, AV, vulnerability scanner agent), and encryption configuration."
+              },
+              {
+                "uuid": "576967c8-7bcf-4857-8cb2-50dc011df94f",
+                "control-id": "ism-1588",
+                "description": "The Windows 11 SOE is reviewed and updated at least annually, or when Microsoft releases significant security guidance (new ASD Windows 11 hardening guidance, new Microsoft Security Baseline for Windows 11), or following a significant security incident affecting the endpoint platform. SOE versioning is tracked in the CMDB and change history is maintained."
+              },
+              {
+                "uuid": "ccd16ef4-d568-423a-bee0-eccfee1656fd",
+                "control-id": "ism-1914",
+                "description": "Approved security configurations (hardening baselines) for Windows 11 are developed, documented, version-controlled, and maintained. The baseline references: ASD's Hardening Windows 11 guidance, the Microsoft Security Baseline for Windows 11, and the CIS Benchmark for Windows 11. Where guidance conflicts, ASD guidance takes precedence. Baselines are deployed via Group Policy Objects and Microsoft Intune configuration profiles. Configuration drift is detected through continuous compliance scanning via Intune Compliance Policies and/or a dedicated configuration management tool."
+              },
+              {
+                "uuid": "8254a0a6-4f89-4958-86ef-a4db45803cca",
+                "control-id": "ism-1409",
+                "description": "Windows 11 workstations are hardened using ASD's Hardening Windows 11 guidance and Microsoft's Security Baseline for Windows 11. Where guidance conflicts, ASD guidance takes precedence. Hardening measures applied include: enabling Windows Defender Credential Guard (via Virtualization-Based Security), enabling HVCI (Memory Integrity), disabling LLMNR and NetBIOS over TCP/IP, requiring NTLMv2 minimum (disabling NTLMv1 and LM hashes), enabling SMB signing, disabling SMBv1, disabling legacy TLS (1.0/1.1) and SSL 2.0/3.0, enabling Windows Defender Firewall with default-deny inbound, enabling Microsoft LAPS (or Entra LAPS) for the local Administrator account, enabling Secure Boot and TPM 2.0 attestation, and configuring User Account Control (UAC) at the highest setting (Always Notify)."
+              },
+              {
+                "uuid": "c3d39c3e-84a9-4d99-bcc8-2e8fbdf10011",
+                "control-id": "ism-1601",
+                "description": "Microsoft's Attack Surface Reduction (ASR) rules are implemented on all Windows 11 workstations via Microsoft Defender for Endpoint policy. ASR rules applied in Block mode include: Block all Office applications from creating child processes (d4f940ab…), Block Office applications from creating executable content (3b576869…), Block Office applications from injecting code into other processes (75668c1f…), Block Win32 API calls from Office macros (92e97fa1…), Block macros from running in Office files from the internet (e6db77e5…), Block executable content from email client and webmail (be9ba2d9…), Block JavaScript or VBScript from launching downloaded executable content (d3e037e1…), Block execution of potentially obfuscated scripts (5beb7efe…), Block credential stealing from LSASS (9e6c4e1f…), Block untrusted and unsigned processes from USB (b2b3f03d…), Block process creations originating from PSExec and WMI commands (d1e49aac…), and Use advanced protection against ransomware (c1db55ab…). ASR rules run in Block mode after a documented audit-mode testing period per workstation fleet segment."
+              },
+              {
+                "uuid": "2173763e-ff9f-4b2b-8d82-02eb69aaa3ba",
+                "control-id": "ism-0383",
+                "description": "Default and pre-configured local user accounts on Windows 11 workstations are handled as follows during SOE provisioning: the built-in Administrator account is renamed, and its password is managed by Microsoft LAPS (or Microsoft Entra LAPS for Entra-joined devices), generating a unique random credential per device stored securely in Active Directory or Entra ID; the built-in Guest account is disabled; any OEM-added accounts or pre-configured accounts from the imaging process are removed. Compliance is verified post-provisioning via Intune compliance policy checks."
+              },
+              {
+                "uuid": "b4648077-ae28-48d0-a960-82fce90e45ba",
+                "control-id": "ism-0380",
+                "description": "Unneeded user accounts, Windows features, components, services, and functionality are disabled or removed from Windows 11 workstations during SOE build. Specifically: Windows Features not required by the approved application set are removed (e.g. Telnet Client, TFTP, SNMP, Internet Printing, XPS Services, Windows Fax and Scan where not needed); unused services are set to Disabled; the Windows Store is restricted to approved apps only; consumer features and Microsoft Account sign-in are disabled via Group Policy; and Cortana and other data-collection features are restricted via Group Policy for sensitive environments. The approved feature and service list is documented per workstation SOE role."
+              },
+              {
+                "uuid": "56aa9496-60b5-4880-bbba-676408bbd7a9",
+                "control-id": "ism-0341",
+                "description": "Automatic execution (AutoRun/AutoPlay) features for removable media (USB storage, SD cards, optical media) are disabled on all Windows 11 workstations via Group Policy (Computer Configuration > Administrative Templates > Windows Components > AutoPlay Policies > Turn off Autoplay, set to All drives). The NoDriveTypeAutoRun registry key is set to 0xFF. This prevents malicious code on removable media from auto-executing when connected."
+              },
+              {
+                "uuid": "a412373a-7ce6-4671-aca6-b6c9e4c70523",
+                "control-id": "ism-1654",
+                "description": "Internet Explorer 11 is disabled on all Windows 11 workstations. Windows 11 does not include Internet Explorer 11 as a usable browser (it is disabled by default and redirects to Microsoft Edge). The 'Disable Internet Explorer 11 as a standalone browser' Group Policy is enforced to ensure IE11 cannot be launched via any mechanism, including legacy shortcuts or application launch. The IE executable is confirmed not present or disabled via compliance scanning."
+              },
+              {
+                "uuid": "f848a32e-ac73-4e0a-a10a-b8b4cad79558",
+                "control-id": "ism-1655",
+                "description": ".NET Framework 3.5 (which includes .NET 2.0 and .NET 3.0) is disabled or removed from Windows 11 workstations where not required by an explicitly approved application. If .NET 3.5 is required for an approved business application, it is installed via approved change request, patched within required timeframes, and its use is logged. For the majority of workstations where it is not needed, it is not installed (Windows 11 default) or removed via DISM. Compliance is verified via Intune configuration compliance."
+              },
+              {
+                "uuid": "cedf20b7-55e6-4323-ac4c-93005c18e809",
+                "control-id": "ism-1492",
+                "description": "Operating system exploit protection functionality is enabled on all Windows 11 workstations via Windows Defender Exploit Guard, including: Data Execution Prevention (DEP) set to AlwaysOn, Address Space Layout Randomisation (ASLR) mandatory randomisation enabled, Control Flow Guard (CFG) enabled, Export Address Filtering (EAF), Validate stack integrity (StackPivot), and Validate handle usage. Exploit protection settings are configured via Group Policy using an exported XML configuration baseline and managed centrally. Per-app exploit protection overrides are documented and minimised."
+              },
+              {
+                "uuid": "e987cb44-6017-4427-93ed-60caa0bf9554",
+                "control-id": "ism-1745",
+                "description": "Boot integrity features are enabled on all Windows 11 workstations: Secure Boot (UEFI, preventing unsigned bootloaders/kernels from loading — enforced by Windows 11 hardware requirements), Trusted Boot (Windows bootloader verifies kernel integrity), Measured Boot (TPM 2.0 records boot component hashes — required by Windows 11), and Early Launch Antimalware (ELAM) which starts Windows Defender Antivirus before third-party drivers at boot. HVCI (Hypervisor-Protected Code Integrity / Memory Integrity) is also enabled via Virtualization-Based Security (VBS). Boot integrity status is verified via Intune device health attestation compliance policies."
+              },
+              {
+                "uuid": "52717a81-718a-42bb-9e64-da264165dead",
+                "control-id": "ism-1584",
+                "description": "Unprivileged (standard) users are prevented from bypassing, disabling, or modifying Windows 11 security functionality via Group Policy and Intune configuration profiles. Standard users cannot: disable Windows Defender Antivirus or Firewall, change audit policy, modify LSASS protections, disable Credential Guard, alter Secure Boot settings, or modify exploit protection configuration. Tamper Protection in Microsoft Defender for Endpoint is enabled on all workstations, preventing unauthorised modification of security settings even with local administrator rights."
+              },
+              {
+                "uuid": "003b9175-36a6-4613-bc34-dce783dc70ae",
+                "control-id": "ism-1491",
+                "description": "Standard (unprivileged) users on Windows 11 workstations are prevented from running script execution engines via Group Policy and application control policy. Blocked for standard users: Windows Script Host (cscript.exe, wscript.exe), PowerShell (powershell.exe, powershell_ise.exe, pwsh.exe), mshta.exe, wmic.exe, certutil.exe (for code download), and bitsadmin.exe. These executables are restricted to approved administrator accounts via WDAC or AppLocker publisher + executable path rules."
+              },
+              {
+                "uuid": "ce90d7d2-528c-48a6-83ad-037c93e7280d",
+                "control-id": "ism-1696",
+                "description": "Security patches and updates for the Windows 11 operating system are applied within 48 hours of release when vulnerabilities are assessed as critical by Microsoft (CVSS 9.0+) or when working exploits exist in the wild. Emergency patching is delivered via Microsoft Intune / Windows Update for Business using an accelerated ring policy that bypasses the standard deferral and deploys within the 48-hour window. Deployment compliance is verified via Intune compliance reports."
+              },
+              {
+                "uuid": "3e3d4ef8-d379-41e6-a1ca-0c39800b4cec",
+                "control-id": "ism-1695",
+                "description": "Security patches and updates for the Windows 11 operating system are applied within one month of release for non-critical vulnerabilities (no working exploit, CVSS below 9.0). Updates are delivered via Windows Update for Business / Intune Update Rings with an appropriate deferral period and quality update deadline. The monthly Microsoft Patch Tuesday cadence aligns with this timeframe for standard-priority patches."
+              },
+              {
+                "uuid": "bb9d8624-1800-4341-ab7c-443d203db49e",
+                "control-id": "ism-1702",
+                "description": "A vulnerability scanner (Microsoft Defender Vulnerability Management, Tenable Nessus, Rapid7 InsightVM, or equivalent) is used at least fortnightly to identify missing OS patches and updates on Windows 11 workstations. Scan results are reviewed and any missing patches outside the required timeframes are escalated for immediate remediation."
+              },
+              {
+                "uuid": "da8f5184-1f87-4dd3-b8a1-69617c8af6ed",
+                "control-id": "ism-1691",
+                "description": "Patches and updates for high-risk user-facing applications on Windows 11 workstations — including web browsers and their extensions, email clients, Microsoft Office, PDF readers, and security products — are applied within 48 hours of release when exploits exist in the wild. Deployment is automated via Microsoft Intune, Windows Update for Business, or vendor auto-update mechanisms configured to apply critical updates without user deferral."
+              },
+              {
+                "uuid": "a3c5edac-dfe8-4e1c-93eb-4f76f5631785",
+                "control-id": "ism-1692",
+                "description": "Patches and updates for high-risk user-facing applications on Windows 11 workstations are applied within two weeks of release for vulnerabilities without confirmed active exploitation. Automated deployment via Intune or vendor auto-update ensures organisation-wide compliance within the two-week window. Patch ring testing (pilot group then production) balances velocity with stability."
+              },
+              {
+                "uuid": "24b89ffa-9f10-470b-a6ac-11f856892adf",
+                "control-id": "ism-1901",
+                "description": "Patches and updates for high-risk user-facing applications on Windows 11 workstations are applied within one month of release for lower-severity vulnerabilities. The monthly patch cycle via Intune scheduled deployments ensures compliance across the workstation fleet."
+              },
+              {
+                "uuid": "ff0f962a-d07a-4c61-80bc-97a5c2b65f7e",
+                "control-id": "ism-1467",
+                "description": "The latest release of user-facing applications on Windows 11 workstations is maintained: web browsers (Microsoft Edge latest stable channel, or approved alternative), email clients, Microsoft 365 Apps (Current Channel), PDF readers (Adobe Acrobat current release or Microsoft Edge PDF), and security products. Applications are kept current via Intune app management, vendor auto-update mechanisms, and the weekly vulnerability scan. End-of-support application versions are removed from the estate."
+              },
+              {
+                "uuid": "b8c3584b-b003-4b26-926c-88a19e6a5528",
+                "control-id": "ism-1693",
+                "description": "Patches and updates for other installed applications on Windows 11 workstations (business applications not classified as high-risk user-facing apps) are applied within one month of vendor release. The organisation's application inventory is maintained and vendor security advisories are monitored to ensure timely awareness of available patches."
+              },
+              {
+                "uuid": "3dd286fe-5429-45eb-800a-f2d2035b03fe",
+                "control-id": "ism-1699",
+                "description": "A vulnerability scanner is used at least weekly to identify missing patches and updates for high-risk applications (web browsers, email clients, PDF readers, Microsoft Office, security products) on Windows 11 workstations. Scan results are ingested into the vulnerability management platform and tracked through to remediation within required timeframes."
+              },
+              {
+                "uuid": "783066b4-bbee-4262-a941-0ee6b716f9ff",
+                "control-id": "ism-1700",
+                "description": "A vulnerability scanner is used at least fortnightly to identify missing patches and updates for other installed applications on Windows 11 workstations beyond the high-risk set. Scan scope covers the full approved application register."
+              },
+              {
+                "uuid": "20657f75-f515-4054-a9e3-e814afa722f9",
+                "control-id": "ism-1704",
+                "description": "Applications that are no longer supported by vendors are removed from Windows 11 workstations. This includes: unsupported web browser versions and extensions, end-of-life PDF readers, Adobe Flash Player (blocked by Windows 11 by default), and other applications past their vendor support end-date. The application lifecycle register is reviewed at least monthly to identify approaching end-of-support dates and plan replacements."
+              },
+              {
+                "uuid": "1f210f94-553f-4e7a-95f5-3085fb0f0185",
+                "control-id": "ism-0304",
+                "description": "Applications other than the primary high-risk user-facing set that are no longer supported by their vendor are removed from Windows 11 workstations. The approved application register includes vendor support end-dates. Applications approaching end-of-support are reviewed and either upgraded to a supported version or removed. Decommissioned applications are uninstalled via Intune app removal policies."
+              },
+              {
+                "uuid": "ea3df95b-b7c1-4f92-b727-e96d5b6ac24b",
+                "control-id": "ism-1412",
+                "description": "The approved web browser(s) on Windows 11 workstations (Microsoft Edge as the primary browser) are hardened using ASD's Hardening Microsoft Edge guidance and Microsoft's Edge Security Baseline. Where guidance conflicts, ASD guidance takes precedence. Hardening measures include: enabling Microsoft Defender SmartScreen, enabling Enhanced Security Mode (ESM) for sites not in the trusted list, disabling password saving, disabling autofill for payment and address data, enabling tracking prevention (Strict mode), disabling browser extension installation except from the approved set, enabling Site Isolation, and configuring the Edge security baseline via Intune Administrative Templates or Group Policy ADMX files."
+              },
+              {
+                "uuid": "2c7e1467-3759-4b91-9a57-e35a49d4e16d",
+                "control-id": "ism-1585",
+                "description": "Web browser security settings on Windows 11 workstations are locked via Group Policy and Intune configuration profiles and cannot be changed by standard users. Managed settings include: SmartScreen, Enhanced Security Mode, extension management, tracking prevention level, and password manager settings. Users see greyed-out controls for managed settings in browser configuration pages."
+              },
+              {
+                "uuid": "878cd6a3-957a-4aab-a82a-3ceb52081859",
+                "control-id": "ism-1486",
+                "description": "Web browsers on Windows 11 workstations are configured to not process Java applets from the internet. Java browser plugins are blocked by Group Policy and are not present in Microsoft Edge (which does not support NPAPI plugins). Any legacy Java requirements are addressed via application virtualisation or dedicated isolated environments rather than enabling the Java browser plugin on general workstations."
+              },
+              {
+                "uuid": "f8f196d3-eddd-4c47-b75c-eea93857764d",
+                "control-id": "ism-1485",
+                "description": "Web browsers on Windows 11 workstations are configured to block web advertisements from the internet. Ad blocking is enforced via: web content filtering at the network level (web proxy / DNS filtering), Microsoft Edge's built-in Tracking Prevention set to Strict mode via Group Policy, and/or an approved browser extension for ad and tracker blocking deployed via the managed extension list. This reduces the attack surface for malvertising."
+              },
+              {
+                "uuid": "b18e3de6-7ad8-47bd-a119-ed73d151bbf9",
+                "control-id": "ism-1670",
+                "description": "PDF applications on Windows 11 workstations are blocked from creating child processes via Attack Surface Reduction rules and application control policy. For Adobe Acrobat/Reader: the Protected Mode and Protected View settings are enabled (sandboxed rendering), and the ASR rule 'Block Adobe Reader from creating child processes' (7674ba52…) is enforced in Block mode via Microsoft Defender for Endpoint. For the Microsoft Edge PDF viewer, the browser sandbox provides equivalent child process isolation."
+              },
+              {
+                "uuid": "16f7e12e-fd81-4f4f-8c47-26ecb5811d85",
+                "control-id": "ism-1860",
+                "description": "PDF applications on Windows 11 workstations are hardened using ASD and vendor guidance. For Adobe Acrobat/Reader: Protected Mode is enabled (sandbox), Protected View is set to all files (not just internet-origin files), Enhanced Security is enabled, JavaScript is disabled for PDF files, attachment opening is restricted, and automatic network connection is disabled. For Microsoft Edge as the default PDF viewer: the browser security baseline is applied. Settings are enforced via Group Policy or Intune ADMX templates and cannot be changed by standard users."
+              },
+              {
+                "uuid": "2f46ada6-a00a-4429-b23c-4071f9eff768",
+                "control-id": "ism-1861",
+                "description": "Local Security Authority (LSA) protection is enabled on all Windows 11 workstations via Group Policy (Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options > Local Security Authority (LSA) Protection). When enabled, LSA runs as a Protected Process Light (PPL), preventing untrusted code (including non-Microsoft code) from reading memory from LSASS.exe and extracting credentials. This is the primary defence against credential-dumping tools like Mimikatz. Credential Guard (via VBS) is also enabled as a complementary control for domain-joined workstations, isolating NTLM and Kerberos credentials from the main OS in a secure virtualisation-based enclave."
+              },
+              {
+                "uuid": "6198d358-e064-4b01-acde-2a2f44ba4dde",
+                "control-id": "ism-0843",
+                "description": "Application control (Windows Defender Application Control — WDAC, or AppLocker) is implemented on all Windows 11 workstations in Block/Enforce mode. WDAC is the preferred solution as it is kernel-enforced and cannot be bypassed by user-mode processes, even those running as local administrator. The WDAC policy restricts execution to the organisation-approved application set using a combination of Microsoft-signed code trust, approved publisher rules, and hash rules for unsigned line-of-business applications."
+              },
+              {
+                "uuid": "686b7b67-7828-4832-99e3-3acf9739eaf1",
+                "control-id": "ism-1870",
+                "description": "Application control rules on Windows 11 workstations include user profile directories and temporary folders: %USERPROFILE%, %APPDATA%, %LOCALAPPDATA%, %TEMP%, %TMP%, and browser download directories. Executables, scripts, libraries, and installers cannot be executed from these paths. This is the primary defence against malware that writes a payload to a user-writable directory and then executes it."
+              },
+              {
+                "uuid": "96f93a87-7a92-47a3-9509-a1ff00b14a0a",
+                "control-id": "ism-1871",
+                "description": "Application control rules on Windows 11 workstations extend to all file system locations beyond user profiles and temp folders, enforcing a default-deny posture for unsigned binaries system-wide. Approved execution paths include %WINDIR%, %PROGRAMFILES%, and %PROGRAMFILES(X86)% for Microsoft-signed and approved publisher code. Non-standard installation paths are not permitted without a formal application onboarding process that includes WDAC rule creation."
+              },
+              {
+                "uuid": "74e46efe-31bb-462f-8606-7ce45fc527a0",
+                "control-id": "ism-1657",
+                "description": "Application control on Windows 11 workstations restricts the execution of: executables (.exe, .com), dynamic-link libraries (.dll, .ocx), scripts (.ps1, .vbs, .js, .bat, .cmd, .wsf), Windows Installer files (.msi, .msp), compiled HTML (.chm), HTML applications (.hta), and control panel applets (.cpl) to an organisation-approved set. The WDAC policy uses FilePublisher and Hash rules to cover all these file types."
+              },
+              {
+                "uuid": "094e9bb0-23ea-4123-a35e-20ba42c63665",
+                "control-id": "ism-1658",
+                "description": "Application control on Windows 11 workstations restricts the loading of kernel-mode drivers to an organisation-approved set. HVCI (Memory Integrity) is enabled, enforcing that all kernel-mode code must be signed by a trusted certificate and must pass code integrity checks before loading. This prevents unsigned or revoked drivers from loading, blocking a common privilege escalation and defence evasion technique."
+              },
+              {
+                "uuid": "bc2d54d1-fcee-481e-9f22-11e99f36c054",
+                "control-id": "ism-0955",
+                "description": "Application control on Windows 11 workstations uses a layered rule approach: publisher certificate rules (for Microsoft-signed OS components, approved vendor software), cryptographic hash rules (for unsigned or internally-developed applications), and path rules (for approved installation directories with appropriate NTFS permission controls). Cryptographic hash rules are managed through the application onboarding process and updated when application versions change."
+              },
+              {
+                "uuid": "9ce87f01-3ae5-4987-9b88-b65a35e3b295",
+                "control-id": "ism-1471",
+                "description": "Publisher certificate rules in the Windows 11 WDAC or AppLocker policy specify both the publisher name (signer certificate subject) and the product name (or file name) to prevent overly permissive rules. A rule that trusts 'Microsoft Corporation' with no product constraint is not used — instead, rules specify 'Microsoft Windows' for OS components and specific product names (e.g. 'Microsoft Edge') for applications."
+              },
+              {
+                "uuid": "dafc336e-e339-49ad-aa9f-26efc1e5d930",
+                "control-id": "ism-1392",
+                "description": "Where path rules are used in application control on Windows 11, NTFS ACLs are configured so that only designated IT administrator accounts have modify or write access to directories included in path-based allow rules. Standard user accounts and service accounts have read and execute permissions only. This ensures that a user-writable directory cannot be placed into an approved execution path."
+              },
+              {
+                "uuid": "bd43d12c-f1ee-4ee0-a10d-05db4b84a9ba",
+                "control-id": "ism-1746",
+                "description": "Where path rules are used in application control on Windows 11, only designated IT administrator accounts can change NTFS permissions (DACLs and SACLs) on approved application files and folders. Standard users do not hold the 'Take Ownership' or 'Change Permissions' privilege on approved application paths. This prevents a standard user from modifying ACLs to gain write access to an approved path and then placing malicious code there."
+              },
+              {
+                "uuid": "bcf30688-615d-4316-afa0-4aa64a335bdb",
+                "control-id": "ism-1544",
+                "description": "Microsoft's recommended application blocklist (WDAC Recommended Block Rules) is implemented on all Windows 11 workstations, blocking known Living-Off-the-Land Binaries (LOLBins) and historically abused executables including: bginfo.exe, cdb.exe, cmstp.exe, csi.exe, dbghost.exe, dnscmd.exe, fsi.exe, infdefaultinstall.exe, kd.exe, msbuild.exe, msdeploy.exe, msdt.exe, ntsd.exe, rcsi.exe, winrm.vbs, wmic.exe (where not required), and others specified in the current Microsoft recommended block rules list. The blocklist is updated when Microsoft releases revisions."
+              },
+              {
+                "uuid": "d0f5affb-8e3d-4b80-951a-b0ce95df6233",
+                "control-id": "ism-1659",
+                "description": "Microsoft's vulnerable driver blocklist is implemented on all Windows 11 workstations via HVCI (Hypervisor-Protected Code Integrity / Memory Integrity). HVCI blocks drivers on Microsoft's known-vulnerable driver list, preventing Bring-Your-Own-Vulnerable-Driver (BYOVD) attacks where an attacker loads a known-vulnerable signed driver to escalate privileges or disable security software. Memory Integrity is enabled via the Windows Security app under Core Isolation, enforced via Group Policy or Intune."
+              },
+              {
+                "uuid": "6905b077-33a5-4f3d-a94b-90c7c2e1faf2",
+                "control-id": "ism-1582",
+                "description": "Application control rulesets for Windows 11 workstations are validated at least annually. Annual validation includes: reviewing all WDAC/AppLocker allow rules to confirm each approved application is still required; removing rules for decommissioned applications; verifying no overly broad rules exist; reviewing blocked-event logs for any required additions; and testing the policy against the current approved application set on a representative workstation. Validation is documented and findings actioned within 30 days."
+              },
+              {
+                "uuid": "eed875c6-d016-4e5e-8ab9-3fac49b86c53",
+                "control-id": "ism-0846",
+                "description": "All users on Windows 11 workstations, except local administrator accounts and designated break glass accounts, cannot disable, bypass or be exempted from application control. WDAC kernel-enforced policies cannot be overridden by user-mode processes regardless of privilege level. No user accounts — including local admins — are placed in WDAC policy exemption groups in production. Break glass account usage is centrally logged and alerted."
+              },
+              {
+                "uuid": "060e805e-da2b-4bbb-99d7-20bc08e454dd",
+                "control-id": "ism-1660",
+                "description": "Allowed and blocked application control events from Windows 11 workstations (WDAC events in Microsoft-Windows-CodeIntegrity/Operational and AppLocker events) are forwarded to the centralised SIEM via Windows Event Forwarding or the EDR agent telemetry pipeline. Alerts are configured for high-volume blocking events, new binary execution attempts, and patterns consistent with malware attempting to execute from user-writable directories."
+              },
+              {
+                "uuid": "cc5b1dc3-2378-4082-9dad-0fc16a1ea96c",
+                "control-id": "ism-1621",
+                "description": "Windows PowerShell 2.0 is disabled or removed on all Windows 11 workstations. PowerShell 2.0 does not support AMSI, script block logging, or Constrained Language Mode and is a common attacker downgrade target. It is disabled via: 'Disable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root' or the equivalent Intune PowerShell script, applied during SOE build and verified via Intune device configuration compliance."
+              },
+              {
+                "uuid": "f3dd7a22-69fb-4d86-8aaa-6f17bf836a64",
+                "control-id": "ism-1622",
+                "description": "PowerShell is configured to use Constrained Language Mode (CLM) for all standard user sessions on Windows 11 workstations. CLM is automatically enforced by WDAC when the policy is in enforcement mode — any PowerShell script or interactive session not signed by an approved publisher enters CLM, restricting use of .NET method calls, COM object creation, and other capabilities used by offensive PowerShell tools. CLM status is verified during application control ruleset validation."
+              },
+              {
+                "uuid": "abf8f50a-7106-4d2a-89b5-4fe32edc95cd",
+                "control-id": "ism-1623",
+                "description": "PowerShell module logging, script block logging, and transcription are enabled on all Windows 11 workstations via Group Policy or Intune Administrative Templates: Module Logging is set to log all modules (*); Script Block Logging is enabled including invocation start/stop events; Transcription writes to a secure, administrator-only UNC path or local path that is collected by the log agent. All events are forwarded to the SIEM via Windows Event Forwarding or the EDR agent. PowerShell events are correlated with process creation and network events for threat detection."
+              },
+              {
+                "uuid": "069f5dc8-6d94-4891-a20b-b0c2bebe2be9",
+                "control-id": "ism-1624",
+                "description": "PowerShell script block logs on Windows 11 workstations are protected using Protected Event Logging. Group Policy enables Protected Event Logging and configures the encryption certificate (thumbprint). Script block log content is encrypted with the certificate's public key before being written to the Windows Event Log. Only authorised security personnel who hold the corresponding private key can decrypt log content, protecting sensitive data (e.g. credentials that may appear in scripts) from being read from the event log by a compromised process."
+              },
+              {
+                "uuid": "0c536572-f1bd-461c-8fb6-b75298cc2be4",
+                "control-id": "ism-1889",
+                "description": "Command line process creation events are centrally logged on all Windows 11 workstations. Group Policy enables 'Include command line in process creation events' (Computer Configuration > Administrative Templates > System > Audit Process Creation). Event ID 4688 (process creation with command line) and Sysmon Event ID 1 (process create with full command line and parent process hash) are forwarded to the SIEM. Command line telemetry is used for detection of malicious LOLBin invocations, suspicious child processes from Office applications, and lateral movement activity."
+              },
+              {
+                "uuid": "dd5f96fc-a06b-4a84-9a01-31999d79a4f8",
+                "control-id": "ism-1341",
+                "description": "A Host-based Intrusion Prevention System (HIPS) or Endpoint Detection and Response (EDR) solution — Microsoft Defender for Endpoint (MDE) or an equivalent approved product — is implemented on all Windows 11 workstations. MDE operates in active/block mode (not audit mode) to automatically block malicious processes and files. EDR telemetry (process, file, network, and registry events) is forwarded to the SIEM/XDR platform. The EDR console provides centralised visibility of all endpoints. EDR agent health and coverage is monitored daily, with coverage gaps alerted to the security operations team."
+              },
+              {
+                "uuid": "5d2369d4-9daa-4052-bcb3-ac0396a91ca2",
+                "control-id": "ism-1416",
+                "description": "Windows Defender Firewall with Advanced Security is enforced on all Windows 11 workstations with: inbound connections set to Block (all profiles — Domain, Private, Public) unless explicitly allowed; outbound connections allowed by default with specific deny rules for prohibited protocols and destinations where required; firewall rules permit only organisation-approved inbound services (e.g. domain management, EDR agent, vulnerability scanner). Firewall configuration is deployed and enforced via Group Policy / Intune Firewall configuration profiles and cannot be disabled by standard users."
+              },
+              {
+                "uuid": "591e9de9-709b-4e5c-9a06-bb673efc049f",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus is deployed on all Windows 11 workstations (integrated with the OS, not a separate installation) with: signature-based detection enabled at a high sensitivity level; heuristic-based detection enabled; cloud-delivered protection (MAPS) enabled at the 'High' or 'High+' block level; automatic sample submission enabled for suspected malware; AMSI integration active for real-time scanning of scripts and macros; real-time protection enabled and Tamper Protection enforced via Intune. Antivirus definitions are updated multiple times daily via Windows Update or WSUS. EDR integration with Microsoft Defender for Endpoint provides advanced threat detection and automated remediation beyond signature-based AV."
+              },
+              {
+                "uuid": "0ce2ab36-4ac8-4c0e-a559-6acd097ae65a",
+                "control-id": "ism-0963",
+                "description": "Web content filtering is implemented for all web browsing on Windows 11 workstations to filter potentially harmful web content. Filtering is enforced at multiple layers: network layer (web proxy or DNS filtering solution blocking malicious, phishing, and non-business categories); Microsoft Edge SmartScreen (enforced via Group Policy, blocking known malicious URLs and files); and Microsoft Defender for Endpoint web protection (blocking malicious URLs based on threat intelligence even when off the corporate network). Users cannot disable web content filtering."
+              },
+              {
+                "uuid": "98d487dd-5523-4db0-8b07-64ab83528565",
+                "control-id": "ism-0961",
+                "description": "Client-side active content (JavaScript from external domains, Flash — already blocked by Windows 11, ActiveX — absent from Edge) is restricted by web content filtering and browser configuration to an organisation-approved list of domain names where required. Microsoft Edge's Enhanced Security Mode (ESM) is enabled for sites not in the trusted sites list, applying sandboxed JIT-less mode to reduce JavaScript engine attack surface on untrusted sites. The trusted sites list is managed via Group Policy and cannot be modified by standard users."
+              },
+              {
+                "uuid": "e1c8fbce-aa78-4420-962f-63d6415ef7bd",
+                "control-id": "ism-1234",
+                "description": "Email content filtering is implemented via Microsoft Defender for Office 365 Safe Attachments and Safe Links (or equivalent gateway) for all email delivered to Outlook on Windows 11 workstations. Safe Attachments detonates email attachments in a sandbox before delivery. Safe Links rewrites URLs in emails and Office documents for real-time detonation checks at click-time. Macro-enabled Office files from external senders are detonated. Attachments with dangerous file types (executables, scripts) are blocked at the gateway. Anti-phishing policies are configured with impersonation protection and mailbox intelligence."
+              },
+              {
+                "uuid": "99db78e1-6a55-49c2-b74a-9b6a7c48812a",
+                "control-id": "ism-1748",
+                "description": "Microsoft Outlook email client security settings on Windows 11 workstations are enforced via Group Policy and Intune configuration profiles and cannot be modified by standard users. Locked settings include: external content loading (images, linked resources from internet), attachment handling (block execution of dangerous attachment types), S/MIME configuration, automatic forwarding restrictions, and junk email filter level. These settings are deployed as part of the Microsoft 365 Apps security baseline."
+              },
+              {
+                "uuid": "d646a7bc-67b1-488b-8ca5-90f850edc32a",
+                "control-id": "ism-0428",
+                "description": "Windows 11 workstations are configured with a session lock that: activates automatically after a maximum of 15 minutes of user inactivity (enforced via Group Policy: Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options > Interactive Logon: Machine inactivity limit, set to 900 seconds); blocks access to all session content; requires re-authentication using all configured authentication factors to unlock (Windows Hello for Business PIN/biometric or password+MFA); and cannot be disabled by standard users. Screen saver with password protection is also enforced as a complementary control via Group Policy."
+              },
+              {
+                "uuid": "ea418f43-729b-4718-9fb4-5f8f2e6b8e66",
+                "control-id": "ism-0414",
+                "description": "All personnel granted access to Windows 11 workstations are uniquely identifiable. Each user account is tied to a specific named individual, provisioned and de-provisioned through the organisation's identity lifecycle management process (HR-triggered Joiner/Mover/Leaver). User accounts are assigned to individuals — no shared accounts are used for interactive workstation access. Accounts are created in Active Directory or Microsoft Entra ID and assigned to the relevant user via the organisation's access request process."
+              },
+              {
+                "uuid": "29e1385b-95f6-4473-933c-6b5a2973d786",
+                "control-id": "ism-0415",
+                "description": "The use of shared user accounts on Windows 11 workstations is strictly controlled. Shared accounts are not used for interactive desktop access. Where a shared service account is required for a specific technical function, the individuals using it are made uniquely identifiable through session logging, jump server audit trails, or other approved compensating controls. Any shared account usage is documented, approved at an appropriate authority level, and reviewed at least annually."
+              },
+              {
+                "uuid": "ad458b54-babd-45d7-992b-948ff00e6209",
+                "control-id": "ism-0445",
+                "description": "Privileged users (workstation administrators, IT support staff requiring local admin access) are assigned dedicated privileged accounts used solely for administrative duties on Windows 11 workstations. Privileged accounts are separate from the standard user accounts used for day-to-day productivity work, email, and web browsing. Privileged accounts follow the organisation's privileged account naming convention and are enrolled in the privileged access management (PAM) solution."
+              },
+              {
+                "uuid": "9f0a4897-a06d-4462-9387-35e64f613deb",
+                "control-id": "ism-1175",
+                "description": "Privileged accounts used to administer Windows 11 workstations are not used for internet browsing, email, or access to cloud consumer services. Where privileged access is performed via a Privileged Access Workstation (PAW) or jump server, outbound internet access from those systems is blocked at the firewall and proxy level for all protocols except those required for management tooling. Domain Admin and local admin accounts do not have Outlook, Edge for browsing, or personal cloud service access configured."
+              },
+              {
+                "uuid": "44df16df-ee04-49c0-aa31-16223e836a8a",
+                "control-id": "ism-1507",
+                "description": "Requests for privileged access (local administrator rights, Intune admin roles, or workstation management tool access) on Windows 11 workstations are validated before provisioning. Requests must include: the specific access required, business justification, duration required, and manager approval. Requests are reviewed by the IT security team and provisioned only after approval. Privileged access is documented in the privileged access register."
+              },
+              {
+                "uuid": "cdfc85d5-41b1-474c-abc9-1178153df4d5",
+                "control-id": "ism-1508",
+                "description": "Privileged access to Windows 11 workstations is limited to the minimum required for each administrative function (least privilege principle). Local administrator access is granted only where the role explicitly requires it and is not granted to standard users. Just-in-time (JIT) privileged access is used where available via Entra PIM or a PAM solution, granting temporary elevation only for approved tasks within defined time windows. Service accounts run with the minimum permissions required for their function."
+              },
+              {
+                "uuid": "8694b62b-87b0-4bd0-9e07-cfed23bf0b0d",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for all privileged users authenticating to Windows 11 administration interfaces and management portals: Microsoft Entra admin centre, Microsoft Intune admin centre, Microsoft Defender portal, and remote management tools. On-premises privileged access uses Windows Hello for Business (biometric + PIN, hardware-backed) or smartcard authentication. Cloud admin portal access uses phishing-resistant MFA (FIDO2, Windows Hello for Business) via Entra Conditional Access."
+              },
+              {
+                "uuid": "57e28051-7e72-4fad-b0ec-8e245c3bc138",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all standard (unprivileged) users authenticating to Windows 11 workstations and organisational services. Windows Hello for Business (PIN + biometric hardware-backed by TPM) is the primary MFA method for workstation login on Windows 11, satisfying the MFA requirement natively. Cloud service sign-on from the workstation additionally requires MFA via Entra Conditional Access policies. Legacy password-only authentication is not permitted for interactive logon."
+              },
+              {
+                "uuid": "9988f406-b50e-4f2f-bc68-042210f8e259",
+                "control-id": "ism-1504",
+                "description": "Multi-factor authentication is required for all users accessing Microsoft 365 and other online services from Windows 11 workstations that process, store or communicate organisational sensitive data. MFA is enforced via Microsoft Entra Conditional Access policies targeting all cloud app access, applied to all user accounts regardless of network location (not exempted for corporate IP ranges). Session token lifetimes are configured to require re-authentication at appropriate intervals."
+              },
+              {
+                "uuid": "e5afd098-3d5c-4266-8ee1-cc8358e57584",
+                "control-id": "ism-1872",
+                "description": "Multi-factor authentication for online service access from Windows 11 workstations uses phishing-resistant methods: Windows Hello for Business (hardware TPM-backed biometric/PIN), FIDO2 security keys, or Certificate-based Authentication. These are enforced via Entra Conditional Access Authentication Strength policies requiring phishing-resistant MFA for all cloud service access. SMS OTP and voice call MFA methods are not used."
+              },
+              {
+                "uuid": "6a6886df-1195-45b8-8124-95f21342ab54",
+                "control-id": "ism-1919",
+                "description": "Legacy authentication protocols that do not support MFA are blocked for all cloud service access from Windows 11 workstations. A Conditional Access policy targeting the 'Other clients' condition (which matches Basic Auth, legacy MAPI/RPC, SMTP AUTH) with a Block grant is applied to all user accounts. Exchange Online legacy authentication (POP3, IMAP4, Basic Auth SMTP) is disabled at the tenant level. Legacy authentication usage is monitored via Entra sign-in logs."
+              },
+              {
+                "uuid": "a6d067e2-6b6c-45fc-8a6f-b9e4510c899d",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, Elastic SIEM, or equivalent) collects and retains security event logs from Windows 11 workstations. Log collection is via Windows Event Forwarding (WEF) using a subscription-based architecture (workstations forward to a WEF collector, which forwards to the SIEM) and/or agent-based collection (Sysmon, Microsoft Monitoring Agent, or AMA). EDR telemetry from Microsoft Defender for Endpoint is integrated with the SIEM/XDR platform. Log retention meets the organisation's minimum retention requirements."
+              },
+              {
+                "uuid": "407eafc1-cc0c-4ae5-ab91-9aeabe1fbcbb",
+                "control-id": "ism-0585",
+                "description": "For each security event logged from Windows 11 workstations, the following details are captured: date and time of the event (UTC, synchronised via NTP), the relevant user account (SID and UPN/SAM name), the relevant filename, process name, or object (where applicable), the event description (Event ID and message), and the computer name or device ID of the workstation involved. Windows audit policy is configured to capture this level of detail across all relevant audit categories."
+              },
+              {
+                "uuid": "2182b17a-9436-4c9e-8eda-e6dfe4059a6d",
+                "control-id": "ism-1509",
+                "description": "Privileged access events on Windows 11 workstations are centrally logged and monitored. Windows audit policy captures: account logon (4624/4625), explicit credential use (4648), special privileges assigned at logon (4672), local group membership changes (4732/4733), user account changes (4720/4726/4738), scheduled task creation (4698/4702), service installation (4697), and policy changes (4719). These are forwarded to the SIEM and alert rules are tuned for suspicious privileged activity patterns."
+              },
+              {
+                "uuid": "036a848b-f30d-45dd-82a8-c97dd7df6bd2",
+                "control-id": "ism-1566",
+                "description": "Standard user (unprivileged) access on Windows 11 workstations is centrally logged. Windows audit policy logs: successful and failed interactive logon events (4624/4625), object access on sensitive files and folders (4656/4663 via SACL on sensitive paths), removable media connection events (via Intune/Defender device control events and WMI event log), and process creation (4688 with full command line). Logon/logoff events are forwarded to the SIEM and retained for the organisation's defined retention period."
+              },
+              {
+                "uuid": "bbf2b73b-dbfd-4dc0-a98d-f75ab8dd5c2f",
+                "control-id": "ism-1683",
+                "description": "MFA authentication events for Windows 11 workstations are centrally logged. Microsoft Entra sign-in logs capture all cloud service MFA events (successful and failed) and are forwarded to the SIEM. Windows Hello for Business authentication events are captured in the Windows Security event log (4768/4769 for Kerberos, supplemented by Sysmon event tracking of credential provider usage) and forwarded to the SIEM. Failed MFA events trigger alerts for brute force detection."
+              },
+              {
+                "uuid": "c996a4d1-907c-42b0-a056-82016ddb9d6d",
+                "control-id": "ism-1359",
+                "description": "A removable media usage policy for Windows 11 workstations is developed, implemented, and maintained. The policy covers: approved categories of removable media, requirements for encryption of data on removable media, restrictions on connecting removable media to workstations (personal/unapproved devices), obligations to scan removable media before use, and the process for reporting lost or stolen removable media. The policy is reviewed at least annually."
+              },
+              {
+                "uuid": "f1487460-c93d-4cc3-be6b-54c494c424d6",
+                "control-id": "ism-1713",
+                "description": "A removable media register is maintained for organisationally-owned removable media used on Windows 11 workstations. The register records: media type and identifier, assigned owner or custodian, purpose, data classification of stored data, encryption status, and current location. The register is reviewed and verified against physically located media at least annually. Unaccounted-for media is treated as lost/compromised."
+              },
+              {
+                "uuid": "1e8b4807-5f5c-4f32-87ba-05c2df50d73e",
+                "control-id": "ism-0459",
+                "description": "Full volume encryption using BitLocker Drive Encryption is implemented on all Windows 11 workstations for the OS volume and all data volumes. BitLocker is configured in XTS-AES-256 mode (the strongest available) and deployed via Intune BitLocker policy (Endpoint Security > Disk Encryption). BitLocker recovery keys are escrowed automatically to Microsoft Entra ID (for Entra-joined devices) or Active Directory (for hybrid/domain-joined devices). Encryption compliance status is monitored via Intune compliance policies. Removable media connected to workstations must also be encrypted (BitLocker To Go policy enforced)."
+              },
+              {
+                "uuid": "c590f6cb-9aea-434c-a0e1-7b0ddd0426e2",
+                "control-id": "ism-2109",
+                "description": "Pre-boot authentication is implemented for Windows 11 workstations using BitLocker with TPM 2.0 + PIN. The TPM-only mode (which silently unlocks the drive on boot without user input) is not used for workstations with access to sensitive or classified data — a PIN is required in addition to TPM attestation. The BitLocker PIN complexity requirements (minimum 6-digit PIN or alphanumeric passphrase) are enforced via Intune BitLocker policy. Users are required to set their PIN during device enrolment."
+              },
+              {
+                "uuid": "a7e8dfeb-b5d7-4e16-a0b0-593855029d6c",
+                "control-id": "ism-1864",
+                "description": "A system usage policy for Windows 11 workstations is developed, implemented, and maintained. The policy specifies: permitted and prohibited uses of workstations and organisation data, acceptable use of internet and email, requirements for protecting sensitive information, obligations regarding removable media and personal devices, prohibited software installation, and consequences for policy violations. The policy is reviewed and updated at least annually and when significant changes occur to the operating environment or business requirements."
+              },
+              {
+                "uuid": "e0269a82-3173-4c33-a0fe-1bf4c9611ffa",
+                "control-id": "ism-1865",
+                "description": "Personnel are required to acknowledge and agree to the system usage policy before being granted access to Windows 11 workstations and organisational systems. Acceptance is recorded (electronic signature or acknowledgement in the HR/identity management system) and forms part of the user's access agreement. The usage policy acknowledgement is renewed annually and when the policy is materially updated."
+              },
+              {
+                "uuid": "cd0da5b6-475e-41bc-80ad-89b0e61c5b12",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan is maintained for Windows 11 workstations covering: the establishment and maintenance of the authorised SOE baseline; the approved application register and onboarding process for new applications; the WDAC/AppLocker policy change process; the patch management schedule and approval gates; the process for exception requests and compensating controls; configuration drift detection and remediation via Intune compliance policies; and periodic reviews of the baseline, application control ruleset, and Group Policy configuration. The plan is reviewed at least annually."
+              },
+              {
+                "uuid": "10bd0def-2229-47ca-ab0b-e37ac9398e54",
+                "control-id": "ism-0917",
+                "description": "When malicious code is detected on a Windows 11 workstation (via Defender AV, EDR alert, SIEM detection, or user report), the following steps are taken: the affected workstation is isolated from the network (network access revoked via Intune device compliance conditional access — marking non-compliant, or via the Defender for Endpoint 'Isolate device' action); all recently-connected removable media is scanned; the source and scope of the infection is investigated; ASD's ACSC is notified if required by incident severity; the workstation is rebuilt from the SOE baseline (not cleaned in-place where possible); and post-incident findings are used to update detection rules and defences. The incident is documented in the cyber security incident register."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

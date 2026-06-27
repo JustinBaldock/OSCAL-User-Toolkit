@@ -1,0 +1,440 @@
+{
+  "component-definition": {
+    "uuid": "7aaa270f-9954-4701-bd0f-4fc0518d5ca8",
+    "metadata": {
+      "title": "operating-system - Microsoft Windows Server 2022",
+      "last-modified": "2026-06-27T03:42:29Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "5f336615-cd61-4f14-a53c-fc0ded741e89",
+        "type": "operating-system",
+        "title": "Microsoft Windows Server 2022",
+        "description": "Microsoft Windows Server 2022 is the server operating system (OS) platform deployed on organisation servers. Available in Standard and Datacenter editions, with Desktop Experience and Server Core installation options. Server Core is the preferred installation option for new deployments to minimise attack surface.\n\nKey security features of Windows Server 2022 leveraged by this implementation: Secured-core Server (UEFI Secure Boot, DRTM, DMA protection, HVCI/Memory Integrity), Windows Defender Credential Guard, Windows Defender Application Control (WDAC), Windows Defender Antivirus with AMSI, Microsoft Defender for Endpoint (EDR), BitLocker Drive Encryption, Windows Defender Firewall with Advanced Security, Local Administrator Password Solution (LAPS), and Transport Layer Security (TLS) 1.3.",
+        "purpose": "Server operating system platform for hosting organisation workloads including: Active Directory Domain Services, DNS, DHCP, file services, web application hosting, database servers, and business application servers.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          },
+          {
+            "name": "asset-type",
+            "value": "operating-system"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "product-name",
+            "value": "Windows Server 2022"
+          },
+          {
+            "name": "product-family",
+            "value": "Windows Server"
+          },
+          {
+            "name": "version",
+            "value": "Windows Server 2022 (OS Build 20348 — Long-Term Servicing Channel)"
+          },
+          {
+            "name": "editions",
+            "value": "Standard, Datacenter"
+          },
+          {
+            "name": "installation-options",
+            "value": "Server Core (preferred), Desktop Experience"
+          },
+          {
+            "name": "license-type",
+            "value": "Volume licence (MAK or KMS) or Subscription (Azure Hybrid Benefit)"
+          },
+          {
+            "name": "architecture",
+            "value": "x86-64 (64-bit only)"
+          },
+          {
+            "name": "management-tooling",
+            "value": "Group Policy, Microsoft Intune, SCCM/MECM, Windows Admin Center, WSUS"
+          },
+          {
+            "name": "endpoint-protection",
+            "value": "Microsoft Defender for Endpoint, Microsoft Defender Antivirus, WDAC, AppLocker"
+          },
+          {
+            "name": "identity-platform",
+            "value": "Active Directory Domain Services, Microsoft Entra ID (hybrid-joined or cloud-joined)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "On-premises physical, on-premises virtual (Hyper-V/VMware), or cloud IaaS (Azure/AWS/GCP)"
+          },
+          {
+            "name": "soe-baseline-source",
+            "value": "ASD Hardening Windows Server guide + Microsoft Security Baseline for Windows Server 2022"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "privileged-access-manager"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "8dd025e9-99cf-4da1-834c-0a83344fc5e9",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Windows Server 2022.",
+            "implemented-requirements": [
+              {
+                "uuid": "eb2ee1b7-4eca-4f4b-8e49-3921bec59dc9",
+                "control-id": "ism-1743",
+                "description": "Windows Server 2022 is selected as a server operating system platform on the basis that Microsoft has demonstrated commitment to Secure by Design and Secure by Default principles, including memory-safe features (Control Flow Guard, Safe Stack), the Microsoft Security Development Lifecycle (SDL), Vulnerability Disclosure Policy, and ongoing supply of Common Vulnerabilities and Exposures (CVE) disclosures with associated patches."
+              },
+              {
+                "uuid": "843c126f-46ac-418f-ad10-248cba8bf38d",
+                "control-id": "ism-1407",
+                "description": "Windows Server 2022 (the latest Long-Term Servicing Channel release as of deployment) is used on all servers within scope. Where Windows Server 2022 is not yet the latest release, the previous release (Windows Server 2019) may be used only during managed transition periods documented in the server lifecycle register. Unsupported server OS versions are tracked and scheduled for upgrade."
+              },
+              {
+                "uuid": "cc961375-937e-4b10-9487-f45bfe714c40",
+                "control-id": "ism-1408",
+                "description": "Windows Server 2022 Standard and Datacenter editions are deployed in their 64-bit form only. No 32-bit server operating system installations are permitted. This is enforced through the Standard Operating Environment build process and verified via Intune compliance policies."
+              },
+              {
+                "uuid": "9c6ba670-079f-416d-9ca5-937f8755be9e",
+                "control-id": "ism-1406",
+                "description": "A Standard Operating Environment (SOE) is implemented for Windows Server 2022 servers. The SOE baseline is defined, version-controlled, and deployed via Microsoft Deployment Toolkit (MDT), System Center Configuration Manager (SCCM), or Windows Deployment Services (WDS). All servers are built from the approved SOE baseline with no deviation permitted without a change request. Server Core installation option is used where compatible with workloads to minimise attack surface."
+              },
+              {
+                "uuid": "089c99a9-fe19-4edd-9b0d-257a13627384",
+                "control-id": "ism-1588",
+                "description": "The Windows Server 2022 SOE is reviewed and updated at least annually, or when Microsoft releases significant security guidance updates, when the ASD Windows Server hardening guide is updated, or following any significant security incident. SOE versioning is tracked in the configuration management database (CMDB)."
+              },
+              {
+                "uuid": "837b0815-f09b-4433-aa4f-d26bc619aa66",
+                "control-id": "ism-1914",
+                "description": "Approved security configurations (hardening baselines) for Windows Server 2022 are developed, documented, version-controlled, and maintained. The baseline references: ASD's Hardening Windows Server guidance, the Microsoft Security Baseline for Windows Server 2022, and CIS Benchmark for Windows Server 2022. Where guidance conflicts, ASD guidance takes precedence. Baselines are implemented via Group Policy Objects and reviewed against the current SOE at least annually. Configuration drift is detected through continuous compliance scanning."
+              },
+              {
+                "uuid": "a8080089-1a2f-4c0f-b0dd-2626d6a1f575",
+                "control-id": "ism-1409",
+                "description": "Windows Server 2022 is hardened using ASD's Hardening Windows Server guidance and Microsoft's Security Baseline for Windows Server 2022. Where guidance conflicts, ASD guidance takes precedence. Hardening actions include: enabling Windows Defender Credential Guard, disabling LLMNR and NetBIOS over TCP/IP, disabling NTLMv1 and requiring NTLMv2 minimum (or preferring Kerberos), enabling SMB signing on all connections, disabling SMBv1, disabling legacy TLS (1.0/1.1) and SSL 2.0/3.0, enabling Windows Defender Firewall with a default-deny inbound policy, restricting anonymous access to shares and named pipes, and enabling LAPS (Local Administrator Password Solution) or Microsoft Entra LAPS for all local Administrator accounts."
+              },
+              {
+                "uuid": "3175e83a-7f2e-4ab1-8ac0-5adcd7ec921b",
+                "control-id": "ism-1601",
+                "description": "Microsoft's Attack Surface Reduction (ASR) rules are implemented on Windows Server 2022 where the server roles support them, via Microsoft Defender for Endpoint policy. ASR rules enforced include: Block credential stealing from LSASS (rule ID: 9e6c4e1f…), Block executable files from running unless they meet a prevalence, age, or trusted list criterion (rule ID: 01443614…), Block execution of potentially obfuscated scripts (rule ID: 5beb7efe…), Block process creations originating from PSExec and WMI commands (rule ID: d1e49aac…), Block untrusted and unsigned processes that run from USB (rule ID: b2b3f03d…), and Use advanced protection against ransomware (rule ID: c1db55ab…). ASR rules are set to Block mode (not Audit) after a documented testing period."
+              },
+              {
+                "uuid": "605794fd-c659-42cf-a4fa-37842a0a4534",
+                "control-id": "ism-0383",
+                "description": "Default and pre-configured local user accounts on Windows Server 2022 are handled as follows during SOE build: the built-in Administrator account is renamed and its password set to a unique, random, high-entropy value managed by Microsoft LAPS (or Entra LAPS); the built-in Guest account is disabled and password set; all other default local accounts are reviewed and disabled or removed. These actions are enforced by Group Policy and verified by compliance scanning post-build."
+              },
+              {
+                "uuid": "6ca185f2-2f46-4c66-bcd4-01c251d46459",
+                "control-id": "ism-0380",
+                "description": "Unneeded user accounts, Windows roles, features, components, services, and functionality are disabled or removed from Windows Server 2022 during SOE build and on an ongoing basis. This includes: disabling Windows Remote Management (WinRM) where not required, removing Telnet Client, TFTP Client, SNMP Service, FTP features, POSIX subsystem, XPS Services, and other unused Windows features via Server Manager or PowerShell. Only Windows Server roles and features required for the server's approved function are installed. Approved feature sets are documented per server role in the CMDB."
+              },
+              {
+                "uuid": "c743ed87-2088-4e64-a74b-e735cafdcfb4",
+                "control-id": "ism-0341",
+                "description": "Automatic execution (AutoRun/AutoPlay) features for removable media (USB drives, optical media, portable storage devices) are disabled on all Windows Server 2022 servers via Group Policy (Computer Configuration > Administrative Templates > Windows Components > AutoPlay Policies > Turn off Autoplay). The NoDriveTypeAutoRun registry key is set to 0xFF to disable AutoRun on all drive types."
+              },
+              {
+                "uuid": "030a602f-527c-4487-80fb-f964843d5092",
+                "control-id": "ism-1654",
+                "description": "Internet Explorer 11 is disabled on all Windows Server 2022 servers. Where IE11 is present (e.g. on Windows Server 2022 with Desktop Experience), it is disabled via Group Policy and the 'Turn off Internet Explorer 11 as a standalone browser' policy is enforced. Alternatively, the IE11 feature is removed via DISM where the server role permits."
+              },
+              {
+                "uuid": "c844c0f3-6699-41c2-9d97-8b323e7dc97b",
+                "control-id": "ism-1655",
+                "description": ".NET Framework 3.5 (which includes .NET 2.0 and .NET 3.0) is disabled or removed from Windows Server 2022 where not required by an explicitly approved server application. If .NET 3.5 is installed, it is strictly governed: the feature is added only via approved change request, monitored for vulnerabilities, and patched within required timeframes. Where not needed, it is not installed (Server Core default) or removed via DISM."
+              },
+              {
+                "uuid": "af7fa4ea-d9a3-4f03-a318-cd319db6f6ef",
+                "control-id": "ism-1492",
+                "description": "Operating system exploit protection functionality is enabled on all Windows Server 2022 servers via Windows Defender Exploit Guard. This includes: Data Execution Prevention (DEP) set to AlwaysOn, Randomise memory allocations (ASLR) enabled, Control Flow Guard (CFG) enabled, Export Address Filtering (EAF), and Validate stack integrity (StackPivot). Exploit protection settings are enforced via Group Policy and the Exploit Protection configuration XML is centrally managed and deployed."
+              },
+              {
+                "uuid": "01fa5680-505c-48d3-968e-706e6e7838ad",
+                "control-id": "ism-1745",
+                "description": "The following boot integrity features are enabled on all Windows Server 2022 servers where the hardware supports them: Secure Boot (UEFI, preventing unsigned bootloaders/OS from loading), Trusted Boot (Windows bootloader verifies kernel and OS integrity), Measured Boot (TPM records boot component hashes), and Early Launch Anti-Malware (ELAM) which loads Windows Defender before third-party drivers during startup. These settings are verified via attestation (Windows Health Attestation Service or equivalent) and compliance scanning."
+              },
+              {
+                "uuid": "4596895d-ece7-46ba-9dce-1779e48174a8",
+                "control-id": "ism-1584",
+                "description": "Unprivileged (standard) users are prevented from bypassing, disabling, or modifying Windows Server 2022 security functionality via Group Policy and NTFS permissions. Specifically: standard users cannot disable Windows Defender Antivirus, Windows Defender Firewall, audit policy, LSASS protection, Credential Guard, or Secure Boot. Tamper Protection in Microsoft Defender for Endpoint is enabled to prevent unauthorised modification of antivirus and security settings."
+              },
+              {
+                "uuid": "d845ea1a-1b00-43b6-8b75-1d015d2c13c1",
+                "control-id": "ism-1491",
+                "description": "Unprivileged users on Windows Server 2022 interactive sessions (e.g. RDS/terminal server roles) are prevented from running script execution engines via Group Policy and application control, including: Windows Script Host (cscript.exe, wscript.exe), PowerShell (powershell.exe, powershell_ise.exe, pwsh.exe), mshta.exe, wmic.exe, and certutil.exe when used for code download. This is enforced via AppLocker or WDAC rules restricting these executables to approved administrator accounts."
+              },
+              {
+                "uuid": "018bedf8-5d61-481a-bd13-87f6118eb96b",
+                "control-id": "ism-1691",
+                "description": "Security patches and updates for Windows Server 2022, its roles and features, and installed applications are applied within 48 hours of release when exploits for the vulnerability exist in the wild. Emergency patching is governed by a documented urgent change process, automated via Windows Server Update Services (WSUS) or Microsoft Intune for rapid deployment. Patch deployment status is tracked and verified via compliance reporting within the 48-hour window."
+              },
+              {
+                "uuid": "3fc3826f-69d1-4482-aa3e-69ec30d3c92f",
+                "control-id": "ism-1692",
+                "description": "Security patches and updates for Windows Server 2022 are applied within two weeks of release for vulnerabilities without confirmed active exploitation. Automated deployment via WSUS, SCCM or Intune is used with a patch ring approach (test ring → pilot ring → production ring) to balance patch velocity with stability. Compliance is verified at the two-week mark via vulnerability scanner and WSUS/SCCM reporting."
+              },
+              {
+                "uuid": "9f235e54-b92f-43ca-a810-9dc2656f0fc7",
+                "control-id": "ism-1901",
+                "description": "Security patches and updates for Windows Server 2022 are applied within one month of release for lower-severity (non-critical, non-exploited) vulnerabilities. The monthly Microsoft Patch Tuesday cadence aligns with this requirement for standard-priority patches. Any patches missed in the scheduled cycle are identified by the weekly vulnerability scan and remediated within the required timeframe."
+              },
+              {
+                "uuid": "62a9f352-ba23-4a4c-aa8a-09b769f1d0b0",
+                "control-id": "ism-1704",
+                "description": "Windows Server operating system versions no longer supported by Microsoft are not used in the environment. A server operating system lifecycle register is maintained showing support end-dates for each deployed OS version. Servers running end-of-support OS are flagged for immediate upgrade or decommissioning, with risk acceptance required for any temporary exception. The register is reviewed monthly."
+              },
+              {
+                "uuid": "05a06013-9461-4641-8e44-174f150d4709",
+                "control-id": "ism-1699",
+                "description": "A vulnerability scanner (Microsoft Defender Vulnerability Management, Tenable Nessus, Rapid7 InsightVM, or equivalent) is used at least weekly to identify missing patches and updates on Windows Server 2022 servers. Scan results are ingested into the SIEM or vulnerability management platform, triaged by severity, and tracked through to remediation. Scan coverage is verified to include all in-scope servers."
+              },
+              {
+                "uuid": "dfad8606-f079-4fa9-990f-972a696c4cd0",
+                "control-id": "ism-1490",
+                "description": "Application control (Windows Defender Application Control — WDAC, or AppLocker) is implemented on all internet-facing Windows Server 2022 servers to restrict execution to an organisation-approved set. WDAC policies for internet-facing servers use a more restrictive ruleset (deny-by-default for unsigned or non-Microsoft code) than internal servers, given the elevated threat exposure."
+              },
+              {
+                "uuid": "83f49567-c4f8-458b-a126-7face149752e",
+                "control-id": "ism-1656",
+                "description": "Application control (WDAC or AppLocker) is implemented on all non-internet-facing Windows Server 2022 servers. Policy enforcement is in Block mode (not Audit mode) after a documented testing and baseline-establishment period. Policies are managed centrally and deployed via Group Policy or Intune."
+              },
+              {
+                "uuid": "f0cced1a-1dfd-40c9-921b-66608556aa28",
+                "control-id": "ism-1870",
+                "description": "Application control rules include user profile directories and temporary folders: %USERPROFILE%, %APPDATA%, %LOCALAPPDATA%, %TEMP%, and %TMP%. Executables, scripts, libraries, and installers cannot be executed from these paths. This prevents malicious payloads written to user-writable locations from executing."
+              },
+              {
+                "uuid": "ca3fb78b-8277-4dd7-8445-8eadfa19c063",
+                "control-id": "ism-1871",
+                "description": "Application control rules are applied to all file system locations beyond user profiles and temp folders, including: Windows directory (%WINDIR%), Program Files (%PROGRAMFILES%, %PROGRAMFILES(X86)%), ProgramData (%PROGRAMDATA%), and all custom application directories. Execution from non-standard locations is blocked unless explicitly approved. Default-deny is the baseline posture for unsigned binaries."
+              },
+              {
+                "uuid": "83545e35-c6de-447f-b3ec-c984805584f8",
+                "control-id": "ism-1657",
+                "description": "Application control on Windows Server 2022 restricts the execution of: executables (.exe, .com), dynamic-link libraries (.dll, .ocx), scripts (.ps1, .vbs, .js, .bat, .cmd, .wsf), Windows Installer packages (.msi, .msp), compiled HTML (.chm), HTML applications (.hta), and control panel applets (.cpl) to an organisation-approved set. WDAC or AppLocker policies cover all these file types."
+              },
+              {
+                "uuid": "8ded1827-d777-48da-93f4-4ad00cfefdca",
+                "control-id": "ism-1658",
+                "description": "Application control on Windows Server 2022 restricts the loading of device drivers (.sys, .inf) to an organisation-approved set. Microsoft's HVCI (Hypervisor-Protected Code Integrity) is enabled where the hardware supports it, enforcing that all kernel-mode code must be signed by an approved certificate. The vulnerable driver blocklist is also applied."
+              },
+              {
+                "uuid": "84c5e4a6-2717-42c5-a04b-dc1402dcfcfc",
+                "control-id": "ism-0955",
+                "description": "Application control on Windows Server 2022 is implemented using one or more of: cryptographic hash rules (for specific approved file versions), publisher certificate rules (for Microsoft-signed and vendor-signed code), and path rules (for approved installation directories). Cryptographic hash rules are used for line-of-business applications not signed by a trusted publisher."
+              },
+              {
+                "uuid": "1abb0e73-a72c-4451-9d9b-f29585154acc",
+                "control-id": "ism-1471",
+                "description": "Where publisher certificate rules are used in application control on Windows Server 2022, rules include both the publisher name (signer certificate subject) and the product name to prevent overly broad rules that could allow any software from a given publisher. Certificate rules for Microsoft-signed code use 'Microsoft Windows' or 'Microsoft Corporation' as publisher with specific product name constraints."
+              },
+              {
+                "uuid": "f3cd4b7d-2119-4306-a236-fe2ee325e7b4",
+                "control-id": "ism-1392",
+                "description": "Where path rules are used in application control on Windows Server 2022, only designated administrator accounts have modify or write permissions to directories included in approved path rules. NTFS ACLs are configured so standard users and service accounts have read and execute access only to approved application directories. Writable paths are excluded from path-based allow rules."
+              },
+              {
+                "uuid": "0b8301ed-b218-4a32-8025-7bc95d557842",
+                "control-id": "ism-1746",
+                "description": "Where path rules are used in application control, only designated administrator accounts can change NTFS permissions (DACLs and SACLs) on approved application files and folders. Standard users are not members of any group with the 'Take Ownership' or 'Change Permissions' privilege on these paths."
+              },
+              {
+                "uuid": "1cec0289-09a2-44bc-a552-cdf991792583",
+                "control-id": "ism-1544",
+                "description": "Microsoft's recommended application blocklist (the WDAC Recommended Block Rules) is implemented on all Windows Server 2022 servers, blocking known LOLBins (Living-Off-the-Land Binaries) and historically abused executables including: bginfo.exe, cdb.exe, cmstp.exe, csi.exe, dbghost.exe, dnscmd.exe, fsi.exe, infdefaultinstall.exe, kd.exe, msbuild.exe, msdeploy.exe, msdt.exe, ntsd.exe, rcsi.exe, winrm.vbs, wmic.exe (where not required), and others listed in the Microsoft recommended blocklist."
+              },
+              {
+                "uuid": "d8e6a9ab-4dc2-4229-aabf-9ae02111c892",
+                "control-id": "ism-1659",
+                "description": "Microsoft's vulnerable driver blocklist (enforced via HVCI / Memory Integrity or the Windows Defender Application Control vulnerable driver block policy) is implemented on all Windows Server 2022 servers where hardware virtualization-based security (VBS) is supported. This blocks known vulnerable kernel drivers that can be exploited to escalate privileges or disable security products (e.g. via BYOVD attacks)."
+              },
+              {
+                "uuid": "7cb6e879-df5a-4f7c-99c0-604b2441a7ec",
+                "control-id": "ism-1582",
+                "description": "Application control rulesets for Windows Server 2022 are validated at least annually by reviewing WDAC or AppLocker policy rule sets to confirm: all approved applications still require their rules, no outdated or overly broad rules exist, newly deployed applications have been included, and blocked-event logs have been reviewed for any required additions. Validation findings are documented and actioned."
+              },
+              {
+                "uuid": "d4334345-caa9-4952-bf0d-04b6a0ce5204",
+                "control-id": "ism-0846",
+                "description": "All users on Windows Server 2022, except local administrator accounts and designated break glass accounts, cannot disable, bypass or be exempted from application control. WDAC policies are kernel-enforced and cannot be overridden by user-mode code. Standard users and service accounts are excluded from any exemption groups. Audit-mode exceptions are not permitted in production."
+              },
+              {
+                "uuid": "fd2c2bbd-ce83-4f90-b474-30de88bf12b0",
+                "control-id": "ism-1660",
+                "description": "Allowed and blocked application control events from Windows Server 2022 (WDAC events in Microsoft-Windows-CodeIntegrity/Operational and AppLocker events in Microsoft-Windows-AppLocker/*) are forwarded to the centralised event logging facility (SIEM). Alerts are configured for high-volume blocking events or patterns consistent with malware attempting to execute blocked code."
+              },
+              {
+                "uuid": "9a1c8852-012b-4746-8dab-a0928c1d03c6",
+                "control-id": "ism-1621",
+                "description": "Windows PowerShell 2.0 is disabled or removed on all Windows Server 2022 servers. PowerShell 2.0 does not support AMSI, script block logging, or Constrained Language Mode and is used by attackers as a downgrade vector. It is disabled via: 'Disable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root' or the equivalent DISM command, and verified post-build by compliance scanning."
+              },
+              {
+                "uuid": "55997964-8e4c-47ce-9598-9636bf46f696",
+                "control-id": "ism-1622",
+                "description": "PowerShell is configured to run in Constrained Language Mode (CLM) for all standard user sessions and non-interactive contexts on Windows Server 2022. CLM is enforced via WDAC policy (when WDAC is in enforcement mode, PowerShell automatically enters CLM for unsigned scripts and interactive sessions). This restricts PowerShell to a safe subset of the language, preventing use of .NET method calls and COM objects from non-privileged contexts."
+              },
+              {
+                "uuid": "09e4aeec-b46f-4d8b-86b7-c9cc2b8f0dfc",
+                "control-id": "ism-1623",
+                "description": "PowerShell module logging, script block logging, and transcription are enabled and centrally forwarded on all Windows Server 2022 servers via Group Policy: Module Logging: Computer Configuration > Administrative Templates > Windows Components > Windows PowerShell > Turn on Module Logging (set to all modules: *). Script Block Logging: Turn on PowerShell Script Block Logging (enabled, with 'Log script block invocation start/stop events' also enabled). Transcription: Turn on PowerShell Transcription (output directory set to a secure, admin-only network path). All events are forwarded to the SIEM via Windows Event Forwarding or Sysmon/agent-based log collection."
+              },
+              {
+                "uuid": "4b6a0a2e-2103-4871-b43d-88e31d120d77",
+                "control-id": "ism-1624",
+                "description": "PowerShell script block logs are protected by Protected Event Logging on all Windows Server 2022 servers. Protected Event Logging encrypts PowerShell script block log content using a certificate's public key (Group Policy: Enable Protected Event Logging, with the certificate thumbprint configured). Only authorised security personnel with access to the corresponding private key can decrypt and read the script block content, preventing attackers from reading credentials or sensitive data that might appear in scripts."
+              },
+              {
+                "uuid": "cc9498fe-e6dd-4c2f-8916-fb588c1a4c9d",
+                "control-id": "ism-1889",
+                "description": "Command line process creation events are centrally logged on all Windows Server 2022 servers. This is enabled via Group Policy: Computer Configuration > Administrative Templates > System > Audit Process Creation > Include command line in process creation events (Enabled). Process creation events (Event ID 4688 with command line) and/or Sysmon Event ID 1 (process create with command line) are forwarded to the SIEM. This enables detection of malicious command-line invocations, LOLBin abuse, and lateral movement activity."
+              },
+              {
+                "uuid": "0b192a1b-e085-49fa-b2a7-505f7e765ec3",
+                "control-id": "ism-1034",
+                "description": "A Host-based Intrusion Prevention System (HIPS) or Endpoint Detection and Response (EDR) solution (Microsoft Defender for Endpoint or equivalent) is implemented on all critical and high-value Windows Server 2022 servers. The EDR agent operates in active/block mode (not audit mode) on production servers. EDR telemetry (process, file, network, registry events) is forwarded to the SIEM/XDR platform. Alerts are triaged by the security operations team. EDR coverage is verified at least monthly."
+              },
+              {
+                "uuid": "029a70ec-4f02-4ad7-b380-edeffa0d8440",
+                "control-id": "ism-1416",
+                "description": "Windows Defender Firewall with Advanced Security is implemented and enforced on all Windows Server 2022 servers with a default-deny inbound policy. Firewall rules are defined to allow only organisation-approved services and ports required for each server's approved function (e.g. TCP 443 for HTTPS, TCP 3389 for RDP restricted to jump servers only, TCP 445 for SMB to approved management subnets only). Outbound connections are also restricted where possible. Firewall rules are managed via Group Policy and cannot be modified by standard users. The firewall is active for all profiles (Domain, Private, Public)."
+              },
+              {
+                "uuid": "09dd571a-924d-4eeb-8bd0-e3644ec10f46",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus (or an approved third-party antivirus product) is deployed on all Windows Server 2022 servers with: signature-based detection enabled at a high sensitivity level, heuristic-based detection enabled, AMSI integration active for script scanning, and real-time protection enabled. Antivirus signatures are updated at least daily (ideally every hour via Microsoft Update or WSUS). Antivirus is monitored centrally via Microsoft Defender for Endpoint or equivalent console. Tamper Protection is enabled to prevent standard users or malicious processes from disabling antivirus."
+              },
+              {
+                "uuid": "2d96596f-5bde-403e-b661-b115e0a83523",
+                "control-id": "ism-0414",
+                "description": "All personnel and service accounts granted access to Windows Server 2022 systems are uniquely identifiable. Shared user accounts (generic accounts) are not used for interactive access. Each administrator, operator, and service account has a unique username tied to an identifiable individual or service. User provisioning and de-provisioning is governed by the organisation's identity lifecycle management process."
+              },
+              {
+                "uuid": "04c6f6c3-6987-47e2-8311-0553584ec4e7",
+                "control-id": "ism-0415",
+                "description": "The use of shared user accounts on Windows Server 2022 is strictly controlled. Where a shared account is required for a specific technical purpose, the individuals who use it are uniquely identifiable through session recording, jump server logging, or other compensating controls. Any shared account usage is documented, approved, and reviewed at least annually."
+              },
+              {
+                "uuid": "5935737b-1a46-4a66-9708-4c00ba48e44f",
+                "control-id": "ism-0445",
+                "description": "All privileged users (server administrators, domain administrators, service account managers) are assigned dedicated privileged accounts used solely for duties requiring privileged access to Windows Server 2022. Privileged accounts are separate from standard user accounts used for email and web browsing. Privileged account creation and management follows the organisation's privileged access management (PAM) process."
+              },
+              {
+                "uuid": "369a0866-5f18-43e0-9d2a-d8ef1f3e8f16",
+                "control-id": "ism-1263",
+                "description": "Unique privileged user accounts are used for administering individual Windows Server 2022 server applications and roles. A dedicated account is used for Active Directory administration, a separate account for SQL Server administration, a separate account for IIS administration, and so on. No single privileged account is used across multiple different server application roles. This is enforced through role-based access control and documented in the privileged access register."
+              },
+              {
+                "uuid": "58f2cf56-8112-4045-90a0-cb060b743f88",
+                "control-id": "ism-1507",
+                "description": "Requests for privileged access to Windows Server 2022 systems are validated when first requested. Requests must include: the specific access required, the business justification, the duration of access needed, and management approval. Privileged access requests are reviewed by the IT security team before provisioning."
+              },
+              {
+                "uuid": "1d4697a3-3e67-4b7d-abf8-aac5438ea0d4",
+                "control-id": "ism-1508",
+                "description": "Privileged access to Windows Server 2022 systems is limited to the minimum required (least privilege). Administrators are not granted Domain Admin or local Administrator access unless specifically required by their role. Just-In-Time (JIT) access via Microsoft Entra Privileged Identity Management (PIM) or a PAM solution is used where available, granting elevated access only for approved time windows. Service accounts are configured with minimum required permissions."
+              },
+              {
+                "uuid": "36cbd7d6-2344-4238-b0f6-ae8a6a771815",
+                "control-id": "ism-1175",
+                "description": "Privileged accounts used to administer Windows Server 2022 are blocked from accessing the internet, email services, and web services. This is enforced via Group Policy (proxy bypass restrictions) and Windows Defender Firewall outbound rules applied to the Privileged Access Workstations (PAWs) or jump servers from which privileged accounts are used. Domain Admin and server admin accounts do not have Outlook, web browser, or personal cloud service access."
+              },
+              {
+                "uuid": "ff2ad197-de94-46e5-8d97-2be9f558cba9",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for all privileged users authenticating to Windows Server 2022 administration interfaces, including: Remote Desktop Protocol (RDP), Windows Admin Center, PowerShell remoting (WinRM), and management portals. MFA is enforced via Microsoft Entra Conditional Access for cloud-joined or hybrid-joined servers, or via smartcard/Windows Hello for Business authentication for on-premises Active Directory-only environments."
+              },
+              {
+                "uuid": "9931ed8a-9f15-433f-bbdb-70571c5a1022",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all unprivileged users authenticating interactively to Windows Server 2022 (e.g. RDS/VDI sessions, web applications hosted on the server). MFA is enforced via Microsoft Entra Conditional Access, RADIUS with MFA, or smartcard authentication depending on the access method and whether the system is cloud-connected."
+              },
+              {
+                "uuid": "c8b5b4eb-6218-4ec7-97ba-dc9bc2d4f758",
+                "control-id": "ism-1504",
+                "description": "Multi-factor authentication is used for all user and administrator accounts accessing Microsoft online services and cloud-connected Windows Server management portals (Azure Arc, Microsoft Entra, Intune admin centre) that process or store the organisation's sensitive data. MFA is enforced via Microsoft Entra Conditional Access policies."
+              },
+              {
+                "uuid": "de88aa96-63b9-451f-a475-b9a2d277117f",
+                "control-id": "ism-1872",
+                "description": "Multi-factor authentication for online service access related to Windows Server 2022 management (Microsoft Entra ID, Azure Arc, Microsoft Intune, Microsoft Defender for Endpoint portal) uses phishing-resistant methods: FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication. These are enforced via Conditional Access Authentication Strength policies requiring phishing-resistant MFA strength."
+              },
+              {
+                "uuid": "ff1af52e-9842-4e5e-b9c3-c5a46c26475f",
+                "control-id": "ism-1919",
+                "description": "Legacy authentication protocols that do not support MFA are blocked for Microsoft cloud service access related to Windows Server 2022 management. A Conditional Access policy targeting 'Other clients' (which matches legacy auth clients including Basic Auth, NTLM, and legacy MAPI/RPC) with a Block grant is applied to all admin accounts. Legacy auth usage is monitored via Microsoft Entra sign-in logs."
+              },
+              {
+                "uuid": "b06dda6f-132e-4860-baff-6cb42ae52fdd",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, Elastic SIEM, or equivalent) is implemented to collect, protect, and retain Windows Server 2022 event logs. Windows Event Forwarding (WEF) or agent-based log collection (Sysmon, Microsoft Monitoring Agent, or equivalent) is deployed on all Windows Server 2022 instances to forward logs to the SIEM. Log retention meets the minimum retention requirement (at least 7 years for ISM-classified systems, or as required by the organisation's data retention policy)."
+              },
+              {
+                "uuid": "0ac17a5e-5481-4c0d-8939-5182ed14ebe7",
+                "control-id": "ism-0585",
+                "description": "For each security event logged from Windows Server 2022, the following details are captured: date and time of the event (UTC-synchronised), the relevant user account or service account (SID and username), the relevant filename or object (where applicable), the event description (Event ID and message), and the computer name or IP address of the server involved. Windows audit policies are configured to capture this detail level for all relevant event categories."
+              },
+              {
+                "uuid": "c9ac1c8b-6e30-4820-bdf2-9d4ae0987478",
+                "control-id": "ism-1509",
+                "description": "Privileged access events on Windows Server 2022 are centrally logged and monitored. Windows audit policy categories enabled include: Logon/Logoff (Success, Failure), Account Management (Success, Failure), Privilege Use (Success, Failure), Directory Service Changes (Success), Policy Change (Success, Failure), System events (Success, Failure). Specifically: Event IDs 4624/4625 (logon), 4648 (explicit credential logon), 4672 (special privileges assigned), 4732/4728 (group membership change), 4720/4726 (account created/deleted), and 4698/4702 (scheduled task created/modified) are forwarded and alerted on."
+              },
+              {
+                "uuid": "63d4f8ad-b61b-4991-9e63-77668d27a8f5",
+                "control-id": "ism-1566",
+                "description": "Unprivileged (standard user and service account) access to Windows Server 2022 is centrally logged. Windows audit policy is configured to log: successful and failed logon events (Event IDs 4624, 4625), object access on sensitive file shares and registry keys (Event ID 4656, 4663 via SACL), and process creation (Event ID 4688 with command line). These events are forwarded to the SIEM and retained per the organisation's log retention policy."
+              },
+              {
+                "uuid": "93dd243e-81e7-4872-8071-c36a8dd5d9ec",
+                "control-id": "ism-1683",
+                "description": "Successful and unsuccessful MFA authentication events for Windows Server 2022 administration accounts (cloud-connected) are logged in Microsoft Entra sign-in logs and forwarded to the SIEM. On-premises MFA events (NPS extension, Windows Hello for Business, smartcard authentication) are captured in Windows Security Event Log (Event ID 4768/4769 for Kerberos, 4776 for NTLM) and forwarded to the SIEM."
+              },
+              {
+                "uuid": "c779a832-53ba-4a6f-af48-69726c193d7a",
+                "control-id": "ism-1974",
+                "description": "Windows Server 2022 servers (physical hardware and hosting infrastructure) are secured in suitably secure server rooms or communications rooms. Server rooms have controlled access (key card, PIN, or biometric) restricted to authorised personnel. Physical access to servers is logged (access control system records). Visitors to server rooms are escorted. Unattended servers are physically locked (server room door lock + server rack lock). Physical access controls are reviewed at least annually."
+              },
+              {
+                "uuid": "01f9d12f-0acf-49f6-97bb-7eb232461c17",
+                "control-id": "ism-0459",
+                "description": "Full volume encryption is implemented for Windows Server 2022 servers using BitLocker Drive Encryption (or an equivalent approved encryption product). BitLocker is applied to the OS volume and all data volumes. BitLocker recovery keys are stored in Active Directory (MBAM) or Microsoft Entra ID (for cloud-connected or Azure-joined servers) to ensure recoverability. Encryption status is verified via SCCM/Intune compliance reporting and the BitLocker Management reports."
+              },
+              {
+                "uuid": "4ea0e9b1-fc7b-41a9-87cd-1eaacafc0e9a",
+                "control-id": "ism-2109",
+                "description": "Pre-boot authentication is implemented for Windows Server 2022 servers using BitLocker with TPM + PIN (for servers with interactive console access) or network-unlocking via BitLocker Network Unlock (for servers in controlled data centre environments where network-based key release is appropriate). TPM-only BitLocker (without PIN or network unlock) is not used for servers storing classified or sensitive data. The choice of pre-boot authentication method is documented per server in the CMDB."
+              },
+              {
+                "uuid": "02d00d83-5574-46f3-b74f-2dcc55e7398d",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan is maintained for Windows Server 2022 covering: establishment and maintenance of authorised SOE baseline configurations; the change classification framework (routine change vs. urgent/emergency change); the process for deviations from the baseline (exception request, risk acceptance, compensating controls); the patch management schedule and approval process; and the configuration drift detection and remediation process. The plan is reviewed at least annually and after significant security incidents."
+              },
+              {
+                "uuid": "d9230fc9-1d7c-4363-8f97-009ae95db8c0",
+                "control-id": "ism-0917",
+                "description": "When malicious code is detected on a Windows Server 2022 server, the following response steps are taken: the affected server is isolated from the network (network access revoked at the switch/firewall level and/or server NIC disabled); all recently-connected media is scanned; the source of the infection is investigated; ASD's ACSC is notified if required by incident severity; the infected server is rebuilt from a known-good SOE baseline (not cleaned in-place where possible); and post-incident review findings are used to update defences. Response activities are documented in the cyber security incident register."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

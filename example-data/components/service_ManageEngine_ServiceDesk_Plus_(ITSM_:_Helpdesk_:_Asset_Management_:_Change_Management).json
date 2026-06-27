@@ -1,0 +1,374 @@
+{
+  "component-definition": {
+    "uuid": "d82e1121-5eb7-4406-9b69-4fd5444daca0",
+    "metadata": {
+      "title": "service - ManageEngine ServiceDesk Plus (ITSM / Helpdesk / Asset Management / Change Management)",
+      "last-modified": "2026-06-27T03:41:42Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "71e64518-ea86-4861-baaa-93f7c8198a0a",
+        "type": "service",
+        "title": "ManageEngine ServiceDesk Plus (ITSM / Helpdesk / Asset Management / Change Management)",
+        "description": "ManageEngine ServiceDesk Plus is an IT Service Management (ITSM) platform developed by ManageEngine (a division of Zoho Corporation). It provides an integrated suite of IT management capabilities: helpdesk ticketing (incident management, service request management, problem management), IT Asset Management (hardware inventory, software licence tracking, CMDB), change management (RFC workflow, CAB approval, post-implementation review), and a self-service portal for end users to log and track their own requests.\n\nServiceDesk Plus is a web-based application deployed on the organisation's on-premises infrastructure (or optionally as a cloud-hosted SaaS). The on-premises edition is built on Apache Tomcat (bundled), uses PostgreSQL (bundled) or Microsoft SQL Server as its database, and is available for Windows Server and Linux hosting. The application exposes HTTP/HTTPS web interfaces for technician and end-user access, and REST APIs for integration with other IT management tools (Active Directory, monitoring tools, patch management platforms).\n\nServiceDesk Plus stores sensitive organisational information including: hardware asset inventory (device details, serial numbers, location), software licence records, Active Directory integration credentials (for agent deployment), change records (planned maintenance, infrastructure changes), incident details, and user identity information — making it a high-value target for adversaries seeking to enumerate the organisation's IT environment. ManageEngine products have been exploited in multiple significant compromises (CVE-2021-44077, CVE-2022-47966); this component definition reflects the heightened security posture required.",
+        "purpose": "IT Service Management platform providing: helpdesk ticket management for incidents and service requests; hardware and software asset inventory and lifecycle management; change management workflow and approval; problem management; self-service portal for end users; and CMDB integration for configuration item tracking.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          },
+          {
+            "name": "asset-type",
+            "value": "service"
+          },
+          {
+            "name": "service-category",
+            "value": "IT Service Management (ITSM)"
+          },
+          {
+            "name": "vendor",
+            "value": "ManageEngine (Zoho Corporation Pty Ltd)"
+          },
+          {
+            "name": "product-name",
+            "value": "ManageEngine ServiceDesk Plus"
+          },
+          {
+            "name": "edition",
+            "value": "Enterprise (on-premises) or ServiceDesk Plus Cloud (SaaS)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "On-premises (Windows Server 2022 or RHEL/CentOS) or Cloud (SaaS — ManageEngine-hosted)"
+          },
+          {
+            "name": "application-stack",
+            "value": "Apache Tomcat (bundled), PostgreSQL (bundled) or Microsoft SQL Server, Java (JRE bundled)"
+          },
+          {
+            "name": "network-exposure",
+            "value": "Internal web application with WAF/reverse proxy for external/internet-facing access"
+          },
+          {
+            "name": "data-classification",
+            "value": "OFFICIAL: Sensitive (hardware inventory, change records, incident data, AD integration credentials)"
+          },
+          {
+            "name": "integration-protocols",
+            "value": "SAML 2.0 (SSO/Entra ID), LDAP/LDAPS (Active Directory), REST API (HTTPS/OAuth 2.0), SMTP (email notifications), Syslog (SIEM)"
+          },
+          {
+            "name": "modules-in-scope",
+            "value": "Incident Management, Service Request Management, Problem Management, Change Management, IT Asset Management (ITAM), CMDB, Self-Service Portal, REST API"
+          },
+          {
+            "name": "vendor-security-url",
+            "value": "https://www.manageengine.com/products/service-desk/security-response.html"
+          },
+          {
+            "name": "known-high-risk-cves",
+            "value": "CVE-2021-44077 (RCE, unauthenticated), CVE-2022-47966 (RCE via SAML), CVE-2023-29084 (command injection) — priority patching required"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "change-manager"
+          },
+          {
+            "role-id": "itsm-technician"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "89e7e9cb-0290-42bc-ab2f-79834addef83",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for ManageEngine ServiceDesk Plus (ITSM / Helpdesk / Asset Management / Change Management).",
+            "implemented-requirements": [
+              {
+                "uuid": "8cc57a06-a0f8-4175-be8e-8c1c74ab385d",
+                "control-id": "ism-1631",
+                "description": "ManageEngine (Zoho Corporation Pty Ltd) is identified as the supplier of ServiceDesk Plus and is documented in the organisation's supplier register and CMDB. The supplier register records: vendor name, registered ABN/ACN, primary support contact, the specific product and version deployed, and the support and maintenance contract details. The register is reviewed at least annually and updated when supplier or product details change."
+              },
+              {
+                "uuid": "671a7655-d122-436b-9878-427cda845edf",
+                "control-id": "ism-1568",
+                "description": "ManageEngine / Zoho Corporation has demonstrated a commitment to the security of ServiceDesk Plus through: publication of a security disclosure and vulnerability management programme, CVE disclosure for identified vulnerabilities, SOC 2 Type II attestation for cloud-hosted instances, ISO 27001 certification, and participation in responsible disclosure. Prior to procurement, a cyber supply chain risk assessment was conducted for ManageEngine to assess the security maturity of the vendor and the risk of deploying ServiceDesk Plus in the organisation's environment."
+              },
+              {
+                "uuid": "fd128a08-1a68-4385-a6ba-82206295179a",
+                "control-id": "ism-1787",
+                "description": "ServiceDesk Plus is sourced directly from ManageEngine (Zoho Corporation) via the organisation's approved procurement process. The application is downloaded only from the official ManageEngine download portal (manageengine.com) or via the vendor's official distribution channels. Download integrity is verified using the SHA-256 checksums published by ManageEngine before installation. Third-party redistributors are not used."
+              },
+              {
+                "uuid": "9ec4c7f6-3868-4ae1-9a6f-19bffed0e901",
+                "control-id": "ism-1693",
+                "description": "Patches, updates, and vendor mitigations for ServiceDesk Plus are applied within one month of release for non-critical vulnerabilities. For critical vulnerabilities (CVSS 7.0+) or those with published proof-of-concept code, patches are applied within 48 hours under the organisation's urgent change process. ManageEngine security advisories and the NVD/CVE feed for 'ManageEngine ServiceDesk Plus' are monitored continuously by the security team. ServiceDesk Plus has been the target of active exploitation (e.g. CVE-2021-44077, CVE-2022-47966) — priority patching is mandatory for any advisories rated Critical."
+              },
+              {
+                "uuid": "7a4cbd04-4174-4132-9517-718285706e12",
+                "control-id": "ism-1700",
+                "description": "A vulnerability scanner (Microsoft Defender Vulnerability Management, Tenable Nessus, Rapid7 InsightVM, or equivalent) is used at least fortnightly to identify missing patches or updates for ServiceDesk Plus and its underlying components (JRE/JDK, bundled Apache Tomcat, bundled PostgreSQL/MSSQL, and third-party libraries). Scan results are reviewed and any missing patches outside required timeframes are escalated for immediate remediation. The vulnerability scan scope includes the ServiceDesk Plus server and all host-level components."
+              },
+              {
+                "uuid": "e76bb21c-83fe-4d84-bb85-815886d78f3e",
+                "control-id": "ism-1552",
+                "description": "All ServiceDesk Plus web application content — including the technician portal, end-user self-service portal, REST API endpoints, and mobile application backend — is served exclusively over HTTPS. HTTP on port 80 is disabled or redirected to HTTPS with a permanent (301) redirect. HTTP Strict Transport Security (HSTS) is configured with a max-age of at least 1 year and includeSubDomains. Mixed content (serving any resource over HTTP on an HTTPS page) is not permitted. SSL/TLS offloading at a reverse proxy or load balancer maintains HTTPS for all external connections."
+              },
+              {
+                "uuid": "c757cef9-1009-4f7c-beee-ed740b39aa70",
+                "control-id": "ism-1139",
+                "description": "ServiceDesk Plus is configured to use only TLS 1.3 for all connections (or TLS 1.2 with strong cipher suites where TLS 1.3 is not supported by the bundled Tomcat version). TLS 1.0 and TLS 1.1 are explicitly disabled in the ServiceDesk Plus connector configuration (server.xml in the bundled Tomcat). This is verified using an SSL/TLS scanning tool (e.g. testssl.sh, Qualys SSL Labs) after every upgrade and configuration change. A minimum TLS grade of A is required on all SSL Lab scans."
+              },
+              {
+                "uuid": "8854805f-9a28-466f-bafb-9b06b0068c3d",
+                "control-id": "ism-1369",
+                "description": "AES-GCM cipher suites are used for TLS connections to ServiceDesk Plus. The Tomcat connector configuration (server.xml) specifies an approved cipher suite list that includes only AEAD cipher suites (TLS_AES_256_GCM_SHA384, TLS_AES_128_GCM_SHA256 for TLS 1.3; TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 for TLS 1.2). Non-AEAD cipher suites (RC4, 3DES, CBC-mode) are disabled. Cipher suite configuration is verified after every upgrade."
+              },
+              {
+                "uuid": "0532a1c0-4cef-4d93-90b6-d32827564330",
+                "control-id": "ism-1370",
+                "description": "Only server-initiated TLS secure renegotiation is permitted for connections to ServiceDesk Plus. Client-initiated renegotiation is disabled in the Tomcat connector configuration to prevent denial-of-service via renegotiation flood. This is enforced in the SSLHostConfig block in server.xml with the allowUnsafeLegacyRenegotiation attribute set to false."
+              },
+              {
+                "uuid": "26b88c57-a7ba-4f04-a494-93fca0fc26e2",
+                "control-id": "ism-1372",
+                "description": "Diffie-Hellman (DH) or Elliptic Curve Diffie-Hellman (ECDH) key exchange is used for key establishment of all TLS connections to ServiceDesk Plus, ensuring forward secrecy. RSA static key exchange cipher suites (which do not provide forward secrecy) are excluded from the approved cipher suite list. ECDH with NIST P-256 or P-384 curves is preferred."
+              },
+              {
+                "uuid": "825b40de-313a-4cd5-902d-402d9b02ce38",
+                "control-id": "ism-1448",
+                "description": "Ephemeral ECDHE (or DHE with a minimum 2048-bit DH parameter) key exchange is used for all TLS connections to ServiceDesk Plus. ECDHE key exchange ensures that each session uses a unique ephemeral key pair, providing perfect forward secrecy — compromise of the server's long-term private key does not compromise past session traffic. Non-ephemeral RSA key exchange is explicitly excluded from the cipher suite list."
+              },
+              {
+                "uuid": "38824705-2709-4d2c-81e1-34df7d04811d",
+                "control-id": "ism-1553",
+                "description": "TLS compression is disabled for all TLS connections to ServiceDesk Plus in the Tomcat connector configuration (compressionMinSize is not set to values that would enable TLS-level compression; DEFLATE compression over TLS is disabled). This prevents the CRIME (Compression Ratio Info-leak Made Easy) class of attacks that can allow session token extraction from TLS-compressed traffic."
+              },
+              {
+                "uuid": "077a1861-9d6f-4c88-a3b1-661247392f2b",
+                "control-id": "ism-1862",
+                "description": "A Web Application Firewall (WAF) is deployed in front of ServiceDesk Plus to inspect and filter HTTP/HTTPS traffic before it reaches the application server. The WAF is configured to prevent exposure of the ServiceDesk Plus server's internal (origin) IP address: the WAF or reverse proxy is the only publicly-reachable endpoint, and direct access to the origin server is restricted at the network firewall to traffic from the WAF/proxy only. DNS records for the ServiceDesk Plus FQDN resolve to the WAF/proxy IP address, not the origin server IP. The WAF ruleset includes OWASP Core Rule Set (CRS) rules for SQL injection, cross-site scripting, path traversal, and command injection prevention."
+              },
+              {
+                "uuid": "c5e30f6a-7248-479a-b3f7-18c8c32074b0",
+                "control-id": "ism-1275",
+                "description": "ServiceDesk Plus is verified to filter all database queries for legitimate content and correct syntax via the application's ORM and query layer. The vendor's security release notes are reviewed for each version upgrade to confirm SQL injection vulnerabilities are addressed. WAF rules for SQL injection patterns are applied as a defence-in-depth layer. Database activity monitoring is implemented to detect anomalous query patterns. The bundled PostgreSQL or organisation-provided MSSQL server is configured to reject queries that contain dangerous SQL meta-characters or out-of-context statements."
+              },
+              {
+                "uuid": "23648086-79ad-46eb-938d-4ff323c42b6b",
+                "control-id": "ism-1276",
+                "description": "ServiceDesk Plus uses parameterised queries and prepared statements (via its ORM layer) for all database interactions, preventing SQL injection by design. The organisation verifies this control through: review of vendor security documentation, penetration testing of the ServiceDesk Plus instance (at least annually), and dynamic application security testing (DAST) scanning. Any identified SQL injection vulnerabilities are treated as Critical and remediated within 48 hours via emergency patching."
+              },
+              {
+                "uuid": "e200f086-128c-420a-9102-dffca79199a5",
+                "control-id": "ism-1278",
+                "description": "ServiceDesk Plus is configured to provide minimal error information about the structure of the underlying database to end users. Custom error pages replace default Tomcat error pages to prevent stack traces, exception class names, SQL query fragments, or schema information from being returned to users. Error details are logged internally (to the application log and SIEM) but not returned in HTTP responses. Production systems do not run in application debug mode."
+              },
+              {
+                "uuid": "4f64a87c-4c18-445a-8081-04d967be83fe",
+                "control-id": "ism-1269",
+                "description": "The ServiceDesk Plus database server is functionally separated from the ServiceDesk Plus web/application server. The database (PostgreSQL or Microsoft SQL Server) runs on a dedicated server or database service, network-separated from the ServiceDesk Plus application server. Network firewall rules restrict database access (TCP 5432 for PostgreSQL, TCP 1433 for MSSQL) to only the ServiceDesk Plus application server IP address(es). Direct database access from end-user networks is blocked at the firewall."
+              },
+              {
+                "uuid": "e76d6eb7-7709-422b-b5cb-8fb26a6c70af",
+                "control-id": "ism-1277",
+                "description": "All data communicated between the ServiceDesk Plus application server and its database server is encrypted using ASD-approved cryptography. For PostgreSQL: TLS is enabled on the PostgreSQL listener and the ServiceDesk Plus JDBC connection string includes ssl=true and sslmode=verify-full with a trusted CA certificate. For MSSQL: the connection string includes Encrypt=True and TrustServerCertificate=False. Database connection encryption is verified during initial setup and after each upgrade."
+              },
+              {
+                "uuid": "112fb8c6-3d4d-4120-833b-728fa34cace2",
+                "control-id": "ism-1536",
+                "description": "All database queries initiated by ServiceDesk Plus users (ticket creation, modification, deletion, asset record changes, change request approvals, report generation) and any resulting error messages are centrally logged. Application logs capturing user-initiated database interactions are forwarded to the SIEM. This enables forensic reconstruction of changes to tickets, hardware inventory records, change requests, and configuration items."
+              },
+              {
+                "uuid": "1a7809cb-d9da-4fd0-b8a6-614c083e4153",
+                "control-id": "ism-1537",
+                "description": "Security-relevant database events for the ServiceDesk Plus database are centrally logged to the SIEM, including: access to or modification of administrator-configured ticket data and asset inventory records; creation of new ServiceDesk Plus user accounts, especially administrator accounts; changes to user roles or permissions in ServiceDesk Plus; attempts to elevate user privileges (e.g. role escalation); queries containing SQL comment characters (--) or concatenation patterns; and failed authentication attempts to the database service. Database audit logging is enabled at the PostgreSQL or MSSQL level and forwarded to the SIEM."
+              },
+              {
+                "uuid": "519b8b2e-8419-4bac-bc43-66a0925023d0",
+                "control-id": "ism-1402",
+                "description": "Credentials (user account passwords) stored in the ServiceDesk Plus database are protected using salted password hashing with a strong algorithm (bcrypt, PBKDF2-SHA512, or Argon2id). Plain-text or MD5/SHA-1 hashed credential storage is not used. The organisation verifies the vendor's credential storage implementation via security documentation review and vendor security questionnaire. Where ServiceDesk Plus is configured with Active Directory or LDAP authentication, user credentials are never stored by ServiceDesk Plus — authentication is delegated to Active Directory/Entra ID. Service account credentials used by ServiceDesk Plus (e.g. for LDAP bind, mail, API integrations) are stored in a secrets manager or encrypted configuration store, not in plain-text configuration files."
+              },
+              {
+                "uuid": "8e784ff3-4065-4fc7-a5b4-283c7ffa8f85",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for all ServiceDesk Plus administrator accounts (SDPlus Administrator role and all custom roles with administrator-level access). MFA is enforced either via: ServiceDesk Plus's built-in MFA (TOTP/authenticator app, where supported by the deployed version) or by integrating ServiceDesk Plus with Active Directory/Entra ID and enforcing MFA via Conditional Access for all administrator accounts before SAML/OAuth SSO token issuance to ServiceDesk Plus."
+              },
+              {
+                "uuid": "a21f2dc6-3d77-40c9-82fc-d4b1071adbcd",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all unprivileged ServiceDesk Plus users (technicians, end users with self-service portal access). MFA is enforced via ServiceDesk Plus's SAML 2.0 SSO integration with Microsoft Entra ID, which applies Conditional Access MFA policies to all ServiceDesk Plus application access regardless of access path (direct URL, web portal, mobile app). Users who attempt to authenticate via the ServiceDesk Plus local login form (bypassing SSO) are blocked by policy."
+              },
+              {
+                "uuid": "04d49fec-5087-43ed-83d0-fd694994a89c",
+                "control-id": "ism-1504",
+                "description": "Multi-factor authentication is used for all user and administrator access to ServiceDesk Plus, which processes sensitive organisational data including hardware asset inventory, change request details, incident data, and service desk communications. MFA is enforced at the identity provider (Microsoft Entra ID via SAML SSO) for all access sessions to the ServiceDesk Plus technician portal, self-service portal, and REST API access using OAuth tokens."
+              },
+              {
+                "uuid": "170fc3b1-9626-4b6e-ac26-c790e73fc1d2",
+                "control-id": "ism-1872",
+                "description": "Where ServiceDesk Plus is accessed via Microsoft Entra ID SSO, MFA uses phishing-resistant methods enforced via Entra Conditional Access Authentication Strength: FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication. SMS OTP and voice call MFA are not used for ServiceDesk Plus access. For REST API integrations, OAuth 2.0 client credentials flow with certificate-based client authentication is used rather than shared secret tokens where technically feasible."
+              },
+              {
+                "uuid": "33f54f3b-3dc3-494a-8345-d0c2ddd6580f",
+                "control-id": "ism-1919",
+                "description": "All authentication methods that do not support MFA are disabled for ServiceDesk Plus access. Specifically: the ServiceDesk Plus local authentication form (username + password without MFA) is disabled for all user and administrator accounts once SSO is configured; only SAML 2.0 SSO (with Entra ID Conditional Access enforcing MFA) is permitted for interactive login. Break glass accounts (local admin accounts used when SSO is unavailable) are subject to compensating controls: access is logged, alerted, and the accounts are secured with long random passwords managed in a PAM vault."
+              },
+              {
+                "uuid": "d1324d84-7193-4104-967d-9242f3df35af",
+                "control-id": "ism-1683",
+                "description": "Successful and unsuccessful MFA authentication events for ServiceDesk Plus are centrally logged. Entra ID sign-in logs capture all SAML SSO authentication events (including MFA success/failure, Conditional Access policy decisions) and are forwarded to the SIEM. Failed authentication attempts (incorrect MFA, account lockout triggers) are alerted on for brute force detection. ServiceDesk Plus application-level login success and failure events are also forwarded to the SIEM."
+              },
+              {
+                "uuid": "aa5afb80-d715-4d67-a22b-70a4f93b165a",
+                "control-id": "ism-0428",
+                "description": "ServiceDesk Plus is configured with an idle session timeout that: activates after a maximum of 15 minutes of user inactivity (configured in Admin > General > Login Settings > Session Timeout); blocks access to all session content; requires users to re-authenticate (via SSO MFA re-prompt) to resume the session; and cannot be disabled by standard users. Overall session lifetime is configured to a maximum of 12 hours after which re-authentication is required regardless of activity. Session tokens are invalidated server-side on logout — passive session token expiry alone is not relied upon."
+              },
+              {
+                "uuid": "7592aa71-647f-476a-924e-4f2200080154",
+                "control-id": "ism-0421",
+                "description": "Where local ServiceDesk Plus authentication is used (e.g. for break glass administrator accounts when SSO is unavailable), passwords are a minimum of 15 characters for OFFICIAL: Sensitive and PROTECTED systems. Password complexity requirements (upper case, lower case, digit, special character) are configured in ServiceDesk Plus's local password policy settings. Break glass account passwords are randomly generated (minimum 20 characters), stored in the organisation's PAM vault, and rotated after each use."
+              },
+              {
+                "uuid": "75756f22-0159-46f5-8c48-ec97be2e3546",
+                "control-id": "ism-1559",
+                "description": "Where ServiceDesk Plus is integrated with MFA and a shorter factor (PIN/passphrase) is used as the knowledge factor, a minimum length of 6 characters is enforced. This applies to any TOTP-based MFA backup codes or PIN-based unlock configured within the ServiceDesk Plus MFA settings. Where Entra ID SSO is the primary authentication mechanism, password length and complexity are governed by the Entra ID password policy (minimum 8 characters; recommended organisational policy of 15+ characters for all accounts)."
+              },
+              {
+                "uuid": "0d752c58-89de-4348-88db-ce254a4db7fb",
+                "control-id": "ism-0414",
+                "description": "All personnel granted access to ServiceDesk Plus are uniquely identifiable. User accounts are provisioned via Active Directory / Entra ID synchronisation (LDAP import or automated Joiner/Mover/Leaver via the ServiceDesk Plus AD synchronisation feature). Each ServiceDesk Plus account maps to a named individual — generic or shared accounts are not used for interactive access. Accounts are de-provisioned automatically or within 24 hours of an employee offboarding event triggering the identity lifecycle management process."
+              },
+              {
+                "uuid": "c2b6492d-e321-48e8-8910-f5d979b083b5",
+                "control-id": "ism-0415",
+                "description": "The use of shared ServiceDesk Plus accounts is strictly controlled. The built-in 'admin' account (default administrator) is renamed and used only as a break glass account. No shared functional accounts are used for day-to-day technician or end-user access. Where a service account is required for REST API integration with another tool, it is documented, assigned to a specific integration, given minimum required permissions, and its API key usage is logged. Shared account usage is reported in the monthly access review."
+              },
+              {
+                "uuid": "26604be1-2751-4aec-be14-084283916d43",
+                "control-id": "ism-0445",
+                "description": "ServiceDesk Plus administrators are assigned dedicated administrator accounts separate from their standard technician accounts. The administrator role (SDAdmin or equivalent custom role with full administrative access) is used only for administrative tasks (configuration, user management, integration management, reporting configuration). Day-to-day ticket handling and IT service management work is performed using the technician-level account. Administrator account creation, modification, and deletion events are logged and alerted."
+              },
+              {
+                "uuid": "87eb58af-c034-4d56-a5cc-3d7e31bdda76",
+                "control-id": "ism-1263",
+                "description": "Unique administrator accounts are used for specific administrative functions within ServiceDesk Plus. Where multiple administrative domains exist (e.g. a ServiceDesk Plus administrator for user management vs. a technician lead for SLA configuration), separate roles with appropriate scope are created and assigned to separate accounts. The ServiceDesk Plus role-based access control (RBAC) module is used to define granular permission sets per administrator function, and each administrator account is assigned the minimum permissions required for their role."
+              },
+              {
+                "uuid": "9690810c-c2f3-4f03-b49f-650045f91396",
+                "control-id": "ism-1507",
+                "description": "Requests for privileged (administrator or elevated technician) access to ServiceDesk Plus are validated before provisioning. Requests must include: the specific role required, the business justification, the relevant ServiceDesk Plus modules the role grants access to, and management approval. Access requests are processed through the organisation's formal access request process. Approvals are recorded and retained for audit. Privileged access is provisioned in ServiceDesk Plus only after approval is confirmed."
+              },
+              {
+                "uuid": "50122ca5-b16a-471a-81d3-86be5507f1c8",
+                "control-id": "ism-1508",
+                "description": "Access to ServiceDesk Plus is configured on the principle of least privilege. Role definitions are reviewed to ensure each role grants only the permissions necessary for the associated job function: helpdesk technicians have access to tickets in their assigned groups only; change managers have access to the change management module without access to system administration; requesters (end users) have self-service portal access only. The ServiceDesk Plus RBAC configuration is reviewed at least annually. Over-privileged roles are remediated."
+              },
+              {
+                "uuid": "9987e28c-6dc0-4a3e-a032-5ddcee86e465",
+                "control-id": "ism-1175",
+                "description": "ServiceDesk Plus administrator accounts are not used for general internet browsing, email access, or non-administrative tasks. ServiceDesk Plus is administered via a dedicated management workstation or jump server on a restricted network segment where general internet access is blocked. The administrator account's SSO identity in Entra ID (the privileged admin account) has Conditional Access policies restricting sign-on to approved management devices only, with compliant device requirement enforced."
+              },
+              {
+                "uuid": "e9cba5cb-a16f-44a1-9673-21fc19ec59d5",
+                "control-id": "ism-1914",
+                "description": "An approved configuration baseline for the ServiceDesk Plus application is developed, documented, and maintained. The baseline defines: approved HTTPS/TLS settings, enabled modules (ITSM, asset management, change management), SSO configuration, MFA requirements, session timeout values, API access configuration, integration settings, password policy, role definitions, and SIEM integration. The baseline is version-controlled and implemented at initial deployment and after each major upgrade. Deviations from the baseline require a change request."
+              },
+              {
+                "uuid": "201c7db3-b84e-4074-a456-beaf60d1ca63",
+                "control-id": "ism-1913",
+                "description": "Approved configurations for the IT equipment hosting ServiceDesk Plus — the application server, database server, and reverse proxy/WAF — are developed, implemented, and maintained. These host configurations follow the organisation's Windows Server 2022 or Linux hardening baseline (ASD guidance + vendor guidance). ServiceDesk Plus-specific host configuration includes: removing default Tomcat manager applications, disabling Tomcat remote access from untrusted networks, restricting file system permissions on the ServiceDesk Plus installation directory, and removing sample web applications from the Tomcat webapps directory."
+              },
+              {
+                "uuid": "1885832c-74a6-44b1-b494-3aa8397a2344",
+                "control-id": "ism-1509",
+                "description": "Privileged access events in ServiceDesk Plus are centrally logged and monitored, including: administrator logins and logouts, administrator role changes, user account creation and deletion, role assignment and removal, configuration changes (Admin module changes), API key generation, integration configuration changes, and ServiceDesk Plus service restart or reconfiguration events. These events are forwarded from the ServiceDesk Plus audit log and the underlying server's Windows/Linux security event log to the SIEM. Alerts are configured for new administrator account creation and unexpected configuration changes."
+              },
+              {
+                "uuid": "53935b2e-1f2f-4a88-a6d2-635360ac5fa9",
+                "control-id": "ism-1566",
+                "description": "Standard (technician and requester) user access in ServiceDesk Plus is centrally logged. Logged events include: user logon and logoff, ticket creation, modification, closure, deletion and ownership changes; asset record creation, update and deletion; change request creation, approval, and implementation; report generation and export; and self-service portal access. The ServiceDesk Plus audit trail (Admin > Audit Trail or equivalent) is exported to the SIEM. Bulk data exports and report downloads are specifically logged and alerted on."
+              },
+              {
+                "uuid": "88cb59da-8a47-4668-9201-4882892a3040",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, or equivalent) collects and retains security-relevant logs from ServiceDesk Plus and its underlying infrastructure. Log sources include: ServiceDesk Plus application audit log (syslog or API-based export), underlying Windows Server or Linux OS security event logs, web server access logs (including WAF/reverse proxy logs), database audit logs, and Entra ID sign-in logs (for SSO authentication events). Log retention meets the organisation's minimum retention period (typically 7 years for ISM-classified systems)."
+              },
+              {
+                "uuid": "092b5914-6d8e-46b4-9e54-df9fc6ef767b",
+                "control-id": "ism-0585",
+                "description": "For each event logged from ServiceDesk Plus and its infrastructure, the following details are captured: date and time (UTC, NTP-synchronised), relevant user account (UPN or ServiceDesk Plus technician ID), relevant object (ticket ID, asset record ID, change request ID, configuration item), event description (action taken), and the source IP address or device name. ServiceDesk Plus audit log format is verified to capture all required fields during initial implementation and after each major upgrade."
+              },
+              {
+                "uuid": "54603be7-5bf7-4e0c-bfaa-0ab3f0e17af2",
+                "control-id": "ism-1863",
+                "description": "The ServiceDesk Plus administrative interface (Admin module, database management console, and underlying server management interfaces — RDP, SSH, Windows Admin Center) is not directly exposed to the internet. Administrative access to ServiceDesk Plus and its hosting infrastructure is restricted to the organisation's internal management network or via an approved VPN/jump server solution. Direct external access to TCP port 8080/8443 (default ServiceDesk Plus ports) from the internet is blocked at the perimeter firewall. Only the WAF/reverse proxy endpoint is internet-reachable."
+              },
+              {
+                "uuid": "29368f7b-485b-422e-b6af-69aafa9de791",
+                "control-id": "ism-1416",
+                "description": "A host-based firewall is implemented on the ServiceDesk Plus application server and database server. The application server firewall permits inbound: TCP 443 (HTTPS, from the WAF/reverse proxy only), TCP 8080/8443 (from the management network only). The database server firewall permits inbound: TCP 5432 (PostgreSQL) or TCP 1433 (MSSQL) from the ServiceDesk Plus application server IP only. All other inbound connections are denied. Outbound connections are restricted to: LDAP/LDAPS for Active Directory integration, SMTP for email notifications, and approved REST API destinations. Firewall rules are managed via the host OS firewall and reviewed at least annually."
+              },
+              {
+                "uuid": "21a31544-a99a-4015-9b3b-f54d3a2e03bf",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus (or an approved third-party AV product) is deployed on the ServiceDesk Plus application server (Windows) with real-time protection enabled, signature-based and heuristic detection at a high level, signatures updated at least daily, and Tamper Protection enabled. For Linux-hosted ServiceDesk Plus deployments, an approved Linux antivirus product (e.g. CrowdStrike Falcon, Sophos for Linux) is deployed with equivalent capabilities. Antivirus exclusions for ServiceDesk Plus data directories are minimised and documented. AV alerts are forwarded to the SIEM."
+              },
+              {
+                "uuid": "cac78dda-27f2-44cb-bd5f-a345be09bb7d",
+                "control-id": "ism-1547",
+                "description": "Data backup processes and supporting procedures are developed, implemented, and maintained for ServiceDesk Plus. The backup procedure covers: frequency (daily incremental, weekly full), what is backed up (ServiceDesk Plus database, application data directory, configuration files, attachments store), backup storage location (separate server or cloud storage — not on the same server as the application), backup encryption requirements, retention period, and the restoration procedure including responsible personnel and estimated recovery time."
+              },
+              {
+                "uuid": "07eec6bc-9faa-468e-8dd8-17088e39b85d",
+                "control-id": "ism-1511",
+                "description": "Backups of ServiceDesk Plus data, application files, and settings are performed and retained in accordance with business continuity requirements. At minimum: daily automated backups of the ServiceDesk Plus database (using ServiceDesk Plus's built-in backup scheduler or via native database backup tools), weekly full backups retained for 13 weeks, and daily backups retained for 14 days. Backups are stored in an offsite or cloud location separate from the primary data centre. Backup jobs are monitored and failure alerts are sent to the operations team."
+              },
+              {
+                "uuid": "a6500997-dfc1-48f5-92b9-6ee54a161370",
+                "control-id": "ism-1810",
+                "description": "ServiceDesk Plus backups of the application database and data files are synchronised to enable restoration to a common point in time. The database backup and the application data directory (attachments, reports, configuration) are captured in coordinated backup jobs that run at the same time, ensuring the database state and file store are consistent at the restore point. Restoration to a common point in time is tested at least annually and after any major upgrade."
+              },
+              {
+                "uuid": "878934c0-acc0-4ab6-9253-ac43295d43f0",
+                "control-id": "ism-0912",
+                "description": "ServiceDesk Plus itself forms part of the organisation's change and configuration management capability, providing the ITSM workflow for change request submission, approval, scheduling, and post-implementation review. For ServiceDesk Plus as a managed system: a change and configuration management plan governs the ServiceDesk Plus platform itself, covering the authorised baseline configuration, the change approval process for modifications to the ServiceDesk Plus configuration (Admin module changes, workflow changes, integration changes, and upgrades), and the process for emergency changes when urgent vulnerabilities require immediate patching. All changes to the ServiceDesk Plus platform are logged in the ServiceDesk Plus change module as self-referential change records."
+              },
+              {
+                "uuid": "7e7c4f07-474a-44f6-a7cd-9fdbd8404ca5",
+                "control-id": "ism-0663",
+                "description": "Data transfer processes and procedures are developed and maintained for ServiceDesk Plus, covering: the approved mechanisms for importing/exporting ticket data, asset inventory data, and change records (CSV export, REST API, CMDB integrations); data classification requirements for exported data; handling procedures for service migration or decommissioning of ServiceDesk Plus (data extraction, format, and transfer to a successor system); and the security controls required for any data transfer (encryption in transit, logging of bulk exports). The procedures are reviewed at least annually."
+              },
+              {
+                "uuid": "b84ef6cb-8e0e-4702-852b-d50ae46105b3",
+                "control-id": "ism-1574",
+                "description": "Contractual arrangements with ManageEngine (for cloud-hosted ServiceDesk Plus Cloud) or with any third-party managed service provider operating ServiceDesk Plus document: the requirement to store ServiceDesk Plus data in a portable format that enables backup, service migration, and decommissioning without data loss. For on-premises deployments, the data portability is inherent in the database backup capability. Contractual terms are verified against this requirement prior to contract execution and at each renewal."
+              },
+              {
+                "uuid": "c7599fbf-3aaa-4121-ac78-816052aeec25",
+                "control-id": "ism-1409",
+                "description": "The operating system and bundled components of ServiceDesk Plus are hardened per ASD guidance and vendor guidance: the host OS (Windows Server 2022 or the approved Linux distribution) is hardened per the applicable organisational OS baseline; the bundled Apache Tomcat is hardened (default manager/host-manager applications removed, server information header suppressed, directory listing disabled, HTTP TRACE/TRACK methods disabled, Tomcat running under a dedicated low-privilege service account); and the bundled JRE is kept current within the vendor-supported version range. Where vendor guidance conflicts with ASD guidance, ASD guidance takes precedence."
+              },
+              {
+                "uuid": "384da578-24f2-43ea-a305-63a218682315",
+                "control-id": "ism-0917",
+                "description": "When malicious code or a security compromise is detected on the ServiceDesk Plus server or in the ServiceDesk Plus application (e.g. web shell, unauthorised data access, credential theft from the database): the affected server is isolated from the network immediately; connected storage and recently-accessed media are scanned; the database is taken offline and a forensic copy is made before any remediation; ASD's ACSC is notified where required by incident severity; the ServiceDesk Plus instance is rebuilt from a known-good backup and SOE baseline; all ServiceDesk Plus user and API credentials are rotated; and the incident is documented in the cyber security incident register with lessons-learned findings actioned."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
