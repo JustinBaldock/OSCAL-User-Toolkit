@@ -1334,6 +1334,20 @@ def build_component_oscal_entry(comp, source_href):
     if protocols:
         c["protocols"] = protocols
 
+    # Links — external references (vendor docs, CVE advisories, policy docs, etc.)
+    links = []
+    for lnk in comp.get("links", []):
+        href = lnk.get("href", "").strip()
+        rel  = lnk.get("rel",  "").strip()
+        if not href or not rel:
+            continue
+        entry = {"href": href, "rel": rel}
+        if lnk.get("text", "").strip():
+            entry["text"] = lnk["text"].strip()
+        links.append(entry)
+    if links:
+        c["links"] = links
+
     # Control implementations — only include controls with a non-empty response
     implemented = [
         {

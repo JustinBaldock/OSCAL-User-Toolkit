@@ -148,9 +148,13 @@ class ComponentTab(tk.Frame):
         self._file_version = tk.StringVar(value="1.0")
 
         # ── Component list state ──────────────────────────────────────────────
-        self._components     = []   # List of component dicts
-        self._selected_index = None # Index of the currently selected component
-        self._dirty          = False
+        self._components      = []   # List of component dicts
+        self._selected_index  = None # Index into self._components (not listbox position)
+        self._dirty           = False
+        # Filtered view: list of self._components indices currently visible in
+        # the listbox. A search or type-filter reduces this to a subset.
+        # When no filter is active this is simply [0, 1, 2, …].
+        self._filtered_indices = []
 
         # ── Control implementation state ──────────────────────────────────────
         # _ctrl_responses maps control_id → response text for the currently
@@ -441,10 +445,10 @@ class ComponentTab(tk.Frame):
     # =========================================================================
 
     def _build_component_list(self, pane):
-        """Build the left pane: component list with Add/Delete buttons."""
+        """Build the left pane: search/filter bar, component list, Add/Delete buttons."""
         C    = self._colors
         left = tk.Frame(pane, bg=C["SIDEBAR_BG"])
-        pane.add(left, minsize=240, width=280)
+        pane.add(left, minsize=240, width=300)
 
         # Heading
         hdr = tk.Frame(left, bg=C["HEADER_BG"])
@@ -452,10 +456,44 @@ class ComponentTab(tk.Frame):
         tk.Label(hdr, text="⚙  Components", bg=C["HEADER_BG"], fg=C["ACCENT"],
                  font=("Helvetica", 11, "bold"), anchor="w",
                  ).pack(side="left", padx=10, pady=8)
+        # Component count label (top-right of header)
+        self._comp_count_lbl = tk.Label(
+            hdr, text="", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9),
+        )
+        self._comp_count_lbl.pack(side="right", padx=8)
+
+        # ── Search box ────────────────────────────────────────────────────────
+        search_row = tk.Frame(left, bg=C["SIDEBAR_BG"])
+        search_row.pack(fill="x", padx=8, pady=(6, 2))
+        tk.Label(search_row, text="🔍", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(side="left")
+        self._comp_search_var = tk.StringVar()
+        self._comp_search_var.trace_add("write", self._on_comp_filter_changed)
+        tk.Entry(
+            search_row, textvariable=self._comp_search_var,
+            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+            relief="flat", font=("Helvetica", 10),
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        ).pack(side="left", fill="x", expand=True, ipady=3, padx=(4, 0))
+
+        # ── Type filter ───────────────────────────────────────────────────────
+        type_row = tk.Frame(left, bg=C["SIDEBAR_BG"])
+        type_row.pack(fill="x", padx=8, pady=(2, 4))
+        tk.Label(type_row, text="Type:", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9)).pack(side="left")
+        self._comp_type_filter_var = tk.StringVar(value="all")
+        self._comp_type_filter_var.trace_add("write", self._on_comp_filter_changed)
+        self._comp_type_combo = ttk.Combobox(
+            type_row, textvariable=self._comp_type_filter_var,
+            values=["all"] + COMPONENT_TYPES,
+            state="readonly", width=18,
+        )
+        self._comp_type_combo.pack(side="left", padx=(4, 0))
 
         # Add / Delete buttons
         btn_row = tk.Frame(left, bg=C["SIDEBAR_BG"])
-        btn_row.pack(fill="x", padx=8, pady=6)
+        btn_row.pack(fill="x", padx=8, pady=(2, 4))
         tk.Button(btn_row, text="＋  Add Component",
                   command=self._add_component,
                   bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 10, "bold"),
@@ -783,18 +821,59 @@ class ComponentTab(tk.Frame):
         self._proto_tree.pack(fill="x", padx=8, pady=(0, 8))
 
         # =====================================================================
-        # SECTION 7 — REMARKS
+        # SECTION 7 — LINKS
         # =====================================================================
-        section("7 ·  Remarks  (optional)")
+        section("7 ·  Links  (optional)")
+        tk.Label(
+            parent,
+            text="  External references: vendor documentation, CVE advisories,\n"
+                 "  configuration baselines, policy documents, and related resources.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        ).pack(anchor="w", padx=20)
+
+        link_frame = tk.Frame(parent, bg=C["CARD_BG"],
+                              highlightthickness=1,
+                              highlightbackground=C["HEADER_BG"])
+        link_frame.pack(fill="x", padx=20, pady=6)
+        link_btn = tk.Frame(link_frame, bg=C["CARD_BG"])
+        link_btn.pack(fill="x", padx=8, pady=6)
+        tk.Button(link_btn, text="＋  Add Link",
+                  command=self._add_link,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(link_btn, text="✕  Remove Selected",
+                  command=self._remove_link,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
+
+        self._link_tree = ttk.Treeview(
+            link_frame, columns=("rel", "href", "text"),
+            show="headings", height=4, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("rel",  "Relationship", 160, False),
+            ("href", "URL / Reference", 260, False),
+            ("text", "Label",         180, True),
+        ]:
+            self._link_tree.heading(col, text=heading, anchor="w")
+            self._link_tree.column(col, width=w, anchor="w", stretch=stretch)
+        self._link_tree.pack(fill="x", padx=8, pady=(0, 8))
+
+        # =====================================================================
+        # SECTION 8 — REMARKS
+        # =====================================================================
+        section("8 ·  Remarks  (optional)")
         tk.Label(parent, text="  Additional notes about this component.",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=20)
         self._v_remarks_text = textbox("", height=3)
 
         # =====================================================================
-        # SECTION 8 — CONTROL IMPLEMENTATIONS
+        # SECTION 9 — CONTROL IMPLEMENTATIONS
         # =====================================================================
-        section("8 ·  Control Implementations")
+        section("9 ·  Control Implementations")
         tk.Label(
             parent,
             text="  Select a control from the list and describe how this component\n"
@@ -1045,26 +1124,76 @@ class ComponentTab(tk.Frame):
             self._file_title.set("")
 
         # ── Update the matching Listbox entry in real time ────────────────────
-        if self._selected_index is not None:
+        if self._selected_index is not None and self._selected_index in self._filtered_indices:
             title   = comp_title or "(untitled)"
             display = f"{title}  [{comp_type}]" if comp_type else title
-            self._comp_listbox.delete(self._selected_index)
-            self._comp_listbox.insert(self._selected_index, display)
-            self._comp_listbox.selection_set(self._selected_index)
-            self._comp_listbox.see(self._selected_index)
+            list_pos = self._filtered_indices.index(self._selected_index)
+            self._comp_listbox.delete(list_pos)
+            self._comp_listbox.insert(list_pos, display)
+            self._comp_listbox.selection_set(list_pos)
+            self._comp_listbox.see(list_pos)
 
     # =========================================================================
     # COMPONENT LIST MANAGEMENT
     # =========================================================================
 
+    # ── Filter helpers ────────────────────────────────────────────────────────
+
+    def _on_comp_filter_changed(self, *_args):
+        """Called whenever the search text or type-filter combobox changes."""
+        self._refresh_list()
+
+    def _build_filtered_indices(self):
+        """
+        Return the subset of self._components indices that match the current
+        search text and type filter.
+        """
+        search = self._comp_search_var.get().lower().strip() if hasattr(self, "_comp_search_var") else ""
+        type_f = self._comp_type_filter_var.get() if hasattr(self, "_comp_type_filter_var") else "all"
+
+        result = []
+        for i, comp in enumerate(self._components):
+            # Type filter
+            if type_f and type_f != "all" and comp.get("type", "") != type_f:
+                continue
+            # Text search: match title, type, or description
+            if search:
+                haystack = " ".join([
+                    comp.get("title", ""),
+                    comp.get("type", ""),
+                    comp.get("description", ""),
+                ]).lower()
+                if search not in haystack:
+                    continue
+            result.append(i)
+        return result
+
     def _refresh_list(self):
-        """Rebuild the Listbox from self._components."""
+        """Rebuild the Listbox from self._components, applying any active filter."""
+        self._filtered_indices = self._build_filtered_indices()
+
         self._comp_listbox.delete(0, "end")
-        for comp in self._components:
+        for idx in self._filtered_indices:
+            comp    = self._components[idx]
             title   = comp.get("title", "").strip() or "(untitled)"
             c_type  = comp.get("type", "")
             display = f"{title}  [{c_type}]" if c_type else title
             self._comp_listbox.insert("end", display)
+
+        # Update the count label
+        total    = len(self._components)
+        showing  = len(self._filtered_indices)
+        if hasattr(self, "_comp_count_lbl"):
+            if showing == total:
+                self._comp_count_lbl.config(text=f"{total}")
+            else:
+                self._comp_count_lbl.config(text=f"{showing} / {total}")
+
+        # Re-select the currently selected component if it is still visible
+        if self._selected_index is not None and self._selected_index in self._filtered_indices:
+            pos = self._filtered_indices.index(self._selected_index)
+            self._comp_listbox.selection_set(pos)
+            self._comp_listbox.see(pos)
 
     def _on_list_select(self, _event=None):
         """
@@ -1074,7 +1203,11 @@ class ComponentTab(tk.Frame):
         sel = self._comp_listbox.curselection()
         if not sel:
             return
-        new_index = int(sel[0])
+        # Map the listbox display position to the actual components index
+        list_pos  = int(sel[0])
+        if list_pos >= len(self._filtered_indices):
+            return
+        new_index = self._filtered_indices[list_pos]
 
         # Save any pending changes from the previously selected component
         if self._selected_index is not None:
@@ -1098,16 +1231,26 @@ class ComponentTab(tk.Frame):
             "props":           [],
             "roles":           [],
             "protocols":       [],
+            "links":           [],
             "ctrl_responses":  {},   # {control_id: description_string}
         }
         self._components.append(new_comp)
         self._dirty = True
+
+        # Clear filters so the new component is immediately visible
+        if hasattr(self, "_comp_search_var"):
+            self._comp_search_var.set("")
+        if hasattr(self, "_comp_type_filter_var"):
+            self._comp_type_filter_var.set("all")
+
         self._refresh_list()
 
         new_index = len(self._components) - 1
         self._comp_listbox.selection_clear(0, "end")
-        self._comp_listbox.selection_set(new_index)
-        self._comp_listbox.see(new_index)
+        # new_index is last in _filtered_indices when no filter is active
+        list_pos = self._filtered_indices.index(new_index) if new_index in self._filtered_indices else 0
+        self._comp_listbox.selection_set(list_pos)
+        self._comp_listbox.see(list_pos)
 
         if self._selected_index is not None:
             self._collect_into(self._selected_index)
@@ -1194,6 +1337,15 @@ class ComponentTab(tk.Frame):
                 proto.get("name", ""),
                 proto.get("title", ""),
                 self._format_port_ranges(proto.get("port_ranges", [])),
+            ))
+
+        # ── Links table ───────────────────────────────────────────────────────
+        self._link_tree.delete(*self._link_tree.get_children())
+        for link in comp.get("links", []):
+            self._link_tree.insert("", "end", values=(
+                link.get("rel", ""),
+                link.get("href", ""),
+                link.get("text", ""),
             ))
 
         # ── Control responses ─────────────────────────────────────────────────
@@ -1921,6 +2073,155 @@ class ComponentTab(tk.Frame):
         return result if result else None
 
     # =========================================================================
+    # LINKS — Section 7
+    # =========================================================================
+
+    # Relationship values defined by the OSCAL component-definition schema plus
+    # common extension values used in practice.
+    _LINK_REL_VALUES = [
+        "reference",
+        "vendor-documentation",
+        "security-advisory",
+        "configuration-baseline",
+        "policy",
+        "homepage",
+        "related",
+        "dependency",
+        "required-by",
+    ]
+
+    def _add_link(self):
+        """Show the link dialog and add the result to the links table."""
+        if self._selected_index is None:
+            messagebox.showinfo("No component",
+                                "Please select or add a component first.")
+            return
+        result = self._link_dialog()
+        if not result:
+            return
+        self._components[self._selected_index].setdefault("links", []).append(result)
+        self._link_tree.insert("", "end", values=(
+            result["rel"], result["href"], result.get("text", "")
+        ))
+        self._dirty = True
+
+    def _remove_link(self):
+        """Remove the selected link row."""
+        if self._selected_index is None:
+            return
+        sel = self._link_tree.selection()
+        if not sel:
+            return
+        idx = self._link_tree.index(sel[0])
+        links = self._components[self._selected_index].setdefault("links", [])
+        if 0 <= idx < len(links):
+            links.pop(idx)
+        self._link_tree.delete(sel[0])
+        self._dirty = True
+
+    def _link_dialog(self, existing=None):
+        """
+        Show a modal dialog for adding or editing a link.
+        Returns a link dict {rel, href, text} or None if cancelled.
+        """
+        C   = self._colors
+        dlg = self._make_dialog("Add Link", width=520)
+
+        tk.Label(dlg,
+                 text="Add an external reference — vendor docs, CVE advisories,\n"
+                      "configuration baselines, policy documents, or related resources.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20, pady=(10, 6))
+
+        # Relationship (rel)
+        row1 = tk.Frame(dlg, bg=C["BG"])
+        row1.pack(fill="x", padx=20, pady=4)
+        tk.Label(row1, text="Relationship *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+        v_rel = tk.StringVar(value=(existing or {}).get("rel", self._LINK_REL_VALUES[0]))
+        ttk.Combobox(row1, textvariable=v_rel, values=self._LINK_REL_VALUES,
+                     state="normal", width=28).pack(side="left")
+
+        # Relationship hint label — updates as the user changes rel
+        hint_lbl = tk.Label(dlg, text="", bg=C["BG"], fg=C["SUBTEXT"],
+                            font=("Helvetica", 9, "italic"))
+        hint_lbl.pack(anchor="w", padx=20)
+
+        _REL_HINTS = {
+            "reference":             "A general reference to supporting documentation.",
+            "vendor-documentation":  "Official vendor product documentation or user guide.",
+            "security-advisory":     "CVE advisory, vendor security bulletin, or CERT notice.",
+            "configuration-baseline":"CIS Benchmark, ASD hardening guide, or DISA STIG.",
+            "policy":                "An organisational policy document.",
+            "homepage":              "The product or project home page.",
+            "related":               "A related component, system, or resource.",
+            "dependency":            "A dependency this component requires.",
+            "required-by":           "A component or system that requires this component.",
+        }
+
+        def _update_hint(*_):
+            hint_lbl.config(text=_REL_HINTS.get(v_rel.get(), ""))
+        v_rel.trace_add("write", _update_hint)
+        _update_hint()
+
+        # URL / href
+        row2 = tk.Frame(dlg, bg=C["BG"])
+        row2.pack(fill="x", padx=20, pady=4)
+        tk.Label(row2, text="URL / Reference *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+        v_href = tk.StringVar(value=(existing or {}).get("href", "https://"))
+        tk.Entry(row2, textvariable=v_href, width=38,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3,
+                                                          fill="x", expand=True)
+
+        tk.Label(dlg,
+                 text="  Use a full URL (https://...) for external links, or a relative\n"
+                      "  path / fragment (#uuid) for internal back-matter references.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 8, "italic"),
+                 ).pack(anchor="w", padx=20)
+
+        # Display text
+        row3 = tk.Frame(dlg, bg=C["BG"])
+        row3.pack(fill="x", padx=20, pady=4)
+        tk.Label(row3, text="Label / Text", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+        v_text = tk.StringVar(value=(existing or {}).get("text", ""))
+        tk.Entry(row3, textvariable=v_text, width=38,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3,
+                                                          fill="x", expand=True)
+
+        result = {}
+
+        def _ok():
+            href = v_href.get().strip()
+            rel  = v_rel.get().strip()
+            if not rel:
+                messagebox.showwarning("Required", "Relationship is required.")
+                return
+            if not href:
+                messagebox.showwarning("Required", "URL / Reference is required.")
+                return
+            result["rel"]  = rel
+            result["href"] = href
+            result["text"] = v_text.get().strip()
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=14)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    # =========================================================================
     # OSCAL JSON CONVERSION
     # =========================================================================
 
@@ -2030,6 +2331,17 @@ class ComponentTab(tk.Frame):
                 "port_ranges": prs,
             })
 
+        # Parse links
+        links = [
+            {
+                "href": lnk.get("href", ""),
+                "rel":  lnk.get("rel",  "reference"),
+                "text": lnk.get("text", ""),
+            }
+            for lnk in c.get("links", [])
+            if lnk.get("href", "").strip()
+        ]
+
         # Flatten OSCAL control-implementations back to {control_id: description}
         ctrl_responses = {}
         for ci in c.get("control-implementations", []):
@@ -2051,6 +2363,7 @@ class ComponentTab(tk.Frame):
             "props":          user_props,
             "roles":          roles,
             "protocols":      protocols,
+            "links":          links,
             "ctrl_responses": ctrl_responses,
         }
 
@@ -2246,6 +2559,11 @@ class ComponentTab(tk.Frame):
         """
         self._selected_index = None
         self._ctrl_responses = {}
+        # Reset filters so all newly loaded components are visible
+        if hasattr(self, "_comp_search_var"):
+            self._comp_search_var.set("")
+        if hasattr(self, "_comp_type_filter_var"):
+            self._comp_type_filter_var.set("all")
         self._refresh_list()
         self._show_form_placeholder()
 
@@ -2280,13 +2598,18 @@ class ComponentTab(tk.Frame):
             ):
                 return
 
-        self._file_uuid      = new_uuid()
+        self._file_uuid        = new_uuid()
         self._file_title.set("")
         self._file_version.set("1.0")
-        self._components     = []
-        self._selected_index = None
-        self._ctrl_responses = {}
-        self._dirty          = False
+        self._components       = []
+        self._filtered_indices = []
+        self._selected_index   = None
+        self._ctrl_responses   = {}
+        self._dirty            = False
+        if hasattr(self, "_comp_search_var"):
+            self._comp_search_var.set("")
+        if hasattr(self, "_comp_type_filter_var"):
+            self._comp_type_filter_var.set("all")
 
         self._file_title_lbl.config(
             text="(enter component type and title below)",
