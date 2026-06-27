@@ -1,0 +1,111 @@
+{
+  "component-definition": {
+    "uuid": "6aa1ea6b-2a22-4d79-9491-39bbaa9a51d6",
+    "metadata": {
+      "title": "SIEM (Microsoft Sentinel) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "0b3e4ec7-8c10-46be-b4a7-e28955a4f6d1",
+        "type": "software",
+        "title": "SIEM (Microsoft Sentinel)",
+        "description": "Microsoft Sentinel is the organisation's cloud-native Security Information and Event Management (SIEM) and Security Orchestration, Automation and Response (SOAR) platform. Sentinel ingests security logs from all organisational systems (Windows Event Forwarding, Entra ID sign-in logs, Defender for Endpoint telemetry, network firewall logs, proxy logs, SQL Server Audit logs) and applies analytics rules for threat detection, alerting, and automated response playbooks.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "platform",
+            "value": "Microsoft Sentinel (Azure cloud-native SIEM/SOAR)"
+          },
+          {
+            "name": "data-connectors",
+            "value": "MDE, Entra ID, Microsoft 365, Windows Event Forwarding, syslog, custom API"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "d471e94d-cf02-4024-a683-ff3e118a84ae",
+            "name": "https",
+            "title": "HTTPS \u2014 Sentinel portal access and REST API (log ingestion, analytics)",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "a73dafc9-4ac9-4569-bbc9-3cab98337248",
+            "name": "syslog",
+            "title": "Syslog \u2014 Log ingestion from Linux hosts, network devices, and appliances",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              },
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "00ffec5b-2b92-4842-bf5b-bdcf967ca0f1",
+            "name": "wef",
+            "title": "Windows Event Forwarding \u2014 WEF collector ingestion of Windows event logs",
+            "port-ranges": [
+              {
+                "start": 5985,
+                "end": 5985,
+                "transport": "TCP",
+                "remarks": "WEF over WinRM HTTP"
+              },
+              {
+                "start": 5986,
+                "end": 5986,
+                "transport": "TCP",
+                "remarks": "WEF over WinRM HTTPS (preferred)"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "edeec213-51f2-43f9-878c-6b23cdad73c8",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for SIEM (Microsoft Sentinel).",
+            "implemented-requirements": [
+              {
+                "uuid": "c2c3d47d-9ecd-4173-9274-40a3b262d7c4",
+                "control-id": "ism-1405",
+                "description": "Microsoft Sentinel provides the organisation's centralised event logging facility, collecting and retaining security-relevant logs from all in-scope systems. Data connectors are configured for: Microsoft Defender for Endpoint, Microsoft Entra ID sign-in and audit logs, Microsoft 365 Unified Audit Log, Windows Security events (via Azure Monitor Agent or Windows Event Forwarding), network firewall logs, web proxy logs, and application audit logs. Log retention is configured to meet the organisation's minimum retention requirements."
+              },
+              {
+                "uuid": "12304556-8c70-44b5-bbe2-b954b40eff14",
+                "control-id": "ism-0585",
+                "description": "Microsoft Sentinel analytics rules and workbooks verify that ingested log sources include the required event detail fields: timestamp, user or process identity, relevant filename or object, event description, and source device. Log sources missing required fields are identified and their collection configuration is updated to capture the missing data."
+              },
+              {
+                "uuid": "3c058cca-0b5a-40d7-b875-b3d36c09d128",
+                "control-id": "ism-1509",
+                "description": "Microsoft Sentinel analytics rules are configured to detect and alert on privileged access events including: new privileged account creation, changes to privileged group membership (Domain Admins, Entra Global Admin), privileged access outside approved hours, failed privileged authentication spikes, and use of break glass accounts. Alerts are routed to the security operations team via Microsoft Teams or email."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

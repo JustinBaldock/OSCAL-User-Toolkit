@@ -1,0 +1,117 @@
+{
+  "component-definition": {
+    "uuid": "c64017f6-b372-4c6b-a2a0-72e2d7ee6495",
+    "metadata": {
+      "title": "Uninterruptible Power Supply (UPS) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "92b9ee34-7129-44e2-b58b-bd4c67155077",
+        "type": "hardware",
+        "title": "Uninterruptible Power Supply (UPS)",
+        "description": "Rack-mounted uninterruptible power supplies (UPS) providing conditioned power and battery backup for server room IT equipment. Managed UPS units provide SNMP-based monitoring of battery status, load, and power events, and trigger graceful automated shutdown of connected servers when battery runtime is low.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "APC / Eaton / Vertiv / equivalent"
+          },
+          {
+            "name": "type",
+            "value": "Online Double-Conversion UPS"
+          },
+          {
+            "name": "management",
+            "value": "SNMP network management card; USB/serial for local management"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "f5122d03-6f99-45e7-a83f-da5c3047895e",
+            "name": "snmp",
+            "title": "SNMP \u2014 UPS monitoring (battery status, load, power events, alerts)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP",
+                "remarks": "SNMP traps to NMS on power events"
+              }
+            ]
+          },
+          {
+            "uuid": "6f5de634-0860-4842-8f73-8a893e6b252b",
+            "name": "https",
+            "title": "HTTPS \u2014 Web-based UPS management card interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "c7f9f547-45a1-4198-b996-cf607b49cdf9",
+            "name": "ssh",
+            "title": "SSH \u2014 CLI access to UPS network management card",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "571cbf7b-f31e-4944-ab19-150be9e0b5cc",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation for UPS event log timestamps",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "96dc0475-de27-48be-b496-057d7a3b4efb",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Uninterruptible Power Supply (UPS).",
+            "implemented-requirements": [
+              {
+                "uuid": "91f7aaa6-c325-483d-b5ba-38395a963ef5",
+                "control-id": "ism-1913",
+                "description": "An approved configuration baseline is maintained for UPS network management cards, covering: firmware version, disabled default credentials (default username/password changed or removed), HTTPS-only management access (HTTP disabled), SSH-only CLI access (Telnet disabled), SNMP community strings changed from defaults, SNMPv3 preferred over SNMPv1/v2c, and NTP synchronisation configured. Firmware is patched when vendor releases security updates."
+              },
+              {
+                "uuid": "1abd9bec-ea14-4616-a4a2-e4fdfb5c49df",
+                "control-id": "ism-1974",
+                "description": "UPS units are installed in locked server rooms or communications rooms with controlled physical access. Physical access to UPS units (which could allow an attacker to trigger a power event) is restricted to authorised data centre personnel only."
+              },
+              {
+                "uuid": "e42688f9-c065-4096-a2aa-5d76e54e728b",
+                "control-id": "ism-1405",
+                "description": "UPS power events (power loss, battery low, bypass, overload, shutdown notification) are forwarded via SNMP traps and syslog to the SIEM and network monitoring system for alerting and retention."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

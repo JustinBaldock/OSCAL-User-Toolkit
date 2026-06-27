@@ -1,0 +1,91 @@
+{
+  "component-definition": {
+    "uuid": "71ceaecf-7f16-47c2-b659-a2779dd7a4e3",
+    "metadata": {
+      "title": "Adobe Acrobat / Acrobat Reader (PDF Application) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "9716a0bb-07d7-4b49-88a3-316e5869696b",
+        "type": "software",
+        "title": "Adobe Acrobat / Acrobat Reader (PDF Application)",
+        "description": "Adobe Acrobat (for PDF creation and editing) and Adobe Acrobat Reader DC (for PDF viewing) deployed on organisation workstations requiring PDF workflow capabilities. Adobe Acrobat is kept current on the latest release, hardened per ASD guidance, and configured with Protected Mode and Protected View to sandbox PDF rendering. Acrobat Reader is deployed as the secondary PDF viewer; Microsoft Edge PDF viewer is the default for general viewing on Windows 11.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Adobe Inc."
+          },
+          {
+            "name": "version",
+            "value": "Adobe Acrobat DC / Acrobat Reader DC (latest release, Continuous track)"
+          },
+          {
+            "name": "deployment",
+            "value": "Managed via Microsoft Intune; Group Policy ADMX for settings"
+          },
+          {
+            "name": "baseline",
+            "value": "ASD hardening guidance for PDF applications"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "6d2cc07e-bd3e-4ab1-8a5d-e447f9208b5c",
+            "name": "https",
+            "title": "HTTPS \u2014 Adobe activation, update check, Acrobat Document Cloud (if enabled)",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f95f697f-0c81-4904-93a4-dc19f6963f76",
+            "name": "http",
+            "title": "HTTP \u2014 CRL/OCSP certificate validation for PDF digital signatures",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "879bbccc-11ec-4729-8187-0117e602112f",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Adobe Acrobat / Acrobat Reader (PDF Application).",
+            "implemented-requirements": [
+              {
+                "uuid": "e3c46098-a3ee-4967-977b-b51218faf7bc",
+                "control-id": "ism-1670",
+                "description": "Adobe Acrobat and Acrobat Reader are blocked from creating child processes via the Microsoft Defender for Endpoint ASR rule 'Block Adobe Reader from creating child processes' (ASR rule ID: 7674ba52\u2026) enforced in Block mode. Additionally, Protected Mode (sandbox) is enabled in Acrobat Reader, which prevents the PDF renderer from spawning processes or writing files outside the sandbox."
+              },
+              {
+                "uuid": "b6b44000-594a-452a-bc0d-cfc5ee910548",
+                "control-id": "ism-1860",
+                "description": "Adobe Acrobat and Acrobat Reader are hardened using ASD guidance and Adobe's own hardening recommendations: Protected Mode is enabled (sandbox rendering); Protected View is set to 'Files from potentially unsafe locations' or 'All files'; Enhanced Security is enabled; JavaScript is disabled for PDF files; network access for PDFs is disabled (prevent PDF from making outbound HTTP requests); and automatic Adobe cloud service connections are disabled for environments where Document Cloud is not approved. Settings are enforced via Group Policy ADMX templates and cannot be changed by standard users."
+              },
+              {
+                "uuid": "e81402f8-71d5-4ec0-b52e-54e7de964178",
+                "control-id": "ism-1691",
+                "description": "Adobe Acrobat and Acrobat Reader are kept current on the latest release via the Adobe Continuous track. Updates are deployed via Adobe Update Manager (AUSST) or Intune app update policies within 48 hours for critical security updates (CVSS 7.0+) and within two weeks for non-critical updates. Patch compliance is verified via the weekly vulnerability scan."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

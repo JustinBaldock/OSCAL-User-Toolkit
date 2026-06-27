@@ -1,0 +1,188 @@
+{
+  "component-definition": {
+    "uuid": "d2c9477b-2105-451d-be24-e5f0add738b7",
+    "metadata": {
+      "title": "Red Hat Enterprise Linux (RHEL) Server Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "96268e22-060f-4aa8-a719-59571bbfdffc",
+        "type": "operating-system",
+        "title": "Red Hat Enterprise Linux (RHEL) Server",
+        "description": "Red Hat Enterprise Linux (RHEL) 9 deployed on organisation servers hosting Linux-based workloads (web servers, application servers, containerised workloads, database servers). RHEL 9 is managed via Red Hat Satellite (or equivalent) for patch management, and hardened per CIS Benchmark for RHEL 9 and ASD guidance. SELinux is enforced in targeted policy mode.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Red Hat (IBM)"
+          },
+          {
+            "name": "version",
+            "value": "RHEL 9 (latest minor release)"
+          },
+          {
+            "name": "architecture",
+            "value": "x86-64"
+          },
+          {
+            "name": "management",
+            "value": "Red Hat Satellite / Ansible Automation Platform / SSH"
+          },
+          {
+            "name": "security-features",
+            "value": "SELinux (enforcing, targeted policy), firewalld, auditd, AIDE, FIPS mode"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "230526f5-b097-4c6b-ab39-572b02a751ec",
+            "name": "ssh",
+            "title": "SSH \u2014 Primary secure remote management and file transfer (SCP/SFTP)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "12d4fd3e-102a-4e46-85ab-65a2d0b7d5d4",
+            "name": "https",
+            "title": "HTTPS \u2014 Red Hat Satellite / Ansible Tower management, package download",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f45b8332-1080-4547-b2bd-c54cf29d9801",
+            "name": "dns",
+            "title": "DNS \u2014 Domain name resolution",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "5c56c784-fdfd-40cf-b49d-a8eab0fb156d",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation via chrony",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "b58fc71f-1431-4df2-974c-5e2c2e903dda",
+            "name": "kerberos",
+            "title": "Kerberos \u2014 Active Directory authentication (sssd/realmd AD integration)",
+            "port-ranges": [
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "UDP"
+              },
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "67092f64-786d-46dd-8e0d-aa63aa88d8a0",
+            "name": "ldap",
+            "title": "LDAP \u2014 Active Directory user/group lookups via sssd",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f7199726-336c-44bd-a83c-b36f2f5c4426",
+            "name": "ldaps",
+            "title": "LDAPS \u2014 Secure LDAP for AD integration",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "deaf85ab-9287-4ff9-a924-5c8f7343d4c6",
+            "name": "syslog",
+            "title": "Syslog \u2014 Audit and security event forwarding to SIEM (rsyslog)",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              },
+              {
+                "start": 6514,
+                "end": 6514,
+                "transport": "TCP",
+                "remarks": "Syslog over TLS"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1f600c7e-7666-44a5-b65f-c4f645c42aa6",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Red Hat Enterprise Linux (RHEL) Server.",
+            "implemented-requirements": [
+              {
+                "uuid": "91b5bdd4-a920-45f8-abf4-e8e51258dad6",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for RHEL 9 is developed and maintained based on the CIS Benchmark for RHEL 9 and ASD hardening guidance for Linux. Key hardening steps: SELinux set to enforcing (targeted policy); unnecessary services and packages removed (yum remove); firewalld enabled with default-deny; auditd configured with the CIS-recommended audit rules; AIDE file integrity monitoring configured and run nightly; FIPS 140-2 mode enabled; all setuid/setgid binaries reviewed; SSH hardened (PasswordAuthentication no, PermitRootLogin no, key-based auth only); and login banner configured. The baseline is enforced via Ansible playbooks and verified by OpenSCAP compliance scanning."
+              },
+              {
+                "uuid": "7e2c3ddd-dfb8-450a-8fcd-2524edaedd78",
+                "control-id": "ism-1409",
+                "description": "RHEL 9 servers are hardened using ASD Linux hardening guidance and the CIS Benchmark for RHEL 9. Where guidance conflicts, ASD guidance takes precedence. SSH is the sole management protocol (Telnet, rsh, and rlogin are not installed); root login via SSH is disabled; only key-based SSH authentication is permitted; password authentication is disabled for all SSH sessions; and the SSH daemon is configured with approved cipher suites and MACs only (matching ASD-approved cryptographic settings)."
+              },
+              {
+                "uuid": "74c131db-2b5b-4b06-bc8f-f44061ef0549",
+                "control-id": "ism-1693",
+                "description": "Security patches and updates for RHEL 9 packages are applied within one month of release (within 48 hours for critical patches or those with active exploits) via Red Hat Satellite or yum/dnf automated patching. Patch compliance is verified via Red Hat Satellite compliance reporting or OpenSCAP scans run at least fortnightly."
+              },
+              {
+                "uuid": "6cf65b1e-7a51-4712-ba54-05b60f454ded",
+                "control-id": "ism-1405",
+                "description": "RHEL 9 security events are centrally logged to the SIEM via rsyslog or a log agent. Auditd is configured to capture: authentication events (PAM), privilege escalation (sudo), file system changes to sensitive paths (/etc/passwd, /etc/sudoers, SSH keys), network connection events, and SELinux policy violations. All auditd events are forwarded to the SIEM in near-real time."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

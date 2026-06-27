@@ -1,0 +1,95 @@
+{
+  "component-definition": {
+    "uuid": "86da3fd3-2441-4a72-b96e-8c4c2976a798",
+    "metadata": {
+      "title": "WAN Link (Site-to-Site) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "2880699c-e3a7-4d50-8447-e8604a847abc",
+        "type": "interconnection",
+        "title": "WAN Link (Site-to-Site)",
+        "description": "Encrypted site-to-site wide area network (WAN) link connecting organisation office locations or data centres. Implemented as an MPLS or SD-WAN circuit with IPsec encryption overlay to protect data in transit between sites. Traffic between sites traverses the WAN link through the site firewalls with appropriate access control rules.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "link-type",
+            "value": "MPLS / SD-WAN with IPsec overlay"
+          },
+          {
+            "name": "encryption",
+            "value": "IPsec IKEv2 with AES-256-GCM and SHA-384"
+          },
+          {
+            "name": "authentication",
+            "value": "Certificate-based IKEv2 peer authentication (PKI certificates)"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "97730118-08fa-4616-8f60-0bb396d2296e",
+            "name": "ipsec-ike",
+            "title": "IKEv2 \u2014 IPsec key exchange and SA negotiation",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "dc3dcf5b-dfc7-485b-bbb1-51112e237899",
+            "name": "ipsec-nat-t",
+            "title": "IPsec NAT-T \u2014 IPsec encapsulation when NAT is present",
+            "port-ranges": [
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "c86f3f95-d310-4704-bb15-8855f7939bba",
+            "name": "ipsec-esp",
+            "title": "IPsec ESP \u2014 Encrypted data transport (IP protocol 50, not TCP/UDP)",
+            "port-ranges": [
+              {
+                "start": 0,
+                "end": 0,
+                "transport": "UDP",
+                "remarks": "ESP is IP protocol 50 \u2014 permit via firewall policy, not port-based rule"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "26dbaa27-b0ad-46f1-8919-3c6bb323304c",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for WAN Link (Site-to-Site).",
+            "implemented-requirements": [
+              {
+                "uuid": "b1c1cbe5-176e-4e9c-9311-e896da89b3d1",
+                "control-id": "ism-0912",
+                "description": "The WAN link configuration is managed under the organisation's change and configuration management plan. IPsec SA parameters, routing configurations, and firewall rules for the WAN link are version-controlled. Changes to WAN link configuration require approval via the ITSM change process."
+              },
+              {
+                "uuid": "2340df87-3ae3-4f8b-9073-dfa2a8259c82",
+                "control-id": "ism-1405",
+                "description": "WAN link status events (tunnel up/down, IKEv2 renegotiation failures, traffic anomalies) are logged by the site firewalls and forwarded to the SIEM. Persistent tunnel-down events trigger on-call alerts."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "component-definition": {
+    "uuid": "ef16c943-24d2-4289-8ca3-7295be569e79",
+    "metadata": {
+      "title": "Microsoft Edge (Web Browser) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "30cb91f9-6e48-4843-9c22-b6c13d881ea1",
+        "type": "software",
+        "title": "Microsoft Edge (Web Browser)",
+        "description": "Microsoft Edge (Chromium-based) is the organisation's approved web browser, deployed on all Windows 11 workstations and Windows Server 2022 instances where web access is required. Edge is managed via Group Policy and Microsoft Intune Administrative Templates, hardened per ASD's Hardening Microsoft Edge guidance and the Microsoft Edge security baseline, and kept current on the Stable channel.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "channel",
+            "value": "Stable (latest release)"
+          },
+          {
+            "name": "deployment",
+            "value": "Built into Windows 11; managed via Group Policy / Intune ADMX templates"
+          },
+          {
+            "name": "baseline",
+            "value": "ASD Hardening Microsoft Edge + Microsoft Edge Security Baseline"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "be166d8a-7eae-48a6-8a95-da7ab8892e4c",
+            "name": "https",
+            "title": "HTTPS \u2014 All web browsing and web application access",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b565ae0c-29ff-4f4e-9bcb-465627d20238",
+            "name": "http",
+            "title": "HTTP \u2014 Redirect to HTTPS; CRL/OCSP; legacy site compatibility",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "c9276332-5ed7-4db2-88af-4e1d19898668",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Microsoft Edge (Web Browser).",
+            "implemented-requirements": [
+              {
+                "uuid": "23cba748-bf1b-4d30-a982-be975701e082",
+                "control-id": "ism-1412",
+                "description": "Microsoft Edge is hardened using ASD's Hardening Microsoft Edge guidance and the Microsoft Edge Security Baseline deployed via Group Policy / Intune ADMX templates. Hardening includes: Microsoft Defender SmartScreen enabled; Enhanced Security Mode enabled for sites not in the trusted list; tracking prevention set to Strict; password saving disabled; autofill for payment and address data disabled; browser extension installation restricted to the approved set; and the Edge WebAssembly and JIT compiler restricted for untrusted sites via ESM."
+              },
+              {
+                "uuid": "10abb3f7-b8cd-4a2f-b412-63be8a0a8ce1",
+                "control-id": "ism-1585",
+                "description": "Microsoft Edge security settings are enforced via Group Policy or Intune Administrative Templates and cannot be modified by standard users. Settings managed by policy appear greyed out in the Edge Settings page and show 'Managed by your organisation'. User-accessible settings do not include override capability for SmartScreen, Enhanced Security Mode, or extension management."
+              },
+              {
+                "uuid": "dd9f22b3-53e1-4abc-b46f-276bc35cf350",
+                "control-id": "ism-1486",
+                "description": "Microsoft Edge does not support NPAPI and therefore cannot run Java applets from the internet. No Java browser plugin is present. Any web-based Java application requirement is addressed via an alternative approach (e.g. dedicated virtual application environment or replacement with a modern web application)."
+              },
+              {
+                "uuid": "2d7a1d77-fae3-4dc3-960b-54616479d79f",
+                "control-id": "ism-1485",
+                "description": "Web advertisement blocking is enforced via: Microsoft Edge Tracking Prevention set to Strict mode (via Group Policy), blocking third-party trackers and advertising scripts; and web content filtering at the proxy/DNS layer blocking known advertising and tracking domains. This reduces the attack surface for malvertising campaigns."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

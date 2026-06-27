@@ -1,0 +1,55 @@
+{
+  "component-definition": {
+    "uuid": "d4fba33d-a565-4d6a-83d5-1e23d7b6a6a8",
+    "metadata": {
+      "title": "Patch Management Policy Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e",
+        "type": "policy",
+        "title": "Patch Management Policy",
+        "description": "The patch management policy defines the organisation's requirements and processes for identifying, testing, approving, and applying security patches and updates to all IT systems, including operating systems, applications, firmware, and network devices. The policy establishes timeframes for applying patches based on severity and exploitability, and mandates vulnerability scanning to verify patch compliance.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [],
+        "control-implementations": [
+          {
+            "uuid": "64d9d193-cf46-4994-84a1-2a829f8afa60",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Patch Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "18f8cb69-ce7f-4462-aa14-76857cd18d1a",
+                "control-id": "ism-1696",
+                "description": "As defined in this policy, patches for operating systems of workstations are applied within 48 hours of release when assessed as critical by the vendor or when working exploits exist. The patch management policy specifies the roles, tools, and processes for achieving this timeframe, including automated deployment via Intune or WSUS and an emergency change process for out-of-cycle critical patches."
+              },
+              {
+                "uuid": "84b9bfb2-91e1-42dc-90b0-0ec011aebc2e",
+                "control-id": "ism-1693",
+                "description": "As defined in this policy, patches for applications (other than the high-risk application set) are applied within one month of release. The patch management policy specifies the application inventory review process, patch identification via vendor advisories and vulnerability scanning, and the standard change process for monthly patching cycles."
+              },
+              {
+                "uuid": "e8c31762-a6a9-48a9-9973-9519e294d003",
+                "control-id": "ism-1699",
+                "description": "As defined in this policy, a vulnerability scanner is used at least weekly to identify missing patches for high-risk applications (browsers, email clients, Microsoft Office, PDF readers, security products). The policy specifies the scanning tool, scan schedule, responsible team, and the escalation process for patch compliance failures."
+              },
+              {
+                "uuid": "11645f05-dd1a-4d56-9bb0-2889849ccf89",
+                "control-id": "ism-1702",
+                "description": "As defined in this policy, a vulnerability scanner is used at least fortnightly to identify missing operating system patches on workstations and non-internet-facing servers. The policy mandates scan coverage targets and a process for reporting on and remediating patch compliance gaps."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

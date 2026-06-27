@@ -1,0 +1,158 @@
+{
+  "component-definition": {
+    "uuid": "81e10da0-c601-41fe-b32b-8c5dc722e5d8",
+    "metadata": {
+      "title": "Backup Service (Veeam Backup and Replication) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "47b89ac0-3fe2-49af-a313-f45c5c4582f4",
+        "type": "service",
+        "title": "Backup Service (Veeam Backup and Replication)",
+        "description": "Veeam Backup and Replication providing backup, recovery, and replication services for organisation virtual machines (VMware vSphere / Hyper-V), physical servers, and cloud workloads. Veeam performs image-level backups, application-aware processing (SQL Server, Active Directory, Exchange), and immutable backups to a hardened Linux-based Veeam Hardened Repository. Backups are encrypted with AES-256.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Veeam Software"
+          },
+          {
+            "name": "version",
+            "value": "Veeam Backup and Replication v12 or later"
+          },
+          {
+            "name": "backup-targets",
+            "value": "Veeam Hardened Repository (on-premises), Azure Blob immutable storage (cloud copy)"
+          },
+          {
+            "name": "encryption",
+            "value": "AES-256 backup file encryption with key managed in Veeam configuration database"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "87790bb6-430d-4c2d-83a2-8529c2079cbc",
+            "name": "https",
+            "title": "HTTPS \u2014 Veeam ONE monitoring console and Veeam Backup Enterprise Manager",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "ef808853-6ea1-4ddc-a96d-2675c7a38cfc",
+            "name": "veeam-console",
+            "title": "Veeam Backup Console \u2014 Veeam Backup and Replication management console connection",
+            "port-ranges": [
+              {
+                "start": 9392,
+                "end": 9392,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2f2979c9-e2eb-4924-8b39-7129d7053d69",
+            "name": "veeam-transport",
+            "title": "Veeam Data Mover \u2014 Backup data transfer between Veeam components",
+            "port-ranges": [
+              {
+                "start": 2500,
+                "end": 3300,
+                "transport": "TCP",
+                "remarks": "Default Veeam data mover range \u2014 restrict to Veeam infrastructure IPs"
+              }
+            ]
+          },
+          {
+            "uuid": "32b5c35a-54fa-44af-995f-6cde82fa5599",
+            "name": "smb",
+            "title": "SMB \u2014 Backup file access and repository share (if SMB repository is used)",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "8592dc81-21f8-46c7-a1cb-04fce0b2781b",
+            "name": "ssh",
+            "title": "SSH \u2014 Veeam Linux proxy and hardened repository management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "8e550f81-64bb-46bd-b4fb-7f42f49b8b51",
+            "name": "syslog",
+            "title": "Syslog \u2014 Veeam job and security event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "42b12382-8bdd-4469-bd87-ee09f92cdfe8",
+            "name": "vmware-vsphere",
+            "title": "VMware vSphere API \u2014 VM backup via vCenter and VADP",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP",
+                "remarks": "Veeam-to-vCenter HTTPS for VADP backup"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "56b34772-295d-47a9-9d20-0ebed9e36817",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Backup Service (Veeam Backup and Replication).",
+            "implemented-requirements": [
+              {
+                "uuid": "e92ba3e5-74d2-44a3-a4a9-c9bf6ead42b8",
+                "control-id": "ism-1511",
+                "description": "Veeam performs daily incremental and weekly full backups of all critical virtual machines and physical servers. Backup jobs are monitored via Veeam ONE or email alerts, and backup failures are escalated to the operations team within one hour of detection. Backup success rates and coverage are reported in the monthly operations review."
+              },
+              {
+                "uuid": "d8efbe01-f5f1-4db6-a2a6-c19adf6fce17",
+                "control-id": "ism-1810",
+                "description": "Veeam backup chains (full + incremental) are retained as complete, self-contained restore points enabling point-in-time recovery. Application-aware processing ensures SQL Server transaction logs, Active Directory VSS writers, and Exchange VSS writers are quiesced consistently during backup, enabling a consistent point-in-time restore."
+              },
+              {
+                "uuid": "1e264053-f071-46f0-a587-6b24c1dae9c8",
+                "control-id": "ism-0459",
+                "description": "All Veeam backup files are encrypted at rest using AES-256 encryption configured in Veeam Backup Job settings. Backup encryption keys are managed by the Veeam configuration database (itself backed up separately and encrypted). Backups stored on the Veeam Hardened Repository use immutable storage (Veeam's Linux hardened repository with immutability flag) to protect against ransomware encryption."
+              },
+              {
+                "uuid": "4e4b8d7f-cee9-4b9b-a6b3-ac6a7e9a0a1c",
+                "control-id": "ism-1537",
+                "description": "Veeam security events (backup job success/failure, repository access events, configuration changes, restore operations, and administrative access to the Veeam console) are forwarded to the SIEM. Unexpected restore operations or configuration changes outside maintenance windows trigger security alerts."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

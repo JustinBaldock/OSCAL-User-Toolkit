@@ -1,0 +1,203 @@
+{
+  "component-definition": {
+    "uuid": "c1926848-38a7-459c-a4b7-6de82675e6a5",
+    "metadata": {
+      "title": "Network Attached Storage (NAS) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f3b09383-42cb-4247-a6e5-c7b7340afa82",
+        "type": "hardware",
+        "title": "Network Attached Storage (NAS)",
+        "description": "Enterprise network attached storage providing shared file storage over SMB and NFS protocols for file server workloads, backup target storage, and archive storage. Managed via a web administration interface. Storage volumes are encrypted at rest. Active Directory integration provides Windows Authentication for SMB shares.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Synology / QNAP / NetApp / equivalent"
+          },
+          {
+            "name": "protocols-served",
+            "value": "SMB 3.x (primary), NFS v4 (Linux clients), iSCSI (block storage)"
+          },
+          {
+            "name": "authentication",
+            "value": "Active Directory integration (Windows Authentication for SMB)"
+          },
+          {
+            "name": "encryption",
+            "value": "AES-256 volume encryption at rest"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "501e7e1e-809a-4071-964d-03247b211e50",
+            "name": "smb",
+            "title": "SMB \u2014 Primary file share access protocol for Windows clients",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "65b60710-3a76-460d-b289-48c48241405b",
+            "name": "nfs",
+            "title": "NFS \u2014 File share access for Linux/Unix clients",
+            "port-ranges": [
+              {
+                "start": 2049,
+                "end": 2049,
+                "transport": "TCP"
+              },
+              {
+                "start": 2049,
+                "end": 2049,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "836f863d-f55a-4c62-9119-067725ec02b8",
+            "name": "iscsi",
+            "title": "iSCSI \u2014 Block storage access for servers",
+            "port-ranges": [
+              {
+                "start": 3260,
+                "end": 3260,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "e76382ad-9e57-4a6b-85da-5cbe7c6e33c3",
+            "name": "https",
+            "title": "HTTPS \u2014 Web-based NAS administration interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "8660e9d8-4b3d-4768-b609-f3a18381d32c",
+            "name": "ssh",
+            "title": "SSH \u2014 Secure CLI management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "63d66d11-68ad-4dba-a1aa-684c57cb5b56",
+            "name": "snmp",
+            "title": "SNMP \u2014 NAS monitoring (disk health, capacity, RAID status)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP",
+                "remarks": "SNMP traps"
+              }
+            ]
+          },
+          {
+            "uuid": "26cbd759-94ad-477d-acbf-c8b18ce43baa",
+            "name": "syslog",
+            "title": "Syslog \u2014 Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "a703aeea-dca3-4881-b8f9-5f74b7d36326",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "8f02e070-717d-43dd-8f39-33cec58ff77d",
+            "name": "ldap",
+            "title": "LDAP \u2014 Active Directory integration for Windows Authentication",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "890669cd-2407-4be7-a56a-028c154d6de7",
+            "name": "ldaps",
+            "title": "LDAPS \u2014 Secure LDAP for Active Directory integration",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "9d8822ae-b67c-483b-ae9e-39a8615eb617",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Network Attached Storage (NAS).",
+            "implemented-requirements": [
+              {
+                "uuid": "b364e473-4403-486d-b32e-4b2a6c3f1cd6",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the NAS, covering: disabling unused protocols (FTP, Telnet, AFP, rsync where not required), disabling the default admin account and creating named administrator accounts, enabling HTTPS-only management (HTTP disabled), enabling SMB signing (SMB 3.x), enabling NFS Kerberos authentication where supported, configuring share-level and filesystem-level access controls (ACLs per share), and keeping NAS firmware current with vendor security updates."
+              },
+              {
+                "uuid": "24a52ef3-9cde-4288-b826-a142a9e80380",
+                "control-id": "ism-0459",
+                "description": "NAS storage volumes containing sensitive or classified data are encrypted at rest using AES-256 volume encryption. Encryption keys are managed securely (not stored in plaintext on the NAS). Encryption status of all volumes is verified and reported in the monthly security review."
+              },
+              {
+                "uuid": "6f9b0639-f6a8-464c-9a0f-e121437886e5",
+                "control-id": "ism-1511",
+                "description": "Backups of NAS configuration and critical stored data are performed and retained per business continuity requirements. NAS snapshot schedules provide point-in-time recovery. Backup jobs and snapshot jobs are monitored for failure."
+              },
+              {
+                "uuid": "e856ef2d-3718-4627-b0f7-2f2931d03df4",
+                "control-id": "ism-1537",
+                "description": "Security-relevant NAS events (authentication failures, share access by privileged accounts, configuration changes, failed login attempts, volume mount/unmount events) are centrally logged and forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

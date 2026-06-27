@@ -1,0 +1,118 @@
+{
+  "component-definition": {
+    "uuid": "e0fafbe8-cd61-4275-8afa-cdf20b6b08dd",
+    "metadata": {
+      "title": "Email Service (Microsoft Exchange Online) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "a9fdc90e-9ab6-4f6b-90ff-709da4962d6c",
+        "type": "service",
+        "title": "Email Service (Microsoft Exchange Online)",
+        "description": "Microsoft Exchange Online (part of Microsoft 365) providing email, calendar, and contacts services for all organisation personnel. Exchange Online is accessed via Outlook (desktop client) and Outlook Web App (OWA). Microsoft Defender for Office 365 Plan 1 or Plan 2 provides email security \u2014 Safe Attachments, Safe Links, anti-phishing, and anti-malware. Legacy authentication protocols are disabled. All mailbox data is stored in Microsoft data centres in the Australia region.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "platform",
+            "value": "Microsoft Exchange Online (Microsoft 365)"
+          },
+          {
+            "name": "data-residency",
+            "value": "Australia (Microsoft 365 Multi-Geo or Australian data residency commitment)"
+          },
+          {
+            "name": "email-security",
+            "value": "Microsoft Defender for Office 365 Safe Attachments, Safe Links, anti-phishing"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "a079c6e5-b572-407a-86d9-a47e22d70caf",
+            "name": "https",
+            "title": "HTTPS \u2014 Outlook Web App (OWA), Exchange Admin Centre, Exchange Web Services (EWS), REST API",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "1e08f761-b907-4d66-9624-2b04de72dca2",
+            "name": "smtps",
+            "title": "SMTP STARTTLS \u2014 Inbound/outbound email delivery (Exchange Online MX)",
+            "port-ranges": [
+              {
+                "start": 25,
+                "end": 25,
+                "transport": "TCP",
+                "remarks": "Inbound SMTP to Exchange Online MX \u2014 Microsoft-managed; outbound relay via Exchange Online"
+              }
+            ]
+          },
+          {
+            "uuid": "fb02a0b6-99df-4391-9d41-e37cc54cbacd",
+            "name": "smtp-sub",
+            "title": "SMTP Submission \u2014 Authenticated SMTP submission from devices and applications",
+            "port-ranges": [
+              {
+                "start": 587,
+                "end": 587,
+                "transport": "TCP",
+                "remarks": "SMTP with STARTTLS for authenticated submission from printers, scanners, applications"
+              }
+            ]
+          },
+          {
+            "uuid": "830b0fa1-252e-42d3-9684-1ecdc66db1dd",
+            "name": "imap4s",
+            "title": "IMAP4S \u2014 Secure IMAP access (disabled by default; enabled only if required)",
+            "port-ranges": [
+              {
+                "start": 993,
+                "end": 993,
+                "transport": "TCP",
+                "remarks": "Disabled at tenant level unless specifically approved"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f08d3e12-4019-4f25-ae39-280712691314",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Email Service (Microsoft Exchange Online).",
+            "implemented-requirements": [
+              {
+                "uuid": "632e0b39-c210-4a4f-a74a-8844d2e8144e",
+                "control-id": "ism-1234",
+                "description": "Microsoft Defender for Office 365 Safe Attachments is enabled for all Exchange Online mailboxes \u2014 all email attachments are detonated in a sandbox before delivery. Safe Links rewrites URLs in emails and Office documents for real-time detonation checks at click-time. Anti-phishing policies are configured with impersonation protection and mailbox intelligence for all users. Anti-malware policies block dangerous attachment file types at the gateway level."
+              },
+              {
+                "uuid": "c998c974-fb04-491a-940c-e933c132c804",
+                "control-id": "ism-1919",
+                "description": "All legacy authentication protocols (Basic Auth, SMTP AUTH, POP3, IMAP4, ActiveSync with Basic Auth) are disabled at the Exchange Online tenant level via Authentication Policies and Conditional Access policies. Only modern authentication (OAuth 2.0) is permitted for all clients accessing Exchange Online. Any application requiring SMTP AUTH (printers, scanners, legacy apps) uses the approved SMTP submission port (587) with TLS and a dedicated service account."
+              },
+              {
+                "uuid": "89b2b33a-1fb0-43fe-86af-4525cce11223",
+                "control-id": "ism-1405",
+                "description": "Microsoft 365 Unified Audit Log captures all Exchange Online events including: mailbox access (admin and user), email send/receive events, configuration changes, and Microsoft Defender for Office 365 detections. Audit logs are exported to the SIEM via the Microsoft 365 Management Activity API or a log connector. Audit log retention meets the organisation's minimum retention requirements."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
