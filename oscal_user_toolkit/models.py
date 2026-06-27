@@ -1707,3 +1707,254 @@ def build_ssp_docx(ssp, catalog=None):
         doc.add_paragraph("(No control implementations defined)")
 
     return doc
+
+
+# =============================================================================
+# POA&M DATA FUNCTIONS
+# =============================================================================
+
+def empty_poam():
+    """Return a blank POA&M working dictionary used by POAMTab."""
+    return {
+        "uuid":        new_uuid(),
+        "title":       "",
+        "version":     "1.0",
+        "import_ssp":  "",   # href to the referenced SSP
+        "system_id":   "",
+        "observations": [],  # list of observation dicts
+        "risks":        [],  # list of risk dicts
+        "findings":     [],  # list of finding dicts
+        "poam_items":   [],  # list of poam-item dicts
+    }
+
+
+def build_oscal_poam(poam):
+    """
+    Convert the internal POAMTab working dictionary to a valid OSCAL 1.2.2
+    plan-of-action-and-milestones JSON structure.
+    """
+    doc = {
+        "plan-of-action-and-milestones": {
+            "uuid": poam.get("uuid") or new_uuid(),
+            "metadata": {
+                "title":         poam.get("title", ""),
+                "last-modified": now_iso(),
+                "version":       poam.get("version", "1.0"),
+                "oscal-version": "1.1.2",
+            },
+        }
+    }
+    root = doc["plan-of-action-and-milestones"]
+
+    if poam.get("import_ssp"):
+        root["import-ssp"] = {"href": poam["import_ssp"]}
+
+    if poam.get("system_id"):
+        root["system-id"] = {
+            "identifier-type": "https://ietf.org/rfc/rfc4122",
+            "id": poam["system_id"],
+        }
+
+    # observations
+    if poam.get("observations"):
+        root["observations"] = []
+        for o in poam["observations"]:
+            entry = {
+                "uuid":        o.get("uuid") or new_uuid(),
+                "description": o.get("description", ""),
+                "methods":     [m for m in o.get("methods", []) if m],
+                "collected":   o.get("collected", now_iso()),
+            }
+            if o.get("title"):
+                entry["title"] = o["title"]
+            if o.get("types"):
+                entry["types"] = [t for t in o["types"] if t]
+            if o.get("expires"):
+                entry["expires"] = o["expires"]
+            if o.get("relevant_evidence"):
+                entry["relevant-evidence"] = [
+                    {"href": e.get("href", ""), "description": e.get("description", "")}
+                    for e in o["relevant_evidence"] if e.get("href") or e.get("description")
+                ]
+            if o.get("remarks"):
+                entry["remarks"] = o["remarks"]
+            root["observations"].append(entry)
+
+    # risks
+    if poam.get("risks"):
+        root["risks"] = []
+        for r in poam["risks"]:
+            entry = {
+                "uuid":        r.get("uuid") or new_uuid(),
+                "title":       r.get("title", ""),
+                "description": r.get("description", ""),
+                "statement":   r.get("statement", ""),
+                "status":      r.get("status", "open"),
+            }
+            if r.get("deadline"):
+                entry["deadline"] = r["deadline"]
+            if r.get("remediations"):
+                entry["remediations"] = []
+                for rem in r["remediations"]:
+                    rem_entry = {
+                        "uuid":        rem.get("uuid") or new_uuid(),
+                        "lifecycle":   rem.get("lifecycle", "recommendation"),
+                        "title":       rem.get("title", ""),
+                        "description": rem.get("description", ""),
+                    }
+                    if rem.get("remarks"):
+                        rem_entry["remarks"] = rem["remarks"]
+                    entry["remediations"].append(rem_entry)
+            if r.get("remarks"):
+                entry["remarks"] = r["remarks"]
+            root["risks"].append(entry)
+
+    # findings
+    if poam.get("findings"):
+        root["findings"] = []
+        for f in poam["findings"]:
+            entry = {
+                "uuid":        f.get("uuid") or new_uuid(),
+                "title":       f.get("title", ""),
+                "description": f.get("description", ""),
+                "target": {
+                    "type":      f.get("target_type", "statement-id"),
+                    "target-id": f.get("target_id", ""),
+                    "status": {
+                        "state": f.get("status_state", "not-satisfied"),
+                    },
+                },
+            }
+            if f.get("status_reason"):
+                entry["target"]["status"]["reason"] = f["status_reason"]
+            if f.get("remarks"):
+                entry["remarks"] = f["remarks"]
+            root["findings"].append(entry)
+
+    # poam-items (required)
+    items = poam.get("poam_items", [])
+    root["poam-items"] = []
+    for item in items:
+        pi = {
+            "uuid":        item.get("uuid") or new_uuid(),
+            "title":       item.get("title", ""),
+            "description": item.get("description", ""),
+        }
+        if item.get("related_observation_uuids"):
+            pi["related-observations"] = [
+                {"observation-uuid": u}
+                for u in item["related_observation_uuids"] if u
+            ]
+        if item.get("related_risk_uuids"):
+            pi["related-risks"] = [
+                {"risk-uuid": u}
+                for u in item["related_risk_uuids"] if u
+            ]
+        if item.get("related_finding_uuids"):
+            pi["related-findings"] = [
+                {"finding-uuid": u}
+                for u in item["related_finding_uuids"] if u
+            ]
+        if item.get("remarks"):
+            pi["remarks"] = item["remarks"]
+        root["poam-items"].append(pi)
+
+    return doc
+
+
+def parse_poam_file(data):
+    """
+    Parse a raw OSCAL POA&M JSON dict (as loaded from disk) into the internal
+    working dictionary format used by POAMTab.
+    """
+    root = data.get("plan-of-action-and-milestones", {})
+    meta = root.get("metadata", {})
+
+    poam = empty_poam()
+    poam["uuid"]    = root.get("uuid", new_uuid())
+    poam["title"]   = meta.get("title", "")
+    poam["version"] = meta.get("version", "1.0")
+
+    issp = root.get("import-ssp", {})
+    poam["import_ssp"] = issp.get("href", "") if isinstance(issp, dict) else ""
+
+    sid = root.get("system-id", {})
+    poam["system_id"] = sid.get("id", "") if isinstance(sid, dict) else ""
+
+    # observations
+    for o in root.get("observations", []):
+        ev = [
+            {"href": e.get("href", ""), "description": e.get("description", "")}
+            for e in o.get("relevant-evidence", [])
+        ]
+        poam["observations"].append({
+            "uuid":             o.get("uuid", new_uuid()),
+            "title":            o.get("title", ""),
+            "description":      o.get("description", ""),
+            "methods":          list(o.get("methods", [])),
+            "types":            list(o.get("types", [])),
+            "collected":        o.get("collected", ""),
+            "expires":          o.get("expires", ""),
+            "relevant_evidence": ev,
+            "remarks":          o.get("remarks", ""),
+        })
+
+    # risks
+    for r in root.get("risks", []):
+        rems = []
+        for rem in r.get("remediations", []):
+            rems.append({
+                "uuid":        rem.get("uuid", new_uuid()),
+                "lifecycle":   rem.get("lifecycle", "recommendation"),
+                "title":       rem.get("title", ""),
+                "description": rem.get("description", ""),
+                "remarks":     rem.get("remarks", ""),
+            })
+        poam["risks"].append({
+            "uuid":        r.get("uuid", new_uuid()),
+            "title":       r.get("title", ""),
+            "description": r.get("description", ""),
+            "statement":   r.get("statement", ""),
+            "status":      r.get("status", "open"),
+            "deadline":    r.get("deadline", ""),
+            "remediations": rems,
+            "remarks":     r.get("remarks", ""),
+        })
+
+    # findings
+    for f in root.get("findings", []):
+        tgt    = f.get("target", {})
+        status = tgt.get("status", {})
+        poam["findings"].append({
+            "uuid":         f.get("uuid", new_uuid()),
+            "title":        f.get("title", ""),
+            "description":  f.get("description", ""),
+            "target_type":  tgt.get("type", "statement-id"),
+            "target_id":    tgt.get("target-id", ""),
+            "status_state": status.get("state", "not-satisfied"),
+            "status_reason": status.get("reason", ""),
+            "remarks":      f.get("remarks", ""),
+        })
+
+    # poam-items
+    for item in root.get("poam-items", []):
+        poam["poam_items"].append({
+            "uuid":        item.get("uuid", new_uuid()),
+            "title":       item.get("title", ""),
+            "description": item.get("description", ""),
+            "related_observation_uuids": [
+                ro.get("observation-uuid", "")
+                for ro in item.get("related-observations", [])
+            ],
+            "related_risk_uuids": [
+                rr.get("risk-uuid", "")
+                for rr in item.get("related-risks", [])
+            ],
+            "related_finding_uuids": [
+                rf.get("finding-uuid", "")
+                for rf in item.get("related-findings", [])
+            ],
+            "remarks": item.get("remarks", ""),
+        })
+
+    return poam

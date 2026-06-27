@@ -1,0 +1,1134 @@
+"""
+poam_tab.py
+===========
+Defines the POAMTab class — the Plan of Action and Milestones editor tab.
+
+A POA&M is the live tracking document that records every open finding,
+observation, and risk discovered during security assessments, together with
+the remediation actions planned to address them.  It is updated continuously
+between assessments rather than replaced each cycle.
+
+OSCAL POA&M top-level sections implemented here:
+  1. Document Metadata   — title, version, SSP reference, system ID
+  2. Observations        — evidence records from assessments (EXAMINE/INTERVIEW/TEST)
+  3. Risks               — identified risks with status lifecycle and remediations
+  4. Findings            — formal assessor verdicts (satisfied / not-satisfied)
+  5. POA&M Items         — the action items that cross-reference all of the above
+"""
+
+import json
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from pathlib import Path
+
+from .models import (
+    new_uuid, now_iso,
+    empty_poam, build_oscal_poam, parse_poam_file,
+)
+
+# ── OSCAL enum constants ──────────────────────────────────────────────────────
+
+OBSERVATION_METHODS = ["EXAMINE", "INTERVIEW", "TEST", "UNKNOWN"]
+
+OBSERVATION_TYPES = [
+    "ssp-statement-issue", "control-objective", "mitigation",
+    "finding", "discovery", "historic",
+]
+
+RISK_STATUSES = [
+    "open", "investigating", "remediating",
+    "deviation-requested", "deviation-approved", "closed",
+]
+
+REMEDIATION_LIFECYCLES = ["recommendation", "planned", "completed"]
+
+FINDING_TARGET_TYPES = ["statement-id", "objective-id"]
+
+FINDING_STATUS_STATES = ["satisfied", "not-satisfied"]
+
+FINDING_STATUS_REASONS = ["pass", "fail", "other", ""]
+
+
+class POAMTab(tk.Frame):
+    """
+    A self-contained OSCAL POA&M editor panel.
+
+    Layout:
+      TOP     — Toolbar (Save, Open, New buttons + save-status label)
+      BODY    — Scrollable form with five sections:
+                  1. Metadata
+                  2. Observations table
+                  3. Risks table
+                  4. Findings table
+                  5. POA&M Items table
+    """
+
+    def __init__(self, parent, colors, set_status):
+        super().__init__(parent, bg=colors["BG"])
+
+        self._colors     = colors
+        self._set_status = set_status
+
+        # Working data — mirrors the POA&M dict while editing
+        self._poam = empty_poam()
+
+        # Working lists for the four tables.  _collect() writes them back to
+        # self._poam; _populate() reads from self._poam into them.
+        self._observations: list = []
+        self._risks:        list = []
+        self._findings:     list = []
+        self._poam_items:   list = []
+
+        # StringVar registry for simple text/combo fields
+        self._vars: dict = {}
+
+        self._build()
+
+    # =========================================================================
+    # BUILD
+    # =========================================================================
+
+    def _build(self):
+        self._build_toolbar()
+        self._build_canvas()
+
+    def _build_toolbar(self):
+        C  = self._colors
+        tb = tk.Frame(self, bg=C["CARD_BG"], height=52)
+        tb.pack(fill="x", side="top")
+        tb.pack_propagate(False)
+
+        def btn(text, cmd, bg, abg):
+            tk.Button(
+                tb, text=text, command=cmd,
+                bg=bg, fg=C["BG"], font=("Helvetica", 11, "bold"),
+                relief="flat", padx=12, pady=4, cursor="hand2",
+                activebackground=abg, activeforeground=C["BG"],
+            ).pack(side="left", padx=(12, 0), pady=8)
+
+        btn("💾  Save POA&M", self._save,   C["GREEN"], "#8cd39a")
+        btn("📂  Open POA&M", self._open,   C["BLUE"],  "#6a9fd8")
+        btn("🆕  New POA&M",  self._new,    C["BLUE"],  "#6a9fd8")
+
+        self._status_lbl = tk.Label(
+            tb, text="POA&M not saved",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 10, "italic"),
+        )
+        self._status_lbl.pack(side="left", padx=16)
+
+    def _build_canvas(self):
+        C      = self._colors
+        canvas = tk.Canvas(self, bg=C["BG"], highlightthickness=0)
+        vsb    = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=vsb.set)
+        vsb.pack(side="right", fill="y")
+        canvas.pack(fill="both", expand=True)
+
+        form = tk.Frame(canvas, bg=C["BG"])
+        win  = canvas.create_window((0, 0), window=form, anchor="nw")
+        form.bind("<Configure>",
+                  lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.bind("<Configure>",
+                    lambda e: canvas.itemconfig(win, width=e.width))
+        self._canvas = canvas
+        canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self._build_form(form)
+
+    def _on_mousewheel(self, event):
+        try:
+            nb = self.master
+            if hasattr(nb, "select") and nb.select() == str(self):
+                self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        except Exception:
+            pass
+
+    # =========================================================================
+    # FORM
+    # =========================================================================
+
+    def _build_form(self, parent):
+        C = self._colors
+        P = dict(padx=28)
+
+        def section(title):
+            hdr = tk.Frame(parent, bg=C["HEADER_BG"])
+            hdr.pack(fill="x", **P, pady=(20, 4))
+            tk.Label(hdr, text=title,
+                     bg=C["HEADER_BG"], fg=C["ACCENT"],
+                     font=("Helvetica", 12, "bold"), anchor="w",
+                     ).pack(side="left", padx=12, pady=6)
+
+        def field(label, key, width=50, default=""):
+            v = tk.StringVar(value=default)
+            self._vars[key] = v
+            row = tk.Frame(parent, bg=C["BG"])
+            row.pack(fill="x", **P, pady=3)
+            tk.Label(row, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=22, anchor="w",
+                     ).pack(side="left")
+            tk.Entry(row, textvariable=v,
+                     bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                     relief="flat", font=("Helvetica", 11), width=width,
+                     highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                     ).pack(side="left", ipady=3)
+
+        def table_section(title, hint, columns, add_cmd, edit_cmd, remove_cmd,
+                          height=5):
+            """Build a standard table section and return the Treeview."""
+            section(title)
+            if hint:
+                tk.Label(parent, text=f"  {hint}",
+                         bg=C["BG"], fg=C["SUBTEXT"],
+                         font=("Helvetica", 9, "italic"),
+                         ).pack(anchor="w", **P)
+
+            frame = tk.Frame(parent, bg=C["CARD_BG"],
+                             highlightthickness=1,
+                             highlightbackground=C["HEADER_BG"])
+            frame.pack(fill="x", padx=28, pady=6)
+
+            btn_row = tk.Frame(frame, bg=C["CARD_BG"])
+            btn_row.pack(fill="x", padx=8, pady=6)
+
+            for text, cmd, bg in [
+                ("＋  Add",    add_cmd,    C["BLUE"]),
+                ("✎  Edit",   edit_cmd,   C["HEADER_BG"]),
+                ("✕  Remove", remove_cmd, C["HEADER_BG"]),
+            ]:
+                tk.Button(btn_row, text=text, command=cmd,
+                          bg=bg, fg=C["TEXT"] if bg == C["HEADER_BG"] else C["BG"],
+                          font=("Helvetica", 10,
+                                "bold" if bg == C["BLUE"] else "normal"),
+                          relief="flat", padx=10, pady=3, cursor="hand2",
+                          ).pack(side="left", padx=(0, 6))
+
+            tree = ttk.Treeview(frame,
+                                columns=tuple(c[0] for c in columns),
+                                show="headings", height=height,
+                                selectmode="browse")
+            for col_id, heading, width_px, stretch in columns:
+                tree.heading(col_id, text=heading, anchor="w")
+                tree.column(col_id, width=width_px, anchor="w", stretch=stretch)
+
+            sb = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+            tree.configure(yscrollcommand=sb.set)
+            sb.pack(side="right", fill="y", padx=(0, 8), pady=(0, 8))
+            tree.pack(fill="x", padx=8, pady=(0, 8))
+            return tree
+
+        # ── Section 1: Metadata ───────────────────────────────────────────────
+        section("1 ·  POA&M Metadata")
+        field("POA&M Title *",     "title",      width=60)
+        field("Version *",         "version",    width=20, default="1.0")
+        # SSP Reference row — entry + Browse button side by side
+        ssp_v = tk.StringVar()
+        self._vars["import_ssp"] = ssp_v
+        ssp_row = tk.Frame(parent, bg=C["BG"])
+        ssp_row.pack(fill="x", **P, pady=3)
+        tk.Label(ssp_row, text="SSP Reference (href)", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=22, anchor="w",
+                 ).pack(side="left")
+        tk.Entry(ssp_row, textvariable=ssp_v,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), width=48,
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).pack(side="left", ipady=3)
+        tk.Button(ssp_row, text="📂 Browse…", command=self._browse_ssp,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=(6, 0))
+
+        field("System ID",         "system_id",  width=40)
+        tk.Label(parent,
+                 text="  * Required fields.  SSP Reference: path to the linked SSP JSON file.",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=28)
+
+        # ── Section 2: Observations ───────────────────────────────────────────
+        self._obs_tree = table_section(
+            title="2 ·  Observations",
+            hint="Evidence records collected during assessments (EXAMINE / INTERVIEW / TEST).",
+            columns=[
+                ("title",     "Title",       200, True),
+                ("methods",   "Methods",     130, False),
+                ("types",     "Types",       150, False),
+                ("collected", "Collected",   130, False),
+                ("expires",   "Expires",     110, False),
+            ],
+            add_cmd=self._add_observation,
+            edit_cmd=self._edit_observation,
+            remove_cmd=self._remove_observation,
+        )
+
+        # ── Section 3: Risks ─────────────────────────────────────────────────
+        self._risk_tree = table_section(
+            title="3 ·  Risks",
+            hint="Identified risks with status lifecycle and optional remediation plans.",
+            columns=[
+                ("title",    "Title",    220, True),
+                ("status",   "Status",   130, False),
+                ("deadline", "Deadline", 110, False),
+                ("rems",     "Remediations", 80, False),
+            ],
+            add_cmd=self._add_risk,
+            edit_cmd=self._edit_risk,
+            remove_cmd=self._remove_risk,
+        )
+
+        # ── Section 4: Findings ───────────────────────────────────────────────
+        self._finding_tree = table_section(
+            title="4 ·  Findings",
+            hint="Formal assessor verdicts against control statement IDs or objective IDs.",
+            columns=[
+                ("title",        "Title",       220, True),
+                ("target_id",    "Target ID",   180, False),
+                ("target_type",  "Target Type", 110, False),
+                ("state",        "State",       110, False),
+                ("reason",       "Reason",       80, False),
+            ],
+            add_cmd=self._add_finding,
+            edit_cmd=self._edit_finding,
+            remove_cmd=self._remove_finding,
+        )
+
+        # ── Section 5: POA&M Items ────────────────────────────────────────────
+        self._item_tree = table_section(
+            title="5 ·  POA&M Items",
+            hint="Action items that cross-reference observations, risks, and findings.",
+            columns=[
+                ("title",  "Title",       300, True),
+                ("obs",    "Observations",  80, False),
+                ("risks",  "Risks",         60, False),
+                ("finds",  "Findings",      60, False),
+            ],
+            add_cmd=self._add_poam_item,
+            edit_cmd=self._edit_poam_item,
+            remove_cmd=self._remove_poam_item,
+            height=6,
+        )
+
+        # bottom padding
+        tk.Frame(parent, bg=C["BG"], height=30).pack()
+
+    # =========================================================================
+    # DIALOG HELPER
+    # =========================================================================
+
+    def _make_dialog(self, title, width=480):
+        C   = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title(title)
+        dlg.configure(bg=C["BG"])
+        dlg.resizable(False, False)
+        dlg.transient(self)
+        dlg.grab_set()
+        dlg.minsize(width, 10)
+        return dlg
+
+    def _dlg_field(self, parent, label, row_idx, width=40, default=""):
+        """Add a label+entry pair to a dialog grid. Returns the StringVar."""
+        C = self._colors
+        tk.Label(parent, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="w",
+                 ).grid(row=row_idx, column=0, sticky="w", padx=12, pady=4)
+        v = tk.StringVar(value=default)
+        tk.Entry(parent, textvariable=v,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10), width=width,
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).grid(row=row_idx, column=1, sticky="ew", padx=(0, 12), pady=4)
+        return v
+
+    def _dlg_combo(self, parent, label, row_idx, values, default=""):
+        """Add a label+combobox pair to a dialog grid. Returns the StringVar."""
+        C = self._colors
+        tk.Label(parent, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="w",
+                 ).grid(row=row_idx, column=0, sticky="w", padx=12, pady=4)
+        v = tk.StringVar(value=default)
+        ttk.Combobox(parent, textvariable=v, values=values,
+                     state="readonly", width=30,
+                     ).grid(row=row_idx, column=1, sticky="w",
+                            padx=(0, 12), pady=4)
+        return v
+
+    def _dlg_text(self, parent, label, row_idx, height=3):
+        """Add a label+Text area to a dialog grid. Returns the Text widget."""
+        C = self._colors
+        tk.Label(parent, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="nw",
+                 ).grid(row=row_idx, column=0, sticky="nw", padx=12, pady=4)
+        t = tk.Text(parent,
+                    bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                    relief="flat", font=("Helvetica", 10), height=height,
+                    wrap="word", padx=6, pady=4,
+                    highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                    )
+        t.grid(row=row_idx, column=1, sticky="ew", padx=(0, 12), pady=4)
+        return t
+
+    def _ok_cancel(self, dlg, ok_cmd):
+        """Add OK / Cancel button row at the bottom of a dialog."""
+        C    = self._colors
+        brow = tk.Frame(dlg, bg=C["BG"])
+        brow.pack(fill="x", pady=(4, 12), padx=12)
+        tk.Button(brow, text="OK", command=ok_cmd,
+                  bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=16, pady=4, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(brow, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=12, pady=4, cursor="hand2",
+                  ).pack(side="left", padx=8)
+
+    # =========================================================================
+    # OBSERVATION CRUD
+    # =========================================================================
+
+    def _obs_row(self, o):
+        return (
+            o.get("title", "") or o.get("description", "")[:60],
+            ", ".join(o.get("methods", [])),
+            ", ".join(o.get("types", [])),
+            o.get("collected", "")[:10],
+            o.get("expires", "")[:10],
+        )
+
+    def _refresh_obs_tree(self):
+        self._obs_tree.delete(*self._obs_tree.get_children())
+        for o in self._observations:
+            self._obs_tree.insert("", "end", values=self._obs_row(o))
+
+    def _observation_dialog(self, existing=None):
+        C   = self._colors
+        dlg = self._make_dialog(
+            "Edit Observation" if existing else "Add Observation", width=560
+        )
+        ex  = existing or {}
+
+        body = tk.Frame(dlg, bg=C["BG"])
+        body.pack(fill="both", expand=True, padx=4, pady=4)
+        body.columnconfigure(1, weight=1)
+
+        v_title     = self._dlg_field(body, "Title",      0, default=ex.get("title",""))
+        v_collected = self._dlg_field(body, "Collected *", 1, default=ex.get("collected",""))
+        v_expires   = self._dlg_field(body, "Expires",    2, default=ex.get("expires",""))
+
+        # Methods — multi-select via Listbox
+        tk.Label(body, text="Methods *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="nw",
+                 ).grid(row=3, column=0, sticky="nw", padx=12, pady=4)
+        meth_frame = tk.Frame(body, bg=C["BG"])
+        meth_frame.grid(row=3, column=1, sticky="w", padx=(0, 12), pady=4)
+        meth_lb = tk.Listbox(meth_frame, selectmode="multiple",
+                             bg=C["CARD_BG"], fg=C["TEXT"],
+                             font=("Helvetica", 10), height=4, width=20,
+                             relief="flat", exportselection=False,
+                             highlightthickness=1,
+                             highlightbackground=C["HEADER_BG"])
+        for m in OBSERVATION_METHODS:
+            meth_lb.insert("end", m)
+        existing_methods = ex.get("methods", [])
+        for i, m in enumerate(OBSERVATION_METHODS):
+            if m in existing_methods:
+                meth_lb.selection_set(i)
+        meth_lb.pack(side="left")
+
+        # Types — multi-select via Listbox
+        tk.Label(body, text="Types", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="nw",
+                 ).grid(row=4, column=0, sticky="nw", padx=12, pady=4)
+        type_frame = tk.Frame(body, bg=C["BG"])
+        type_frame.grid(row=4, column=1, sticky="w", padx=(0, 12), pady=4)
+        type_lb = tk.Listbox(type_frame, selectmode="multiple",
+                             bg=C["CARD_BG"], fg=C["TEXT"],
+                             font=("Helvetica", 10), height=6, width=30,
+                             relief="flat", exportselection=False,
+                             highlightthickness=1,
+                             highlightbackground=C["HEADER_BG"])
+        for t in OBSERVATION_TYPES:
+            type_lb.insert("end", t)
+        existing_types = ex.get("types", [])
+        for i, t in enumerate(OBSERVATION_TYPES):
+            if t in existing_types:
+                type_lb.selection_set(i)
+        type_lb.pack(side="left")
+
+        t_desc = self._dlg_text(body, "Description *", 5, height=3)
+        t_desc.insert("1.0", ex.get("description", ""))
+
+        # Relevant Evidence sub-table
+        tk.Label(body, text="Relevant Evidence", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="nw",
+                 ).grid(row=6, column=0, sticky="nw", padx=12, pady=4)
+
+        ev_frame = tk.Frame(body, bg=C["CARD_BG"],
+                            highlightthickness=1,
+                            highlightbackground=C["HEADER_BG"])
+        ev_frame.grid(row=6, column=1, sticky="ew", padx=(0, 12), pady=4)
+
+        ev_btn_row = tk.Frame(ev_frame, bg=C["CARD_BG"])
+        ev_btn_row.pack(fill="x", padx=6, pady=4)
+
+        ev_list: list = list(ex.get("relevant_evidence", []))
+
+        ev_tree = ttk.Treeview(ev_frame,
+                               columns=("href", "desc"),
+                               show="headings", height=3, selectmode="browse")
+        ev_tree.heading("href", text="Href / Link", anchor="w")
+        ev_tree.heading("desc", text="Description", anchor="w")
+        ev_tree.column("href", width=200, anchor="w", stretch=True)
+        ev_tree.column("desc", width=200, anchor="w", stretch=True)
+
+        def _refresh_ev():
+            ev_tree.delete(*ev_tree.get_children())
+            for e in ev_list:
+                ev_tree.insert("", "end",
+                               values=(e.get("href",""), e.get("description","")))
+
+        def _add_ev():
+            d2 = self._make_dialog("Add Evidence", width=400)
+            f2 = tk.Frame(d2, bg=C["BG"])
+            f2.pack(fill="both", expand=True, padx=4, pady=4)
+            f2.columnconfigure(1, weight=1)
+            v_href = self._dlg_field(f2, "Href / Link", 0, width=40)
+            v_edesc = self._dlg_field(f2, "Description", 1, width=40)
+
+            def _ok2():
+                ev_list.append({"href": v_href.get().strip(),
+                                "description": v_edesc.get().strip()})
+                _refresh_ev()
+                d2.destroy()
+            self._ok_cancel(d2, _ok2)
+            self.wait_window(d2)
+
+        def _remove_ev():
+            sel = ev_tree.selection()
+            if sel:
+                ev_list.pop(ev_tree.index(sel[0]))
+                _refresh_ev()
+
+        tk.Button(ev_btn_row, text="＋ Add", command=_add_ev,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(ev_btn_row, text="✕ Remove", command=_remove_ev,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left", padx=6)
+        ev_tree.pack(fill="x", padx=6, pady=(0, 6))
+        _refresh_ev()
+
+        t_remarks = self._dlg_text(body, "Remarks", 7, height=2)
+        t_remarks.insert("1.0", ex.get("remarks", ""))
+
+        result = {}
+
+        def _ok():
+            desc = t_desc.get("1.0", "end-1c").strip()
+            if not desc:
+                messagebox.showwarning("Required", "Description is required.",
+                                       parent=dlg)
+                return
+            methods = [OBSERVATION_METHODS[i]
+                       for i in meth_lb.curselection()]
+            if not methods:
+                messagebox.showwarning("Required",
+                                       "At least one Method is required.",
+                                       parent=dlg)
+                return
+            result.update({
+                "uuid":             ex.get("uuid", new_uuid()),
+                "title":            v_title.get().strip(),
+                "description":      desc,
+                "methods":          methods,
+                "types":            [OBSERVATION_TYPES[i]
+                                     for i in type_lb.curselection()],
+                "collected":        v_collected.get().strip() or now_iso(),
+                "expires":          v_expires.get().strip(),
+                "relevant_evidence": ev_list,
+                "remarks":          t_remarks.get("1.0", "end-1c").strip(),
+            })
+            dlg.destroy()
+
+        self._ok_cancel(dlg, _ok)
+        self.wait_window(dlg)
+        return result or None
+
+    def _add_observation(self):
+        obs = self._observation_dialog()
+        if obs:
+            self._observations.append(obs)
+            self._refresh_obs_tree()
+
+    def _edit_observation(self):
+        sel = self._obs_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an observation to edit.")
+            return
+        idx = self._obs_tree.index(sel[0])
+        updated = self._observation_dialog(existing=self._observations[idx])
+        if updated:
+            updated["uuid"] = self._observations[idx]["uuid"]
+            self._observations[idx] = updated
+            self._refresh_obs_tree()
+
+    def _remove_observation(self):
+        sel = self._obs_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an observation to remove.")
+            return
+        idx = self._obs_tree.index(sel[0])
+        self._observations.pop(idx)
+        self._refresh_obs_tree()
+
+    # =========================================================================
+    # RISK CRUD
+    # =========================================================================
+
+    def _risk_row(self, r):
+        n_rems = len(r.get("remediations", []))
+        return (
+            r.get("title", ""),
+            r.get("status", "open"),
+            r.get("deadline", "")[:10],
+            str(n_rems) if n_rems else "",
+        )
+
+    def _refresh_risk_tree(self):
+        self._risk_tree.delete(*self._risk_tree.get_children())
+        for r in self._risks:
+            self._risk_tree.insert("", "end", values=self._risk_row(r))
+
+    def _risk_dialog(self, existing=None):
+        C   = self._colors
+        dlg = self._make_dialog(
+            "Edit Risk" if existing else "Add Risk", width=580
+        )
+        ex  = existing or {}
+
+        body = tk.Frame(dlg, bg=C["BG"])
+        body.pack(fill="both", expand=True, padx=4, pady=4)
+        body.columnconfigure(1, weight=1)
+
+        v_title    = self._dlg_field(body, "Title *",    0, default=ex.get("title",""))
+        v_status   = self._dlg_combo(body, "Status *",   1, RISK_STATUSES,
+                                     default=ex.get("status","open"))
+        v_deadline = self._dlg_field(body, "Deadline",   2,
+                                     default=ex.get("deadline",""))
+
+        t_desc = self._dlg_text(body, "Description *", 3, height=3)
+        t_desc.insert("1.0", ex.get("description", ""))
+
+        t_stmt = self._dlg_text(body, "Impact Statement *", 4, height=3)
+        t_stmt.insert("1.0", ex.get("statement", ""))
+
+        # Remediations sub-table
+        tk.Label(body, text="Remediations", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="nw",
+                 ).grid(row=5, column=0, sticky="nw", padx=12, pady=4)
+
+        rem_frame = tk.Frame(body, bg=C["CARD_BG"],
+                             highlightthickness=1,
+                             highlightbackground=C["HEADER_BG"])
+        rem_frame.grid(row=5, column=1, sticky="ew", padx=(0, 12), pady=4)
+
+        rem_btn_row = tk.Frame(rem_frame, bg=C["CARD_BG"])
+        rem_btn_row.pack(fill="x", padx=6, pady=4)
+
+        rem_list: list = list(ex.get("remediations", []))
+
+        rem_tree = ttk.Treeview(rem_frame,
+                                columns=("lifecycle", "title", "desc"),
+                                show="headings", height=3, selectmode="browse")
+        rem_tree.heading("lifecycle", text="Lifecycle",   anchor="w")
+        rem_tree.heading("title",     text="Title",       anchor="w")
+        rem_tree.heading("desc",      text="Description", anchor="w")
+        rem_tree.column("lifecycle", width=120, anchor="w", stretch=False)
+        rem_tree.column("title",     width=160, anchor="w", stretch=False)
+        rem_tree.column("desc",      width=200, anchor="w", stretch=True)
+
+        def _refresh_rem():
+            rem_tree.delete(*rem_tree.get_children())
+            for rem in rem_list:
+                rem_tree.insert("", "end", values=(
+                    rem.get("lifecycle",""),
+                    rem.get("title",""),
+                    rem.get("description","")[:60],
+                ))
+
+        def _add_rem():
+            d2 = self._make_dialog("Add Remediation", width=440)
+            f2 = tk.Frame(d2, bg=C["BG"])
+            f2.pack(fill="both", expand=True, padx=4, pady=4)
+            f2.columnconfigure(1, weight=1)
+            v_rlc   = self._dlg_combo(f2, "Lifecycle *", 0,
+                                      REMEDIATION_LIFECYCLES, "recommendation")
+            v_rtitle = self._dlg_field(f2, "Title *",    1, width=38)
+            t_rdesc  = self._dlg_text(f2, "Description *", 2, height=3)
+            t_rrem   = self._dlg_text(f2, "Remarks",      3, height=2)
+
+            def _ok2():
+                t = v_rtitle.get().strip()
+                d = t_rdesc.get("1.0", "end-1c").strip()
+                if not t or not d:
+                    messagebox.showwarning("Required",
+                                          "Title and Description are required.",
+                                          parent=d2)
+                    return
+                rem_list.append({
+                    "uuid":        new_uuid(),
+                    "lifecycle":   v_rlc.get(),
+                    "title":       t,
+                    "description": d,
+                    "remarks":     t_rrem.get("1.0", "end-1c").strip(),
+                })
+                _refresh_rem()
+                d2.destroy()
+            self._ok_cancel(d2, _ok2)
+            self.wait_window(d2)
+
+        def _remove_rem():
+            sel2 = rem_tree.selection()
+            if sel2:
+                rem_list.pop(rem_tree.index(sel2[0]))
+                _refresh_rem()
+
+        tk.Button(rem_btn_row, text="＋ Add", command=_add_rem,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(rem_btn_row, text="✕ Remove", command=_remove_rem,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left", padx=6)
+        rem_tree.pack(fill="x", padx=6, pady=(0, 6))
+        _refresh_rem()
+
+        t_remarks = self._dlg_text(body, "Remarks", 6, height=2)
+        t_remarks.insert("1.0", ex.get("remarks", ""))
+
+        result = {}
+
+        def _ok():
+            title = v_title.get().strip()
+            desc  = t_desc.get("1.0", "end-1c").strip()
+            stmt  = t_stmt.get("1.0", "end-1c").strip()
+            if not title or not desc or not stmt:
+                messagebox.showwarning("Required",
+                                       "Title, Description, and Impact Statement are required.",
+                                       parent=dlg)
+                return
+            result.update({
+                "uuid":         ex.get("uuid", new_uuid()),
+                "title":        title,
+                "description":  desc,
+                "statement":    stmt,
+                "status":       v_status.get(),
+                "deadline":     v_deadline.get().strip(),
+                "remediations": rem_list,
+                "remarks":      t_remarks.get("1.0", "end-1c").strip(),
+            })
+            dlg.destroy()
+
+        self._ok_cancel(dlg, _ok)
+        self.wait_window(dlg)
+        return result or None
+
+    def _add_risk(self):
+        r = self._risk_dialog()
+        if r:
+            self._risks.append(r)
+            self._refresh_risk_tree()
+
+    def _edit_risk(self):
+        sel = self._risk_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a risk to edit.")
+            return
+        idx = self._risk_tree.index(sel[0])
+        updated = self._risk_dialog(existing=self._risks[idx])
+        if updated:
+            updated["uuid"] = self._risks[idx]["uuid"]
+            self._risks[idx] = updated
+            self._refresh_risk_tree()
+
+    def _remove_risk(self):
+        sel = self._risk_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a risk to remove.")
+            return
+        self._risks.pop(self._risk_tree.index(sel[0]))
+        self._refresh_risk_tree()
+
+    # =========================================================================
+    # FINDING CRUD
+    # =========================================================================
+
+    def _finding_row(self, f):
+        return (
+            f.get("title", ""),
+            f.get("target_id", ""),
+            f.get("target_type", ""),
+            f.get("status_state", ""),
+            f.get("status_reason", ""),
+        )
+
+    def _refresh_finding_tree(self):
+        self._finding_tree.delete(*self._finding_tree.get_children())
+        for f in self._findings:
+            self._finding_tree.insert("", "end", values=self._finding_row(f))
+
+    def _finding_dialog(self, existing=None):
+        C   = self._colors
+        dlg = self._make_dialog(
+            "Edit Finding" if existing else "Add Finding", width=520
+        )
+        ex  = existing or {}
+
+        body = tk.Frame(dlg, bg=C["BG"])
+        body.pack(fill="both", expand=True, padx=4, pady=4)
+        body.columnconfigure(1, weight=1)
+
+        v_title  = self._dlg_field(body, "Title *",       0, default=ex.get("title",""))
+        v_ttype  = self._dlg_combo(body, "Target Type *", 1, FINDING_TARGET_TYPES,
+                                   default=ex.get("target_type","statement-id"))
+        v_tid    = self._dlg_field(body, "Target ID *",   2, default=ex.get("target_id",""))
+        v_state  = self._dlg_combo(body, "Status State *", 3, FINDING_STATUS_STATES,
+                                   default=ex.get("status_state","not-satisfied"))
+        v_reason = self._dlg_combo(body, "Status Reason", 4,
+                                   [r for r in FINDING_STATUS_REASONS],
+                                   default=ex.get("status_reason",""))
+
+        t_desc = self._dlg_text(body, "Description *", 5, height=3)
+        t_desc.insert("1.0", ex.get("description", ""))
+
+        t_remarks = self._dlg_text(body, "Remarks", 6, height=2)
+        t_remarks.insert("1.0", ex.get("remarks", ""))
+
+        result = {}
+
+        def _ok():
+            title = v_title.get().strip()
+            tid   = v_tid.get().strip()
+            desc  = t_desc.get("1.0", "end-1c").strip()
+            if not title or not tid or not desc:
+                messagebox.showwarning("Required",
+                                       "Title, Target ID, and Description are required.",
+                                       parent=dlg)
+                return
+            result.update({
+                "uuid":          ex.get("uuid", new_uuid()),
+                "title":         title,
+                "description":   desc,
+                "target_type":   v_ttype.get(),
+                "target_id":     tid,
+                "status_state":  v_state.get(),
+                "status_reason": v_reason.get(),
+                "remarks":       t_remarks.get("1.0", "end-1c").strip(),
+            })
+            dlg.destroy()
+
+        self._ok_cancel(dlg, _ok)
+        self.wait_window(dlg)
+        return result or None
+
+    def _add_finding(self):
+        f = self._finding_dialog()
+        if f:
+            self._findings.append(f)
+            self._refresh_finding_tree()
+
+    def _edit_finding(self):
+        sel = self._finding_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a finding to edit.")
+            return
+        idx = self._finding_tree.index(sel[0])
+        updated = self._finding_dialog(existing=self._findings[idx])
+        if updated:
+            updated["uuid"] = self._findings[idx]["uuid"]
+            self._findings[idx] = updated
+            self._refresh_finding_tree()
+
+    def _remove_finding(self):
+        sel = self._finding_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a finding to remove.")
+            return
+        self._findings.pop(self._finding_tree.index(sel[0]))
+        self._refresh_finding_tree()
+
+    # =========================================================================
+    # POA&M ITEM CRUD
+    # =========================================================================
+
+    def _item_row(self, item):
+        return (
+            item.get("title", ""),
+            str(len(item.get("related_observation_uuids", []))),
+            str(len(item.get("related_risk_uuids", []))),
+            str(len(item.get("related_finding_uuids", []))),
+        )
+
+    def _refresh_item_tree(self):
+        self._item_tree.delete(*self._item_tree.get_children())
+        for item in self._poam_items:
+            self._item_tree.insert("", "end", values=self._item_row(item))
+
+    def _poam_item_dialog(self, existing=None):
+        C   = self._colors
+        dlg = self._make_dialog(
+            "Edit POA&M Item" if existing else "Add POA&M Item", width=560
+        )
+        ex  = existing or {}
+
+        body = tk.Frame(dlg, bg=C["BG"])
+        body.pack(fill="both", expand=True, padx=4, pady=4)
+        body.columnconfigure(1, weight=1)
+
+        v_title = self._dlg_field(body, "Title *",      0, default=ex.get("title",""))
+        t_desc  = self._dlg_text(body, "Description *", 1, height=3)
+        t_desc.insert("1.0", ex.get("description", ""))
+
+        # Cross-reference pickers ─ show UUID+title of available records
+        def _obs_label(o):
+            t = o.get("title","") or o.get("description","")[:40]
+            return f"{o['uuid'][:8]}…  {t}"
+
+        def _risk_label(r):
+            return f"{r['uuid'][:8]}…  {r.get('title','')}"
+
+        def _find_label(f):
+            return f"{f['uuid'][:8]}…  {f.get('title','')}"
+
+        def _xref_section(parent, row, label, all_items, label_fn, selected_uuids):
+            """Build a multi-select Listbox for cross-referencing by UUID."""
+            tk.Label(parent, text=label, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 10), anchor="nw",
+                     ).grid(row=row, column=0, sticky="nw", padx=12, pady=4)
+            lb = tk.Listbox(parent, selectmode="multiple",
+                            bg=C["CARD_BG"], fg=C["TEXT"],
+                            font=("Helvetica", 9), height=min(len(all_items)+1, 6),
+                            width=55, relief="flat", exportselection=False,
+                            highlightthickness=1,
+                            highlightbackground=C["HEADER_BG"])
+            for item in all_items:
+                lb.insert("end", label_fn(item))
+            # Pre-select matching items
+            for i, item in enumerate(all_items):
+                if item["uuid"] in selected_uuids:
+                    lb.selection_set(i)
+            lb.grid(row=row, column=1, sticky="ew", padx=(0, 12), pady=4)
+            return lb
+
+        obs_lb  = _xref_section(body, 2, "Related Observations",
+                                 self._observations, _obs_label,
+                                 ex.get("related_observation_uuids", []))
+        risk_lb = _xref_section(body, 3, "Related Risks",
+                                 self._risks, _risk_label,
+                                 ex.get("related_risk_uuids", []))
+        find_lb = _xref_section(body, 4, "Related Findings",
+                                 self._findings, _find_label,
+                                 ex.get("related_finding_uuids", []))
+
+        t_remarks = self._dlg_text(body, "Remarks", 5, height=2)
+        t_remarks.insert("1.0", ex.get("remarks", ""))
+
+        result = {}
+
+        def _ok():
+            title = v_title.get().strip()
+            desc  = t_desc.get("1.0", "end-1c").strip()
+            if not title or not desc:
+                messagebox.showwarning("Required",
+                                       "Title and Description are required.",
+                                       parent=dlg)
+                return
+            result.update({
+                "uuid":        ex.get("uuid", new_uuid()),
+                "title":       title,
+                "description": desc,
+                "related_observation_uuids": [
+                    self._observations[i]["uuid"]
+                    for i in obs_lb.curselection()
+                ],
+                "related_risk_uuids": [
+                    self._risks[i]["uuid"]
+                    for i in risk_lb.curselection()
+                ],
+                "related_finding_uuids": [
+                    self._findings[i]["uuid"]
+                    for i in find_lb.curselection()
+                ],
+                "remarks": t_remarks.get("1.0", "end-1c").strip(),
+            })
+            dlg.destroy()
+
+        self._ok_cancel(dlg, _ok)
+        self.wait_window(dlg)
+        return result or None
+
+    def _add_poam_item(self):
+        item = self._poam_item_dialog()
+        if item:
+            self._poam_items.append(item)
+            self._refresh_item_tree()
+
+    def _edit_poam_item(self):
+        sel = self._item_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a POA&M item to edit.")
+            return
+        idx = self._item_tree.index(sel[0])
+        updated = self._poam_item_dialog(existing=self._poam_items[idx])
+        if updated:
+            updated["uuid"] = self._poam_items[idx]["uuid"]
+            self._poam_items[idx] = updated
+            self._refresh_item_tree()
+
+    def _remove_poam_item(self):
+        sel = self._item_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a POA&M item to remove.")
+            return
+        self._poam_items.pop(self._item_tree.index(sel[0]))
+        self._refresh_item_tree()
+
+    def _browse_ssp(self):
+        """Open a file picker and write the chosen SSP path into the SSP Reference field."""
+        path = filedialog.askopenfilename(
+            title="Select SSP JSON file",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if path:
+            self._vars["import_ssp"].set(path)
+
+    # =========================================================================
+    # COLLECT / POPULATE / RESET
+    # =========================================================================
+
+    def _collect(self):
+        """Gather all form values into self._poam before save."""
+        self._poam["title"]       = self._vars["title"].get().strip()
+        self._poam["version"]     = self._vars["version"].get().strip() or "1.0"
+        self._poam["import_ssp"]  = self._vars["import_ssp"].get().strip()
+        self._poam["system_id"]   = self._vars["system_id"].get().strip()
+        self._poam["observations"] = list(self._observations)
+        self._poam["risks"]        = list(self._risks)
+        self._poam["findings"]     = list(self._findings)
+        self._poam["poam_items"]   = list(self._poam_items)
+
+    def _populate(self):
+        """Load self._poam values into all form widgets and tables."""
+        def setv(key, val):
+            if key in self._vars:
+                self._vars[key].set(val)
+
+        setv("title",      self._poam.get("title", ""))
+        setv("version",    self._poam.get("version", "1.0"))
+        setv("import_ssp", self._poam.get("import_ssp", ""))
+        setv("system_id",  self._poam.get("system_id", ""))
+
+        self._observations = list(self._poam.get("observations", []))
+        self._risks        = list(self._poam.get("risks", []))
+        self._findings     = list(self._poam.get("findings", []))
+        self._poam_items   = list(self._poam.get("poam_items", []))
+
+        self._refresh_obs_tree()
+        self._refresh_risk_tree()
+        self._refresh_finding_tree()
+        self._refresh_item_tree()
+
+    def _reset(self):
+        """Reset the editor to a blank POA&M."""
+        self._poam         = empty_poam()
+        self._observations = []
+        self._risks        = []
+        self._findings     = []
+        self._poam_items   = []
+        self._populate()
+
+    # =========================================================================
+    # SAVE / OPEN / NEW
+    # =========================================================================
+
+    def _save(self):
+        self._collect()
+
+        if not self._poam.get("title"):
+            messagebox.showwarning("Required", "POA&M Title is required before saving.")
+            return
+        if not self._poam.get("poam_items"):
+            if not messagebox.askyesno(
+                "No POA&M Items",
+                "The POA&M has no items yet. Save anyway?",
+            ):
+                return
+
+        path = filedialog.asksaveasfilename(
+            title="Save POA&M as JSON",
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            initialfile=f"poam_{self._poam['title'][:30].replace(' ','_')}.json",
+        )
+        if not path:
+            return
+
+        try:
+            doc = build_oscal_poam(self._poam)
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(doc, f, indent=2, ensure_ascii=False)
+        except Exception as exc:
+            messagebox.showerror("Save failed", str(exc))
+            return
+
+        name = Path(path).name
+        self._status_lbl.config(text=f"Saved: {name}", fg=self._colors["GREEN"])
+        self._set_status(f"Saved POA&M: {name}")
+
+    def _open(self):
+        path = filedialog.askopenfilename(
+            title="Open OSCAL POA&M",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+
+        try:
+            with open(path, encoding="utf-8") as f:
+                raw = json.load(f)
+        except json.JSONDecodeError as exc:
+            messagebox.showerror("Invalid JSON", str(exc))
+            return
+
+        if "plan-of-action-and-milestones" not in raw:
+            messagebox.showerror(
+                "Not a POA&M",
+                "This file does not appear to be an OSCAL POA&M document.\n"
+                "(Missing 'plan-of-action-and-milestones' key.)",
+            )
+            return
+
+        try:
+            self._poam = parse_poam_file(raw)
+        except Exception as exc:
+            messagebox.showerror("Parse error", str(exc))
+            return
+
+        self._populate()
+        name = Path(path).name
+        self._status_lbl.config(
+            text=f"Opened: {name}", fg=self._colors["TEXT"]
+        )
+        self._set_status(f"Opened POA&M: {name}")
+
+    def _new(self):
+        if messagebox.askyesno(
+            "New POA&M",
+            "Discard the current POA&M and start a new blank one?",
+        ):
+            self._reset()
+            self._status_lbl.config(text="New POA&M", fg=self._colors["SUBTEXT"])
+            self._set_status("New POA&M started.")

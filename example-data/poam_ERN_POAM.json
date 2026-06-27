@@ -1,0 +1,25 @@
+{
+  "plan-of-action-and-milestones": {
+    "uuid": "2d8f329a-31e3-45bc-98e0-5952ecc02087",
+    "metadata": {
+      "title": "ERN POAM",
+      "last-modified": "2026-06-27T02:53:58Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "import-ssp": {
+      "href": "/Users/justin/Documents/GitHub/OSCAL-User-Toolkit/example-data/ssp_ERN.json"
+    },
+    "system-id": {
+      "identifier-type": "https://ietf.org/rfc/rfc4122",
+      "id": "Example Research Network"
+    },
+    "poam-items": [
+      {
+        "uuid": "30b7576f-0a57-4645-acb1-01f2d60a7b8a",
+        "title": "Secure software development policy",
+        "description": "A secure software development policy will be developed for this system."
+      }
+    ]
+  }
+}

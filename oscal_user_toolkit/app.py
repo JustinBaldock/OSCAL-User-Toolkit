@@ -38,6 +38,7 @@ from .catalog_tab import CatalogTab
 from .ssp_tab import SSPTab
 from .component_tab import ComponentTab
 from .capability_tab import CapabilityTab
+from .poam_tab import POAMTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -462,6 +463,14 @@ class OSCALApp(tk.Tk):
             get_components = lambda: self._component_tab._components,
         )
         nb.add(self._ssp_tab, text="🛡  SSP Editor")
+
+        # ── POA&M Editor tab ──────────────────────────────────────────────────
+        self._poam_tab = POAMTab(
+            parent     = nb,
+            colors     = COLORS,
+            set_status = lambda msg: self._status_lbl.config(text=msg),
+        )
+        nb.add(self._poam_tab, text="📋  POA&M Editor")
 
     # =========================================================================
     # STATUS BAR
