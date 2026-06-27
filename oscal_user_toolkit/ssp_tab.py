@@ -2144,12 +2144,7 @@ class SSPTab(tk.Frame):
         self._ssp["information_types"][idx] = updated
         # Replace the treeview row at the same position
         self._it_tree.delete(sel[0])
-        # Re-insert at the same index using after/before tricks
-        children = self._it_tree.get_children()
-        if idx == 0 or not children:
-            self._it_tree.insert("", idx, values=self._it_row_values(updated))
-        else:
-            self._it_tree.insert("", idx, values=self._it_row_values(updated))
+        self._it_tree.insert("", idx, values=self._it_row_values(updated))
 
     def _add_role(self):
         """Show a dialog to add a role to the SSP."""

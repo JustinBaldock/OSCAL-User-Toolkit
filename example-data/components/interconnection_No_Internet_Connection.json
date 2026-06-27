@@ -1,0 +1,110 @@
+{
+  "component-definition": {
+    "uuid": "d11fe558-fc0b-4aa7-9db8-00a74890f48d",
+    "metadata": {
+      "title": "interconnection - No Internet Connection",
+      "last-modified": "2026-06-27T01:45:54Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+        "type": "interconnection",
+        "title": "No Internet Connection",
+        "description": "This system does not provide any internet access.",
+        "purpose": "This system does not provide any internet access.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "System owner requires no internet access to this system."
+          },
+          {
+            "role-id": "isso",
+            "remarks": "Ensures that internet cannot be access by any user or system."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "23c30ae0-567b-4745-90bd-6bf0d126c47d",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for No Internet Connection.",
+            "implemented-requirements": [
+              {
+                "uuid": "dfe4bde6-e43a-4023-bea3-c42dd1aec991",
+                "control-id": "ism-1175",
+                "description": "Priviledged user accounts cannot access the internet from this system."
+              },
+              {
+                "uuid": "e95916d8-1f5a-478a-aab7-aa0a72d26e84",
+                "control-id": "ism-0874",
+                "description": "Mobile devices and desktop computers can not access the internet at all."
+              },
+              {
+                "uuid": "dda5bbd9-d10e-40f3-ad2e-5d8cc684340d",
+                "control-id": "ism-1490",
+                "description": "There are no internet-facing servers on this system."
+              },
+              {
+                "uuid": "2e87a66d-8918-4e2e-a917-74d4fddafb38",
+                "control-id": "ism-1486",
+                "description": "No web browser on this system can access the internet so can't process any java from the internet."
+              },
+              {
+                "uuid": "e17f429d-27d1-42a5-b690-44cdf50548a5",
+                "control-id": "ism-1485",
+                "description": "Web browser cannot process web advertisments from the internet as there is no access to the internet."
+              },
+              {
+                "uuid": "e8a2c4c1-8b19-4045-a7b7-f3f717f9f812",
+                "control-id": "ism-1483",
+                "description": "No servers can access the internet. However all servers should maintain the latest application release as per the software update policy."
+              },
+              {
+                "uuid": "20f13f00-76c8-4d69-aefb-40e0b1b06667",
+                "control-id": "ism-1978",
+                "description": "No servers are internet-facing."
+              },
+              {
+                "uuid": "1e3d7a99-dc8b-437a-a2d3-1bbf94e0e638",
+                "control-id": "ism-1877",
+                "description": "No servers, switches or desktops are internet-facing.\n\nThe network administrators will ensure all network encryptors  patches, updates or other vendor mitigation are applied as soon as practical."
+              },
+              {
+                "uuid": "58549f24-3b2d-4950-8455-2ed72a76cea9",
+                "control-id": "ism-1753",
+                "description": "All network encryptors will be replaced before they are no longer supported by vendors. As soon as end of life of encryptors is announced the plan and budget to replace this device will be allocated."
+              },
+              {
+                "uuid": "c8326377-c13b-4cf9-a521-d361d0466d72",
+                "control-id": "ism-1906",
+                "description": "There are no internet-facing servers to collect event logs from."
+              },
+              {
+                "uuid": "b785f8b5-c690-496f-a338-2e2f3a82dcd6",
+                "control-id": "ism-1960",
+                "description": "All network encryptors will send events logs to central logging storage for central analysis and monitoring.\n\nNetwork administrators will check network encryptor event logs on the device weekly."
+              },
+              {
+                "uuid": "a78df4a3-6700-4e1a-973b-d73948ac286b",
+                "control-id": "ism-1701",
+                "description": "There are no internet-facing servers.\n\nA vulnerability scanner has a specific daily scheduled scan for the network encryptors."
+              },
+              {
+                "uuid": "7d27aff2-c9f3-469a-ae2c-125e8351b1ca",
+                "control-id": "ism-1818",
+                "description": "The system has no access to the internet. No authentication or authorisation of clients is allowed to happen outside of the system."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

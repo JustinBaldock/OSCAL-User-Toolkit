@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Network",
-      "last-modified": "2026-06-26T08:05:57Z",
+      "last-modified": "2026-06-27T01:46:32Z",
       "version": "0.1",
       "oscal-version": "1.1.2"
     },
@@ -57,7 +57,7 @@
     "system-implementation": {
       "components": [
         {
-          "uuid": "a6d1c93a-3bc0-4f22-bc0f-b2d524391700",
+          "uuid": "1b71d846-7b29-43e0-b2bf-5a9b3225c2bc",
           "type": "this-system",
           "title": "Example Research Network",
           "description": "This is a description of a small example network.",
@@ -121,7 +121,45 @@
           "purpose": "provide hardware based network encryption",
           "status": {
             "state": "operational"
-          }
+          },
+          "protocols": [
+            {
+              "uuid": "94af9104-8800-496a-b167-41fcf4b879c5",
+              "name": "https",
+              "title": "Secure local management",
+              "port-ranges": [
+                {
+                  "start": 443,
+                  "end": 443,
+                  "transport": "TCP"
+                }
+              ]
+            },
+            {
+              "uuid": "a44d1c44-cff0-47eb-a4bd-2e0ded2daf8b",
+              "name": "IKE",
+              "title": "Encrypted data transport",
+              "port-ranges": [
+                {
+                  "start": 500,
+                  "end": 500,
+                  "transport": "UDP"
+                }
+              ]
+            },
+            {
+              "uuid": "64685e54-847c-4a1a-a516-3755e9c7ab32",
+              "name": "NAT-T",
+              "title": "NAT Traversal",
+              "port-ranges": [
+                {
+                  "start": 4500,
+                  "end": 4500,
+                  "transport": "UDP"
+                }
+              ]
+            }
+          ]
         },
         {
           "uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
@@ -155,7 +193,57 @@
           "purpose": "The Windows fileshare mapped as I:",
           "status": {
             "state": "operational"
-          }
+          },
+          "protocols": [
+            {
+              "uuid": "4c8b9c35-3812-4fe3-aa12-e231f450d59a",
+              "name": "smb",
+              "title": "Server Message Block",
+              "port-ranges": [
+                {
+                  "start": 445,
+                  "end": 445,
+                  "transport": "TCP"
+                },
+                {
+                  "start": 139,
+                  "end": 139,
+                  "transport": "TCP",
+                  "remarks": "Legacy"
+                },
+                {
+                  "start": 137,
+                  "end": 138,
+                  "transport": "UDP",
+                  "remarks": "Legacy"
+                },
+                {
+                  "start": 443,
+                  "end": 443,
+                  "transport": "TCP",
+                  "remarks": "SMB over QUIC"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+          "type": "interconnection",
+          "title": "No Internet Connection",
+          "description": "This system does not provide any internet access.",
+          "purpose": "This system does not provide any internet access.",
+          "status": {
+            "state": "operational"
+          },
+          "responsible-roles": [
+            {
+              "role-id": "system-owner"
+            },
+            {
+              "role-id": "isso"
+            }
+          ]
         }
       ]
     },
@@ -163,7 +251,7 @@
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "0b5928b7-1cea-4098-a6b9-516e83bcb7ed",
+          "uuid": "78b3e801-2eac-4df2-b863-6b4e2c9c6179",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -177,7 +265,7 @@
           ]
         },
         {
-          "uuid": "4b77aa11-28bb-494d-b7b0-49ce0f939dd2",
+          "uuid": "7ceb65b7-ead3-4268-8504-14de355f2f5b",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -191,7 +279,7 @@
           ]
         },
         {
-          "uuid": "41cbdc89-dd0b-43ab-8ee7-96b38ed70a00",
+          "uuid": "3e0889a1-fb47-4a2d-8801-e8788aeafa27",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -205,7 +293,7 @@
           ]
         },
         {
-          "uuid": "14ad4141-b4dd-48d4-ae4e-b3f1d2485343",
+          "uuid": "1a0ff09d-d421-4dba-98f9-e6c9f1612cd1",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -219,7 +307,7 @@
           ]
         },
         {
-          "uuid": "e4cb3821-8bd4-437b-9e00-75908cc78d59",
+          "uuid": "fdfd46ad-8b28-4daf-bace-41e9666d0d98",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -233,7 +321,7 @@
           ]
         },
         {
-          "uuid": "5c27caf4-bd58-4338-a476-c103384312d4",
+          "uuid": "d587f127-fa8a-4c2d-b0a7-531bbe5db025",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -247,7 +335,7 @@
           ]
         },
         {
-          "uuid": "99e62c97-ed83-4944-a4ea-888baa9ff306",
+          "uuid": "10b02b13-89b0-42da-8cfa-1c5cd749b240",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -261,7 +349,7 @@
           ]
         },
         {
-          "uuid": "681a9ac9-8ef5-44d8-901b-ddfb7432fa80",
+          "uuid": "91a94773-4f69-49bb-8310-04611b5d6a21",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -275,7 +363,7 @@
           ]
         },
         {
-          "uuid": "1a6c5292-6530-423e-8f64-3083f9072929",
+          "uuid": "0d73a5f8-d393-423b-ad07-fd3bf4b01c2d",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -289,7 +377,7 @@
           ]
         },
         {
-          "uuid": "6a2c968d-c189-48d4-b499-53c3647791b0",
+          "uuid": "ce376863-4301-48a9-bb20-d9c77dd13c36",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -303,7 +391,7 @@
           ]
         },
         {
-          "uuid": "5504170f-eb86-4de2-9e0a-d02b55f87289",
+          "uuid": "14a16e93-a26c-4009-a4e4-0746b223b45c",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -317,7 +405,7 @@
           ]
         },
         {
-          "uuid": "5eb005f2-17df-44e6-87f0-737077c8fb8b",
+          "uuid": "18d8676d-b89f-4724-a5df-feb20f8d816a",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -331,7 +419,7 @@
           ]
         },
         {
-          "uuid": "bcf92f44-6a4d-4765-9915-73cf1b3a60f1",
+          "uuid": "a56692ca-537e-4611-bf17-ad3800267331",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -345,7 +433,7 @@
           ]
         },
         {
-          "uuid": "8af10b10-613d-4498-96a5-a6fc9f1be000",
+          "uuid": "0214a2ef-2e73-440d-8197-ddb378a1e124",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -359,7 +447,7 @@
           ]
         },
         {
-          "uuid": "7175ee8a-791d-4c3f-9c14-cdede6530e34",
+          "uuid": "f0f807bc-4411-432d-bb42-632471b6547e",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -373,13 +461,195 @@
           ]
         },
         {
-          "uuid": "f2f7aca9-67f4-4287-95a7-e215f440a14c",
+          "uuid": "26ed4ee8-43e3-45c5-8ea3-6bbc5df99ddb",
           "control-id": "ism-2012",
           "by-components": [
             {
               "component-uuid": "b541b5b3-e67a-495e-b8be-5ccb329ed128",
               "uuid": "2eeab264-938b-48e6-a68b-3731da7c6616",
               "description": "The GPO sets the windows screen lock to activate after 10 minutes of user inactivity on all Windows desktop computers.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "e5396b63-c249-466e-b509-80daf817d138",
+          "control-id": "ism-1175",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "31079304-d98e-4cec-890b-1590d5f18c6f",
+              "description": "Priviledged user accounts cannot access the internet from this system.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "29c08ecc-e73f-4a70-8464-8978941c6c69",
+          "control-id": "ism-0874",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "657e9d5f-e6a3-489b-915a-7ab2caf8037d",
+              "description": "Mobile devices and desktop computers can not access the internet at all.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "d5e8d736-98e4-4e61-8e17-e4595c400f7b",
+          "control-id": "ism-1490",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "b4cddc25-3587-4c5f-8f51-d915ca72f7a1",
+              "description": "There are no internet-facing servers on this system.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "890cfbf8-8203-499e-ad71-b15b38f54b67",
+          "control-id": "ism-1486",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "ea7f5769-a80b-4183-a908-ba138a7a2715",
+              "description": "No web browser on this system can access the internet so can't process any java from the internet.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "d9f790e8-dddf-4af0-a0db-3503b8c086a3",
+          "control-id": "ism-1485",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "e8625f9c-076c-4672-81c8-70ebbe8130c0",
+              "description": "Web browser cannot process web advertisments from the internet as there is no access to the internet.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "b6a5bb5d-2d73-489d-bda2-c66aef4986e5",
+          "control-id": "ism-1483",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "f853ae72-2861-4a55-a1e3-cefa40d1ffae",
+              "description": "No servers can access the internet. However all servers should maintain the latest application release as per the software update policy.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "3991848b-21df-4beb-868a-34a74778989b",
+          "control-id": "ism-1978",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "9992fbd5-5420-43b3-b715-80cd7bcf14e9",
+              "description": "No servers are internet-facing.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "49017843-f3b3-49be-8f32-f1f19e236b9b",
+          "control-id": "ism-1877",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "5482072e-0fe9-4256-a6b6-580fac95caf4",
+              "description": "No servers, switches or desktops are internet-facing.\n\nThe network administrators will ensure all network encryptors  patches, updates or other vendor mitigation are applied as soon as practical.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "d64a9de8-c510-40b7-8fb1-90a2097f3196",
+          "control-id": "ism-1753",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "5e59a0cd-b6e5-40e4-be6b-ed63ddbfa95b",
+              "description": "All network encryptors will be replaced before they are no longer supported by vendors. As soon as end of life of encryptors is announced the plan and budget to replace this device will be allocated.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "2bdb0faa-84f5-48da-83b2-7a3ea0253e67",
+          "control-id": "ism-1906",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "f9894141-4510-428b-8a18-b3a83e20baf3",
+              "description": "There are no internet-facing servers to collect event logs from.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "179ea131-c83c-489f-9cf8-64e3a991d102",
+          "control-id": "ism-1960",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "829bb527-da5a-4479-a583-a64c828537c5",
+              "description": "All network encryptors will send events logs to central logging storage for central analysis and monitoring.\n\nNetwork administrators will check network encryptor event logs on the device weekly.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "960fcfbe-e37d-4447-b371-291325ce3637",
+          "control-id": "ism-1701",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "c4ac894b-1fb0-4c18-aad1-6463334e1af1",
+              "description": "There are no internet-facing servers.\n\nA vulnerability scanner has a specific daily scheduled scan for the network encryptors.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "19d445b6-8343-4463-a815-e05a35365b39",
+          "control-id": "ism-1818",
+          "by-components": [
+            {
+              "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
+              "uuid": "6830c521-74f0-43fb-b8f8-32ccbf069d90",
+              "description": "The system has no access to the internet. No authentication or authorisation of clients is allowed to happen outside of the system.",
               "implementation-status": {
                 "state": "implemented"
               }
@@ -392,11 +662,11 @@
       "resources": [
         {
           "uuid": "d908cee1-e8bf-4087-8a19-194b2edbc039",
-          "title": "Information security manual",
+          "title": "Information security manual non-classified Baseline",
           "props": [
             {
               "name": "type",
-              "value": "catalog"
+              "value": "profile"
             },
             {
               "name": "version",
@@ -413,7 +683,7 @@
           ],
           "rlinks": [
             {
-              "href": "ISM_catalog.json"
+              "href": "ISM_NON_CLASSIFIED-baseline_profile.json"
             }
           ]
         }
