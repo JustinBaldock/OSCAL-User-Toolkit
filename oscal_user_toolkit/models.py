@@ -25,12 +25,18 @@ from datetime import datetime, timezone   # Used to get the current date/time
 from pathlib import Path                  # Cross-platform file path handling
 
 try:
+    # jsonschema validates a JSON document against a schema (a set of rules).
+    # It is an optional dependency — if not installed, schema validation is
+    # silently skipped. We record availability in a flag so other code can
+    # check it without repeating the try/except.
     import jsonschema
     _JSONSCHEMA_AVAILABLE = True
 except ImportError:
     _JSONSCHEMA_AVAILABLE = False
 
 try:
+    # python-docx builds Microsoft Word (.docx) files programmatically.
+    # Also optional — if missing, the Export DOCX button will show an error.
     from docx import Document
     from docx.shared import Pt, RGBColor, Inches
     from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -1060,20 +1066,30 @@ def _make_oscal_validator(schema):
     not support.  Rather than crashing or silently skipping all pattern checks,
     we wrap the 'pattern' keyword so that any pattern Python cannot compile is
     simply skipped — the field is treated as valid for that check only.
+
+    How it works: jsonschema allows you to override how individual keywords are
+    handled via validators.extend(). We replace the built-in 'pattern' handler
+    with our own that catches re.error (meaning Python can't parse the regex)
+    and silently returns — so the field passes that check.
     """
     import re
 
     def _pattern(validator, patrn, instance, schema):
+        # Only check strings — other types have no regex to match against
         if not isinstance(instance, str):
             return
         try:
             if not re.search(patrn, instance):
+                # 'yield' here is how jsonschema handlers report errors —
+                # the validator iterates over yielded ValidationError objects
                 yield jsonschema.ValidationError(
                     f"{instance!r} does not match {patrn!r}"
                 )
         except re.error:
             pass  # ECMA-262 pattern Python can't compile — skip the check
 
+    # Create a custom validator class that inherits all Draft7 rules but
+    # uses our _pattern function for the 'pattern' keyword.
     OSCALValidator = jsonschema.validators.extend(
         jsonschema.Draft7Validator,
         {"pattern": _pattern},
@@ -1131,22 +1147,30 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
     """
     Rebuild the All Controls and Applied Controls Treeview tabs.
 
-    Shared by ComponentTab and CapabilityTab so the control-list rendering
-    logic only exists in one place.
+    Shared by ComponentTab, CapabilityTab, and SSPTab so the control-list
+    rendering logic only exists in one place.
 
     Parameters:
-        ctrl_responses - dict {control_id: response_text}
+        ctrl_responses - dict {control_id: response_text}.  A non-empty value
+                         means the control has been addressed and gets a filled
+                         dot (●). An empty string means no entry yet (○).
         all_controls   - list of control dicts (id, label, title, statement)
-        search_term    - text filter applied to the All Controls tab only
+        search_term    - text filter applied to the All Controls tab only;
+                         empty string means "show all"
         ctrl_tree      - Treeview widget for the All Controls tab
         applied_tree   - Treeview widget for the Applied Controls tab
-        notebook       - ttk.Notebook holding both tabs (for label updates)
+        notebook       - ttk.Notebook holding both tabs (tab labels are updated
+                         to show the current count, e.g. "Applied Controls (3)")
         progress_lbl   - Label widget showing "N of M controls have responses"
     """
     DOT_DONE  = "●"
     DOT_EMPTY = "○"
 
     term = search_term.lower().strip()
+    # Build the filtered list for the All Controls tab.
+    # The conditional expression "X if condition else Y" is equivalent to:
+    #   if term: filtered = [list comprehension]
+    #   else:    filtered = all_controls
     filtered = (
         [c for c in all_controls
          if term in c["label"].lower()
@@ -1165,6 +1189,9 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
         has_resp = bool(ctrl_responses.get(ctrl["id"], "").strip())
         dot = DOT_DONE  if has_resp else DOT_EMPTY
         tag = "done"    if has_resp else "empty"
+        # iid is the item's internal ID in the Treeview — we use the control
+        # ID so we can later look up the selected control directly with
+        # tree.selection()[0] instead of having to map row index → control.
         tree.insert(
             "", "end", iid=ctrl["id"],
             values=(dot, ctrl["label"], ctrl["statement"] or ctrl["title"]),

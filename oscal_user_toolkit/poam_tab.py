@@ -64,22 +64,35 @@ class POAMTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, set_status):
+        """
+        Initialise the POAMTab.
+
+        Parameters:
+            parent     - The ttk.Notebook this tab lives inside
+            colors     - Shared colour dictionary from app.py
+            set_status - Callback: updates the main window status bar
+        """
         super().__init__(parent, bg=colors["BG"])
 
         self._colors     = colors
         self._set_status = set_status
 
-        # Working data — mirrors the POA&M dict while editing
+        # Working data — mirrors the POA&M dict while editing.
+        # empty_poam() returns a blank dict with the correct keys pre-filled
+        # so the rest of the code never needs to guard against missing keys.
         self._poam = empty_poam()
 
-        # Working lists for the four tables.  _collect() writes them back to
-        # self._poam; _populate() reads from self._poam into them.
+        # Working lists for the four tables.  Each list is the live copy while
+        # the user edits; _collect() writes them back to self._poam before
+        # saving, and _populate() reads from self._poam into them after loading.
         self._observations: list = []
         self._risks:        list = []
         self._findings:     list = []
         self._poam_items:   list = []
 
-        # StringVar registry for simple text/combo fields
+        # StringVar registry for simple single-line text and combobox fields.
+        # Keys match the self._poam dict keys (e.g. "title", "version").
+        # Using a dict avoids naming an instance variable for every field.
         self._vars: dict = {}
 
         self._build()
@@ -89,16 +102,22 @@ class POAMTab(tk.Frame):
     # =========================================================================
 
     def _build(self):
+        """Assemble the toolbar and the scrollable form canvas."""
         self._build_toolbar()
         self._build_canvas()
 
     def _build_toolbar(self):
+        """
+        Create the top toolbar with Save, Open, and New buttons, plus a
+        save-status label that updates after each file operation.
+        """
         C  = self._colors
         tb = tk.Frame(self, bg=C["CARD_BG"], height=52)
         tb.pack(fill="x", side="top")
         tb.pack_propagate(False)
 
         def btn(text, cmd, bg, abg):
+            """Local helper — create and pack one toolbar button."""
             tk.Button(
                 tb, text=text, command=cmd,
                 bg=bg, fg=C["BG"], font=("Helvetica", 11, "bold"),
@@ -118,6 +137,15 @@ class POAMTab(tk.Frame):
         self._status_lbl.pack(side="left", padx=16)
 
     def _build_canvas(self):
+        """
+        Create the scrollable canvas that contains the entire POA&M form.
+
+        tkinter has no native scrollable Frame, so the standard approach is:
+          1. Create a Canvas (which supports scrolling natively).
+          2. Embed a plain Frame inside it via create_window().
+          3. Bind <Configure> events to keep the scroll region and frame
+             width in sync as the window resizes.
+        """
         C      = self._colors
         canvas = tk.Canvas(self, bg=C["BG"], highlightthickness=0)
         vsb    = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
@@ -127,8 +155,10 @@ class POAMTab(tk.Frame):
 
         form = tk.Frame(canvas, bg=C["BG"])
         win  = canvas.create_window((0, 0), window=form, anchor="nw")
+        # Whenever the inner form grows taller, update the scrollable region
         form.bind("<Configure>",
                   lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        # Whenever the canvas (window) is resized, stretch the form to match
         canvas.bind("<Configure>",
                     lambda e: canvas.itemconfig(win, width=e.width))
         self._canvas = canvas
@@ -136,6 +166,14 @@ class POAMTab(tk.Frame):
         self._build_form(form)
 
     def _on_mousewheel(self, event):
+        """
+        Scroll the canvas on mouse-wheel, but only when this tab is active.
+
+        bind_all("<MouseWheel>") fires on every tab in the notebook, so without
+        this guard, scrolling on any tab would also scroll this canvas.
+        We compare the notebook's currently selected widget path against str(self)
+        to scroll only when this tab is the one the user is looking at.
+        """
         try:
             nb = self.master
             if hasattr(nb, "select") and nb.select() == str(self):
@@ -148,10 +186,19 @@ class POAMTab(tk.Frame):
     # =========================================================================
 
     def _build_form(self, parent):
+        """
+        Build the five-section POA&M editing form inside the scrollable canvas.
+
+        Uses three local helper functions (section, field, table_section) to
+        keep the repetitive widget-creation code DRY.  Each helper is defined
+        as a nested function because it only makes sense in this context and
+        closes over the local variables C and P.
+        """
         C = self._colors
-        P = dict(padx=28)
+        P = dict(padx=28)   # Standard horizontal padding, unpacked with **P
 
         def section(title):
+            """Dark coloured section heading bar across the full width."""
             hdr = tk.Frame(parent, bg=C["HEADER_BG"])
             hdr.pack(fill="x", **P, pady=(20, 4))
             tk.Label(hdr, text=title,
@@ -160,6 +207,13 @@ class POAMTab(tk.Frame):
                      ).pack(side="left", padx=12, pady=6)
 
         def field(label, key, width=50, default=""):
+            """
+            Add a label + Entry row to the form and register its StringVar.
+
+            The StringVar is stored in self._vars[key] so _collect() and
+            _populate() can read/write it by key without needing a separate
+            instance variable for each field.
+            """
             v = tk.StringVar(value=default)
             self._vars[key] = v
             row = tk.Frame(parent, bg=C["BG"])
@@ -316,6 +370,22 @@ class POAMTab(tk.Frame):
     # =========================================================================
 
     def _make_dialog(self, title, width=480):
+        """
+        Create and return a modal Toplevel dialog window.
+
+        transient() keeps the dialog stacked above the main window.
+        grab_set() makes it modal — all keyboard and mouse events are routed
+        exclusively to this dialog until it is closed, preventing the user from
+        clicking behind it.  The caller adds content widgets and then calls
+        self.wait_window(dlg) to block until the dialog closes.
+
+        Parameters:
+            title - Dialog window title
+            width - Minimum window width in pixels
+
+        Returns:
+            A configured tk.Toplevel ready to receive content widgets.
+        """
         C   = self._colors
         dlg = tk.Toplevel(self)
         dlg.title(title)
@@ -387,6 +457,7 @@ class POAMTab(tk.Frame):
     # =========================================================================
 
     def _obs_row(self, o):
+        """Convert an observation dict into a tuple of display values for the Treeview row."""
         return (
             o.get("title", "") or o.get("description", "")[:60],
             ", ".join(o.get("methods", [])),
@@ -396,15 +467,28 @@ class POAMTab(tk.Frame):
         )
 
     def _refresh_obs_tree(self):
+        """Clear and repopulate the Observations Treeview from self._observations."""
         self._obs_tree.delete(*self._obs_tree.get_children())
         for o in self._observations:
             self._obs_tree.insert("", "end", values=self._obs_row(o))
 
     def _observation_dialog(self, existing=None):
+        """
+        Show a modal dialog to add or edit one observation.
+
+        Parameters:
+            existing - An existing observation dict to pre-fill the form,
+                       or None to start with an empty form.
+
+        Returns:
+            A filled observation dict, or None if the user cancelled.
+        """
         C   = self._colors
         dlg = self._make_dialog(
             "Edit Observation" if existing else "Add Observation", width=560
         )
+        # 'ex or {}' means: use 'existing' if provided, otherwise use an empty
+        # dict so all the .get() calls below return their defaults safely.
         ex  = existing or {}
 
         body = tk.Frame(dlg, bg=C["BG"])
@@ -557,12 +641,14 @@ class POAMTab(tk.Frame):
         return result or None
 
     def _add_observation(self):
+        """Open the observation dialog and append the result to the list."""
         obs = self._observation_dialog()
         if obs:
             self._observations.append(obs)
             self._refresh_obs_tree()
 
     def _edit_observation(self):
+        """Open the observation dialog pre-filled with the selected row's data."""
         sel = self._obs_tree.selection()
         if not sel:
             messagebox.showinfo("No selection", "Select an observation to edit.")
@@ -570,11 +656,13 @@ class POAMTab(tk.Frame):
         idx = self._obs_tree.index(sel[0])
         updated = self._observation_dialog(existing=self._observations[idx])
         if updated:
+            # Preserve the original UUID — only the content fields change
             updated["uuid"] = self._observations[idx]["uuid"]
             self._observations[idx] = updated
             self._refresh_obs_tree()
 
     def _remove_observation(self):
+        """Delete the selected observation from the list after finding its index."""
         sel = self._obs_tree.selection()
         if not sel:
             messagebox.showinfo("No selection", "Select an observation to remove.")
@@ -588,6 +676,7 @@ class POAMTab(tk.Frame):
     # =========================================================================
 
     def _risk_row(self, r):
+        """Convert a risk dict into a tuple of display values for the Treeview row."""
         n_rems = len(r.get("remediations", []))
         return (
             r.get("title", ""),

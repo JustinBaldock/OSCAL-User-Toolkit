@@ -1140,23 +1140,56 @@ class ComponentTab(tk.Frame):
     # ── Filter helpers ────────────────────────────────────────────────────────
 
     def _on_comp_filter_changed(self, *_args):
-        """Called whenever the search text or type-filter combobox changes."""
+        """
+        Callback wired to both the search Entry and the type Combobox via
+        StringVar.trace_add("write", ...).
+
+        The *_args are the three arguments tkinter passes to every trace
+        callback (variable name, index, operation mode) — we don't need them,
+        so they are accepted but ignored with the *_args convention.
+
+        Delegating to _refresh_list() keeps this method as a thin bridge
+        between the tkinter event system and the list-rebuild logic.
+        """
         self._refresh_list()
 
     def _build_filtered_indices(self):
         """
-        Return the subset of self._components indices that match the current
-        search text and type filter.
+        Return a list of indices into self._components that pass the current
+        search text and type-filter.
+
+        WHY RETURN INDICES INSTEAD OF COMPONENTS?
+        ------------------------------------------
+        The Listbox widget shows items at sequential positions 0, 1, 2, ... but
+        those positions have nothing to do with where the matching component
+        actually sits in self._components.
+
+        For example, if self._components has 10 items and the search matches
+        only items at positions 2, 5, and 8, the Listbox will show three rows
+        at positions 0, 1, 2.  _filtered_indices = [2, 5, 8] records that
+        mapping so that when the user clicks Listbox row 1 (the second visible
+        row), we can look up _filtered_indices[1] = 5 and find the real
+        component without a linear search.
+
+        When no filter is active, _filtered_indices is simply [0, 1, 2, ...],
+        so the mapping is trivially correct.
+
+        SEARCH LOGIC
+        ------------
+        Both filters are ANDed together: a component must pass the type check
+        AND contain the search term somewhere in its title, type, or description.
+        Matching is case-insensitive (everything is lowercased before comparing).
         """
         search = self._comp_search_var.get().lower().strip() if hasattr(self, "_comp_search_var") else ""
         type_f = self._comp_type_filter_var.get() if hasattr(self, "_comp_type_filter_var") else "all"
 
         result = []
         for i, comp in enumerate(self._components):
-            # Type filter
+            # Type filter — skip if the dropdown is not "all" and the type doesn't match
             if type_f and type_f != "all" and comp.get("type", "") != type_f:
                 continue
-            # Text search: match title, type, or description
+            # Text search: check if the search term appears anywhere in the
+            # combined title + type + description string
             if search:
                 haystack = " ".join([
                     comp.get("title", ""),
@@ -1169,7 +1202,18 @@ class ComponentTab(tk.Frame):
         return result
 
     def _refresh_list(self):
-        """Rebuild the Listbox from self._components, applying any active filter."""
+        """
+        Rebuild the Listbox from self._components, applying the current filter.
+
+        This method is the single point responsible for keeping the Listbox and
+        _filtered_indices in sync. Any time self._components changes (add,
+        delete, open, clear) or the filter changes, call this method and it
+        will bring the Listbox up to date.
+
+        It also preserves the current selection: if the previously selected
+        component is still visible after filtering, it stays highlighted and
+        scrolled into view.
+        """
         self._filtered_indices = self._build_filtered_indices()
 
         self._comp_listbox.delete(0, "end")
@@ -1198,12 +1242,19 @@ class ComponentTab(tk.Frame):
     def _on_list_select(self, _event=None):
         """
         Called when the user clicks a component in the left list.
-        Saves the current form state, then loads the selected component.
+
+        The two-step translate-then-load pattern here is important:
+          1. Save the CURRENT component's form data into self._components
+             before changing the selection, so no edits are silently lost.
+          2. Translate the Listbox position to a self._components index via
+             _filtered_indices (see _build_filtered_indices for why this is
+             needed), then load that component into the form widgets.
         """
         sel = self._comp_listbox.curselection()
         if not sel:
             return
-        # Map the listbox display position to the actual components index
+        # curselection() returns a tuple of selected Listbox row positions.
+        # We use selectmode="browse" so there is always at most one item.
         list_pos  = int(sel[0])
         if list_pos >= len(self._filtered_indices):
             return
@@ -1295,7 +1346,16 @@ class ComponentTab(tk.Frame):
     def _populate_from(self, index):
         """
         Load self._components[index] into all form widgets.
-        Called when the user selects a component from the list.
+
+        This is the "dict → form" direction of the roundtrip.
+        The opposite direction is _collect_into(), which reads the widgets
+        back into the dict.
+
+        Each section of the form is populated in order.  Note that for
+        tk.Text widgets we use widget.delete("1.0", "end") before inserting
+        because Text widgets do not have a StringVar — their content must be
+        managed with explicit delete/insert calls. The "1.0" notation means
+        "line 1, character 0" (tkinter text indices are 1-based for lines).
         """
         comp = self._components[index]
 
@@ -1367,7 +1427,25 @@ class ComponentTab(tk.Frame):
     def _collect_into(self, index):
         """
         Read all form widget values and write them into self._components[index].
-        Called before switching components and before saving.
+
+        This is the "form → dict" direction of the roundtrip.
+        The opposite direction is _populate_from(), which loads the dict into
+        the widgets.
+
+        Called in two situations:
+          1. Before switching to a different component — so any edits in the
+             currently displayed form are not silently discarded when the user
+             clicks a different name in the list.
+          2. Before saving — so the most recent widget values are captured even
+             if the user hasn't clicked 'Apply' yet.
+
+        WHY _dirty IS SET HERE
+        ----------------------
+        Calling _collect_into always marks self._dirty = True because we cannot
+        know whether the user actually changed anything (tkinter has no built-in
+        "has this widget been modified?" flag). The flag is reset to False only
+        after a successful disk write in _save_file(). Its only practical use is
+        to show a confirmation prompt in _new_file() if there are unsaved changes.
         """
         comp = self._components[index]
 
