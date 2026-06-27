@@ -115,6 +115,9 @@ class SSPTab(tk.Frame):
         # canonical dict until _collect() runs.
         self._ssp_components = []   # mirrors ssp["components"]
         self._ssp_ctrl_impls = []   # mirrors ssp["ctrl_implementations"]
+        self._ssp_set_params = []   # mirrors ssp["set_parameters"]
+        self._ssp_users      = []   # mirrors ssp["users"]
+        self._ssp_inv_items  = []   # mirrors ssp["inventory_items"]
         self._sel_comp_index = None # selected component row in Section 8
         self._sel_ctrl_id    = None # selected control id in Section 9
 
@@ -647,6 +650,12 @@ class SSPTab(tk.Frame):
         # ── 10. Network Protocols ─────────────────────────────────────────────
         self._build_section10(parent, section)
 
+        # ── 11. System Users ──────────────────────────────────────────────────
+        self._build_section11(parent, section)
+
+        # ── 12. Inventory Items ───────────────────────────────────────────────
+        self._build_section12(parent, section)
+
         # Bottom padding so the last section is not flush against the edge
         tk.Frame(parent, bg=C["BG"], height=40).pack()
 
@@ -777,6 +786,53 @@ class SSPTab(tk.Frame):
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
             justify="left",
         ).pack(anchor="w", padx=28)
+
+        # ── 9b. Set-Parameters ────────────────────────────────────────────────
+        # Allow overriding catalog parameter values at the SSP level.
+        tk.Label(
+            parent,
+            text="  Parameter Overrides  (optional — override catalog parameter values for this system)",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        ).pack(anchor="w", padx=28, pady=(6, 0))
+
+        sp_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        sp_frame.pack(fill="x", padx=28, pady=(2, 8))
+
+        sp_btn_row = tk.Frame(sp_frame, bg=C["CARD_BG"])
+        sp_btn_row.pack(fill="x", padx=8, pady=6)
+        tk.Button(
+            sp_btn_row, text="＋  Add Parameter Override",
+            command=self._add_set_param,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            sp_btn_row, text="✏  Edit Selected",
+            command=self._edit_set_param,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+        tk.Button(
+            sp_btn_row, text="✕  Remove",
+            command=self._remove_set_param,
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+
+        self._sp_tree = ttk.Treeview(
+            sp_frame, columns=("param_id", "values", "remarks"),
+            show="headings", height=3, selectmode="browse",
+        )
+        self._sp_tree.heading("param_id", text="Parameter ID", anchor="w")
+        self._sp_tree.heading("values",   text="Values",       anchor="w")
+        self._sp_tree.heading("remarks",  text="Remarks",      anchor="w")
+        self._sp_tree.column("param_id", width=180, anchor="w", stretch=False)
+        self._sp_tree.column("values",   width=260, anchor="w", stretch=True)
+        self._sp_tree.column("remarks",  width=200, anchor="w", stretch=False)
+        self._sp_tree.pack(fill="x", padx=8, pady=(0, 8))
 
         ctrl9_outer = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -2146,6 +2202,546 @@ class SSPTab(tk.Frame):
         self._it_tree.delete(sel[0])
         self._it_tree.insert("", idx, values=self._it_row_values(updated))
 
+    # =========================================================================
+    # SET-PARAMETER METHODS (Section 9b)
+    # =========================================================================
+
+    def _sp_row_values(self, sp):
+        return (sp["param_id"], ", ".join(sp.get("values", [])), sp.get("remarks", ""))
+
+    def _set_param_dialog(self, existing=None):
+        """Modal dialog to add or edit a control-implementation set-parameter."""
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Parameter Override" if existing else "Add Parameter Override",
+            width=460,
+        )
+
+        def lrow(text):
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+            return row
+
+        v_param = tk.StringVar(value=e.get("param_id", ""))
+        tk.Entry(lrow("Parameter ID *"), textvariable=v_param, width=36,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        v_values = tk.StringVar(value=", ".join(e.get("values", [])))
+        tk.Entry(lrow("Values *"), textvariable=v_values, width=36,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+        tk.Label(dlg, text="  (comma-separated list of values)",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
+
+        v_remarks = tk.StringVar(value=e.get("remarks", ""))
+        tk.Entry(lrow("Remarks"), textvariable=v_remarks, width=36,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        result = {}
+
+        def _ok():
+            pid = v_param.get().strip()
+            if not pid:
+                messagebox.showwarning("Required", "Parameter ID is required.", parent=dlg)
+                return
+            raw_vals = v_values.get()
+            values = [v.strip() for v in raw_vals.split(",") if v.strip()]
+            if not values:
+                messagebox.showwarning("Required", "At least one value is required.", parent=dlg)
+                return
+            result.update({
+                "param_id": pid,
+                "values":   values,
+                "remarks":  v_remarks.get().strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_set_param(self):
+        sp = self._set_param_dialog()
+        if not sp:
+            return
+        self._ssp_set_params.append(sp)
+        self._sp_tree.insert("", "end", values=self._sp_row_values(sp))
+
+    def _edit_set_param(self):
+        sel = self._sp_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a parameter override to edit.")
+            return
+        idx = self._sp_tree.index(sel[0])
+        updated = self._set_param_dialog(existing=self._ssp_set_params[idx])
+        if not updated:
+            return
+        self._ssp_set_params[idx] = updated
+        self._sp_tree.delete(sel[0])
+        self._sp_tree.insert("", idx, values=self._sp_row_values(updated))
+
+    def _remove_set_param(self):
+        sel = self._sp_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a parameter override to remove.")
+            return
+        idx = self._sp_tree.index(sel[0])
+        self._ssp_set_params.pop(idx)
+        self._sp_tree.delete(sel[0])
+
+    # =========================================================================
+    # SECTION 11 — SYSTEM USERS
+    # =========================================================================
+
+    def _build_section11(self, parent, section):
+        C = self._colors
+
+        section("11 ·  System Users")
+        tk.Label(
+            parent,
+            text="  People or entities that interact with the system (e.g. administrators,\n"
+                 "  operators, end-users). Each user can be assigned one or more role IDs.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            justify="left",
+        ).pack(anchor="w", padx=28)
+
+        usr_btn = tk.Frame(parent, bg=C["BG"])
+        usr_btn.pack(fill="x", padx=28, pady=4)
+        tk.Button(usr_btn, text="＋  Add User", command=self._add_ssp_user,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left")
+        tk.Button(usr_btn, text="✏  Edit Selected", command=self._edit_ssp_user,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
+        tk.Button(usr_btn, text="✕  Remove", command=self._remove_ssp_user,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
+
+        usr_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        usr_frame.pack(fill="x", padx=28, pady=(0, 6))
+
+        self._usr_tree = ttk.Treeview(
+            usr_frame,
+            columns=("title", "short_name", "role_ids", "description"),
+            show="headings", height=5, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("title",       "Title",       180, False),
+            ("short_name",  "Short Name",  120, False),
+            ("role_ids",    "Role IDs",    180, False),
+            ("description", "Description", 260, True),
+        ]:
+            self._usr_tree.heading(col, text=heading, anchor="w")
+            self._usr_tree.column(col, width=w, anchor="w", stretch=stretch)
+
+        usr_scroll = ttk.Scrollbar(usr_frame, orient="vertical",
+                                   command=self._usr_tree.yview)
+        self._usr_tree.configure(yscrollcommand=usr_scroll.set)
+        usr_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._usr_tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=8)
+
+    def _usr_row_values(self, u):
+        return (
+            u.get("title", ""),
+            u.get("short_name", ""),
+            ", ".join(u.get("role_ids", [])),
+            u.get("description", ""),
+        )
+
+    def _ssp_user_dialog(self, existing=None):
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit System User" if existing else "Add System User", width=460
+        )
+
+        def lrow(text):
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+            return row
+
+        def eentry(row, var, width=36):
+            tk.Entry(row, textvariable=var, width=width,
+                     bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                     relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                     highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        v_title      = tk.StringVar(value=e.get("title", ""))
+        eentry(lrow("Title *"), v_title)
+
+        v_short_name = tk.StringVar(value=e.get("short_name", ""))
+        eentry(lrow("Short Name"), v_short_name)
+
+        v_role_ids   = tk.StringVar(value=", ".join(e.get("role_ids", [])))
+        eentry(lrow("Role IDs"), v_role_ids)
+        tk.Label(dlg, text="  (comma-separated role IDs, e.g. system-owner, isso)",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                 ).pack(anchor="w", padx=20)
+
+        # Description (multi-line)
+        tk.Label(dlg, text="Description", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(6, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=3, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
+
+        v_remarks = tk.StringVar(value=e.get("remarks", ""))
+        eentry(lrow("Remarks"), v_remarks)
+
+        result = {}
+
+        def _ok():
+            title = v_title.get().strip()
+            if not title:
+                messagebox.showwarning("Required", "Title is required.", parent=dlg)
+                return
+            roles = [r.strip() for r in v_role_ids.get().split(",") if r.strip()]
+            result.update({
+                "uuid":        e.get("uuid") or new_uuid(),
+                "title":       title,
+                "short_name":  v_short_name.get().strip(),
+                "description": t_desc.get("1.0", "end-1c").strip(),
+                "role_ids":    roles,
+                "remarks":     v_remarks.get().strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_ssp_user(self):
+        u = self._ssp_user_dialog()
+        if not u:
+            return
+        self._ssp_users.append(u)
+        self._usr_tree.insert("", "end", values=self._usr_row_values(u))
+
+    def _edit_ssp_user(self):
+        sel = self._usr_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a user to edit.")
+            return
+        idx = self._usr_tree.index(sel[0])
+        updated = self._ssp_user_dialog(existing=self._ssp_users[idx])
+        if not updated:
+            return
+        updated["uuid"] = self._ssp_users[idx]["uuid"]
+        self._ssp_users[idx] = updated
+        self._usr_tree.delete(sel[0])
+        self._usr_tree.insert("", idx, values=self._usr_row_values(updated))
+
+    def _remove_ssp_user(self):
+        sel = self._usr_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a user to remove.")
+            return
+        idx = self._usr_tree.index(sel[0])
+        self._ssp_users.pop(idx)
+        self._usr_tree.delete(sel[0])
+
+    # =========================================================================
+    # SECTION 12 — INVENTORY ITEMS
+    # =========================================================================
+
+    def _build_section12(self, parent, section):
+        C = self._colors
+
+        section("12 ·  Inventory Items")
+        tk.Label(
+            parent,
+            text="  Hardware, software, and service assets that make up the system.\n"
+                 "  Link each item to the components that implement it.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            justify="left",
+        ).pack(anchor="w", padx=28)
+
+        inv_btn = tk.Frame(parent, bg=C["BG"])
+        inv_btn.pack(fill="x", padx=28, pady=4)
+        tk.Button(inv_btn, text="＋  Add Item", command=self._add_inv_item,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left")
+        tk.Button(inv_btn, text="✏  Edit Selected", command=self._edit_inv_item,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
+        tk.Button(inv_btn, text="✕  Remove", command=self._remove_inv_item,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
+
+        inv_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        inv_frame.pack(fill="x", padx=28, pady=(0, 6))
+
+        self._inv_tree = ttk.Treeview(
+            inv_frame,
+            columns=("description", "props", "components"),
+            show="headings", height=5, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("description", "Description", 300, True),
+            ("props",       "Properties",  200, False),
+            ("components",  "Components",  200, False),
+        ]:
+            self._inv_tree.heading(col, text=heading, anchor="w")
+            self._inv_tree.column(col, width=w, anchor="w", stretch=stretch)
+
+        inv_scroll = ttk.Scrollbar(inv_frame, orient="vertical",
+                                   command=self._inv_tree.yview)
+        self._inv_tree.configure(yscrollcommand=inv_scroll.set)
+        inv_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._inv_tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=8)
+
+    def _inv_row_values(self, ii):
+        props_str = ", ".join(
+            f"{p['name']}={p['value']}" for p in ii.get("props", [])
+        )
+        comp_titles = ", ".join(
+            self._comp_title_for_uuid(c) for c in ii.get("implemented_components", [])
+        )
+        return (ii.get("description", ""), props_str or "—", comp_titles or "—")
+
+    def _inv_item_dialog(self, existing=None):
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Inventory Item" if existing else "Add Inventory Item", width=520
+        )
+
+        # Description (required, multi-line)
+        tk.Label(dlg, text="Description *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(10, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=3, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
+
+        # Properties sub-table
+        tk.Label(dlg, text="Properties", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11, "bold")).pack(anchor="w", padx=20, pady=(10, 2))
+        prop_card = tk.Frame(dlg, bg=C["CARD_BG"],
+                             highlightthickness=1, highlightbackground=C["HEADER_BG"])
+        prop_card.pack(fill="x", padx=20, pady=(0, 4))
+        prop_btn_row = tk.Frame(prop_card, bg=C["CARD_BG"])
+        prop_btn_row.pack(fill="x", padx=6, pady=4)
+
+        prop_tree = ttk.Treeview(prop_card, columns=("name", "value"),
+                                 show="headings", height=3, selectmode="browse")
+        prop_tree.heading("name",  text="Name",  anchor="w")
+        prop_tree.heading("value", text="Value", anchor="w")
+        prop_tree.column("name",  width=160, anchor="w", stretch=False)
+        prop_tree.column("value", width=240, anchor="w", stretch=True)
+        prop_tree.pack(fill="x", padx=6, pady=(0, 6))
+
+        props = list(e.get("props", []))
+        for p in props:
+            prop_tree.insert("", "end", values=(p["name"], p["value"]))
+
+        def _add_prop():
+            res = self._dialog("Add Property", [
+                ("Name *",  "name",  "", None),
+                ("Value *", "value", "", None),
+            ])
+            if not res or not res.get("name") or not res.get("value"):
+                return
+            props.append(res)
+            prop_tree.insert("", "end", values=(res["name"], res["value"]))
+
+        def _remove_prop():
+            sel = prop_tree.selection()
+            if not sel:
+                return
+            idx = prop_tree.index(sel[0])
+            props.pop(idx)
+            prop_tree.delete(sel[0])
+
+        tk.Button(prop_btn_row, text="＋  Add", command=_add_prop,
+                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left")
+        tk.Button(prop_btn_row, text="✕  Remove", command=_remove_prop,
+                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left", padx=6)
+
+        # Implemented components (multi-select from Section 8)
+        tk.Label(dlg, text="Implemented Components", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11, "bold")).pack(anchor="w", padx=20, pady=(8, 2))
+
+        impl_comps = list(e.get("implemented_components", []))
+
+        if self._ssp_components:
+            comp_choices = [(c["uuid"], c.get("title", c["uuid"]))
+                            for c in self._ssp_components]
+            impl_card = tk.Frame(dlg, bg=C["CARD_BG"],
+                                 highlightthickness=1, highlightbackground=C["HEADER_BG"])
+            impl_card.pack(fill="x", padx=20, pady=(0, 4))
+            impl_btn_row = tk.Frame(impl_card, bg=C["CARD_BG"])
+            impl_btn_row.pack(fill="x", padx=6, pady=4)
+
+            impl_tree = ttk.Treeview(impl_card, columns=("title",),
+                                     show="headings", height=3, selectmode="browse")
+            impl_tree.heading("title", text="Component", anchor="w")
+            impl_tree.column("title", width=360, anchor="w", stretch=True)
+            impl_tree.pack(fill="x", padx=6, pady=(0, 6))
+
+            comp_title_map = {c["uuid"]: c.get("title", c["uuid"])
+                              for c in self._ssp_components}
+            for c_uuid in impl_comps:
+                impl_tree.insert("", "end",
+                                 values=(comp_title_map.get(c_uuid, c_uuid),),
+                                 iid=c_uuid)
+
+            def _add_impl_comp():
+                available = [(u, t) for u, t in comp_choices
+                             if u not in impl_comps]
+                if not available:
+                    messagebox.showinfo("No components",
+                                        "All Section 8 components are already linked.",
+                                        parent=dlg)
+                    return
+                choices_labels = [t for _, t in available]
+                label_to_uuid  = {t: u for u, t in available}
+                res = self._dialog("Link Component", [
+                    ("Component *", "comp", choices_labels[0], choices_labels),
+                ])
+                if not res or not res.get("comp"):
+                    return
+                c_uuid = label_to_uuid[res["comp"]]
+                impl_comps.append(c_uuid)
+                impl_tree.insert("", "end",
+                                 values=(comp_title_map.get(c_uuid, c_uuid),),
+                                 iid=c_uuid)
+
+            def _remove_impl_comp():
+                sel = impl_tree.selection()
+                if not sel:
+                    return
+                c_uuid = sel[0]
+                impl_comps.remove(c_uuid)
+                impl_tree.delete(c_uuid)
+
+            tk.Button(impl_btn_row, text="＋  Link Component",
+                      command=_add_impl_comp,
+                      bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                      relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left")
+            tk.Button(impl_btn_row, text="✕  Unlink", command=_remove_impl_comp,
+                      bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                      relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left", padx=6)
+        else:
+            tk.Label(dlg,
+                     text="  Add components in Section 8 to link them to inventory items.",
+                     bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                     ).pack(anchor="w", padx=20)
+
+        # Remarks
+        v_remarks = tk.StringVar(value=e.get("remarks", ""))
+        rem_row = tk.Frame(dlg, bg=C["BG"])
+        rem_row.pack(fill="x", padx=20, pady=4)
+        tk.Label(rem_row, text="Remarks", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=18, anchor="w").pack(side="left")
+        tk.Entry(rem_row, textvariable=v_remarks, width=36,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        result = {}
+
+        def _ok():
+            desc = t_desc.get("1.0", "end-1c").strip()
+            if not desc:
+                messagebox.showwarning("Required", "Description is required.", parent=dlg)
+                return
+            result.update({
+                "uuid":                   e.get("uuid") or new_uuid(),
+                "description":            desc,
+                "props":                  list(props),
+                "implemented_components": list(impl_comps),
+                "remarks":                v_remarks.get().strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_inv_item(self):
+        ii = self._inv_item_dialog()
+        if not ii:
+            return
+        self._ssp_inv_items.append(ii)
+        self._inv_tree.insert("", "end", values=self._inv_row_values(ii))
+
+    def _edit_inv_item(self):
+        sel = self._inv_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an inventory item to edit.")
+            return
+        idx = self._inv_tree.index(sel[0])
+        updated = self._inv_item_dialog(existing=self._ssp_inv_items[idx])
+        if not updated:
+            return
+        updated["uuid"] = self._ssp_inv_items[idx]["uuid"]
+        self._ssp_inv_items[idx] = updated
+        self._inv_tree.delete(sel[0])
+        self._inv_tree.insert("", idx, values=self._inv_row_values(updated))
+
+    def _remove_inv_item(self):
+        sel = self._inv_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select an inventory item to remove.")
+            return
+        idx = self._inv_tree.index(sel[0])
+        self._ssp_inv_items.pop(idx)
+        self._inv_tree.delete(sel[0])
+
     def _add_role(self):
         """Show a dialog to add a role to the SSP."""
         # Pre-populate the dropdown with common OSCAL role IDs
@@ -2207,10 +2803,13 @@ class SSPTab(tk.Frame):
         # Note: table data (roles, parties, info_types) is updated in real-time
         # by _add_* and _remove_* methods, so no collection needed here.
 
-        # Sections 8 & 9 are edited in their own working lists; copy them back
-        # into the canonical SSP dict so they are included when building OSCAL.
+        # Sections 8, 9, 11, 12 are edited in their own working lists; copy them
+        # back into the canonical SSP dict so they are included when building OSCAL.
         self._ssp["components"]           = self._ssp_components
         self._ssp["ctrl_implementations"] = self._ssp_ctrl_impls
+        self._ssp["set_parameters"]       = self._ssp_set_params
+        self._ssp["users"]                = self._ssp_users
+        self._ssp["inventory_items"]      = self._ssp_inv_items
 
     def _populate(self):
         """
@@ -2267,12 +2866,30 @@ class SSPTab(tk.Frame):
             self._party_tree.insert("", "end",
                 values=(p["type"], p["name"], p.get("email", "")))
 
-        # ── Sections 8 & 9: load working lists and rebuild their widgets ──────
+        # ── Sections 8, 9, 11, 12: load working lists and rebuild widgets ────────
         # list(...) makes shallow copies so editing the form does not mutate the
         # parsed dict until _collect() copies them back.
         self._ssp_components = list(ssp.get("components", []))
         self._ssp_ctrl_impls = list(ssp.get("ctrl_implementations", []))
+        self._ssp_set_params = list(ssp.get("set_parameters", []))
+        self._ssp_users      = list(ssp.get("users", []))
+        self._ssp_inv_items  = list(ssp.get("inventory_items", []))
         self._sel_ctrl_id    = None
+
+        # Rebuild set-parameters tree
+        self._sp_tree.delete(*self._sp_tree.get_children())
+        for sp in self._ssp_set_params:
+            self._sp_tree.insert("", "end", values=self._sp_row_values(sp))
+
+        # Rebuild users tree
+        self._usr_tree.delete(*self._usr_tree.get_children())
+        for u in self._ssp_users:
+            self._usr_tree.insert("", "end", values=self._usr_row_values(u))
+
+        # Rebuild inventory items tree
+        self._inv_tree.delete(*self._inv_tree.get_children())
+        for ii in self._ssp_inv_items:
+            self._inv_tree.insert("", "end", values=self._inv_row_values(ii))
 
         # If the SSP was saved before Section 9 existed (or was saved without
         # any control implementations), try to auto-populate _ssp_ctrl_impls
@@ -2404,14 +3021,19 @@ class SSPTab(tk.Frame):
             tree.delete(*tree.get_children())
         self._ssp["data_flow_diagrams"] = []
 
-        # ── Reset Sections 8 & 9 working state and widgets ───────────────────
+        # ── Reset Sections 8, 9, 11, 12 working state and widgets ────────────
         self._ssp_components = []
         self._ssp_ctrl_impls = []
+        self._ssp_set_params = []
+        self._ssp_users      = []
+        self._ssp_inv_items  = []
         self._sel_comp_index = None
         self._sel_ctrl_id    = None
         self._refresh_comp8_tree()
         self._refresh_ctrl9_list()
         self._refresh_bycomp_tree()
+        for tree in (self._sp_tree, self._usr_tree, self._inv_tree):
+            tree.delete(*tree.get_children())
 
     # =========================================================================
     # SAVE / OPEN / NEW / EXPORT ACTIONS

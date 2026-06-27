@@ -370,6 +370,24 @@ def empty_ssp():
         #   ]}
         # These become the implemented-requirements of control-implementation.
         "ctrl_implementations": [],
+
+        # ── Section 9b: Control-implementation set-parameters ─────────────
+        # Override catalog parameter values at the SSP level.
+        # Each entry: {"param_id": str, "values": [str], "remarks": str}
+        "set_parameters": [],
+
+        # ── Section 11: System Users ──────────────────────────────────────
+        # People or entities that interact with the system.
+        # Each entry: {"uuid", "title", "short_name", "description",
+        #              "role_ids": [str], "remarks": str}
+        "users": [],
+
+        # ── Section 12: Inventory Items ───────────────────────────────────
+        # Hardware/software assets that make up the system.
+        # Each entry: {"uuid", "description", "props": [{"name","value"}],
+        #              "implemented_components": [comp_uuid],
+        #              "remarks": str}
+        "inventory_items": [],
     }
 
 
@@ -640,7 +658,34 @@ def build_oscal_ssp(ssp, profile, catalog):
             # Includes the auto-generated "this-system" component plus any
             # user-defined components from Section 8.
             "system-implementation": {
+                **({"users": [
+                    {
+                        "uuid":  u["uuid"],
+                        "title": u["title"],
+                        **({"short-name":   u["short_name"]}  if u.get("short_name")  else {}),
+                        **({"description":  u["description"]} if u.get("description") else {}),
+                        **({"role-ids":     u["role_ids"]}    if u.get("role_ids")    else {}),
+                        **({"remarks":      u["remarks"]}     if u.get("remarks")     else {}),
+                    }
+                    for u in ssp.get("users", [])
+                ]} if ssp.get("users") else {}),
                 "components": si_components,
+                **({"inventory-items": [
+                    {
+                        "uuid":        ii["uuid"],
+                        "description": ii["description"],
+                        **({"props": [
+                            {"name": p["name"], "value": p["value"]}
+                            for p in ii.get("props", [])
+                        ]} if ii.get("props") else {}),
+                        **({"implemented-components": [
+                            {"component-uuid": c_uuid}
+                            for c_uuid in ii.get("implemented_components", [])
+                        ]} if ii.get("implemented_components") else {}),
+                        **({"remarks": ii["remarks"]} if ii.get("remarks") else {}),
+                    }
+                    for ii in ssp.get("inventory_items", [])
+                ]} if ssp.get("inventory_items") else {}),
             },
 
             # Control implementation — how the system's components implement
@@ -648,6 +693,14 @@ def build_oscal_ssp(ssp, profile, catalog):
             # implemented-requirements is empty until the user adds entries.
             "control-implementation": {
                 "description": "Control implementation statements for this system.",
+                **({"set-parameters": [
+                    {
+                        "param-id": sp["param_id"],
+                        "values":   sp["values"],
+                        **({"remarks": sp["remarks"]} if sp.get("remarks") else {}),
+                    }
+                    for sp in ssp.get("set_parameters", [])
+                ]} if ssp.get("set_parameters") else {}),
                 "implemented-requirements": implemented_requirements,
             },
 
@@ -742,8 +795,8 @@ def parse_ssp_file(data):
     for c in root.get("system-implementation", {}).get("components", []):
         if c.get("type") == "this-system":
             continue
-        status_obj = c.get("status", {})
-        roles = [r.get("role-id", "") for r in c.get("responsible-roles", [])]
+        status_obj  = c.get("status", {})
+        comp_roles  = [r.get("role-id", "") for r in c.get("responsible-roles", [])]
         # Parse protocols back into the internal port_ranges format
         protocols = []
         for proto in c.get("protocols", []):
@@ -769,9 +822,48 @@ def parse_ssp_file(data):
             "purpose":           c.get("purpose", ""),
             "status":            status_obj.get("state", "operational"),
             "status_remarks":    status_obj.get("remarks", ""),
-            "responsible_roles": [r for r in roles if r],
+            "responsible_roles": [r for r in comp_roles if r],
             "protocols":         protocols,
             "remarks":           c.get("remarks", ""),
+        })
+
+    # ── System users (Section 11) ─────────────────────────────────────────────
+    users = []
+    for u in root.get("system-implementation", {}).get("users", []):
+        users.append({
+            "uuid":        u.get("uuid", new_uuid()),
+            "title":       u.get("title", ""),
+            "short_name":  u.get("short-name", ""),
+            "description": u.get("description", ""),
+            "role_ids":    u.get("role-ids", []),
+            "remarks":     u.get("remarks", ""),
+        })
+
+    # ── Inventory items (Section 12) ──────────────────────────────────────────
+    inventory_items = []
+    for ii in root.get("system-implementation", {}).get("inventory-items", []):
+        inventory_items.append({
+            "uuid":        ii.get("uuid", new_uuid()),
+            "description": ii.get("description", ""),
+            "props":       [
+                {"name": p.get("name", ""), "value": p.get("value", "")}
+                for p in ii.get("props", [])
+            ],
+            "implemented_components": [
+                ic.get("component-uuid", "")
+                for ic in ii.get("implemented-components", [])
+                if ic.get("component-uuid")
+            ],
+            "remarks": ii.get("remarks", ""),
+        })
+
+    # ── Control-implementation set-parameters (Section 9b) ────────────────────
+    set_parameters = []
+    for sp in root.get("control-implementation", {}).get("set-parameters", []):
+        set_parameters.append({
+            "param_id": sp.get("param-id", ""),
+            "values":   sp.get("values", []),
+            "remarks":  sp.get("remarks", ""),
         })
 
     # ── Control implementations (Section 9) ───────────────────────────────────
@@ -874,6 +966,9 @@ def parse_ssp_file(data):
         "information_types": info_types,
         "components":           components,
         "ctrl_implementations": ctrl_implementations,
+        "set_parameters":       set_parameters,
+        "users":                users,
+        "inventory_items":      inventory_items,
         # Preserve the import href so it round-trips correctly on re-save
         "import_href":           import_href,
         # Preserve the back-matter UUID so it stays stable across edits
@@ -1450,10 +1545,27 @@ def build_ssp_docx(ssp, catalog=None):
         doc.add_paragraph("(No parties defined)")
 
     # ────────────────────────────────────────────────────────────────────────
-    # SECTION 7 — SYSTEM COMPONENTS
+    # SECTION 7 — SYSTEM USERS
+    # ────────────────────────────────────────────────────────────────────────
+    users = ssp.get("users", [])
+    doc.add_heading("7.  System Users", level=1)
+    if users:
+        t = styled_table(4)
+        add_header_row(t, ["Title", "Short Name", "Role IDs", "Description"])
+        for u in users:
+            row = t.add_row()
+            row.cells[0].text = u.get("title", "")
+            row.cells[1].text = u.get("short_name", "")
+            row.cells[2].text = ", ".join(u.get("role_ids", []))
+            row.cells[3].text = u.get("description", "")
+    else:
+        doc.add_paragraph("(No system users defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 7b — SYSTEM COMPONENTS
     # ────────────────────────────────────────────────────────────────────────
     components = ssp.get("components", [])
-    doc.add_heading("7.  System Components", level=1)
+    doc.add_heading("7b.  System Components", level=1)
     if components:
         t = styled_table(4)
         add_header_row(t, ["Title", "Type", "Status", "Description"])
@@ -1478,6 +1590,30 @@ def build_ssp_docx(ssp, catalog=None):
         doc.add_paragraph("(No components defined)")
 
     # ────────────────────────────────────────────────────────────────────────
+    # SECTION 7c — INVENTORY ITEMS
+    # ────────────────────────────────────────────────────────────────────────
+    inventory_items = ssp.get("inventory_items", [])
+    doc.add_heading("7c.  Inventory Items", level=1)
+    if inventory_items:
+        t = styled_table(3)
+        add_header_row(t, ["Description", "Properties", "Components"])
+        comp_titles = {c["uuid"]: c.get("title", c["uuid"]) for c in ssp.get("components", [])}
+        for ii in inventory_items:
+            row = t.add_row()
+            row.cells[0].text = ii.get("description", "")
+            props_text = "\n".join(
+                f"{p['name']}: {p['value']}" for p in ii.get("props", [])
+            )
+            row.cells[1].text = props_text
+            comp_names = ", ".join(
+                comp_titles.get(c_uuid, c_uuid)
+                for c_uuid in ii.get("implemented_components", [])
+            )
+            row.cells[2].text = comp_names
+    else:
+        doc.add_paragraph("(No inventory items defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
     # SECTION 8 — CONTROL IMPLEMENTATIONS
     # When a catalog is provided, controls are sorted and grouped under their
     # catalog guideline headings in catalog order. Controls in the SSP that
@@ -1487,6 +1623,17 @@ def build_ssp_docx(ssp, catalog=None):
     # ────────────────────────────────────────────────────────────────────────
     ctrl_impls = ssp.get("ctrl_implementations", [])
     doc.add_heading("8.  Control Implementations", level=1)
+
+    set_params = ssp.get("set_parameters", [])
+    if set_params:
+        doc.add_heading("Parameter Overrides", level=2)
+        t = styled_table(3)
+        add_header_row(t, ["Parameter ID", "Values", "Remarks"])
+        for sp in set_params:
+            row = t.add_row()
+            row.cells[0].text = sp.get("param_id", "")
+            row.cells[1].text = ", ".join(sp.get("values", []))
+            row.cells[2].text = sp.get("remarks", "")
 
     if ctrl_impls:
         # Lookup: component UUID → display title
