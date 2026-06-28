@@ -33,12 +33,14 @@ from pathlib import Path   # Cross-platform file path handling
 # Import the data-loading functions from our models module
 from .models import load_catalog, load_profile, validate_oscal_file
 
-# Import the two tab classes
+# Import the tab classes
 from .catalog_tab import CatalogTab
 from .ssp_tab import SSPTab
 from .component_tab import ComponentTab
 from .capability_tab import CapabilityTab
 from .poam_tab import POAMTab
+from .ap_tab import APTab
+from .ar_tab import ARTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -473,15 +475,39 @@ class OSCALApp(tk.Tk):
         )
         nb.add(self._ssp_tab, text="🛡  SSP Editor")
 
-        # ── POA&M Editor tab ──────────────────────────────────────────────────
+        # ── Assessment Plan Editor tab ────────────────────────────────────────
+        self._ap_tab = APTab(
+            parent            = nb,
+            colors            = COLORS,
+            set_status        = lambda msg: self._status_lbl.config(text=msg),
+            get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_profile       = lambda: self._profile,
+        )
+        nb.add(self._ap_tab, text="📝  Assessment Plan")
+
+        # ── Assessment Results Editor tab ─────────────────────────────────────
+        # Must be created before POAMTab so get_poam_tab can reference it,
+        # but POAMTab must exist first for the lambda to resolve at call time.
+        # We create POAMTab first (not yet added to nb), then ARTab, then add
+        # POAMTab to nb last so the tab order is AP → AR → POA&M.
         self._poam_tab = POAMTab(
             parent     = nb,
             colors     = COLORS,
             set_status = lambda msg: self._status_lbl.config(text=msg),
-            # Passes the toolbar OSCAL version selection so saved files declare
-            # the correct oscal-version field
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
         )
+
+        self._ar_tab = ARTab(
+            parent            = nb,
+            colors            = COLORS,
+            set_status        = lambda msg: self._status_lbl.config(text=msg),
+            get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            # Lets the AR tab push findings directly into the POA&M editor
+            get_poam_tab      = lambda: self._poam_tab,
+        )
+        nb.add(self._ar_tab, text="🔍  Assessment Results")
+
+        # ── POA&M Editor tab ─────────────────────────────────────────────────
         nb.add(self._poam_tab, text="📋  POA&M Editor")
 
     # =========================================================================
@@ -530,6 +556,8 @@ class OSCALApp(tk.Tk):
             (getattr(self, "_capability_tab", None), "Capability Editor"),
             (getattr(self, "_ssp_tab",        None), "SSP Editor"),
             (getattr(self, "_poam_tab",        None), "POA&M Editor"),
+            (getattr(self, "_ap_tab",          None), "Assessment Plan"),
+            (getattr(self, "_ar_tab",          None), "Assessment Results"),
         ]
         for tab, name in checks:
             if tab is not None and getattr(tab, "_dirty", False):

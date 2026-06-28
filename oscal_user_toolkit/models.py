@@ -2089,3 +2089,450 @@ def parse_poam_file(data):
         })
 
     return poam
+
+
+# =============================================================================
+# ASSESSMENT PLAN DATA FUNCTIONS
+# =============================================================================
+
+def empty_ap():
+    """Return a blank Assessment Plan working dictionary used by APTab."""
+    return {
+        "uuid":                    new_uuid(),
+        "title":                   "",
+        "version":                 "1.0",
+        "import_ssp":              "",   # href to the SSP being assessed
+        "reviewed_controls_all":   True, # True → include-all; False → specific IDs
+        "reviewed_control_ids":    [],   # list of control IDs (when not include-all)
+        "tasks":                   [],   # list of task dicts
+    }
+
+
+def build_oscal_ap(ap, oscal_version=None, save_path=None):
+    """
+    Convert the internal APTab working dictionary to a valid OSCAL
+    assessment-plan JSON structure.
+
+    Parameters:
+        ap            - The internal AP dictionary (from the form)
+        oscal_version - The OSCAL version string (e.g. "1.2.2"). Required.
+        save_path     - Filesystem path where this AP will be saved, used to
+                        compute a portable relative URI for import-ssp.href.
+    """
+    if oscal_version is None:
+        raise ValueError(
+            "oscal_version must be provided explicitly (e.g. '1.2.2'). "
+            "Pass get_oscal_version() from the toolbar callback."
+        )
+
+    doc = {
+        "assessment-plan": {
+            "uuid": ap.get("uuid") or new_uuid(),
+            "metadata": {
+                "title":         ap.get("title", ""),
+                "last-modified": now_iso(),
+                "version":       ap.get("version", "1.0"),
+                "oscal-version": oscal_version,
+            },
+            "import-ssp": {"href": ""},
+        }
+    }
+    root = doc["assessment-plan"]
+
+    # import-ssp — convert absolute path to portable relative URI
+    ssp_raw = ap.get("import_ssp", "").strip()
+    href = ssp_raw
+    if ssp_raw and save_path:
+        try:
+            ssp_p  = Path(ssp_raw).resolve()
+            ap_p   = Path(save_path).resolve().parent
+            href   = ssp_p.relative_to(ap_p).as_posix()
+        except ValueError:
+            href = Path(ssp_raw).as_uri()
+    root["import-ssp"]["href"] = href or ""
+
+    # reviewed-controls
+    if ap.get("reviewed_controls_all", True):
+        control_selections = [{"include-all": {}}]
+    else:
+        ids = [cid.strip() for cid in ap.get("reviewed_control_ids", []) if cid.strip()]
+        control_selections = [{"include-controls": [{"with-ids": ids}]}] if ids else [{"include-all": {}}]
+    root["reviewed-controls"] = {"control-selections": control_selections}
+
+    # tasks
+    if ap.get("tasks"):
+        root["tasks"] = []
+        for t in ap["tasks"]:
+            task = {
+                "uuid":  t.get("uuid") or new_uuid(),
+                "type":  t.get("type", "milestone"),
+                "title": t.get("title", ""),
+            }
+            if t.get("description"):
+                task["description"] = t["description"]
+
+            ttype = t.get("timing_type", "")
+            if ttype == "on-date" and t.get("timing_date"):
+                task["timing"] = {"on-date": {"date": t["timing_date"]}}
+            elif ttype == "within-date-range" and t.get("timing_start"):
+                task["timing"] = {"within-date-range": {
+                    "start": t["timing_start"],
+                    **({"end": t["timing_end"]} if t.get("timing_end") else {}),
+                }}
+            elif ttype == "at-frequency" and t.get("timing_period"):
+                task["timing"] = {"at-frequency": {"period": t["timing_period"]}}
+
+            if t.get("remarks"):
+                task["remarks"] = t["remarks"]
+            root["tasks"].append(task)
+
+    return doc
+
+
+def parse_ap_file(data):
+    """
+    Parse a raw OSCAL assessment-plan JSON dict into the internal working
+    dictionary format used by APTab.
+    """
+    root = data.get("assessment-plan", {})
+    meta = root.get("metadata", {})
+
+    ap = empty_ap()
+    ap["uuid"]    = root.get("uuid", new_uuid())
+    ap["title"]   = meta.get("title", "")
+    ap["version"] = meta.get("version", "1.0")
+    ap["import_ssp"] = root.get("import-ssp", {}).get("href", "")
+
+    # reviewed-controls
+    rc  = root.get("reviewed-controls", {})
+    sels = rc.get("control-selections", [{}])
+    sel0 = sels[0] if sels else {}
+    if "include-all" in sel0:
+        ap["reviewed_controls_all"] = True
+    else:
+        ap["reviewed_controls_all"] = False
+        inc = sel0.get("include-controls", [{}])
+        ids = inc[0].get("with-ids", []) if inc else []
+        ap["reviewed_control_ids"] = list(ids)
+
+    # tasks
+    for t in root.get("tasks", []):
+        timing     = t.get("timing", {})
+        ttype      = ""
+        t_date     = ""
+        t_start    = ""
+        t_end      = ""
+        t_period   = ""
+        if "on-date" in timing:
+            ttype  = "on-date"
+            t_date = timing["on-date"].get("date", "")
+        elif "within-date-range" in timing:
+            ttype    = "within-date-range"
+            t_start  = timing["within-date-range"].get("start", "")
+            t_end    = timing["within-date-range"].get("end", "")
+        elif "at-frequency" in timing:
+            ttype    = "at-frequency"
+            t_period = timing["at-frequency"].get("period", "")
+
+        ap["tasks"].append({
+            "uuid":        t.get("uuid", new_uuid()),
+            "type":        t.get("type", "milestone"),
+            "title":       t.get("title", ""),
+            "description": t.get("description", ""),
+            "timing_type":  ttype,
+            "timing_date":  t_date,
+            "timing_start": t_start,
+            "timing_end":   t_end,
+            "timing_period": t_period,
+            "remarks":     t.get("remarks", ""),
+        })
+
+    return ap
+
+
+# =============================================================================
+# ASSESSMENT RESULTS DATA FUNCTIONS
+# =============================================================================
+
+def empty_ar():
+    """Return a blank Assessment Results working dictionary used by ARTab."""
+    return {
+        "uuid":               new_uuid(),
+        "title":              "",
+        "version":            "1.0",
+        "import_ap":          "",          # href to the Assessment Plan
+        "result_uuid":        new_uuid(),
+        "result_title":       "",
+        "result_description": "",
+        "result_start":       now_iso()[:10],
+        "result_end":         "",
+        "observations":       [],
+        "risks":              [],
+        "findings":           [],
+        "assessment_log":     [],          # Phase 3 — log entries
+    }
+
+
+def build_oscal_ar(ar, oscal_version=None, save_path=None):
+    """
+    Convert the internal ARTab working dictionary to a valid OSCAL
+    assessment-results JSON structure.
+
+    Parameters:
+        ar            - The internal AR dictionary (from the form)
+        oscal_version - The OSCAL version string (e.g. "1.2.2"). Required.
+        save_path     - Filesystem path where this AR will be saved.
+    """
+    if oscal_version is None:
+        raise ValueError(
+            "oscal_version must be provided explicitly (e.g. '1.2.2'). "
+            "Pass get_oscal_version() from the toolbar callback."
+        )
+
+    doc = {
+        "assessment-results": {
+            "uuid": ar.get("uuid") or new_uuid(),
+            "metadata": {
+                "title":         ar.get("title", ""),
+                "last-modified": now_iso(),
+                "version":       ar.get("version", "1.0"),
+                "oscal-version": oscal_version,
+            },
+            "import-ap": {"href": ""},
+            "results":   [],
+        }
+    }
+    root = doc["assessment-results"]
+
+    # import-ap — convert absolute path to portable relative URI
+    ap_raw = ar.get("import_ap", "").strip()
+    href = ap_raw
+    if ap_raw and save_path:
+        try:
+            ap_p  = Path(ap_raw).resolve()
+            ar_p  = Path(save_path).resolve().parent
+            href  = ap_p.relative_to(ar_p).as_posix()
+        except ValueError:
+            href  = Path(ap_raw).as_uri()
+    root["import-ap"]["href"] = href or ""
+
+    # Build the single result object
+    result = {
+        "uuid":        ar.get("result_uuid") or new_uuid(),
+        "title":       ar.get("result_title", ""),
+        "description": ar.get("result_description", ""),
+        "start":       ar.get("result_start", now_iso()),
+        "reviewed-controls": {"control-selections": [{"include-all": {}}]},
+    }
+    if ar.get("result_end"):
+        result["end"] = ar["result_end"]
+
+    # observations
+    if ar.get("observations"):
+        result["observations"] = []
+        for o in ar["observations"]:
+            entry = {
+                "uuid":        o.get("uuid") or new_uuid(),
+                "description": o.get("description", ""),
+                "methods":     [m for m in o.get("methods", []) if m],
+                "collected":   o.get("collected", now_iso()),
+            }
+            if o.get("title"):
+                entry["title"] = o["title"]
+            if o.get("types"):
+                entry["types"] = [t for t in o["types"] if t]
+            if o.get("expires"):
+                entry["expires"] = o["expires"]
+            if o.get("relevant_evidence"):
+                entry["relevant-evidence"] = [
+                    {"href": e.get("href", ""), "description": e.get("description", "")}
+                    for e in o["relevant_evidence"]
+                    if e.get("href") or e.get("description")
+                ]
+            if o.get("remarks"):
+                entry["remarks"] = o["remarks"]
+            result["observations"].append(entry)
+
+    # risks
+    if ar.get("risks"):
+        result["risks"] = []
+        for r in ar["risks"]:
+            entry = {
+                "uuid":        r.get("uuid") or new_uuid(),
+                "title":       r.get("title", ""),
+                "description": r.get("description", ""),
+                "statement":   r.get("statement", ""),
+                "status":      r.get("status", "open"),
+            }
+            if r.get("deadline"):
+                entry["deadline"] = r["deadline"]
+            if r.get("remediations"):
+                entry["remediations"] = []
+                for rem in r["remediations"]:
+                    re_entry = {
+                        "uuid":        rem.get("uuid") or new_uuid(),
+                        "lifecycle":   rem.get("lifecycle", "recommendation"),
+                        "title":       rem.get("title", ""),
+                        "description": rem.get("description", ""),
+                    }
+                    if rem.get("remarks"):
+                        re_entry["remarks"] = rem["remarks"]
+                    entry["remediations"].append(re_entry)
+            if r.get("remarks"):
+                entry["remarks"] = r["remarks"]
+            result["risks"].append(entry)
+
+    # findings
+    if ar.get("findings"):
+        result["findings"] = []
+        for f in ar["findings"]:
+            entry = {
+                "uuid":        f.get("uuid") or new_uuid(),
+                "title":       f.get("title", ""),
+                "description": f.get("description", ""),
+                "target": {
+                    "type":      f.get("target_type", "statement-id"),
+                    "target-id": f.get("target_id", ""),
+                    "status": {
+                        "state": f.get("status_state", "not-satisfied"),
+                    },
+                    "implementation-status": {
+                        "state": f.get("impl_status", "implemented"),
+                    },
+                },
+            }
+            if f.get("status_reason"):
+                entry["target"]["status"]["reason"] = f["status_reason"]
+            obs_uuids = [u for u in f.get("related_obs_uuids", []) if u]
+            if obs_uuids:
+                entry["related-observations"] = [
+                    {"observation-uuid": u} for u in obs_uuids
+                ]
+            risk_uuids = [u for u in f.get("related_risk_uuids", []) if u]
+            if risk_uuids:
+                entry["related-risks"] = [
+                    {"risk-uuid": u} for u in risk_uuids
+                ]
+            if f.get("remarks"):
+                entry["remarks"] = f["remarks"]
+            result["findings"].append(entry)
+
+    # assessment-log (Phase 3)
+    if ar.get("assessment_log"):
+        log_entries = []
+        for le in ar["assessment_log"]:
+            log_entry = {
+                "uuid":  le.get("uuid") or new_uuid(),
+                "start": le.get("start", now_iso()),
+            }
+            if le.get("end"):
+                log_entry["end"] = le["end"]
+            if le.get("description"):
+                log_entry["description"] = le["description"]
+            if le.get("remarks"):
+                log_entry["remarks"] = le["remarks"]
+            log_entries.append(log_entry)
+        result["assessment-log"] = {"entries": log_entries}
+
+    root["results"].append(result)
+    return doc
+
+
+def parse_ar_file(data):
+    """
+    Parse a raw OSCAL assessment-results JSON dict into the internal working
+    dictionary format used by ARTab.
+    """
+    root   = data.get("assessment-results", {})
+    meta   = root.get("metadata", {})
+    result = root.get("results", [{}])[0] if root.get("results") else {}
+
+    ar = empty_ar()
+    ar["uuid"]    = root.get("uuid", new_uuid())
+    ar["title"]   = meta.get("title", "")
+    ar["version"] = meta.get("version", "1.0")
+    ar["import_ap"] = root.get("import-ap", {}).get("href", "")
+
+    ar["result_uuid"]        = result.get("uuid", new_uuid())
+    ar["result_title"]       = result.get("title", "")
+    ar["result_description"] = result.get("description", "")
+    ar["result_start"]       = result.get("start", "")[:10] if result.get("start") else ""
+    ar["result_end"]         = result.get("end",   "")[:10] if result.get("end")   else ""
+
+    # observations
+    for o in result.get("observations", []):
+        ev = [
+            {"href": e.get("href", ""), "description": e.get("description", "")}
+            for e in o.get("relevant-evidence", [])
+        ]
+        ar["observations"].append({
+            "uuid":             o.get("uuid", new_uuid()),
+            "title":            o.get("title", ""),
+            "description":      o.get("description", ""),
+            "methods":          list(o.get("methods", [])),
+            "types":            list(o.get("types", [])),
+            "collected":        o.get("collected", "")[:10] if o.get("collected") else "",
+            "expires":          o.get("expires", "")[:10]   if o.get("expires")   else "",
+            "relevant_evidence": ev,
+            "remarks":          o.get("remarks", ""),
+        })
+
+    # risks
+    for r in result.get("risks", []):
+        rems = []
+        for rem in r.get("remediations", []):
+            rems.append({
+                "uuid":        rem.get("uuid", new_uuid()),
+                "lifecycle":   rem.get("lifecycle", "recommendation"),
+                "title":       rem.get("title", ""),
+                "description": rem.get("description", ""),
+                "remarks":     rem.get("remarks", ""),
+            })
+        ar["risks"].append({
+            "uuid":        r.get("uuid", new_uuid()),
+            "title":       r.get("title", ""),
+            "description": r.get("description", ""),
+            "statement":   r.get("statement", ""),
+            "status":      r.get("status", "open"),
+            "deadline":    r.get("deadline", "")[:10] if r.get("deadline") else "",
+            "remediations": rems,
+            "remarks":     r.get("remarks", ""),
+        })
+
+    # findings
+    for f in result.get("findings", []):
+        tgt    = f.get("target", {})
+        status = tgt.get("status", {})
+        impl   = tgt.get("implementation-status", {})
+        ar["findings"].append({
+            "uuid":          f.get("uuid", new_uuid()),
+            "title":         f.get("title", ""),
+            "description":   f.get("description", ""),
+            "target_type":   tgt.get("type", "statement-id"),
+            "target_id":     tgt.get("target-id", ""),
+            "status_state":  status.get("state", "not-satisfied"),
+            "status_reason": status.get("reason", ""),
+            "impl_status":   impl.get("state", "implemented"),
+            "related_obs_uuids": [
+                ro.get("observation-uuid", "")
+                for ro in f.get("related-observations", [])
+            ],
+            "related_risk_uuids": [
+                rr.get("risk-uuid", "")
+                for rr in f.get("related-risks", [])
+            ],
+            "remarks":       f.get("remarks", ""),
+        })
+
+    # assessment-log
+    log = result.get("assessment-log", {})
+    for le in log.get("entries", []):
+        ar["assessment_log"].append({
+            "uuid":        le.get("uuid", new_uuid()),
+            "start":       le.get("start", "")[:10] if le.get("start") else "",
+            "end":         le.get("end",   "")[:10] if le.get("end")   else "",
+            "description": le.get("description", ""),
+            "remarks":     le.get("remarks", ""),
+        })
+
+    return ar

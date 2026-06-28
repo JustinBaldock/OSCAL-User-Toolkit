@@ -138,12 +138,31 @@ class POAMTab(tk.Frame):
         btn("📂  Open POA&M", self._open,   C["BLUE"],  "#6a9fd8")
         btn("🆕  New POA&M",  self._new,    C["BLUE"],  "#6a9fd8")
 
+        tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
+            side="left", fill="y", padx=8, pady=6
+        )
+
+        tk.Button(
+            tb, text="📥  Import from AR",
+            command=self._import_from_ar,
+            bg=C["HEADER_BG"], fg=C["TEXT"],
+            font=("Helvetica", 10),
+            relief="flat", padx=10, pady=4, cursor="hand2",
+            activebackground=C["CARD_BG"], activeforeground=C["TEXT"],
+        ).pack(side="left", pady=8)
+        tk.Label(
+            tb,
+            text="  Load not-satisfied findings from an AR file",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9, "italic"),
+        ).pack(side="left", padx=(4, 0))
+
         self._status_lbl = tk.Label(
             tb, text="POA&M not saved",
             bg=C["CARD_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 10, "italic"),
         )
-        self._status_lbl.pack(side="left", padx=16)
+        self._status_lbl.pack(side="right", padx=16)
 
     def _build_canvas(self):
         """
@@ -1117,6 +1136,101 @@ class POAMTab(tk.Frame):
         )
         if path:
             self._vars["import_ssp"].set(path)
+
+    def _import_from_ar(self):
+        """
+        Load an OSCAL Assessment Results file and import its not-satisfied
+        findings as POA&M items, copying related observations across too.
+
+        This is the Phase 3 reverse flow — the POA&M tab can pull from any
+        saved AR file even when the AR tab is not open.
+        """
+        from .models import parse_ar_file
+
+        path = filedialog.askopenfilename(
+            title="Select Assessment Results JSON file",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+
+        try:
+            with open(path, encoding="utf-8") as fh:
+                raw = json.load(fh)
+        except json.JSONDecodeError as exc:
+            messagebox.showerror("Invalid JSON", str(exc))
+            return
+
+        if "assessment-results" not in raw:
+            messagebox.showerror(
+                "Not an Assessment Results file",
+                "The selected file does not contain an 'assessment-results' key.",
+            )
+            return
+
+        try:
+            ar = parse_ar_file(raw)
+        except Exception as exc:
+            messagebox.showerror("Parse error", str(exc))
+            return
+
+        not_satisfied = [
+            f for f in ar.get("findings", [])
+            if f.get("status_state") == "not-satisfied"
+        ]
+        if not not_satisfied:
+            messagebox.showinfo(
+                "No not-satisfied findings",
+                "The selected Assessment Results file has no 'not-satisfied' findings.",
+            )
+            return
+
+        if not messagebox.askyesno(
+            "Import findings",
+            f"Import {len(not_satisfied)} not-satisfied finding(s) from:\n"
+            f"{Path(path).name}\n\nProceed?",
+        ):
+            return
+
+        obs_by_uuid = {o["uuid"]: o for o in ar.get("observations", [])}
+        existing_obs_uuids = {o["uuid"] for o in self._observations}
+        added_obs: set = set()
+
+        for f in not_satisfied:
+            new_obs_uuids = []
+            for obs_uuid in f.get("related_obs_uuids", []):
+                if obs_uuid in obs_by_uuid and obs_uuid not in existing_obs_uuids:
+                    self._observations.append(dict(obs_by_uuid[obs_uuid]))
+                    existing_obs_uuids.add(obs_uuid)
+                    added_obs.add(obs_uuid)
+                if obs_uuid in obs_by_uuid:
+                    new_obs_uuids.append(obs_uuid)
+
+            ctrl_id = f.get("target_id", "")
+            title   = f.get("title") or f"Not-satisfied: {ctrl_id}"
+            self._poam_items.append({
+                "uuid":                     new_uuid(),
+                "title":                    title,
+                "description":              (
+                    f.get("description", "")
+                    or f"Control {ctrl_id} was assessed as not-satisfied."
+                ),
+                "related_observation_uuids": new_obs_uuids,
+                "related_risk_uuids":        [],
+                "related_finding_uuids":     [],
+                "remarks":                   f.get("remarks", ""),
+            })
+
+        if added_obs:
+            self._refresh_obs_tree()
+        self._refresh_item_tree()
+        self._dirty = True
+
+        messagebox.showinfo(
+            "Import complete",
+            f"Added {len(not_satisfied)} POA&M item(s) and "
+            f"{len(added_obs)} observation(s).",
+        )
 
     # =========================================================================
     # COLLECT / POPULATE / RESET

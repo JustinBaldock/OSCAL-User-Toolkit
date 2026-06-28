@@ -1,0 +1,253 @@
+{
+  "assessment-results": {
+    "uuid": "a1b2c3d4-0002-4000-8000-000000000002",
+    "metadata": {
+      "title": "Example Research Network \u2014 Annual ISM Assessment Results 2025",
+      "last-modified": "2026-06-28T06:10:18Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "import-ap": {
+      "href": "ap_ERN.json"
+    },
+    "results": [
+      {
+        "uuid": "a1b2c3d4-0003-4000-8000-000000000003",
+        "title": "FY2025 Annual Assessment",
+        "description": "Annual ISM compliance assessment of the Example Research Network covering all 29 controls in the approved baseline.",
+        "start": "2025-07-01",
+        "reviewed-controls": {
+          "control-selections": [
+            {
+              "include-all": {}
+            }
+          ]
+        },
+        "end": "2025-07-31",
+        "observations": [
+          {
+            "uuid": "b1000001-0000-4000-8000-000000000001",
+            "description": "The Patch Management Policy (v2.3, dated 2025-01-15) was examined. The policy mandates patching of internet-facing services within 48 hours and all other systems within 30 days of patch release. The policy aligns with ISM-1490 requirements and references the approved patch management procedure.",
+            "methods": [
+              "EXAMINE"
+            ],
+            "collected": "2025-07-03",
+            "title": "Patch management policy reviewed",
+            "types": [
+              "control-objective"
+            ],
+            "relevant-evidence": [
+              {
+                "href": "policy_patch_management_v2.3.pdf",
+                "description": "Patch Management Policy v2.3"
+              }
+            ]
+          },
+          {
+            "uuid": "b1000002-0000-4000-8000-000000000002",
+            "description": "Tenable Nessus Professional scan conducted against 42 Windows 11 workstations on 2025-07-11. 3 workstations were identified with outstanding critical patches (Microsoft Security Update KB5034441, released 2025-06-10). Patch age at time of scan: 31 days \u2014 exceeding the 30-day policy requirement. Affected hosts: WS-014, WS-027, WS-039.",
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2025-07-11",
+            "title": "Nessus vulnerability scan \u2014 workstations",
+            "types": [
+              "finding",
+              "ssp-statement-issue"
+            ],
+            "relevant-evidence": [
+              {
+                "href": "nessus_scan_workstations_2025-07-11.csv",
+                "description": "Nessus scan report \u2014 workstations"
+              }
+            ],
+            "remarks": "Three hosts were offline during the scheduled patch window due to a public holiday."
+          },
+          {
+            "uuid": "b1000003-0000-4000-8000-000000000003",
+            "description": "Active Directory was queried to enumerate accounts with Domain Admin and Enterprise Admin privileges. 7 accounts were identified with Domain Admin rights. All 7 accounts are named service accounts or designated administrator accounts with documented business justification in the Access Control Register. Last access dates confirmed active use within the past 30 days for all accounts.",
+            "methods": [
+              "EXAMINE",
+              "TEST"
+            ],
+            "collected": "2025-07-10",
+            "title": "Active Directory privileged account review",
+            "types": [
+              "control-objective"
+            ],
+            "relevant-evidence": [
+              {
+                "href": "ad_privileged_accounts_report_2025-07-10.xlsx",
+                "description": "AD privileged account enumeration"
+              }
+            ]
+          },
+          {
+            "uuid": "b1000004-0000-4000-8000-000000000004",
+            "description": "The Learning Management System (LMS) report for FY2025 was examined. 94 of 97 staff (96.9%) completed mandatory annual security awareness training by the due date. 3 staff members completed training late (within 14 days of the deadline) due to approved leave. The system owner confirmed that completion tracking and follow-up procedures are in place.",
+            "methods": [
+              "EXAMINE",
+              "INTERVIEW"
+            ],
+            "collected": "2025-07-17",
+            "title": "Security awareness training completion rates",
+            "types": [
+              "control-objective"
+            ],
+            "relevant-evidence": [
+              {
+                "href": "lms_training_completion_FY2025.pdf",
+                "description": "LMS training completion report FY2025"
+              }
+            ]
+          }
+        ],
+        "risks": [
+          {
+            "uuid": "c1000001-0000-4000-8000-000000000001",
+            "title": "Unpatched workstations \u2014 delayed patch deployment",
+            "description": "Three workstations (WS-014, WS-027, WS-039) have a critical Microsoft security patch outstanding for 31 days, exceeding the 30-day patching policy.",
+            "statement": "If the outstanding critical patch is exploited before deployment, an attacker could gain code execution on the affected workstations, potentially pivoting to network resources. Impact assessed as Medium given network segmentation controls in place.",
+            "status": "open",
+            "deadline": "2025-08-11",
+            "remediations": [
+              {
+                "uuid": "e1000001-0000-4000-8000-000000000001",
+                "lifecycle": "planned",
+                "title": "Emergency patch deployment",
+                "description": "Deploy KB5034441 to WS-014, WS-027, and WS-039 within 10 business days. Update patch management records. Notify system owner on completion.",
+                "remarks": "Patch window scheduled for 2025-08-07."
+              }
+            ]
+          }
+        ],
+        "findings": [
+          {
+            "uuid": "f1000001-0000-4000-8000-000000000001",
+            "title": "ISM-1490 \u2014 Patch management policy satisfied",
+            "description": "The organisation maintains a documented patch management policy meeting ISM-1490 requirements, with clear ownership and escalation procedures.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1490",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "b1000001-0000-4000-8000-000000000001"
+              }
+            ]
+          },
+          {
+            "uuid": "f1000002-0000-4000-8000-000000000002",
+            "title": "ISM-1486 \u2014 Patch currency not-satisfied (3 workstations)",
+            "description": "Three workstations exceed the 30-day patching deadline for a critical security update. ISM-1486 requires that critical patches be applied within 30 days for standard systems. The requirement is not universally met.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1486",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail"
+              },
+              "implementation-status": {
+                "state": "partial"
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "b1000002-0000-4000-8000-000000000002"
+              }
+            ],
+            "related-risks": [
+              {
+                "risk-uuid": "c1000001-0000-4000-8000-000000000001"
+              }
+            ],
+            "remarks": "Remediation planned within 10 business days. Affected hosts were offline during the scheduled patch window."
+          },
+          {
+            "uuid": "f1000003-0000-4000-8000-000000000003",
+            "title": "ISM-1175 \u2014 Privileged access management satisfied",
+            "description": "Privileged accounts in Active Directory are limited to designated administrators with documented justifications. No unauthorised or stale accounts were identified.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1175",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "b1000003-0000-4000-8000-000000000003"
+              }
+            ]
+          },
+          {
+            "uuid": "f1000004-0000-4000-8000-000000000004",
+            "title": "ISM-0417 \u2014 Security awareness training satisfied",
+            "description": "Annual mandatory security awareness training completion rate of 96.9% meets the organisational target. Late completions had approved leave justifications.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-0417",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "b1000004-0000-4000-8000-000000000004"
+              }
+            ]
+          }
+        ],
+        "assessment-log": {
+          "entries": [
+            {
+              "uuid": "log00001-0000-4000-8000-000000000001",
+              "start": "2025-07-01",
+              "end": "2025-07-01",
+              "description": "Assessment kick-off meeting held with system owner. Scope confirmed, document list provided."
+            },
+            {
+              "uuid": "log00002-0000-4000-8000-000000000002",
+              "start": "2025-07-03",
+              "end": "2025-07-09",
+              "description": "Document review phase: examined patch management policy, access control register, incident response plan, backup schedule, and network architecture diagrams."
+            },
+            {
+              "uuid": "log00003-0000-4000-8000-000000000003",
+              "start": "2025-07-10",
+              "end": "2025-07-16",
+              "description": "Technical testing phase: Nessus scans run against workstations (2025-07-11) and servers (2025-07-14). AD privileged account enumeration performed (2025-07-10). Network segmentation tested via port scan from DMZ (2025-07-15)."
+            },
+            {
+              "uuid": "log00004-0000-4000-8000-000000000004",
+              "start": "2025-07-17",
+              "end": "2025-07-18",
+              "description": "Personnel interviews: system owner (2025-07-17), lead IT administrator (2025-07-17), 3 end users (2025-07-18)."
+            },
+            {
+              "uuid": "log00005-0000-4000-8000-000000000005",
+              "start": "2025-07-24",
+              "end": "2025-07-24",
+              "description": "Draft findings reviewed with system owner. Factual corrections incorporated. System owner accepted findings."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

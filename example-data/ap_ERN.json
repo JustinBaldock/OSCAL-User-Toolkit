@@ -1,0 +1,126 @@
+{
+  "assessment-plan": {
+    "uuid": "a1b2c3d4-0001-4000-8000-000000000001",
+    "metadata": {
+      "title": "Example Research Network \u2014 Annual ISM Assessment Plan",
+      "last-modified": "2026-06-28T06:10:18Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "import-ssp": {
+      "href": "ssp_ERN.json"
+    },
+    "reviewed-controls": {
+      "control-selections": [
+        {
+          "include-controls": [
+            {
+              "with-ids": [
+                "ism-1055",
+                "ism-1546",
+                "ism-0417",
+                "ism-1864",
+                "ism-0181",
+                "ism-1111",
+                "ism-1820",
+                "ism-0639",
+                "ism-0457",
+                "ism-0465",
+                "ism-0843",
+                "ism-1656",
+                "ism-0955",
+                "ism-1471",
+                "ism-0428",
+                "ism-2012",
+                "ism-1175",
+                "ism-0874",
+                "ism-1490",
+                "ism-1486",
+                "ism-1485",
+                "ism-1483",
+                "ism-1978",
+                "ism-1877",
+                "ism-1753",
+                "ism-1906",
+                "ism-1960",
+                "ism-1701",
+                "ism-1818"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "tasks": [
+      {
+        "uuid": "d1000001-0000-4000-8000-000000000001",
+        "type": "milestone",
+        "title": "Assessment kick-off",
+        "description": "Initial meeting with system owner to confirm scope, logistics, and document access.",
+        "timing": {
+          "on-date": {
+            "date": "2025-07-01"
+          }
+        }
+      },
+      {
+        "uuid": "d1000002-0000-4000-8000-000000000002",
+        "type": "action",
+        "title": "Document review (EXAMINE)",
+        "description": "Examine security policies, procedures, and configuration baselines for all 29 controls in scope.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-02",
+            "end": "2025-07-09"
+          }
+        }
+      },
+      {
+        "uuid": "d1000003-0000-4000-8000-000000000003",
+        "type": "action",
+        "title": "Technical testing (TEST)",
+        "description": "Run Tenable Nessus scans, review Active Directory configuration, verify patch levels, and test network segmentation.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-10",
+            "end": "2025-07-16"
+          }
+        }
+      },
+      {
+        "uuid": "d1000004-0000-4000-8000-000000000004",
+        "type": "action",
+        "title": "Personnel interviews (INTERVIEW)",
+        "description": "Interview system owner, IT administrators, and a sample of end users regarding security awareness and operational procedures.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-17",
+            "end": "2025-07-18"
+          }
+        }
+      },
+      {
+        "uuid": "d1000005-0000-4000-8000-000000000005",
+        "type": "milestone",
+        "title": "Draft results review",
+        "description": "System owner reviews draft assessment findings before the final report is issued.",
+        "timing": {
+          "on-date": {
+            "date": "2025-07-24"
+          }
+        }
+      },
+      {
+        "uuid": "d1000006-0000-4000-8000-000000000006",
+        "type": "milestone",
+        "title": "Final assessment report issued",
+        "description": "Assessment Results document signed off and delivered to the Authorising Officer.",
+        "timing": {
+          "on-date": {
+            "date": "2025-07-31"
+          }
+        }
+      }
+    ]
+  }
+}
