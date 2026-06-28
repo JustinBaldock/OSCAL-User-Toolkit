@@ -645,6 +645,11 @@ class SSPTab(tk.Frame):
             list_key = "parties",
         )
 
+        # ── 7b. Responsible Parties ───────────────────────────────────────────
+        # Maps each defined role to the party (person/org) who fills that role.
+        # This becomes responsible-parties[] in the OSCAL metadata block.
+        self._build_section7b(parent, section)
+
         # ── 8. System Components ──────────────────────────────────────────────
         self._build_section8(parent, section)
 
@@ -662,6 +667,63 @@ class SSPTab(tk.Frame):
 
         # Bottom padding so the last section is not flush against the edge
         tk.Frame(parent, bg=C["BG"], height=40).pack()
+
+    # =========================================================================
+    # SECTION 7b — RESPONSIBLE PARTIES
+    # Maps roles to the parties (people/orgs) responsible for filling them.
+    # Becomes responsible-parties[] in the OSCAL metadata block.
+    # =========================================================================
+
+    def _build_section7b(self, parent, section):
+        """
+        Build Section 7b: Responsible Parties.
+
+        Each row links one Role ID to one or more Party UUIDs.
+        The Add dialog shows dropdowns populated from the Roles and Parties
+        tables defined in Sections 6 and 7.
+        """
+        C = self._colors
+        section("7b ·  Responsible Parties")
+        tk.Label(
+            parent,
+            text="  Map each role to the person or organisation who fills it.  "
+                 "Roles and parties must be defined in Sections 6 and 7 first.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        ).pack(anchor="w", padx=28)
+
+        frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        frame.pack(fill="x", padx=28, pady=6)
+
+        btn_row = tk.Frame(frame, bg=C["CARD_BG"])
+        btn_row.pack(fill="x", padx=8, pady=6)
+        tk.Button(
+            btn_row, text="＋  Add",
+            command=self._add_responsible_party,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            btn_row, text="✕  Remove",
+            command=self._remove_responsible_party,
+            bg=C["RED"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=(6, 0))
+
+        self._rp_tree = ttk.Treeview(
+            frame,
+            columns=("role_id", "party_name"),
+            show="headings",
+            height=4,
+            selectmode="browse",
+        )
+        self._rp_tree.heading("role_id",     text="Role ID",    anchor="w")
+        self._rp_tree.heading("party_name",  text="Party Name", anchor="w")
+        self._rp_tree.column("role_id",     width=220, anchor="w", stretch=False)
+        self._rp_tree.column("party_name",  width=400, anchor="w", stretch=True)
+        self._rp_tree.pack(fill="x", padx=8, pady=(0, 8))
 
     # =========================================================================
     # SECTION 8 — SYSTEM COMPONENTS
@@ -2746,6 +2808,108 @@ class SSPTab(tk.Frame):
         self._ssp_inv_items.pop(idx)
         self._inv_tree.delete(sel[0])
 
+    def _add_responsible_party(self):
+        """
+        Show a dialog to add a responsible-party mapping (role → party).
+
+        The role dropdown is populated from the roles defined in Section 6.
+        The party dropdown is populated from the parties defined in Section 7.
+        """
+        roles   = [r["role_id"] for r in self._ssp.get("roles",   []) if r.get("role_id")]
+        parties = self._ssp.get("parties", [])
+        if not roles:
+            messagebox.showinfo(
+                "No roles defined",
+                "Add at least one role in Section 6 before assigning responsible parties."
+            )
+            return
+        if not parties:
+            messagebox.showinfo(
+                "No parties defined",
+                "Add at least one party in Section 7 before assigning responsible parties."
+            )
+            return
+
+        # Build a label → uuid mapping so the dropdown shows names, not UUIDs
+        party_labels = [f"{p['name']}  ({p['type']})" for p in parties]
+        party_by_label = {
+            f"{p['name']}  ({p['type']})": p["uuid"] for p in parties
+        }
+
+        C = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title("Add Responsible Party")
+        dlg.configure(bg=C["BG"])
+        dlg.transient(self)
+        dlg.grab_set()
+        dlg.resizable(False, False)
+
+        tk.Label(dlg, text="Role ID *",    bg=C["BG"], fg=C["TEXT"],
+                 font=("Helvetica", 10)).grid(row=0, column=0, sticky="w", padx=16, pady=(16,4))
+        tk.Label(dlg, text="Party *",      bg=C["BG"], fg=C["TEXT"],
+                 font=("Helvetica", 10)).grid(row=1, column=0, sticky="w", padx=16, pady=(0, 4))
+        tk.Label(dlg, text="Remarks",      bg=C["BG"], fg=C["TEXT"],
+                 font=("Helvetica", 10)).grid(row=2, column=0, sticky="w", padx=16, pady=(0, 4))
+
+        v_role    = tk.StringVar(value=roles[0])
+        v_party   = tk.StringVar(value=party_labels[0])
+        v_remarks = tk.StringVar()
+
+        ttk.Combobox(dlg, textvariable=v_role,  values=roles,        state="readonly",
+                     width=30).grid(row=0, column=1, padx=16, pady=(16, 4))
+        ttk.Combobox(dlg, textvariable=v_party, values=party_labels, state="readonly",
+                     width=30).grid(row=1, column=1, padx=16, pady=(0, 4))
+        tk.Entry(dlg, textvariable=v_remarks,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10),
+                 width=32).grid(row=2, column=1, padx=16, pady=(0, 4))
+
+        result = {}
+
+        def _ok():
+            role_id    = v_role.get().strip()
+            party_lbl  = v_party.get()
+            party_uuid = party_by_label.get(party_lbl, "")
+            if not role_id or not party_uuid:
+                messagebox.showwarning("Required", "Please select a role and a party.",
+                                       parent=dlg)
+                return
+            result["role_id"]     = role_id
+            result["party_uuid"]  = party_uuid
+            result["party_name"]  = v_party.get().split("  (")[0]
+            result["remarks"]     = v_remarks.get().strip()
+            dlg.destroy()
+
+        btn_row = tk.Frame(dlg, bg=C["BG"])
+        btn_row.grid(row=3, column=0, columnspan=2, pady=12)
+        tk.Button(btn_row, text="OK",     command=_ok,          bg=C["GREEN"],
+                  fg=C["BG"], font=("Helvetica", 10, "bold"), relief="flat",
+                  padx=12, pady=4, cursor="hand2").pack(side="left", padx=6)
+        tk.Button(btn_row, text="Cancel", command=dlg.destroy,  bg=C["HEADER_BG"],
+                  fg=C["TEXT"], font=("Helvetica", 10), relief="flat",
+                  padx=12, pady=4, cursor="hand2").pack(side="left", padx=6)
+
+        self.wait_window(dlg)
+        if not result:
+            return
+
+        # Store internally and add to treeview
+        rp_list = self._ssp.setdefault("responsible_parties", [])
+        rp_list.append(result)
+        self._rp_tree.insert("", "end",
+                             values=(result["role_id"], result["party_name"]))
+
+    def _remove_responsible_party(self):
+        """Remove the selected responsible-party row."""
+        sel = self._rp_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection",
+                                "Select a responsible party row to remove.")
+            return
+        idx = self._rp_tree.index(sel[0])
+        self._ssp.setdefault("responsible_parties", []).pop(idx)
+        self._rp_tree.delete(sel[0])
+
     def _add_role(self):
         """Show a dialog to add a role to the SSP."""
         # Pre-populate the dropdown with common OSCAL role IDs
@@ -2869,6 +3033,12 @@ class SSPTab(tk.Frame):
         for p in ssp.get("parties", []):
             self._party_tree.insert("", "end",
                 values=(p["type"], p["name"], p.get("email", "")))
+
+        # Rebuild the responsible parties table (Section 7b)
+        self._rp_tree.delete(*self._rp_tree.get_children())
+        for rp in ssp.get("responsible_parties", []):
+            self._rp_tree.insert("", "end",
+                values=(rp.get("role_id", ""), rp.get("party_name", rp.get("party_uuid", ""))))
 
         # ── Sections 8, 9, 11, 12: load working lists and rebuild widgets ────────
         # list(...) makes shallow copies so editing the form does not mutate the

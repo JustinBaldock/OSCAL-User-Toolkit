@@ -162,7 +162,14 @@ class ComponentTab(tk.Frame):
         # the user selects a component, and saved back when they switch away
         # or click Apply.
         self._ctrl_responses    = {}   # {control_id: description_string}
+        self._ctrl_impl_status  = {}   # {control_id: implementation-status string}
         self._selected_ctrl_id  = None # ID of the control row currently shown
+
+        # Valid OSCAL implementation-status values (schema enum)
+        self._IMPL_STATUS_VALUES = [
+            "implemented", "partial", "planned",
+            "alternative", "not-applicable",
+        ]
 
         # ── External notification hook ────────────────────────────────────────
         # Called whenever self._components changes (add, delete, open, clear).
@@ -1013,6 +1020,24 @@ class ComponentTab(tk.Frame):
             fill="x", padx=8, pady=4
         )
 
+        # Implementation status dropdown (OSCAL implementation-status field)
+        status_row = tk.Frame(ctrl_right, bg=C["BG"])
+        status_row.pack(fill="x", padx=8, pady=(4, 2))
+        tk.Label(
+            status_row,
+            text="Implementation Status:",
+            bg=C["BG"], fg=C["TEXT"],
+            font=("Helvetica", 10, "bold"),
+        ).pack(side="left")
+        self._ctrl_impl_status_var = tk.StringVar(value="implemented")
+        status_menu = ttk.Combobox(
+            status_row,
+            textvariable=self._ctrl_impl_status_var,
+            values=self._IMPL_STATUS_VALUES,
+            state="readonly", width=20,
+        )
+        status_menu.pack(side="left", padx=(8, 0))
+
         # Label for the response text area
         tk.Label(
             ctrl_right,
@@ -1283,7 +1308,8 @@ class ComponentTab(tk.Frame):
             "roles":           [],
             "protocols":       [],
             "links":           [],
-            "ctrl_responses":  {},   # {control_id: description_string}
+            "ctrl_responses":   {},  # {control_id: description_string}
+            "ctrl_impl_status": {},  # {control_id: implementation-status string}
         }
         self._components.append(new_comp)
         self._dirty = True
@@ -1409,13 +1435,14 @@ class ComponentTab(tk.Frame):
             ))
 
         # ── Control responses ─────────────────────────────────────────────────
-        # Load the saved responses for this component into _ctrl_responses,
-        # then rebuild the control list to show the correct dot indicators.
+        # Load the saved responses and implementation statuses for this component.
         self._ctrl_responses   = dict(comp.get("ctrl_responses", {}))
+        self._ctrl_impl_status = dict(comp.get("ctrl_impl_status", {}))
         self._selected_ctrl_id = None
 
-        # Clear the response editor
+        # Clear the response editor and reset status to default
         self._ctrl_response_text.delete("1.0", "end")
+        self._ctrl_impl_status_var.set("implemented")
         self._ctrl_stmt_lbl.config(
             text="Select a control from the list to write an implementation response.",
             fg=self._colors["SUBTEXT"],
@@ -1465,9 +1492,13 @@ class ComponentTab(tk.Frame):
             else:
                 # If the user cleared the response, remove it
                 self._ctrl_responses.pop(self._selected_ctrl_id, None)
+            # Always capture the current implementation status
+            self._ctrl_impl_status[self._selected_ctrl_id] = \
+                self._ctrl_impl_status_var.get() or "implemented"
 
-        # Write the responses dict back into the component
-        comp["ctrl_responses"] = dict(self._ctrl_responses)
+        # Write both dicts back into the component
+        comp["ctrl_responses"]   = dict(self._ctrl_responses)
+        comp["ctrl_impl_status"] = dict(self._ctrl_impl_status)
         self._dirty = True
 
     def _apply_component(self):
@@ -1565,6 +1596,9 @@ class ComponentTab(tk.Frame):
                 self._ctrl_responses[self._selected_ctrl_id] = current_text
             else:
                 self._ctrl_responses.pop(self._selected_ctrl_id, None)
+            # Persist the implementation status for the control we're leaving
+            self._ctrl_impl_status[self._selected_ctrl_id] = \
+                self._ctrl_impl_status_var.get() or "implemented"
 
         self._selected_ctrl_id = ctrl_id
 
@@ -1587,11 +1621,15 @@ class ComponentTab(tk.Frame):
         else:
             self._ctrl_stmt_lbl.config(text=ctrl_id, fg=self._colors["SUBTEXT"])
 
-        # ── Load any existing response into the text editor ───────────────────
+        # ── Load any existing response and status into the editor ────────────
         self._ctrl_response_text.delete("1.0", "end")
         existing = self._ctrl_responses.get(ctrl_id, "")
         if existing:
             self._ctrl_response_text.insert("1.0", existing)
+        # Load implementation status (default to "implemented" if not set)
+        self._ctrl_impl_status_var.set(
+            self._ctrl_impl_status.get(ctrl_id, "implemented")
+        )
 
         # Move focus to the text editor so the user can start typing immediately
         self._ctrl_response_text.focus_set()
@@ -1616,6 +1654,10 @@ class ComponentTab(tk.Frame):
         else:
             # Empty response — remove the entry so the dot clears
             self._ctrl_responses.pop(self._selected_ctrl_id, None)
+
+        # Always persist the implementation status (even when the text is cleared)
+        self._ctrl_impl_status[self._selected_ctrl_id] = \
+            self._ctrl_impl_status_var.get() or "implemented"
 
         # Rebuild both lists so dots and tab counts update immediately
         self._refresh_control_list(self._ctrl_search_var.get())
@@ -2420,29 +2462,35 @@ class ComponentTab(tk.Frame):
             if lnk.get("href", "").strip()
         ]
 
-        # Flatten OSCAL control-implementations back to {control_id: description}
-        ctrl_responses = {}
+        # Flatten OSCAL control-implementations back to internal dicts
+        ctrl_responses   = {}
+        ctrl_impl_status = {}
         for ci in c.get("control-implementations", []):
             for req in ci.get("implemented-requirements", []):
                 ctrl_id = req.get("control-id", "")
                 desc    = req.get("description", "")
                 if ctrl_id and desc:
                     ctrl_responses[ctrl_id] = desc
+                # Parse implementation-status if present (defaults to "implemented")
+                impl_st = req.get("implementation-status", {})
+                if ctrl_id and impl_st.get("state"):
+                    ctrl_impl_status[ctrl_id] = impl_st["state"]
 
         return {
-            "uuid":           c.get("uuid", new_uuid()),
-            "title":          c.get("title", ""),
-            "type":           c.get("type", COMPONENT_TYPES[0]),
-            "description":    c.get("description", ""),
-            "purpose":        c.get("purpose", ""),
-            "status":         status_prop["value"] if status_prop else COMPONENT_STATUS[0],
-            "status_remarks": status_prop.get("remarks", "") if status_prop else "",
-            "remarks":        c.get("remarks", ""),
-            "props":          user_props,
-            "roles":          roles,
-            "protocols":      protocols,
-            "links":          links,
-            "ctrl_responses": ctrl_responses,
+            "uuid":             c.get("uuid", new_uuid()),
+            "title":            c.get("title", ""),
+            "type":             c.get("type", COMPONENT_TYPES[0]),
+            "description":      c.get("description", ""),
+            "purpose":          c.get("purpose", ""),
+            "status":           status_prop["value"] if status_prop else COMPONENT_STATUS[0],
+            "status_remarks":   status_prop.get("remarks", "") if status_prop else "",
+            "remarks":          c.get("remarks", ""),
+            "props":            user_props,
+            "roles":            roles,
+            "protocols":        protocols,
+            "links":            links,
+            "ctrl_responses":   ctrl_responses,
+            "ctrl_impl_status": ctrl_impl_status,
         }
 
     def _load_component_from_path(self, path):
@@ -2635,8 +2683,9 @@ class ComponentTab(tk.Frame):
             added   - Number of components successfully added
             skipped - Number of files skipped (not valid or duplicate)
         """
-        self._selected_index = None
-        self._ctrl_responses = {}
+        self._selected_index   = None
+        self._ctrl_responses   = {}
+        self._ctrl_impl_status = {}
         # Reset filters so all newly loaded components are visible
         if hasattr(self, "_comp_search_var"):
             self._comp_search_var.set("")

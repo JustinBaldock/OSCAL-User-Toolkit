@@ -361,6 +361,10 @@ def empty_ssp():
         # Each info type: {"uuid", "title", "description", "c_impact", "i_impact", "a_impact",
         #                   "component_flows": [{"component_uuid", "component_title", "direction"}]}
         "information_types": [],
+        # Section 7b: responsible-parties — maps each role to the party UUID
+        # who fills it.  Each entry: {"role_id": str, "party_uuid": str,
+        #                              "party_name": str, "remarks": str}
+        "responsible_parties": [],
 
         # ── Section 8: System Components ──────────────────────────────────
         # Each component is a dict with keys: uuid, type, title, description,
@@ -440,6 +444,21 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version="1.1.2"):
         if p.get("email"):
             entry["email-addresses"] = [p["email"]]
         parties.append(entry)
+
+    # ── Convert responsible-parties to OSCAL format ───────────────────────────
+    # OSCAL responsible-parties groups all party UUIDs for the same role into
+    # a single entry with a party-uuids list.  Our internal format stores one
+    # row per (role, party) pair, so we aggregate here.
+    # OSCAL format: [{"role-id": "isso", "party-uuids": ["uuid-1", ...]}, ...]
+    rp_by_role = {}
+    for rp in ssp.get("responsible_parties", []):
+        role_id    = rp.get("role_id", "").strip()
+        party_uuid = rp.get("party_uuid", "").strip()
+        if role_id and party_uuid:
+            rp_by_role.setdefault(role_id, {"role-id": role_id, "party-uuids": []})
+            if party_uuid not in rp_by_role[role_id]["party-uuids"]:
+                rp_by_role[role_id]["party-uuids"].append(party_uuid)
+    responsible_parties = list(rp_by_role.values())
 
     # ── Convert information types to OSCAL format ─────────────────────────────
     # CIA = Confidentiality, Integrity, Availability — the three security pillars
@@ -614,8 +633,9 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version="1.1.2"):
                 "last-modified": now,
                 "version":       ssp.get("version", "1.0"),
                 "oscal-version": oscal_version,     # OSCAL schema version we target
-                **({"roles":   roles}   if roles   else {}),
-                **({"parties": parties} if parties else {}),
+                **({"roles":                roles}                if roles                else {}),
+                **({"parties":             parties}             if parties             else {}),
+                **({"responsible-parties": responsible_parties} if responsible_parties else {}),
             },
 
             # Declare which profile this SSP is based on
@@ -769,6 +789,22 @@ def parse_ssp_file(data):
             # Take only the first email address if there are multiple
             "email": emails[0] if emails else "",
         })
+
+    # ── Responsible parties ───────────────────────────────────────────────────
+    # OSCAL stores one entry per role with a list of party UUIDs.
+    # We expand to one row per (role, party) pair so the treeview UI is flat.
+    # We also look up the party name for display purposes.
+    party_by_uuid = {p["uuid"]: p["name"] for p in parties}
+    responsible_parties = []
+    for rp in meta.get("responsible-parties", []):
+        role_id = rp.get("role-id", "")
+        for party_uuid in rp.get("party-uuids", []):
+            responsible_parties.append({
+                "role_id":    role_id,
+                "party_uuid": party_uuid,
+                "party_name": party_by_uuid.get(party_uuid, party_uuid),
+                "remarks":    rp.get("remarks", ""),
+            })
 
     # ── Information types ─────────────────────────────────────────────────────
     info_types = []
@@ -972,9 +1008,10 @@ def parse_ssp_file(data):
         "network_architecture": na.get("description", ""),
         "data_flow":            df.get("description", ""),
         "data_flow_diagrams":   data_flow_diagrams,
-        "roles":           roles,
-        "parties":         parties,
-        "information_types": info_types,
+        "roles":                roles,
+        "parties":              parties,
+        "responsible_parties":  responsible_parties,
+        "information_types":    info_types,
         "components":           components,
         "ctrl_implementations": ctrl_implementations,
         "set_parameters":       set_parameters,
@@ -1386,6 +1423,9 @@ def build_component_oscal_entry(comp, source_href):
             "uuid":        new_uuid(),
             "control-id":  ctrl_id,
             "description": desc.strip(),
+            "implementation-status": {
+                "state": comp.get("ctrl_impl_status", {}).get(ctrl_id, "implemented")
+            },
         }
         for ctrl_id, desc in comp.get("ctrl_responses", {}).items()
         if desc.strip()
