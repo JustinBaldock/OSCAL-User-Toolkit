@@ -507,7 +507,8 @@ class POAMTab(tk.Frame):
         body.columnconfigure(1, weight=1)
 
         v_title     = self._dlg_field(body, "Title",      0, default=ex.get("title",""))
-        v_collected = self._dlg_field(body, "Collected *", 1, default=ex.get("collected",""))
+        default_collected = ex.get("collected", "") if existing else now_iso()[:10]
+        v_collected = self._dlg_field(body, "Collected *", 1, default=default_collected)
         v_expires   = self._dlg_field(body, "Expires",    2, default=ex.get("expires",""))
 
         # Methods — multi-select via Listbox

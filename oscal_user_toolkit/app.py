@@ -468,6 +468,8 @@ class OSCALApp(tk.Tk):
             # Passes the toolbar OSCAL version selection so saved files declare
             # the correct oscal-version field
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            # Lets the SSP tab's "Change Profile…" button trigger the toolbar action
+            open_profile      = self._open_profile,
         )
         nb.add(self._ssp_tab, text="🛡  SSP Editor")
 

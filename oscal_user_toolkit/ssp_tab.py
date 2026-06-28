@@ -81,7 +81,7 @@ class SSPTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, get_profile, get_catalog, set_status,
-                 get_components=None, get_oscal_version=None):
+                 get_components=None, get_oscal_version=None, open_profile=None):
         """
         Set up the SSPTab panel.
 
@@ -98,6 +98,9 @@ class SSPTab(tk.Frame):
             get_oscal_version - Optional callback returning the OSCAL version string
                                 selected in the toolbar (e.g. "1.2.2"). Defaults to
                                 a lambda returning "1.1.2" so the tab works standalone.
+            open_profile      - Optional callback that triggers the app's Open Profile
+                                dialog so the user can change the profile from within
+                                the SSP tab without switching to the toolbar.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -108,6 +111,7 @@ class SSPTab(tk.Frame):
         self._set_status  = set_status
         self._get_components    = get_components    or (lambda: [])
         self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        self._open_profile      = open_profile
 
         # Dirty flag — True when there are unsaved changes in the form.
         # Set by any add/edit/remove action; cleared after a successful save.
@@ -249,7 +253,15 @@ class SSPTab(tk.Frame):
             prof_box, text="",
             bg=C["SIDEBAR_BG"], font=("Helvetica", 9),
         )
-        self._profile_lbl.pack(side="left", padx=(0, 10))
+        self._profile_lbl.pack(side="left", padx=(0, 4))
+
+        tk.Button(
+            prof_box, text="Change…",
+            command=lambda: self._open_profile() if self._open_profile else None,
+            bg=C["SIDEBAR_BG"], fg=C["ACCENT"], font=("Helvetica", 9),
+            relief="flat", padx=4, pady=0, cursor="hand2",
+            activebackground=C["HEADER_BG"], activeforeground=C["ACCENT"],
+        ).pack(side="left", padx=(0, 8))
 
         # ── Save status label ─────────────────────────────────────────────────
         # Shows "Saved: filename.json" or "SSP not saved"
@@ -2074,6 +2086,13 @@ class SSPTab(tk.Frame):
 
         v_desc = tk.StringVar(value=e.get("description", ""))
         eentry(lrow(dlg, "Description *"), v_desc)
+
+        tk.Label(
+            dlg,
+            text="FIPS-199 impact levels: Low = breach causes limited harm  |  "
+                 "Moderate = serious harm  |  High = severe or catastrophic harm",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 8, "italic"),
+        ).pack(anchor="w", padx=20, pady=(4, 0))
 
         v_c = tk.StringVar(value=e.get("c_impact", "fips-199-moderate"))
         ttk.Combobox(lrow(dlg, "Confidentiality"), textvariable=v_c,

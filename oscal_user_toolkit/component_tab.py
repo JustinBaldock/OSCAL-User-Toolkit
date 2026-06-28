@@ -151,6 +151,7 @@ class ComponentTab(tk.Frame):
         self._components      = []   # List of component dicts
         self._selected_index  = None # Index into self._components (not listbox position)
         self._dirty           = False
+        self._search_after_id = None  # debounce handle for component search
         # Filtered view: list of self._components indices currently visible in
         # the listbox. A search or type-filter reduces this to a subset.
         # When no filter is active this is simply [0, 1, 2, …].
@@ -498,7 +499,7 @@ class ComponentTab(tk.Frame):
         )
         self._comp_type_combo.pack(side="left", padx=(4, 0))
 
-        # Add / Delete buttons
+        # Add / Duplicate / Delete buttons
         btn_row = tk.Frame(left, bg=C["SIDEBAR_BG"])
         btn_row.pack(fill="x", padx=8, pady=(2, 4))
         tk.Button(btn_row, text="＋  Add Component",
@@ -507,6 +508,11 @@ class ComponentTab(tk.Frame):
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   activebackground="#b4befe", activeforeground=C["BG"],
                   ).pack(side="left")
+        tk.Button(btn_row, text="⧉ Duplicate",
+                  command=self._duplicate_component,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=(4, 0))
         tk.Button(btn_row, text="✕ Delete",
                   command=self._delete_component,
                   bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
@@ -1059,24 +1065,6 @@ class ComponentTab(tk.Frame):
         )
         self._ctrl_response_text.pack(fill="both", expand=True)
 
-        # Save Response button — writes the text into _ctrl_responses dict
-        save_resp_row = tk.Frame(ctrl_right, bg=C["BG"])
-        save_resp_row.pack(fill="x", padx=8, pady=(4, 8))
-        tk.Button(
-            save_resp_row,
-            text="✔  Save Response",
-            command=self._save_ctrl_response,
-            bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 10, "bold"),
-            relief="flat", padx=10, pady=4, cursor="hand2",
-            activebackground="#8cd39a", activeforeground=C["BG"],
-        ).pack(side="left")
-        tk.Label(
-            save_resp_row,
-            text="  Saves to memory — click '✔ Apply Component Changes' to keep,\n"
-                 "  then '💾 Save Component' to write to disk.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 8, "italic"),
-        ).pack(side="left", padx=8)
-
         # ── Apply + bottom padding ────────────────────────────────────────────
         apply_row = tk.Frame(parent, bg=C["BG"])
         apply_row.pack(fill="x", padx=20, pady=(16, 8))
@@ -1090,7 +1078,8 @@ class ComponentTab(tk.Frame):
         ).pack(side="left")
         tk.Label(
             apply_row,
-            text="  (Saves to memory — use '💾 Save Component' to write to disk)",
+            text="  Saves all fields including the current control response — "
+                 "use '💾 Save Component' to write to disk",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
         ).pack(side="left", padx=8)
 
@@ -1169,14 +1158,15 @@ class ComponentTab(tk.Frame):
         Callback wired to both the search Entry and the type Combobox via
         StringVar.trace_add("write", ...).
 
-        The *_args are the three arguments tkinter passes to every trace
-        callback (variable name, index, operation mode) — we don't need them,
-        so they are accepted but ignored with the *_args convention.
-
-        Delegating to _refresh_list() keeps this method as a thin bridge
-        between the tkinter event system and the list-rebuild logic.
+        Debounced: waits 250 ms after the last keystroke before rebuilding
+        the list so rapid typing doesn't trigger a full rebuild on every key.
         """
-        self._refresh_list()
+        if hasattr(self, "_search_after_id") and self._search_after_id:
+            try:
+                self.after_cancel(self._search_after_id)
+            except Exception:
+                pass
+        self._search_after_id = self.after(250, self._refresh_list)
 
     def _build_filtered_indices(self):
         """
@@ -1365,6 +1355,39 @@ class ComponentTab(tk.Frame):
         # Component count changed — let the Capability Editor re-check its guard
         self._on_components_changed()
 
+    def _duplicate_component(self):
+        """Deep-copy the selected component, assign a new UUID and suffix the title."""
+        if self._selected_index is None:
+            messagebox.showinfo("No selection", "Please select a component to duplicate.")
+            return
+        # Capture any unsaved form edits first
+        self._collect_into(self._selected_index)
+        import copy
+        clone = copy.deepcopy(self._components[self._selected_index])
+        clone["uuid"]  = new_uuid()
+        clone["title"] = clone.get("title", "") + " (copy)"
+        self._components.append(clone)
+        self._dirty = True
+        # Clear filters so the clone is visible
+        if hasattr(self, "_comp_search_var"):
+            self._comp_search_var.set("")
+        if hasattr(self, "_comp_type_filter_var"):
+            self._comp_type_filter_var.set("all")
+        self._refresh_list()
+        new_index = len(self._components) - 1
+        self._comp_listbox.selection_clear(0, "end")
+        list_pos = self._filtered_indices.index(new_index) if new_index in self._filtered_indices else 0
+        self._comp_listbox.selection_set(list_pos)
+        self._comp_listbox.see(list_pos)
+        self._selected_index = new_index
+        self._populate_from(new_index)
+        self._show_component_form()
+        self._status_lbl.config(
+            text=f"Duplicated '{clone['title']}'  (not yet saved to disk)",
+            fg=self._colors["YELLOW"],
+        )
+        self._on_components_changed()
+
     # =========================================================================
     # FORM POPULATION AND DATA COLLECTION
     # =========================================================================
@@ -1507,6 +1530,12 @@ class ComponentTab(tk.Frame):
         the list. Does NOT write to disk.
         """
         if self._selected_index is None:
+            return
+        if not self._v_title.get().strip():
+            messagebox.showwarning(
+                "Title required",
+                "Please enter a Component Title (Section 1) before applying."
+            )
             return
         self._collect_into(self._selected_index)
         self._refresh_list()
