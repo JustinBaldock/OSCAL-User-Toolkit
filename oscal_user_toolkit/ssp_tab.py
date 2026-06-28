@@ -109,6 +109,10 @@ class SSPTab(tk.Frame):
         self._get_components    = get_components    or (lambda: [])
         self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
 
+        # Dirty flag — True when there are unsaved changes in the form.
+        # Set by any add/edit/remove action; cleared after a successful save.
+        self._dirty = False
+
         # The SSP data is stored as a plain Python dictionary.
         # All form widgets read from and write to this dictionary.
         self._ssp = empty_ssp()
@@ -481,6 +485,7 @@ class SSPTab(tk.Frame):
                         idx = t.index(sel[0])    # row index in the tree
                         self._ssp[lk].pop(idx)   # remove from our data dict
                         t.delete(sel[0])         # remove from the display
+                        self._dirty = True
                 return _remove
 
             tk.Button(
@@ -2898,6 +2903,7 @@ class SSPTab(tk.Frame):
         rp_list.append(result)
         self._rp_tree.insert("", "end",
                              values=(result["role_id"], result["party_name"]))
+        self._dirty = True
 
     def _remove_responsible_party(self):
         """Remove the selected responsible-party row."""
@@ -2909,6 +2915,7 @@ class SSPTab(tk.Frame):
         idx = self._rp_tree.index(sel[0])
         self._ssp.setdefault("responsible_parties", []).pop(idx)
         self._rp_tree.delete(sel[0])
+        self._dirty = True
 
     def _add_role(self):
         """Show a dialog to add a role to the SSP."""
@@ -2926,6 +2933,7 @@ class SSPTab(tk.Frame):
             return
         self._ssp["roles"].append(res)
         self._role_tree.insert("", "end", values=(res["role_id"], res["title"]))
+        self._dirty = True
 
     def _add_party(self):
         """Show a dialog to add a person or organisation to the SSP."""
@@ -2942,6 +2950,7 @@ class SSPTab(tk.Frame):
             "", "end",
             values=(res["type"], res["name"], res.get("email", ""))
         )
+        self._dirty = True
 
     # =========================================================================
     # DATA COLLECTION AND FORM POPULATION
@@ -2958,6 +2967,7 @@ class SSPTab(tk.Frame):
           - "1.0" means line 1, character 0 (the very start)
           - "end-1c" means the end minus one character (strips the trailing newline)
         """
+        self._dirty = True   # Any collection means the user has edited something
         # Read all simple text entry fields (linked via StringVar)
         for key, var in self._ssp_vars.items():
             self._ssp[key] = var.get().strip()
@@ -3082,6 +3092,8 @@ class SSPTab(tk.Frame):
         self._refresh_comp8_tree()
         self._refresh_ctrl9_list()
         self._refresh_bycomp_tree()
+        # Population from a saved file is not a user edit — reset dirty flag
+        self._dirty = False
 
     def _rebuild_ctrl_impls_from_component_editor(self):
         """
@@ -3312,6 +3324,7 @@ class SSPTab(tk.Frame):
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
         # Update the status labels
+        self._dirty = False
         self._status_lbl.config(
             text=f"Saved: {Path(path).name}", fg=self._colors["GREEN"]
         )

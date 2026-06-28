@@ -401,7 +401,7 @@ def empty_ssp():
     }
 
 
-def build_oscal_ssp(ssp, profile, catalog, oscal_version="1.1.2"):
+def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
     """
     Convert our internal SSP dictionary into a fully valid OSCAL SSP
     JSON document (as a Python dictionary ready to be written to a file).
@@ -414,12 +414,17 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version="1.1.2"):
         profile       - The loaded profile dictionary, or None
         catalog       - The loaded catalog dictionary, or None
         oscal_version - The OSCAL version string to write into the file
-                        (e.g. "1.2.2"). Defaults to "1.1.2" for safety if
-                        the caller does not supply one.
+                        (e.g. "1.2.2"). Must be supplied explicitly — callers
+                        should pass get_oscal_version() from the toolbar.
 
     Returns:
         A nested dictionary matching the OSCAL system-security-plan schema.
     """
+    if oscal_version is None:
+        raise ValueError(
+            "oscal_version must be provided explicitly (e.g. '1.2.2'). "
+            "Pass get_oscal_version() from the toolbar callback."
+        )
     # Record the exact moment of saving — required by the schema
     now = now_iso()
 
@@ -1814,7 +1819,7 @@ def empty_poam():
     }
 
 
-def build_oscal_poam(poam, oscal_version="1.1.2"):
+def build_oscal_poam(poam, oscal_version=None, save_path=None):
     """
     Convert the internal POAMTab working dictionary to a valid OSCAL
     plan-of-action-and-milestones JSON structure.
@@ -1822,8 +1827,24 @@ def build_oscal_poam(poam, oscal_version="1.1.2"):
     Parameters:
         poam          - The internal POAM dictionary (from the form)
         oscal_version - The OSCAL version string to write into the file
-                        (e.g. "1.2.2"). Defaults to "1.1.2" for safety.
+                        (e.g. "1.2.2"). Must be supplied explicitly — callers
+                        should pass get_oscal_version() from the toolbar callback.
+        save_path     - The filesystem path where this POA&M will be saved.
+                        Used to compute a portable relative URI for import-ssp.href
+                        instead of storing an absolute OS path.
     """
+    if oscal_version is None:
+        raise ValueError(
+            "oscal_version must be provided explicitly (e.g. '1.2.2'). "
+            "Pass get_oscal_version() from the toolbar callback."
+        )
+
+    # UUID pattern — used to decide the identifier-type for system-id
+    import re as _re
+    _UUID_RE = _re.compile(
+        r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+        _re.IGNORECASE
+    )
     doc = {
         "plan-of-action-and-milestones": {
             "uuid": poam.get("uuid") or new_uuid(),
@@ -1838,13 +1859,32 @@ def build_oscal_poam(poam, oscal_version="1.1.2"):
     root = doc["plan-of-action-and-milestones"]
 
     if poam.get("import_ssp"):
-        root["import-ssp"] = {"href": poam["import_ssp"]}
+        ssp_raw = poam["import_ssp"].strip()
+        # Convert an absolute OS path to a portable relative URI-reference.
+        # If the caller provides the save_path we compute a relative path from
+        # the POA&M file's directory to the SSP file.  If both files are on
+        # different drives (Windows) or the path cannot be made relative we
+        # fall back to a file:// URI so the href is at least syntactically valid.
+        href = ssp_raw
+        if ssp_raw and save_path:
+            try:
+                ssp_p  = Path(ssp_raw).resolve()
+                poam_p = Path(save_path).resolve().parent
+                href   = ssp_p.relative_to(poam_p).as_posix()
+            except ValueError:
+                # Different drive or unresolvable — use file:// URI
+                href = Path(ssp_raw).as_uri()
+        root["import-ssp"] = {"href": href}
 
     if poam.get("system_id"):
-        root["system-id"] = {
-            "identifier-type": "https://ietf.org/rfc/rfc4122",
-            "id": poam["system_id"],
-        }
+        sid = poam["system_id"].strip()
+        # Use the RFC 4122 identifier-type only when the value is actually a UUID.
+        # For plain system names use a generic URL so the schema enum is satisfied.
+        if _UUID_RE.match(sid):
+            id_type = "https://ietf.org/rfc/rfc4122"
+        else:
+            id_type = "https://oscal-user-toolkit/system-id"
+        root["system-id"] = {"identifier-type": id_type, "id": sid}
 
     # observations
     if poam.get("observations"):

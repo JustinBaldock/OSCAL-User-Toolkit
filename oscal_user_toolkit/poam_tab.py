@@ -81,6 +81,11 @@ class POAMTab(tk.Frame):
         self._set_status        = set_status
         self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
 
+        # Dirty flag — True when there are unsaved changes in the form.
+        # Set by any add/edit/remove action; cleared after a successful save
+        # or when a file is opened (populating the form is not a user edit).
+        self._dirty = False
+
         # Working data — mirrors the POA&M dict while editing.
         # empty_poam() returns a blank dict with the correct keys pre-filled
         # so the rest of the code never needs to guard against missing keys.
@@ -299,7 +304,9 @@ class POAMTab(tk.Frame):
 
         field("System ID",         "system_id",  width=40)
         tk.Label(parent,
-                 text="  * Required fields.  SSP Reference: path to the linked SSP JSON file.",
+                 text="  * Required fields.  SSP Reference: select the linked SSP file — "
+                      "saved as a relative path in the OSCAL output.\n"
+                      "  System ID: enter a UUID (preferred) or a plain system name.",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=28)
 
@@ -650,6 +657,7 @@ class POAMTab(tk.Frame):
         if obs:
             self._observations.append(obs)
             self._refresh_obs_tree()
+            self._dirty = True
 
     def _edit_observation(self):
         """Open the observation dialog pre-filled with the selected row's data."""
@@ -664,6 +672,7 @@ class POAMTab(tk.Frame):
             updated["uuid"] = self._observations[idx]["uuid"]
             self._observations[idx] = updated
             self._refresh_obs_tree()
+            self._dirty = True
 
     def _remove_observation(self):
         """Delete the selected observation from the list after finding its index."""
@@ -674,6 +683,7 @@ class POAMTab(tk.Frame):
         idx = self._obs_tree.index(sel[0])
         self._observations.pop(idx)
         self._refresh_obs_tree()
+        self._dirty = True
 
     # =========================================================================
     # RISK CRUD
@@ -834,6 +844,7 @@ class POAMTab(tk.Frame):
         if r:
             self._risks.append(r)
             self._refresh_risk_tree()
+            self._dirty = True
 
     def _edit_risk(self):
         sel = self._risk_tree.selection()
@@ -846,6 +857,7 @@ class POAMTab(tk.Frame):
             updated["uuid"] = self._risks[idx]["uuid"]
             self._risks[idx] = updated
             self._refresh_risk_tree()
+            self._dirty = True
 
     def _remove_risk(self):
         sel = self._risk_tree.selection()
@@ -854,6 +866,7 @@ class POAMTab(tk.Frame):
             return
         self._risks.pop(self._risk_tree.index(sel[0]))
         self._refresh_risk_tree()
+        self._dirty = True
 
     # =========================================================================
     # FINDING CRUD
@@ -932,6 +945,7 @@ class POAMTab(tk.Frame):
         if f:
             self._findings.append(f)
             self._refresh_finding_tree()
+            self._dirty = True
 
     def _edit_finding(self):
         sel = self._finding_tree.selection()
@@ -944,6 +958,7 @@ class POAMTab(tk.Frame):
             updated["uuid"] = self._findings[idx]["uuid"]
             self._findings[idx] = updated
             self._refresh_finding_tree()
+            self._dirty = True
 
     def _remove_finding(self):
         sel = self._finding_tree.selection()
@@ -952,6 +967,7 @@ class POAMTab(tk.Frame):
             return
         self._findings.pop(self._finding_tree.index(sel[0]))
         self._refresh_finding_tree()
+        self._dirty = True
 
     # =========================================================================
     # POA&M ITEM CRUD
@@ -1068,6 +1084,7 @@ class POAMTab(tk.Frame):
         if item:
             self._poam_items.append(item)
             self._refresh_item_tree()
+            self._dirty = True
 
     def _edit_poam_item(self):
         sel = self._item_tree.selection()
@@ -1080,6 +1097,7 @@ class POAMTab(tk.Frame):
             updated["uuid"] = self._poam_items[idx]["uuid"]
             self._poam_items[idx] = updated
             self._refresh_item_tree()
+            self._dirty = True
 
     def _remove_poam_item(self):
         sel = self._item_tree.selection()
@@ -1088,6 +1106,7 @@ class POAMTab(tk.Frame):
             return
         self._poam_items.pop(self._item_tree.index(sel[0]))
         self._refresh_item_tree()
+        self._dirty = True
 
     def _browse_ssp(self):
         """Open a file picker and write the chosen SSP path into the SSP Reference field."""
@@ -1104,6 +1123,7 @@ class POAMTab(tk.Frame):
 
     def _collect(self):
         """Gather all form values into self._poam before save."""
+        self._dirty = True   # Any collection signals a user edit
         self._poam["title"]       = self._vars["title"].get().strip()
         self._poam["version"]     = self._vars["version"].get().strip() or "1.0"
         self._poam["import_ssp"]  = self._vars["import_ssp"].get().strip()
@@ -1133,6 +1153,7 @@ class POAMTab(tk.Frame):
         self._refresh_risk_tree()
         self._refresh_finding_tree()
         self._refresh_item_tree()
+        self._dirty = False   # Populating from a file is not a user edit
 
     def _reset(self):
         """Reset the editor to a blank POA&M."""
@@ -1171,13 +1192,15 @@ class POAMTab(tk.Frame):
 
         try:
             doc = build_oscal_poam(self._poam,
-                                   oscal_version=self._get_oscal_version())
+                                   oscal_version=self._get_oscal_version(),
+                                   save_path=path)
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(doc, f, indent=2, ensure_ascii=False)
         except Exception as exc:
             messagebox.showerror("Save failed", str(exc))
             return
 
+        self._dirty = False
         name = Path(path).name
         self._status_lbl.config(text=f"Saved: {name}", fg=self._colors["GREEN"])
         self._set_status(f"Saved POA&M: {name}")

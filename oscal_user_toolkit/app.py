@@ -109,6 +109,10 @@ class OSCALApp(tk.Tk):
         self._build_notebook()  # Tabbed area with CatalogTab and SSPTab
         self._build_statusbar() # Bottom bar with status message
 
+        # Guard against closing the window with unsaved changes in any editor tab.
+        # tkinter fires WM_DELETE_WINDOW when the user clicks the × button.
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
+
     # =========================================================================
     # OSCAL VERSION DISCOVERY
     # =========================================================================
@@ -502,6 +506,45 @@ class OSCALApp(tk.Tk):
             font=("Helvetica", 10), anchor="w",
         )
         self._status_lbl.pack(side="left", padx=10)
+
+    # =========================================================================
+    # WINDOW CLOSE GUARD
+    # =========================================================================
+
+    def _on_close(self):
+        """
+        Called when the user clicks the window's × button.
+
+        Checks every editor tab for unsaved changes.  If any tab has a dirty
+        flag set, the user is prompted to confirm before the window closes.
+        Cancelling keeps the window open so they can save first.
+        """
+        # Collect names of tabs that have unsaved changes.
+        # Each tab exposes a _dirty bool; tabs that predate this feature
+        # default to False via getattr so the check never crashes.
+        dirty_tabs = []
+        checks = [
+            (getattr(self, "_component_tab", None), "Component Editor"),
+            (getattr(self, "_capability_tab", None), "Capability Editor"),
+            (getattr(self, "_ssp_tab",        None), "SSP Editor"),
+            (getattr(self, "_poam_tab",        None), "POA&M Editor"),
+        ]
+        for tab, name in checks:
+            if tab is not None and getattr(tab, "_dirty", False):
+                dirty_tabs.append(name)
+
+        if dirty_tabs:
+            tab_list = "\n".join(f"  • {t}" for t in dirty_tabs)
+            proceed = messagebox.askyesno(
+                "Unsaved Changes",
+                f"The following tabs have unsaved changes:\n\n{tab_list}\n\n"
+                "Exit without saving?",
+                icon="warning",
+            )
+            if not proceed:
+                return   # User chose to stay — do not close
+
+        self.destroy()
 
     # =========================================================================
     # FILE LOADING
