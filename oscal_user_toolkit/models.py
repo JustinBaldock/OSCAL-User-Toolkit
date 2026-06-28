@@ -397,7 +397,7 @@ def empty_ssp():
     }
 
 
-def build_oscal_ssp(ssp, profile, catalog):
+def build_oscal_ssp(ssp, profile, catalog, oscal_version="1.1.2"):
     """
     Convert our internal SSP dictionary into a fully valid OSCAL SSP
     JSON document (as a Python dictionary ready to be written to a file).
@@ -406,9 +406,12 @@ def build_oscal_ssp(ssp, profile, catalog):
     maps our simple internal fields to that structure.
 
     Parameters:
-        ssp     - The internal SSP dictionary (from the form)
-        profile - The loaded profile dictionary, or None
-        catalog - The loaded catalog dictionary, or None
+        ssp           - The internal SSP dictionary (from the form)
+        profile       - The loaded profile dictionary, or None
+        catalog       - The loaded catalog dictionary, or None
+        oscal_version - The OSCAL version string to write into the file
+                        (e.g. "1.2.2"). Defaults to "1.1.2" for safety if
+                        the caller does not supply one.
 
     Returns:
         A nested dictionary matching the OSCAL system-security-plan schema.
@@ -558,7 +561,9 @@ def build_oscal_ssp(ssp, profile, catalog):
             "description": comp["description"],
             **({"purpose": comp["purpose"]} if comp.get("purpose") else {}),
             "status": {
-                "state": comp["status"],
+                # Guard against an empty string — the schema enum requires one
+                # of the four valid values; default to "operational" if unset.
+                "state": comp.get("status") or "operational",
                 **({"remarks": comp["status_remarks"]}
                    if comp.get("status_remarks") else {}),
             },
@@ -608,7 +613,7 @@ def build_oscal_ssp(ssp, profile, catalog):
                 "title":         ssp["title"],
                 "last-modified": now,
                 "version":       ssp.get("version", "1.0"),
-                "oscal-version": "1.1.2",           # OSCAL schema version we target
+                "oscal-version": oscal_version,     # OSCAL schema version we target
                 **({"roles":   roles}   if roles   else {}),
                 **({"parties": parties} if parties else {}),
             },
@@ -1769,10 +1774,15 @@ def empty_poam():
     }
 
 
-def build_oscal_poam(poam):
+def build_oscal_poam(poam, oscal_version="1.1.2"):
     """
-    Convert the internal POAMTab working dictionary to a valid OSCAL 1.2.2
+    Convert the internal POAMTab working dictionary to a valid OSCAL
     plan-of-action-and-milestones JSON structure.
+
+    Parameters:
+        poam          - The internal POAM dictionary (from the form)
+        oscal_version - The OSCAL version string to write into the file
+                        (e.g. "1.2.2"). Defaults to "1.1.2" for safety.
     """
     doc = {
         "plan-of-action-and-milestones": {
@@ -1781,7 +1791,7 @@ def build_oscal_poam(poam):
                 "title":         poam.get("title", ""),
                 "last-modified": now_iso(),
                 "version":       poam.get("version", "1.0"),
-                "oscal-version": "1.1.2",
+                "oscal-version": oscal_version,
             },
         }
     }

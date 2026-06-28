@@ -2339,7 +2339,7 @@ class ComponentTab(tk.Frame):
                     "title":         file_title,
                     "last-modified": now,
                     "version":       self._file_version.get().strip() or "1.0",
-                    "oscal-version": "1.1.2",
+                    "oscal-version": self._get_oscal_version(),
                 },
                 # The schema requires components to be in an array.
                 # We always write exactly one component per file.

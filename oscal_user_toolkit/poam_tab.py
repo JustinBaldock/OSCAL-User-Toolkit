@@ -63,19 +63,23 @@ class POAMTab(tk.Frame):
                   5. POA&M Items table
     """
 
-    def __init__(self, parent, colors, set_status):
+    def __init__(self, parent, colors, set_status, get_oscal_version=None):
         """
         Initialise the POAMTab.
 
         Parameters:
-            parent     - The ttk.Notebook this tab lives inside
-            colors     - Shared colour dictionary from app.py
-            set_status - Callback: updates the main window status bar
+            parent            - The ttk.Notebook this tab lives inside
+            colors            - Shared colour dictionary from app.py
+            set_status        - Callback: updates the main window status bar
+            get_oscal_version - Optional callback returning the OSCAL version string
+                                selected in the toolbar (e.g. "1.2.2"). Defaults to
+                                a lambda returning "1.1.2" so the tab works standalone.
         """
         super().__init__(parent, bg=colors["BG"])
 
-        self._colors     = colors
-        self._set_status = set_status
+        self._colors            = colors
+        self._set_status        = set_status
+        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
 
         # Working data — mirrors the POA&M dict while editing.
         # empty_poam() returns a blank dict with the correct keys pre-filled
@@ -1166,7 +1170,8 @@ class POAMTab(tk.Frame):
             return
 
         try:
-            doc = build_oscal_poam(self._poam)
+            doc = build_oscal_poam(self._poam,
+                                   oscal_version=self._get_oscal_version())
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(doc, f, indent=2, ensure_ascii=False)
         except Exception as exc:

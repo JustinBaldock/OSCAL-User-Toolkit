@@ -81,20 +81,23 @@ class SSPTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, get_profile, get_catalog, set_status,
-                 get_components=None):
+                 get_components=None, get_oscal_version=None):
         """
         Set up the SSPTab panel.
 
         Parameters:
-            parent         - The parent widget (the ttk.Notebook)
-            colors         - Shared colour dictionary from app.py
-            get_profile    - Callback: returns the loaded profile dict or None
-            get_catalog    - Callback: returns the loaded catalog dict or None
-            set_status     - Callback: set_status("message") updates the status bar
-            get_components - Optional callback returning ComponentTab's live list
-                             of component dicts, used to import components into
-                             Section 8. Defaults to a no-op returning an empty
-                             list so the tab works even if the hook is not wired.
+            parent            - The parent widget (the ttk.Notebook)
+            colors            - Shared colour dictionary from app.py
+            get_profile       - Callback: returns the loaded profile dict or None
+            get_catalog       - Callback: returns the loaded catalog dict or None
+            set_status        - Callback: set_status("message") updates the status bar
+            get_components    - Optional callback returning ComponentTab's live list
+                                of component dicts, used to import components into
+                                Section 8. Defaults to a no-op returning an empty
+                                list so the tab works even if the hook is not wired.
+            get_oscal_version - Optional callback returning the OSCAL version string
+                                selected in the toolbar (e.g. "1.2.2"). Defaults to
+                                a lambda returning "1.1.2" so the tab works standalone.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -103,7 +106,8 @@ class SSPTab(tk.Frame):
         self._get_profile = get_profile
         self._get_catalog = get_catalog
         self._set_status  = set_status
-        self._get_components = get_components or (lambda: [])
+        self._get_components    = get_components    or (lambda: [])
+        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
 
         # The SSP data is stored as a plain Python dictionary.
         # All form widgets read from and write to this dictionary.
@@ -3128,7 +3132,8 @@ class SSPTab(tk.Frame):
             return   # User cancelled the save dialog
 
         # Convert our internal dict to the full OSCAL JSON structure
-        doc = build_oscal_ssp(self._ssp, profile, catalog)
+        doc = build_oscal_ssp(self._ssp, profile, catalog,
+                              oscal_version=self._get_oscal_version())
 
         # Write the JSON to disk.
         # indent=2 produces nicely formatted JSON (human-readable).
