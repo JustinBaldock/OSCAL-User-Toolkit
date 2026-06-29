@@ -1,0 +1,65 @@
+{
+  "component-definition": {
+    "uuid": "3e5c3da5-bb77-4bff-b28a-1516624b1fa4",
+    "metadata": {
+      "title": "policy - Remote Access Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "8b6c85c1-ee7e-4cf1-bdae-cc66a12cf6b0",
+        "type": "policy",
+        "title": "Remote Access Policy",
+        "description": "Defines requirements for all forms of remote access to organizational systems including VPN, remote desktop, cloud service access, and third-party vendor remote support. Mandates MFA, encrypted sessions, session limits, and monitoring of all remote connections.",
+        "purpose": "Enable secure remote access while protecting organizational systems from unauthorized access.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "a81b0f11-6bba-4e8b-aa1c-510ef2bc98e9",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Remote Access Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "f740fc6c-eb52-4c4a-8d13-0da8c9894824",
+                "control-id": "ac-17",
+                "description": "This policy defines approved remote access methods (VPN, jump server, cloud console), mandates MFA for all remote access, requires encrypted sessions (TLS 1.2+ or IPsec), and prohibits split-tunneling except for approved use cases."
+              },
+              {
+                "uuid": "2a9d9ef4-be4e-4a13-8571-341f7511f81e",
+                "control-id": "ac-2",
+                "description": "This policy requires that remote access accounts are provisioned through the standard account management process, are individually assigned (no shared accounts), and are reviewed quarterly. Accounts unused for 90 days are disabled."
+              },
+              {
+                "uuid": "eddef4dd-6fff-4175-a9c1-8174630a15db",
+                "control-id": "ia-2",
+                "description": "This policy mandates multi-factor authentication for all remote access: VPN, RDP via jump host, cloud management consoles, and SaaS applications. Hardware tokens or FIDO2 are required for privileged remote access."
+              },
+              {
+                "uuid": "81a3db2e-9506-4fe2-b5f6-cc4141e926ba",
+                "control-id": "sc-8",
+                "description": "This policy requires that all remote access sessions are encrypted using approved cryptographic protocols: TLS 1.2 minimum (TLS 1.3 preferred), IPsec IKEv2 for VPN, and SSH v2 for administrative sessions. Weak cipher suites (RC4, DES, 3DES, MD5) are prohibited."
+              },
+              {
+                "uuid": "a7c44117-ae28-44f1-981f-82a1f1506014",
+                "control-id": "au-12",
+                "description": "This policy requires that all remote access sessions are logged: user identity, source IP, session start/end time, and resources accessed. Logs are forwarded to the SIEM and retained for 1 year."
+              },
+              {
+                "uuid": "8a1e3dd2-38f6-495c-8f78-0a10eb634102",
+                "control-id": "ma-4",
+                "description": "This policy governs third-party remote maintenance and support: vendor remote sessions must be approved in advance, supervised by an internal staff member, and conducted via the organization's jump host with session recording enabled."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

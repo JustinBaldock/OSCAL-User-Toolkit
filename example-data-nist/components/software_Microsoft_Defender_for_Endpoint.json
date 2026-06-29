@@ -1,0 +1,65 @@
+{
+  "component-definition": {
+    "uuid": "9d501d68-370a-4048-ac95-1108bb60804e",
+    "metadata": {
+      "title": "software - Microsoft Defender for Endpoint",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "467bdb47-3dcf-4743-8ea9-fdccf7ac7c9a",
+        "type": "software",
+        "title": "Microsoft Defender for Endpoint",
+        "description": "Microsoft Defender for Endpoint (MDE) Plan 2 deployed on all Windows 11 workstations and Windows Server 2022 systems. Provides next-generation antivirus (Defender AV), EDR (endpoint detection and response), threat and vulnerability management (TVM), attack surface reduction (ASR) rules, and controlled folder access. Managed via Microsoft Intune and Defender portal.",
+        "purpose": "Protect endpoints from malware, exploits, and advanced threats; enable EDR capability.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1c0b1e77-8bf6-4e95-90ba-ceca48ad7bd0",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Microsoft Defender for Endpoint.",
+            "implemented-requirements": [
+              {
+                "uuid": "d6489981-5940-46a0-942e-4c1993d5f8f6",
+                "control-id": "si-3",
+                "description": "Microsoft Defender Antivirus is configured in active mode with real-time protection, cloud-delivered protection (MAPS), and automatic sample submission enabled. Definitions update every 4 hours via Windows Update and Windows Defender Update. Scheduled full scan: Sundays 02:00. Quick scan: daily 06:00. Exclusions are minimized and documented; any AV exclusion requires CISO approval."
+              },
+              {
+                "uuid": "a3a311bb-eb76-4832-bd7f-f2f65fdc1132",
+                "control-id": "si-4",
+                "description": "MDE EDR provides behavioral detection of advanced threats not caught by signature-based AV: process injection, credential harvesting, living-off-the-land binaries (LOLBins), and lateral movement. EDR telemetry is streamed to Microsoft Sentinel via the Defender XDR connector. Automated Investigation and Response (AIR) is enabled to automatically contain confirmed malware."
+              },
+              {
+                "uuid": "0d01a2f4-f7c7-4020-8c7a-37d17c37c0bd",
+                "control-id": "ra-5",
+                "description": "MDE Threat and Vulnerability Management (TVM) provides continuous vulnerability discovery without requiring separate scan credentials. TVM results are reviewed weekly by the security team; critical vulnerabilities (CVSSv3 \u22659.0) are escalated to the patch team within 24 hours. TVM exposure score is tracked as a KPI in the weekly security report."
+              },
+              {
+                "uuid": "9d7c1139-303f-4283-94d4-f2fd019cd5fe",
+                "control-id": "cm-7",
+                "description": "MDE Attack Surface Reduction (ASR) rules are enabled in Block mode: block Office applications from creating child processes, block Office from injecting into other processes, block credential stealing from LSASS, block execution of potentially obfuscated scripts, block untrusted/unsigned processes from USB, and use advanced protection against ransomware. ASR audit mode is used for 30 days before block mode on new rules."
+              },
+              {
+                "uuid": "7d979101-31bf-41fd-a779-ebdcd0896e2c",
+                "control-id": "sc-7",
+                "description": "MDE Network Protection is enabled in block mode: prevents connections to known malicious IP addresses and domains (Microsoft threat intelligence). Web Content Filtering blocks categories: adult content, gambling, illegal activity, and anonymizer proxies. SmartScreen is enforced for all browsers managed by Intune."
+              },
+              {
+                "uuid": "0a41b4b5-2765-4800-850c-047365fd6dbe",
+                "control-id": "au-12",
+                "description": "MDE generates detailed forensic telemetry retained for 180 days in the Defender portal: process creation/termination (with command lines), network connections, file creation/modification, registry changes, and logon events. This data is available for threat hunting and incident investigation via Advanced Hunting (KQL)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

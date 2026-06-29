@@ -1,0 +1,65 @@
+{
+  "component-definition": {
+    "uuid": "3099b830-e760-42d1-95be-e70a42da53b4",
+    "metadata": {
+      "title": "service - SIEM \u2014 Microsoft Sentinel",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "fa757e8e-04ad-4488-b2c0-64512e6785a0",
+        "type": "service",
+        "title": "SIEM \u2014 Microsoft Sentinel",
+        "description": "Microsoft Sentinel deployed as the cloud-native SIEM and SOAR platform. Ingests security telemetry from all in-scope systems via data connectors and Windows Event Forwarding. Provides threat detection via Analytics Rules, threat hunting via KQL queries, and automated response via Playbooks (Logic Apps). Data retained in Log Analytics Workspace for 90 days hot and 1 year cold (archive tier).",
+        "purpose": "Centralized security monitoring, threat detection, and incident response automation.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1c32b838-14f9-4c82-9abb-78aa0e540c57",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for SIEM \u2014 Microsoft Sentinel.",
+            "implemented-requirements": [
+              {
+                "uuid": "b41d00cd-2e5a-4878-ac67-af69dd8ff338",
+                "control-id": "au-2",
+                "description": "Microsoft Sentinel ingests event logs from all in-scope systems via: Microsoft Defender for Endpoint connector (Windows events, process creation, network connections), Azure Activity connector, Office 365 connector, Entra ID Sign-In and Audit connector, and Windows Event Forwarding for on-premises servers. Log coverage is reviewed monthly against the asset register."
+              },
+              {
+                "uuid": "f3d16b4e-3b07-4839-b222-939a99c71e3c",
+                "control-id": "au-6",
+                "description": "Sentinel Analytics Rules detect and alert on: brute-force authentication (>10 failures/5 min), impossible travel, privilege escalation, malware detection, lateral movement indicators, data exfiltration patterns, and new local admin account creation. Alerts are triaged by the SOC within 15 minutes (P1) or 4 hours (P2/P3)."
+              },
+              {
+                "uuid": "ecb5ef7f-1741-43f1-96fd-9c5ca5261ec8",
+                "control-id": "au-12",
+                "description": "All log sources are configured to include: event timestamp, source host, user identity, action performed, and outcome (success/failure). Sentinel enforces structured log ingestion \u2014 unstructured logs are parsed via custom parsers (KQL functions) before alerting rules operate on them."
+              },
+              {
+                "uuid": "5e33f4e4-e64b-472f-9af5-be0d0ed43ebf",
+                "control-id": "au-9",
+                "description": "Sentinel Log Analytics Workspace is protected: only the Sentinel service principal and authorized security personnel have write access. Log purging requires two authorized approvals. Log data is geo-redundantly replicated within the Azure region. Audit logs of Sentinel configuration changes are retained separately."
+              },
+              {
+                "uuid": "5992a97e-972c-427d-9a1e-6906c11b2732",
+                "control-id": "ir-4",
+                "description": "Sentinel Playbooks (Azure Logic Apps) automate initial incident response: automatic IP enrichment via Threat Intelligence feeds (Microsoft TI, VirusTotal), Teams/email notification to on-call SOC analyst, Entra ID account disable on confirmed compromise, and automatic isolation of Defender-enrolled endpoints via Defender for Endpoint API."
+              },
+              {
+                "uuid": "4c110dc5-4a86-4007-9b8d-3569ddbd5971",
+                "control-id": "si-4",
+                "description": "Sentinel Workbooks provide continuous monitoring dashboards: failed logon trends, privileged account activity, patch compliance status from Defender VM, DLP policy match trends, and SOC metrics (MTTD, MTTR). Weekly security report generated from Workbook and distributed to CISO."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

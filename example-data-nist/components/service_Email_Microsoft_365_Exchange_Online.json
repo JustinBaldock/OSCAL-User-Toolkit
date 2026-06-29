@@ -1,0 +1,101 @@
+{
+  "component-definition": {
+    "uuid": "19713de4-de2d-47a0-b642-c02df89d8c61",
+    "metadata": {
+      "title": "service - Microsoft 365 Exchange Online",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "7f7f8de1-2e59-4557-8271-e164b21adfd1",
+        "type": "service",
+        "title": "Microsoft 365 Exchange Online",
+        "description": "Cloud-hosted email service via Microsoft 365 Exchange Online. Provides SMTP, IMAP, and calendar services for all organizational users. Protected by Microsoft Defender for Office 365 Plan 2 for anti-phishing, anti-malware, Safe Links, Safe Attachments, and Attack Simulation Training. Tenant is US GCC (Government Community Cloud).",
+        "purpose": "Provide secure organizational email, calendar, and collaboration services.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "bcf1bf53-63ac-4a0e-bf7d-306ea5fbe0b7",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Microsoft 365 Exchange Online.",
+            "implemented-requirements": [
+              {
+                "uuid": "c3935514-b49b-43d7-9642-0f8c78d936f6",
+                "control-id": "si-8",
+                "description": "Microsoft Defender for Office 365 Plan 2 provides spam and malware filtering: Safe Attachments policy detonates attachments in a sandbox before delivery; Safe Links rewrites and checks URLs at time of click; anti-phishing policy uses impersonation detection, mailbox intelligence, and spoofing protection."
+              },
+              {
+                "uuid": "54448c75-b912-4086-acd2-77253cce5ba2",
+                "control-id": "sc-8",
+                "description": "All email transmission uses TLS encryption: opportunistic TLS for inbound and outbound SMTP; enforced TLS for high-value partner connections. SPF, DKIM, and DMARC are configured: SPF record published, DKIM signing enabled for all sending domains, DMARC policy set to 'quarantine' with aggregate reports to security team."
+              },
+              {
+                "uuid": "1ba68f65-028b-4376-a135-2f64d70df003",
+                "control-id": "ac-2",
+                "description": "Exchange Online mailboxes are provisioned and de-provisioned automatically via Entra ID lifecycle management synchronized from HR system. Shared mailboxes require manager approval and are reviewed quarterly. Departing employee mailboxes are converted to inactive mailboxes and retained per legal hold policy."
+              },
+              {
+                "uuid": "31b6be59-4d76-4b91-bcf5-c0e9a488ecc2",
+                "control-id": "au-2",
+                "description": "Exchange Online unified audit logging is enabled for the Microsoft 365 tenant. Audit events streamed to Microsoft Sentinel via the Office 365 data connector: mailbox access, mail flow events, admin activity, and DLP policy matches. Audit log retention: 1 year (E3) / 10 years (E5 Compliance add-on)."
+              },
+              {
+                "uuid": "289a943e-5096-4229-a537-5305d75dfcb7",
+                "control-id": "mp-2",
+                "description": "Data Loss Prevention (DLP) policies are configured to detect and block transmission of sensitive data (SSN, credit card, PHI) via email to external recipients. Policy-tip notifications are shown to users before send. DLP incidents are logged and reviewed by the security team weekly."
+              },
+              {
+                "uuid": "cee34eed-ba45-4400-bb70-5472b84949dd",
+                "control-id": "cp-9",
+                "description": "Exchange Online data is covered by Microsoft's built-in geo-redundant storage with 99.9% SLA. Additionally, Microsoft 365 Backup is configured for mailbox backup with 1-year retention. Legal Hold is applied to all mailboxes to preserve items for eDiscovery and litigation support."
+              },
+              {
+                "uuid": "ac15cca1-f070-40c6-91b8-168856ce096f",
+                "control-id": "cm-7",
+                "description": "Exchange Online is configured to least functionality: IMAP and POP3 are disabled for all users (Outlook/OWA/mobile apps only); Basic Authentication is disabled tenant-wide; legacy authentication protocols blocked via Conditional Access; external email forwarding rules blocked by transport rule."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "73088d4b-918f-4710-a552-e195ab6b9262",
+            "name": "smtp",
+            "title": "SMTP \u2014 Inbound/outbound mail (TLS enforced)",
+            "port-ranges": [
+              {
+                "start": 25,
+                "end": 25,
+                "transport": "TCP"
+              },
+              {
+                "start": 587,
+                "end": 587,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "9b92e264-9925-4e38-96c5-315f02ff8dbd",
+            "name": "https",
+            "title": "HTTPS \u2014 Outlook Web App, EWS, Graph API",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

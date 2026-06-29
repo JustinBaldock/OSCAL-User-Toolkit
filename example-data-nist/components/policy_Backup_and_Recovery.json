@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "e46bb298-5f65-44af-9056-9efee320feb6",
+    "metadata": {
+      "title": "policy - Backup and Recovery Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "2ca3db0b-d5d4-494b-bcba-886b6145ffbf",
+        "type": "policy",
+        "title": "Backup and Recovery Policy",
+        "description": "Defines requirements for backing up organizational information, systems, and configurations to support recovery from data loss, ransomware, hardware failure, and disaster events. Establishes backup frequency, retention, off-site storage, encryption, and mandatory restoration testing.",
+        "purpose": "Ensure information and systems can be recovered within defined recovery objectives.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "7733425b-28fa-4b9a-b1a0-e2af882b084c",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Backup and Recovery Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "5aaa1d61-3c34-41a4-a97e-eb593f2d6345",
+                "control-id": "cp-1",
+                "description": "This policy documents the contingency planning policy and establishes the organizational commitment to maintaining business continuity through backup and recovery capabilities aligned to the Business Impact Analysis."
+              },
+              {
+                "uuid": "164a0b34-8317-418f-99ce-acc8fa81f235",
+                "control-id": "cp-9",
+                "description": "This policy requires: daily incremental backups of all critical systems; weekly full backups; 90-day local retention and 1-year offsite retention; backup encryption at rest and in transit (AES-256). Backup jobs must be monitored and failures resolved within 24 hours."
+              },
+              {
+                "uuid": "ed2ed8dc-d35d-4f70-86e6-418e658e5e7d",
+                "control-id": "cp-10",
+                "description": "This policy requires that backup restoration is tested at least quarterly (partial restoration of a critical system) and annually (full restoration of all critical systems to an isolated environment). Results are documented and reviewed by the CISO."
+              },
+              {
+                "uuid": "e0748884-2392-4e09-af91-df8fefa44572",
+                "control-id": "cp-6",
+                "description": "This policy requires that backup media is stored at an alternate site geographically separated from the primary site by at least 50 miles. Cloud backup destinations must be in a different AWS/Azure region than the primary workload."
+              },
+              {
+                "uuid": "adc45b80-6974-4fe7-a6f4-59cc171c7aaf",
+                "control-id": "cp-2",
+                "description": "This policy requires that a Contingency Plan is developed and maintained for each high-impact system, defining RTO (Recovery Time Objective) and RPO (Recovery Point Objective) and the procedures for activating backup systems."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

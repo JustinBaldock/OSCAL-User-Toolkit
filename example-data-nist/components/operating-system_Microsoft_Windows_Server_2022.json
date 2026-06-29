@@ -1,0 +1,85 @@
+{
+  "component-definition": {
+    "uuid": "702f9703-c5cd-4850-8753-2a947b07b990",
+    "metadata": {
+      "title": "software - Microsoft Windows Server 2022",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "fd06cf55-dc95-4330-af12-14a1481290d0",
+        "type": "software",
+        "title": "Microsoft Windows Server 2022",
+        "description": "Windows Server 2022 Datacenter deployed on physical and virtual (Hyper-V/VMware) servers for domain controller, file server, application server, and infrastructure roles. Hardened to DISA STIG for Windows Server 2022 and CIS Benchmark Level 2. Managed via Group Policy and patched monthly via WSUS.",
+        "purpose": "Provide a secure, managed server platform for organizational infrastructure and applications.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1fa65df6-cdef-49eb-a65e-d0a2739866a2",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Microsoft Windows Server 2022.",
+            "implemented-requirements": [
+              {
+                "uuid": "976ead6f-d02a-4b0c-9ac9-583c794fe288",
+                "control-id": "cm-2",
+                "description": "Windows Server 2022 is deployed from a documented baseline configuration built to the DISA STIG for Windows Server 2022. Server roles are configured minimally \u2014 only features required for the server's designated function are installed. Server Core is used where possible to reduce attack surface."
+              },
+              {
+                "uuid": "a9afa7d1-e291-42d5-9a7c-5eb5b2165cab",
+                "control-id": "cm-6",
+                "description": "Security settings enforced via Group Policy: disabled services (Print Spooler on non-print servers, WinRM with HTTP, Telnet, FTP, SMBv1), required TLS 1.2+ for all inbound and outbound connections, NTLMv2 only, Windows Firewall enforced, and LSA protection enabled."
+              },
+              {
+                "uuid": "bd257581-8298-4f7c-8725-09c8c1366f51",
+                "control-id": "cm-7",
+                "description": "Server 2022 systems are configured to least functionality: roles/features installed are documented in the system build record and limited to operational requirements. Feature review is conducted at each quarterly change review. Unused services are disabled and their ports closed at the host firewall."
+              },
+              {
+                "uuid": "56d02b63-56b0-4fd9-9e18-b2c2892bcd87",
+                "control-id": "si-2",
+                "description": "Windows Server 2022 systems are patched monthly via WSUS (Windows Server Update Services) on the second Tuesday of each month (Patch Tuesday + 7 days for staging). Critical patches are deployed within 30 days. Server patch compliance is reported via SCCM Compliance Baseline and Tenable Nessus scans."
+              },
+              {
+                "uuid": "533ef850-dcdb-4b02-991c-325cc44e4ec6",
+                "control-id": "ac-6",
+                "description": "Privileged access to Windows Server 2022 systems is managed via Active Directory tier model: Tier 0 (Domain Controllers), Tier 1 (Member Servers), Tier 2 (Workstations). Administrators use dedicated privileged accounts per tier and cannot use privileged accounts for standard email or web browsing. LAPS manages local admin passwords."
+              },
+              {
+                "uuid": "96e03a52-581f-4cc4-aa1f-daf13c8748ed",
+                "control-id": "ia-2",
+                "description": "Multi-factor authentication is enforced for all interactive and remote access to Windows Server 2022 systems: RDP connections are routed through the RD Gateway with MFA via Entra ID MFA; console access to physical servers requires smartcard authentication. Password-only server access is prohibited."
+              },
+              {
+                "uuid": "569d9a07-c983-40c6-8f1c-5eb6223c68ac",
+                "control-id": "au-2",
+                "description": "Windows Server 2022 Advanced Audit Policy logs: all account logon events, account management, privilege use (success/failure), process creation, object access (file/registry failures), directory service changes, and policy changes. Domain Controller Security log retention: 1 year minimum."
+              },
+              {
+                "uuid": "1d3469b2-1e26-40fa-841a-4182e54d6f9b",
+                "control-id": "sc-7",
+                "description": "Windows Firewall is enforced on all Windows Server 2022 systems. Default posture: block inbound from non-management subnets; allow only application-specific inbound ports from documented source subnets. Management access (RDP, WMI, WinRM) limited to the dedicated management VLAN."
+              },
+              {
+                "uuid": "103e3873-c83a-4945-9014-5d8197247d41",
+                "control-id": "cp-9",
+                "description": "Windows Server 2022 system state and data are backed up daily via Veeam Backup & Replication. Domain Controllers are backed up using Windows Server Backup (system state) and Veeam agent backup. Recovery is tested quarterly in an isolated lab environment."
+              },
+              {
+                "uuid": "f756da86-e4a7-4a08-a8f3-5fa84a5aca4e",
+                "control-id": "sc-28",
+                "description": "BitLocker with AES-256 XTS encrypts all Windows Server 2022 system and data volumes. For physical servers, TPM 2.0 is the key protector. For virtual machines on Hyper-V, BitLocker with virtual TPM is enforced. Recovery keys are stored in AD DS BitLocker recovery."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

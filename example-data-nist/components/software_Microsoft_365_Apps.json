@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "b22e1079-b2ed-45f7-a09c-127b6ef21455",
+    "metadata": {
+      "title": "software - Microsoft 365 Apps for Enterprise",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "67b7531c-3e18-4a64-8b5c-40870d502fd6",
+        "type": "software",
+        "title": "Microsoft 365 Apps for Enterprise",
+        "description": "Microsoft 365 Apps for Enterprise (Word, Excel, PowerPoint, Outlook, Teams, OneNote) deployed on all Windows 11 workstations via Microsoft Intune. Current Channel update policy \u2014 updated monthly. Macro security enforced via Group Policy. Protected by Microsoft Defender for Office 365 Safe Links and Safe Attachments.",
+        "purpose": "Provide secure, managed productivity applications for all organizational users.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "fbeca348-d94e-4ceb-b61b-4a42d93c037e",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Microsoft 365 Apps for Enterprise.",
+            "implemented-requirements": [
+              {
+                "uuid": "301a571b-d0e8-4eca-a565-df846c5f5d5b",
+                "control-id": "si-2",
+                "description": "Microsoft 365 Apps are updated monthly via Current Channel (security updates included). Intune app deployment policy enforces the current version. Monthly compliance report verifies that >95% of devices are running the current or previous month's release. Devices out of compliance are reported to the patch team for remediation within 14 days."
+              },
+              {
+                "uuid": "e36e2371-8d36-4d9d-9129-9ca60fb12fd2",
+                "control-id": "sc-18",
+                "description": "Office macro security is configured via Group Policy to block macros from internet-sourced files (MOTW enforcement). Only macros signed by trusted publishers in the organizational certificate store are permitted. Macro execution events are logged to the Application event log and forwarded to the SIEM. Macro policy exceptions require CISO written approval."
+              },
+              {
+                "uuid": "0139e06d-1aa6-460e-bb51-beba1d27ac07",
+                "control-id": "cm-7",
+                "description": "Microsoft 365 Apps are configured for least functionality: ActiveX disabled in all Office applications, DDE (Dynamic Data Exchange) disabled in Excel and Word, JScript and VBScript execution disabled in Outlook, external content (linked images, data connections) blocked by default, and automatic link updates disabled in Word and Excel."
+              },
+              {
+                "uuid": "86d54571-730a-4fca-a94f-4150cb9f50e3",
+                "control-id": "mp-2",
+                "description": "Microsoft Purview Information Protection (MIP) sensitivity labels are applied to all documents: Public, Internal, Confidential, Highly Confidential. Labels enforce encryption and access controls for Confidential and above. DLP policies prevent sharing of labeled documents externally without approval."
+              },
+              {
+                "uuid": "3f95b733-b239-4e9a-a363-f88ba5c2dc9a",
+                "control-id": "si-8",
+                "description": "Outlook is protected by Microsoft Defender for Office 365: Safe Attachments policy detonates attachments in a cloud sandbox before delivery; Safe Links rewrites and re-checks URLs at click time; anti-phishing impersonation protection is enabled for all executive accounts. Phishing simulations are conducted quarterly via Attack Simulation Training."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

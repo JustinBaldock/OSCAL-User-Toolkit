@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "e142b075-b60e-434c-8732-a4af84d6d31c",
+    "metadata": {
+      "title": "policy - Configuration Management Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "3a1a8c0c-9d3e-4480-b3d7-0d2c2f8e1e80",
+        "type": "policy",
+        "title": "Configuration Management Policy",
+        "description": "Defines the organization's requirements for establishing and maintaining secure baseline configurations, managing configuration changes, and tracking system component inventory. Ensures that systems are deployed and maintained in a known, approved secure state.",
+        "purpose": "Maintain secure, consistent system configurations and control unauthorized changes.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "8e18c731-d8f1-4e82-8018-d05fe8ce46bb",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Configuration Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "949f3146-b54f-4ed3-a45b-adfe33600be1",
+                "control-id": "cm-1",
+                "description": "This policy documents the configuration management policy and procedures, including roles (Configuration Control Board), change categories, and the authority to approve changes to organizational systems."
+              },
+              {
+                "uuid": "cb6a1e1e-2c20-4ed1-ac73-277f25bad7e8",
+                "control-id": "cm-2",
+                "description": "This policy requires that documented baseline configurations are developed and maintained for all organizational systems and system components. Baselines must address DISA STIGs or CIS Benchmarks at Level 2 as the minimum standard."
+              },
+              {
+                "uuid": "78d411ec-378f-4de4-b30a-e8d9d797169a",
+                "control-id": "cm-3",
+                "description": "This policy establishes the change control process: all configuration changes require a change request, impact assessment, testing in a non-production environment, CCB approval, and post-change validation. Emergency changes require retrospective CCB approval within 5 business days."
+              },
+              {
+                "uuid": "223c5497-f40e-4d22-b891-82ec8d147b30",
+                "control-id": "cm-6",
+                "description": "This policy requires that configuration settings are enforced via Group Policy, MDM (Intune), or configuration management tooling (Ansible, SCCM). Deviations from baseline require documented exception approval from the system owner and CISO."
+              },
+              {
+                "uuid": "d3d611b3-9864-4c4a-98f6-6395d6207123",
+                "control-id": "cm-7",
+                "description": "This policy requires least functionality: systems are configured to provide only essential capabilities. Unnecessary services, ports, protocols, and functions must be disabled or removed. A quarterly service and port review is required."
+              },
+              {
+                "uuid": "1a9769f9-84c4-452b-99a3-b3f772f2a611",
+                "control-id": "cm-8",
+                "description": "This policy requires that an accurate inventory of all hardware and software components is maintained and reviewed quarterly. The CMDB is the authoritative source and must be reconciled with vulnerability scan results monthly."
+              },
+              {
+                "uuid": "08afb529-a21e-4693-83a1-a42017220108",
+                "control-id": "cm-11",
+                "description": "This policy restricts installation of software to authorized packages only. Users without administrator rights cannot install software. All software must be approved by IT and inventoried before deployment."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "c57b4785-45e9-4a09-aa1a-5b3df4be1f0c",
+    "metadata": {
+      "title": "hardware - Uninterruptible Power Supply (UPS)",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "1a2afc22-168a-4b71-a801-15027b23f292",
+        "type": "hardware",
+        "title": "Uninterruptible Power Supply (UPS)",
+        "description": "APC Smart-UPS units installed in the primary server room and all network comms closets. Provides regulated, battery-backed power for servers, network equipment, and security systems. Runtime: minimum 30 minutes at full load. Network management card (NMC) provides remote monitoring and shutdown signaling to connected servers.",
+        "purpose": "Ensure continuous power supply to critical infrastructure during utility power events.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6a06478b-40be-49e3-8d09-70d228b55458",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Uninterruptible Power Supply (UPS).",
+            "implemented-requirements": [
+              {
+                "uuid": "44f900ff-ff86-4981-b77b-c9285ab2a89c",
+                "control-id": "pe-11",
+                "description": "UPS provides conditioned, battery-backed power to all critical IT infrastructure: servers, firewalls, switches, and security systems. UPS capacity is sized to minimum 30 minutes at 80% load. Battery health is tested quarterly; batteries are replaced every 3 years or when capacity drops below 80% of rated capacity. UPS alarms are integrated with the SIEM for alerting."
+              },
+              {
+                "uuid": "5aaf8de9-943e-440d-84e3-5f385b917497",
+                "control-id": "cp-8",
+                "description": "UPS supports system availability objectives: critical systems (domain controllers, firewalls, core switches, SIEM) are connected to UPS-backed circuits. Generator backup extends runtime to 72 hours for the primary data center. Comms closet UPS units are monitored via network management card (SNMP) with alerts forwarded to the SIEM and on-call engineer."
+              },
+              {
+                "uuid": "e6f292f2-087d-478e-9510-d2826ea46721",
+                "control-id": "pe-12",
+                "description": "Emergency lighting and power distribution are backed by UPS for the server room and network operations area. The UPS powers physical access control systems (badge readers, CCTV) to ensure security controls remain active during a power outage."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

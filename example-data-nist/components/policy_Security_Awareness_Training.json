@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "98cceaf1-7d2f-46f5-a70d-47a1c45c6c67",
+    "metadata": {
+      "title": "policy - Security Awareness and Training Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "c52535b1-77a4-410d-811e-d47dae0c6df3",
+        "type": "policy",
+        "title": "Security Awareness and Training Policy",
+        "description": "Defines requirements for security awareness training for all personnel, role-based training for privileged users and security staff, and phishing simulation exercises. Establishes completion tracking, minimum pass rates, and consequences for non-completion.",
+        "purpose": "Ensure all personnel understand their security responsibilities and can recognize threats.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "12c9193e-b06b-4cde-b452-c9e435ae535e",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Security Awareness and Training Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "0c3bc896-e0c4-48c2-9e27-94b5fd0509eb",
+                "control-id": "at-1",
+                "description": "This policy documents the security awareness and training policy and procedures, including training objectives, roles and responsibilities, and the annual review requirement for training content."
+              },
+              {
+                "uuid": "846d3bcf-ba75-40da-80df-196bee238f8e",
+                "control-id": "at-2",
+                "description": "This policy requires annual security awareness training for all personnel (employees, contractors, and privileged users) covering: phishing recognition, password security, data handling, incident reporting, physical security, and acceptable use. Minimum pass mark: 80%. Non-completion results in account suspension after 30 days."
+              },
+              {
+                "uuid": "0b02f993-b980-4718-a3d7-3acf3695e400",
+                "control-id": "at-3",
+                "description": "This policy requires role-based security training for: system administrators (secure configuration, patch management), security personnel (threat detection, incident response), developers (secure coding, OWASP Top 10), and privileged users (access control obligations). Training completed before system access is granted."
+              },
+              {
+                "uuid": "0643d5c8-c591-4577-98b7-5b3ab188f1e0",
+                "control-id": "at-4",
+                "description": "This policy requires that training completion records are maintained for all personnel, including training date, module completed, and assessment score. Records are retained for 3 years and made available for audit."
+              },
+              {
+                "uuid": "24575750-49cd-43ae-9ac8-0a9bc2cd1748",
+                "control-id": "pm-13",
+                "description": "This policy includes a security workforce development programme: security staff maintain current certifications (CISSP, CISM, Security+) and attend at least one security conference or training event per year."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

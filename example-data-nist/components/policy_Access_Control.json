@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "2a8a3616-bce1-4108-af08-b81809e9c373",
+    "metadata": {
+      "title": "policy - Access Control Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "ed4234db-042a-4d63-aaeb-ff4b9e99293a",
+        "type": "policy",
+        "title": "Access Control Policy",
+        "description": "Defines the organization's requirements for managing user accounts, access rights, separation of duties, and least privilege across all information systems. Establishes processes for account provisioning, periodic access review, and de-provisioning.",
+        "purpose": "Establish and enforce access control requirements to protect organizational assets.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6368a7a2-a8ae-46d0-885b-7f75fef93b23",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Access Control Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "9495150f-349f-4569-971f-d7a878988b26",
+                "control-id": "ac-1",
+                "description": "This policy documents the access control policy and procedures required by AC-1. It defines roles, responsibilities, review frequency, and the authority for granting and revoking access to organizational systems."
+              },
+              {
+                "uuid": "43da46ee-2195-4cfc-95d2-ef4e92afd362",
+                "control-id": "ac-2",
+                "description": "This policy defines the account management lifecycle: account types permitted, authorization requirements for account creation, conditions for disabling and removing accounts, and the quarterly access review process for all system accounts."
+              },
+              {
+                "uuid": "e4711d76-76b4-4d2c-9cd6-bbf202534610",
+                "control-id": "ac-3",
+                "description": "This policy requires that access to systems and data is enforced in accordance with approved authorizations, role-based access control (RBAC) assignments, and the principle of least privilege."
+              },
+              {
+                "uuid": "2430484c-3c17-40c3-b189-ade73c3976a0",
+                "control-id": "ac-5",
+                "description": "This policy mandates separation of duties for sensitive functions including financial transactions, system administration, and security monitoring. Defines roles that must not be combined in a single user account."
+              },
+              {
+                "uuid": "2c0ab201-81bf-48f7-8bd7-bdab42f0926e",
+                "control-id": "ac-6",
+                "description": "This policy requires least privilege access: users are granted only the minimum permissions required to perform their job functions. Privileged access requires documented justification and management approval."
+              },
+              {
+                "uuid": "47431c47-da76-409e-8183-e9e43c760c31",
+                "control-id": "ac-17",
+                "description": "This policy defines requirements for remote access including mandatory MFA, encrypted tunnels (VPN), session timeout, and approval requirements for remote access to organizational systems."
+              },
+              {
+                "uuid": "a7baa46e-7237-4b35-bec2-f7325dff5e70",
+                "control-id": "ac-20",
+                "description": "This policy governs the use of external systems and personally-owned devices to access organizational information. Defines permitted use cases and required security controls for bring-your-own-device (BYOD) scenarios."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

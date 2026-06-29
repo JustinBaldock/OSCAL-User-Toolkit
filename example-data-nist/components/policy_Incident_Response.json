@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "ab2819bb-5f39-42d4-9c8f-749a171ff007",
+    "metadata": {
+      "title": "policy - Incident Response Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "e8c73356-c0bc-439f-8a44-4b7f32b42aaf",
+        "type": "policy",
+        "title": "Incident Response Policy",
+        "description": "Defines the organization's approach to preparing for, detecting, containing, eradicating, and recovering from security incidents. Establishes incident classification, notification requirements, escalation paths, and post-incident review obligations.",
+        "purpose": "Enable effective and consistent response to cybersecurity incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "30f0717b-9dcc-4cd0-8ec6-165714b3f3ab",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Incident Response Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "932d0656-e08a-4580-9f7c-fb8cc40a46ef",
+                "control-id": "ir-1",
+                "description": "This policy documents the incident response policy and procedures. It defines scope, roles and responsibilities (Incident Commander, CISO, Legal, Communications), and the authority for declaring and closing security incidents."
+              },
+              {
+                "uuid": "499376be-27cd-4e08-b878-939f147202cf",
+                "control-id": "ir-2",
+                "description": "This policy requires annual incident response training for all security personnel and system administrators, and awareness training for all staff on incident identification and reporting obligations."
+              },
+              {
+                "uuid": "c35b9dae-ab35-484b-a654-890136367d53",
+                "control-id": "ir-3",
+                "description": "This policy requires bi-annual incident response exercises (at minimum one tabletop and one functional exercise per year). Exercise results must be documented and used to update procedures."
+              },
+              {
+                "uuid": "5696ad96-4084-449f-9b2c-6b540fef51f0",
+                "control-id": "ir-4",
+                "description": "This policy defines the incident handling process: detection and reporting, triage and classification (P1\u2013P4), containment strategy, eradication, recovery, and post-incident review. P1/P2 incidents require CISO notification within 1 hour."
+              },
+              {
+                "uuid": "62620310-deda-4848-b5cc-bb7ee719064b",
+                "control-id": "ir-5",
+                "description": "This policy requires that all security incidents are logged in the incident management system with full timeline, actions taken, and outcomes. Logs are retained for 3 years."
+              },
+              {
+                "uuid": "fb278728-57b2-4def-bc2a-15cc56d18135",
+                "control-id": "ir-6",
+                "description": "This policy mandates reporting of security incidents to US-CERT/CISA within required timeframes (1 hour for significant incidents to CISA; report to sector ISAC within 24 hours). Defines the information required in incident reports."
+              },
+              {
+                "uuid": "50a2317e-9176-4a12-bb53-41a1d1f682a0",
+                "control-id": "ir-8",
+                "description": "This policy requires that the incident response plan is reviewed and updated annually and after each significant incident. The plan must identify team members, contact lists, and external support resources (CISA, FBI Cyber Division, legal)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

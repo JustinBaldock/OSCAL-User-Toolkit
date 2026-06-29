@@ -1,0 +1,96 @@
+{
+  "component-definition": {
+    "uuid": "0bc1de0b-2368-4811-95c4-4df1e7457b61",
+    "metadata": {
+      "title": "service - VPN Remote Access",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "b96e252a-7788-43be-9b03-15d75fb4874a",
+        "type": "service",
+        "title": "VPN Remote Access",
+        "description": "Enterprise VPN solution providing encrypted remote access for employees and authorized contractors. Full-tunnel VPN enforced for all remote access sessions \u2014 split tunneling is prohibited. Integrated with Entra ID for MFA enforcement via RADIUS/NPS extension. Access is restricted by user group membership and device compliance policy.",
+        "purpose": "Provide secure, authenticated, encrypted remote access to organizational systems.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "106b8a64-b677-4623-ab3b-db26bd92fe16",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for VPN Remote Access.",
+            "implemented-requirements": [
+              {
+                "uuid": "d737d3e2-e3a6-4030-83d1-fa1b73593f59",
+                "control-id": "ac-17",
+                "description": "Remote access is provided exclusively via the approved VPN solution. Direct RDP or SSH from the internet to internal systems is prohibited. VPN gateway is accessible only on designated ports; all other inbound internet access is blocked at the perimeter firewall. Split tunneling is disabled \u2014 all traffic routes through organizational infrastructure."
+              },
+              {
+                "uuid": "464bdb17-16ff-4558-85b6-67a2cf522d69",
+                "control-id": "ia-2",
+                "description": "MFA is enforced for all VPN connections via RADIUS authentication integrated with Entra ID MFA. Supported MFA methods: Microsoft Authenticator push notification, TOTP, and FIDO2 hardware token. SMS OTP is not permitted for remote access MFA. Certificate-based device authentication (SCEP via Intune) is required in addition to user MFA."
+              },
+              {
+                "uuid": "ac19eb0c-c36f-43b9-8a32-1e1e5a7ded8d",
+                "control-id": "sc-8",
+                "description": "VPN tunnels use IKEv2 with AES-256 encryption, SHA-384 integrity, and Diffie-Hellman Group 20 (384-bit elliptic curve) for key exchange. IKEv1 and PPTP are disabled. Session inactivity timeout: 30 minutes. Maximum session duration: 8 hours (re-authentication required)."
+              },
+              {
+                "uuid": "43659c31-38d7-42f8-8a5e-afada01bbe08",
+                "control-id": "ac-3",
+                "description": "VPN access is restricted by AD security group membership. Standard employees can access the corporate VLAN. Contractors are restricted to a designated contractor VLAN with access only to required resources. Privileged admin VPN access requires a separate privileged account and routes to the management VLAN."
+              },
+              {
+                "uuid": "e777c1ab-7912-4645-a4b2-65e804888b40",
+                "control-id": "au-12",
+                "description": "All VPN connection attempts (successful and failed) are logged: user identity, source IP, device certificate identity, connection time, disconnection time, and bytes transferred. Logs are forwarded to the SIEM within 60 seconds and retained for 1 year. Failed authentication attempts trigger alerts at >5 failures within 5 minutes from the same source IP."
+              },
+              {
+                "uuid": "21cd65a0-6b7f-45cb-ba0e-b72d299acbfd",
+                "control-id": "ma-4",
+                "description": "Third-party vendor remote access is provided via a dedicated VPN group with time-limited access (maximum 8-hour sessions). Vendor sessions are supervised and recorded. Access is enabled on request and disabled immediately on completion of the maintenance activity."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "6464c1d6-2322-4b5a-ac09-67a365c70118",
+            "name": "ipsec-ike",
+            "title": "IKEv2 \u2014 VPN key exchange",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              },
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "515479bb-21b3-4230-b53d-31febc027a00",
+            "name": "https",
+            "title": "HTTPS \u2014 VPN client management portal",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

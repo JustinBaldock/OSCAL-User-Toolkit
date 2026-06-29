@@ -1,0 +1,159 @@
+{
+  "component-definition": {
+    "uuid": "034b2f5f-9b43-4297-9cf7-f3c52ac8c7a5",
+    "metadata": {
+      "title": "service - Active Directory Domain Services",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "61fed06f-1d8d-4cf6-8d42-ccdee57da70b",
+        "type": "service",
+        "title": "Active Directory Domain Services",
+        "description": "Microsoft Active Directory Domain Services (AD DS) deployed on Windows Server 2022 Domain Controllers. Provides centralized identity, authentication (Kerberos, NTLM), authorization via security groups, and Group Policy for configuration management of Windows systems. Integrated with Microsoft Entra ID (formerly Azure AD) via Entra Connect for hybrid identity.",
+        "purpose": "Centralized identity provider and policy enforcement for all Windows-joined systems.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "4da8ea37-b429-44a5-9a08-d0222fe31fd5",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Active Directory Domain Services.",
+            "implemented-requirements": [
+              {
+                "uuid": "17f98681-9ccb-4e61-9962-77018b21ce60",
+                "control-id": "ia-2",
+                "description": "Active Directory enforces authentication for all domain-joined Windows systems. Kerberos is the primary authentication protocol. NTLM is restricted to NTLMv2 only via Group Policy. Anonymous access to AD is disabled. Account lockout policy: 10 failed attempts, 30-minute lockout duration."
+              },
+              {
+                "uuid": "8547e040-ffd1-4932-bf56-c58894a8ed3c",
+                "control-id": "ac-2",
+                "description": "AD user accounts are provisioned through an HR-IT workflow requiring manager approval. Account types: standard user, service account, privileged admin account. Accounts are reviewed quarterly; accounts unused for 90 days are disabled automatically via a scheduled task. Shared accounts are prohibited."
+              },
+              {
+                "uuid": "cbdabe07-a97c-497c-bfc6-bd345d12ff09",
+                "control-id": "ac-6",
+                "description": "AD privileged groups (Domain Admins, Enterprise Admins, Schema Admins, Backup Operators) are restricted to named individuals with documented business justification. Membership is reviewed monthly. Privileged users have separate admin accounts; admin accounts are not used for email or web browsing."
+              },
+              {
+                "uuid": "5dcd4c10-0961-4eef-ae02-8e95dbe86cd6",
+                "control-id": "ac-3",
+                "description": "Role-based access control is implemented via AD security groups. Group membership is used to control access to file shares, applications, and infrastructure. Group ownership is documented and group membership is reviewed at minimum annually and when personnel change roles."
+              },
+              {
+                "uuid": "f6cc9f93-ec73-4a2a-8fc1-a59f113983a5",
+                "control-id": "ia-5",
+                "description": "AD password policy: domain users \u2014 minimum 14 characters, complexity required, 60-day maximum age, 24-password history. Fine-Grained Password Policy (FGPP) for privileged accounts: minimum 20 characters, 30-day maximum age. Microsoft Entra Password Protection enforces banned password lists."
+              },
+              {
+                "uuid": "7cac1b5b-5a5c-4757-a3ac-7df65917e7f9",
+                "control-id": "au-9",
+                "description": "AD Domain Controller security logs are protected: maximum 4GB log size, archived when full. Windows Event Forwarding (WEF) streams DC logs to the SIEM. AD DS auditing is enabled for: account management, account logon, directory service access, policy change, and privilege use events."
+              },
+              {
+                "uuid": "d6810d5c-8f6c-490a-864a-ff1ac6f5fa22",
+                "control-id": "cm-6",
+                "description": "Domain Controllers are hardened to DISA STIG for Windows Server 2022 DC role: SMBv1 disabled, LDAP signing required, LDAP channel binding enforced, DNS scavenging enabled, SYSVOL replicated via DFSR (not FRS), tombstone lifetime set to 180 days."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "6c9ae7c1-5eda-4740-b2fb-5c885647cb71",
+            "name": "kerberos",
+            "title": "Kerberos \u2014 Primary authentication protocol",
+            "port-ranges": [
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "TCP"
+              },
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "826a5476-4324-490c-a1ed-f48154307b19",
+            "name": "ldap",
+            "title": "LDAP \u2014 Directory queries",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              },
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "bbff1d5e-9513-45ca-878e-fca86264c095",
+            "name": "ldaps",
+            "title": "LDAPS \u2014 LDAP over TLS",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "7da6a1d9-cafe-446e-9d05-0d5daac19b4c",
+            "name": "dns",
+            "title": "DNS \u2014 AD-integrated DNS",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "bc23518e-4a4a-43b5-84a7-6e80a311ba15",
+            "name": "smb",
+            "title": "SMB \u2014 SYSVOL/NETLOGON share access",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "5927042f-d892-4779-ac20-79cbcaf90b17",
+            "name": "ntp",
+            "title": "NTP \u2014 Windows Time service (W32tm)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

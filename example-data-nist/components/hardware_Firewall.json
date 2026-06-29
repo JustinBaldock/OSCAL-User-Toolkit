@@ -1,0 +1,96 @@
+{
+  "component-definition": {
+    "uuid": "fdb8d77d-bd7d-4ee1-be78-ce69ab63c862",
+    "metadata": {
+      "title": "hardware - Perimeter and Internal Firewalls",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "19fdf9d2-d929-4212-8e12-a21a63856835",
+        "type": "hardware",
+        "title": "Perimeter and Internal Firewalls",
+        "description": "Next-Generation Firewall (NGFW) deployed at the internet perimeter and between internal network segments (VLAN boundaries). Provides stateful packet inspection, application-layer filtering (App-ID), intrusion prevention (IPS), SSL/TLS inspection, URL filtering, and threat intelligence-based blocking. Configuration managed via vendor management console with change control process.",
+        "purpose": "Enforce network access control at perimeter and internal segment boundaries.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "d59aba52-2dbc-4697-b1a0-e48c2a5ff906",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Perimeter and Internal Firewalls.",
+            "implemented-requirements": [
+              {
+                "uuid": "c5f2c2c7-02dd-4159-a612-d130f895b9b5",
+                "control-id": "sc-7",
+                "description": "Firewalls enforce boundary protection: default-deny inbound policy at the perimeter (only explicitly permitted services inbound); stateful inspection for all traffic; internal VLAN segmentation with least-privilege inter-VLAN rules documented and reviewed quarterly. DMZ is isolated from internal networks \u2014 no direct DMZ-to-internal connectivity permitted."
+              },
+              {
+                "uuid": "5f7bf707-21b6-471a-a234-d675f3d5885d",
+                "control-id": "ac-4",
+                "description": "Firewall rules enforce information flow control: all inter-zone traffic is controlled by explicit permit rules with documented business justification. Bidirectional 'any-any' rules are prohibited. All rules include source, destination, port, and application; all rules are assigned to an owner and reviewed annually."
+              },
+              {
+                "uuid": "822cc106-4269-47d9-bd2d-a0665cc18ca2",
+                "control-id": "sc-5",
+                "description": "IPS is enabled in blocking mode on all firewall interfaces. IPS signatures are updated daily from the vendor threat intelligence feed. Critical IPS signatures (exploits in use) are enabled in block mode immediately; all others staged through 30-day monitor mode before blocking. IPS block events are forwarded to the SIEM."
+              },
+              {
+                "uuid": "f63614dc-be49-4ff6-88e3-8a033d475c78",
+                "control-id": "si-4",
+                "description": "NGFW threat logs are forwarded to the SIEM in real time: allowed/denied traffic, IPS events, URL filtering blocks, SSL inspection events, and administrative changes. Firewall management access is logged and restricted to the dedicated management VLAN. Configuration changes require CCB approval and are implemented via the change control process."
+              },
+              {
+                "uuid": "98764a08-4957-4afb-a30a-b7fdae7d1538",
+                "control-id": "cm-6",
+                "description": "Firewall baseline configuration is documented and version-controlled in the CMDB. Configuration backups are taken before every change and stored offsite. The running configuration is compared to the baseline weekly via automated diff; unauthorized changes trigger an immediate alert."
+              },
+              {
+                "uuid": "dc3527a4-1030-4c1f-b91d-9741253a3b91",
+                "control-id": "cp-8",
+                "description": "Firewall high availability (HA) is implemented: active-passive HA pair with sub-second failover. Configuration is synchronized between peers in real time. HA failover is tested quarterly. The firewall is on UPS and generator power to maintain operation during facility power outages."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "e3ad9598-c478-41a0-a18e-17e5aa3498c7",
+            "name": "https",
+            "title": "HTTPS \u2014 Firewall management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f165a62a-1a04-4731-bc2d-c9ee2fa6113d",
+            "name": "syslog",
+            "title": "Syslog \u2014 Log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              },
+              {
+                "start": 6514,
+                "end": 6514,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

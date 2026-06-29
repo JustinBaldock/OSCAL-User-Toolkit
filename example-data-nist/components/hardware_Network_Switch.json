@@ -1,0 +1,103 @@
+{
+  "component-definition": {
+    "uuid": "45e39f1a-cb3a-4beb-a3a9-f4d564b3709e",
+    "metadata": {
+      "title": "hardware - Network Switches (Core and Access Layer)",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "4518976e-f3d1-47c2-9862-1117eb3bc4bd",
+        "type": "hardware",
+        "title": "Network Switches (Core and Access Layer)",
+        "description": "Cisco Catalyst series switches deployed as core (Layer 3) and access (Layer 2) network switches. Core switches provide inter-VLAN routing and connection to the firewall. Access switches provide port-level security via IEEE 802.1X, VLAN assignment, and port security. Configuration managed via Cisco DNA Center or manual CLI with version-controlled backups.",
+        "purpose": "Provide VLAN-segmented, port-secured network connectivity for all systems.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "810aa80d-25f7-43af-b213-de57b375cf81",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Network Switches (Core and Access Layer).",
+            "implemented-requirements": [
+              {
+                "uuid": "171eadde-c0c3-4802-804c-9d51d9e4ad9a",
+                "control-id": "sc-7",
+                "description": "VLANs are configured on access switches to enforce network segmentation: Corporate VLAN, Research VLAN, Management VLAN, DMZ VLAN, Guest VLAN, and VoIP VLAN. Inter-VLAN routing is controlled by the core switch ACLs and enforced by the firewall. VLAN assignments are reviewed quarterly."
+              },
+              {
+                "uuid": "3b7fbac3-6c24-4f1e-9a32-40653279638d",
+                "control-id": "ac-3",
+                "description": "IEEE 802.1X port-based Network Access Control (NAC) is enforced on all access switch ports: domain-joined devices authenticate via machine certificate (EAP-TLS); non-domain devices are placed in a guest VLAN with internet-only access. Unauthorized devices cannot access the corporate network."
+              },
+              {
+                "uuid": "a6177b14-b89c-4e24-82fa-65f597a1a811",
+                "control-id": "cm-6",
+                "description": "Switch hardening is applied: SSH v2 only for management (Telnet disabled), SNMP v3 with AES encryption, unused ports administratively shut down and assigned to a blackhole VLAN, spanning tree PortFast and BPDU Guard on access ports, DHCP snooping, Dynamic ARP Inspection (DAI), and IP source guard enabled on all access VLANs."
+              },
+              {
+                "uuid": "8950f44e-baf5-4e0b-a195-a1bb1279f070",
+                "control-id": "au-12",
+                "description": "Switch syslog is forwarded to the SIEM: all configuration changes (CONFIG_I), port state changes (LINK-3-UPDOWN), spanning tree events, 802.1X authentication success/failure, and MAC address table changes for designated high-security ports. NTP synchronized to the organizational time server."
+              },
+              {
+                "uuid": "a753f61f-3d93-4f2b-bcc4-481986d24967",
+                "control-id": "cp-8",
+                "description": "Core switches are deployed in redundant pairs with Virtual Switching System (VSS) or StackWise for active-active redundancy and sub-second failover. Access switches are dual-homed to the core switch pair. Switch configurations are backed up nightly to a TFTP server and to the CMDB."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "1b155f0a-7d58-4ea9-be70-85ef14451dd5",
+            "name": "ssh",
+            "title": "SSH v2 \u2014 Switch management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "6e1e2406-da3f-4700-a312-4cc20f8bbeb1",
+            "name": "snmp",
+            "title": "SNMPv3 \u2014 Monitoring and management",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "2e79524c-a977-4c35-929c-068d28708f1c",
+            "name": "syslog",
+            "title": "Syslog \u2014 Log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

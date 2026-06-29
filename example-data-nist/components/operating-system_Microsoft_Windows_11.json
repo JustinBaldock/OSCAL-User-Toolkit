@@ -1,0 +1,130 @@
+{
+  "component-definition": {
+    "uuid": "67df6e20-cc6a-47d3-8aff-0b430b95c0d7",
+    "metadata": {
+      "title": "software - Microsoft Windows 11 (Workstation)",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "f62651df-bdde-4341-8215-7a00d02e8c35",
+        "type": "software",
+        "title": "Microsoft Windows 11 (Workstation)",
+        "description": "Windows 11 Enterprise deployed as the standard workstation operating system across the organization. Managed via Microsoft Intune MDM and Group Policy (ADMX). Hardened to DISA STIG for Windows 11 and CIS Benchmark Level 2. Patched monthly via Windows Update for Business and monitored via Microsoft Defender for Endpoint.",
+        "purpose": "Provide a secure, managed workstation platform for end-user productivity.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "d5b6e89b-43be-45d7-bf9c-d40a0896f4d8",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Microsoft Windows 11 (Workstation).",
+            "implemented-requirements": [
+              {
+                "uuid": "0349bcf7-824f-4777-a167-959b57383288",
+                "control-id": "cm-2",
+                "description": "Windows 11 is deployed from a documented Standard Operating Environment (SOE) baseline built to the DISA STIG for Windows 11 and CIS Benchmark Level 2. The baseline is version-controlled and reviewed with each major Windows feature update."
+              },
+              {
+                "uuid": "6e2dbadf-2a4d-4295-a67a-3aefdfc88a27",
+                "control-id": "cm-6",
+                "description": "Security configuration settings are enforced via Microsoft Intune Configuration Profiles and Group Policy. Settings include: BitLocker enforcement, Defender AV real-time protection, SmartScreen, Windows Firewall, controlled folder access, and PowerShell Constrained Language Mode. Deviations require CCB approval."
+              },
+              {
+                "uuid": "f87fb493-58cc-4514-8b52-67a30fa8d721",
+                "control-id": "cm-7",
+                "description": "Windows 11 SOE disables unnecessary services and features: telnet client, TFTP, Windows Media Player, SMBv1, LLMNR, NetBIOS over TCP/IP, AutoRun/AutoPlay, and legacy authentication protocols (NTLMv1, LM). Only approved applications from the software whitelist are permitted."
+              },
+              {
+                "uuid": "60781223-b430-4265-aaf0-ff9e5ac00fde",
+                "control-id": "si-2",
+                "description": "Windows 11 systems are patched monthly via Windows Update for Business (WUfB) configured to the Semi-Annual Channel. Critical and high CVSSv3 patches are deployed within 30 days. Patch compliance is verified via Microsoft Intune compliance policies and Tenable vulnerability scans."
+              },
+              {
+                "uuid": "50e651c3-786d-44c2-83e1-343fefd44fe4",
+                "control-id": "si-3",
+                "description": "Microsoft Defender Antivirus is deployed in active mode on all Windows 11 workstations via Intune Endpoint Security policy. Definitions update every 4 hours. Microsoft Defender for Endpoint EDR provides behavioural detection, automated investigation, and response capability."
+              },
+              {
+                "uuid": "c94fd99d-7d1f-4c3a-8cf8-68ef1e61ac6e",
+                "control-id": "si-4",
+                "description": "Windows 11 endpoint telemetry is forwarded to Microsoft Defender for Endpoint and to the SIEM (Microsoft Sentinel or Splunk) via the Splunk Universal Forwarder or MDE connector. Critical security event IDs monitored: 4624, 4625, 4634, 4648, 4672, 4688, 4698, 4720, 4726, 4740."
+              },
+              {
+                "uuid": "50932d8e-f89a-475f-af4f-13a5e05d5230",
+                "control-id": "ac-2",
+                "description": "Local user accounts on Windows 11 workstations are managed via Active Directory and Entra ID (Hybrid Join). Unique accounts are assigned to each user; shared accounts are prohibited. The built-in Administrator account is renamed and disabled; local admin rights are managed via LAPS."
+              },
+              {
+                "uuid": "353d26e7-753d-4674-b122-df2f4d47aab4",
+                "control-id": "ac-3",
+                "description": "Role-based access control is enforced via AD security groups and Intune compliance policies. Standard users cannot install software, modify system settings, or disable security controls. UAC is enforced at the highest level for all administrator actions."
+              },
+              {
+                "uuid": "56a255af-ba81-4ce1-ad72-9960b0d2d2d8",
+                "control-id": "ac-6",
+                "description": "Windows 11 workstations operate under least privilege: all standard users run without local administrator rights. Privileged tasks (software installation, system configuration) require a separate privileged account managed via PAM tooling. LAPS manages unique local administrator passwords per workstation."
+              },
+              {
+                "uuid": "55bf1cda-f671-4602-8fc1-f6914c5cb70b",
+                "control-id": "ia-2",
+                "description": "All users authenticate to Windows 11 workstations via Azure AD / Entra ID with MFA enforced via Conditional Access policy. Windows Hello for Business (FIDO2/biometric) is the preferred authentication method. Password-only authentication to cloud resources is blocked by Conditional Access."
+              },
+              {
+                "uuid": "8789bc85-342b-4b18-897d-ac38cf106559",
+                "control-id": "ia-5",
+                "description": "Windows 11 password policy enforced via Intune: minimum 14 characters, complexity required, 60-day maximum age, 24-password history. Microsoft Entra ID Password Protection blocks common passwords and custom banned-word lists. Accounts lock after 10 failed attempts."
+              },
+              {
+                "uuid": "9c37d562-f373-4a27-a57f-a37248009a46",
+                "control-id": "au-2",
+                "description": "Windows 11 Advanced Audit Policy is configured via Group Policy to log: account logon (success/failure), account management (all), privilege use (success/failure), process creation (success), object access (failure), policy change (all), and system events (all)."
+              },
+              {
+                "uuid": "363d7dd1-c7ac-48b6-8ca4-85670e3d8e79",
+                "control-id": "au-9",
+                "description": "Windows 11 security event logs are protected: the Security event log has a maximum size of 1GB and is set to 'Archive the log when full'. Splunk Universal Forwarder or Windows Event Forwarding (WEF) streams events to the SIEM within 60 seconds. Log files are protected from user modification via ACL."
+              },
+              {
+                "uuid": "84a454b5-b1df-40c6-b73a-5cee0e762dd9",
+                "control-id": "sc-7",
+                "description": "Windows Defender Firewall is enforced on all Windows 11 workstations in all profiles (Domain, Private, Public). Default posture: block inbound, allow outbound. Inbound rules limited to management traffic (WMI, RPC, WinRM) from designated management subnets only."
+              },
+              {
+                "uuid": "eb7f9a08-4b0d-4e93-8979-be50254ebc25",
+                "control-id": "sc-28",
+                "description": "BitLocker Drive Encryption with AES-256 XTS is enforced on all Windows 11 workstations via Intune Disk Encryption policy. TPM 2.0 is required as the key protector. BitLocker recovery keys are escrowed to Azure AD and backed up to the on-premises AD BitLocker recovery database."
+              },
+              {
+                "uuid": "8181e903-a986-4265-97fe-96a6d3c8b7e1",
+                "control-id": "mp-7",
+                "description": "Removable media (USB storage) is blocked by default via Intune Device Control policy. Approved removable media requires device encryption and is registered in the removable media inventory. USB write access requires manager approval via the IT service desk."
+              },
+              {
+                "uuid": "75c7fa78-5a0d-455b-9d8b-b5b1ba128dcf",
+                "control-id": "ac-11",
+                "description": "Windows 11 screen lock is enforced: activates after 15 minutes of inactivity via Intune policy; requires password or Windows Hello authentication to unlock. Manual lock (Win+L) is trained as mandatory practice. Fast User Switching is disabled."
+              },
+              {
+                "uuid": "a934d797-bbc8-4020-8861-5832065688f7",
+                "control-id": "cm-11",
+                "description": "Application installation on Windows 11 workstations is restricted to IT-approved packages deployed via Intune or SCCM. Standard users cannot install software. Microsoft Store is managed via policy to permit only approved apps. WDAC Application Control enforces a publisher-based allowlist."
+              },
+              {
+                "uuid": "60e6a5a6-b195-4f0f-aecd-2efa6414c01d",
+                "control-id": "sc-18",
+                "description": "Microsoft Office macro security is configured to block macros from internet-sourced documents (Mark-of-the-Web enforcement). Only macros signed by trusted publishers in the organization's certificate store are permitted. Unsigned macros are blocked in all Office applications via Group Policy."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

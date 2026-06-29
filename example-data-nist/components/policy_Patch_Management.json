@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "40f0175c-b398-411f-9fb8-3b3cb3cecf43",
+    "metadata": {
+      "title": "policy - Patch Management Policy",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "8f4ccd3c-0e9a-4c3c-8023-4cb5074b36f7",
+        "type": "policy",
+        "title": "Patch Management Policy",
+        "description": "Defines the organization's requirements for identifying, testing, approving, and deploying security patches and updates across all systems including operating systems, applications, firmware, and network devices. Establishes severity-based deployment timeframes and mandatory vulnerability scanning to verify patch compliance.",
+        "purpose": "Ensure timely remediation of vulnerabilities through structured patch management.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "a128a844-8508-4bc8-b654-67537816288d",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Patch Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "a4d70087-1093-4cd8-a118-e22a4c111a92",
+                "control-id": "si-2",
+                "description": "This policy establishes flaw remediation requirements aligned to SI-2: critical/high CVSSv3 patches applied within 30 days of release; medium severity within 90 days; low severity within 180 days. Emergency patching procedures are defined for actively exploited vulnerabilities (patch within 14 days or mitigate)."
+              },
+              {
+                "uuid": "1dd1c333-214b-4e19-b08f-3eb8b20d1986",
+                "control-id": "ra-5",
+                "description": "This policy mandates vulnerability scanning: authenticated scans of all systems at least monthly; web application scans quarterly; results reviewed by the security team within 5 business days and remediation tracked in the POA&M."
+              },
+              {
+                "uuid": "e57026ec-46d6-4d22-8142-71a2156d7be1",
+                "control-id": "cm-6",
+                "description": "This policy requires that security patches are tested against a representative configuration baseline before production deployment. Emergency exceptions require CISO approval and a post-deployment validation plan."
+              },
+              {
+                "uuid": "ba0a5931-01b8-459e-9f34-833b46606d81",
+                "control-id": "cm-8",
+                "description": "This policy requires maintenance of an accurate system component inventory as a prerequisite for patch management. The CMDB must be updated within 5 business days of any hardware or software change."
+              },
+              {
+                "uuid": "7149004b-8d9f-409d-9d7b-6ff292eafda5",
+                "control-id": "si-3",
+                "description": "This policy requires that anti-malware software definitions are updated within 24 hours of vendor release. Systems without current definitions are quarantined until remediated."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

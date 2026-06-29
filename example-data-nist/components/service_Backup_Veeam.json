@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "abcba244-2961-4a09-a8e1-9f627baff02a",
+    "metadata": {
+      "title": "service - Veeam Backup & Replication",
+      "last-modified": "2025-07-31T14:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "42cbc7e3-89a6-4705-909c-4287dafad683",
+        "type": "service",
+        "title": "Veeam Backup & Replication",
+        "description": "Veeam Backup & Replication v12 deployed as the enterprise backup solution for all on-premises servers and VMs. Performs daily incremental and weekly full backups to local backup storage, with replication to an offsite S3-compatible cloud repository (Wasabi or AWS S3 Glacier) encrypted with AES-256. Backup jobs are monitored via Veeam ONE.",
+        "purpose": "Protect organizational data and systems through automated, tested backup and recovery.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "c1d4aea0-14cb-4de2-bea2-e46b05e98a98",
+            "source": "NIST_SP-800-53_rev5_MODERATE-baseline_profile.json",
+            "description": "Control implementations for Veeam Backup & Replication.",
+            "implemented-requirements": [
+              {
+                "uuid": "33d6af99-ac09-48e3-b3a9-609fe0e4e997",
+                "control-id": "cp-9",
+                "description": "Veeam performs: daily incremental backups of all VMs and physical servers (backup window: 01:00\u201305:00); weekly full backups (Sunday 22:00\u201304:00); application-aware backups for SQL Server and Exchange with transaction log truncation. Retention: 30 days local, 1 year offsite (cloud repository). Backup encryption: AES-256 with Veeam-managed key; key backed up to secure offline storage."
+              },
+              {
+                "uuid": "b5a2d4e7-d542-435f-9e89-d73968294f0b",
+                "control-id": "cp-10",
+                "description": "Backup restoration is tested quarterly: a full VM restoration to an isolated network segment verifies data integrity via application startup and checksum comparison. Test results are documented in the restoration test register and reviewed by the CISO. Annual full disaster recovery exercise is conducted restoring all critical systems to the DR site."
+              },
+              {
+                "uuid": "bf6b2a12-59e4-4f03-9c0e-641037b3ec87",
+                "control-id": "cp-6",
+                "description": "Backup data is replicated to an offsite cloud repository (AWS S3 or Wasabi) in a different geographic region. Replication occurs nightly after the backup window. Immutable backup storage is enabled (S3 Object Lock) to prevent deletion or modification of backups for 30 days \u2014 ransomware protection."
+              },
+              {
+                "uuid": "7c0ca203-303a-458c-992c-3311d0ddf369",
+                "control-id": "si-12",
+                "description": "Veeam backup data is encrypted at rest (AES-256) and in transit (TLS 1.2+) to the cloud repository. Backup repository access is restricted to the Veeam service account and backup administrators. Repository access logs are forwarded to the SIEM. Backup configuration changes require CCB approval."
+              },
+              {
+                "uuid": "2f167f11-88da-460b-9730-de8b514ef38f",
+                "control-id": "cp-2",
+                "description": "Veeam backup schedules and retention policies are documented in the Contingency Plan for each critical system, aligned to the defined RTO and RPO. The Veeam configuration database is itself backed up daily and included in the DR runbook to support full environment recovery."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
