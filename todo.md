@@ -194,6 +194,76 @@ Examples:
 
 ---
 
+## 3. Multi-Catalog Support
+
+### Background
+
+OSCAL 1.2.2 fully supports multiple catalogs through the Profile's `imports[]` array — each entry can reference a different catalog (or another profile). This is the intended OSCAL pattern for overlay scenarios, for example:
+
+- A US federal contractor that must satisfy both **SP 800-53** (FISMA/FedRAMP) and **SP 800-171** (CUI/CMMC)
+- A DoD organisation applying an **SP 800-53 Moderate** baseline plus a **CMMC Level 2** overlay
+- An organisation layering a sector-specific overlay (e.g., healthcare HIPAA controls) on top of a standard baseline
+
+A profile with two catalog imports looks like:
+
+```json
+{
+  "profile": {
+    "imports": [
+      {
+        "href": "NIST_SP-800-53_rev5_catalog.json",
+        "include-controls": [{ "with-ids": ["ac-2", "si-2", "ra-5"] }]
+      },
+      {
+        "href": "NIST_SP800-171_rev3_catalog.json",
+        "include-controls": [{ "with-ids": ["03.01.01", "03.14.02"] }]
+      }
+    ],
+    "merge": { "combine": { "method": "merge" }, "as-is": true }
+  }
+}
+```
+
+### Current Limitation
+
+The app currently treats catalog and profile as a 1:1 relationship — one catalog file loaded at a time via "Open Catalog". `load_profile()` in `models.py` already walks the full `imports[]` array and collects all control IDs correctly, but:
+
+- The UI has a single catalog slot; only one catalog file can be loaded at a time
+- Control title lookups in the SSP, Component, and Catalog Viewer tabs only resolve against the single loaded catalog
+- If a profile imported from two catalogs, control IDs from the second catalog would appear in the profile's ID set but have no title to display
+
+### What Needs to Change
+
+#### 1 — Catalog Resolver in `models.py`
+
+- Replace the single `load_catalog()` call with a `CatalogResolver` that holds a list of loaded catalogs
+- `resolve_control(control_id)` searches all loaded catalogs and returns the matching control (title, description, parameters)
+- When a profile is loaded, auto-discover referenced catalog files relative to the profile's file path — if a `href` points to a local file that exists, load it automatically without requiring the user to open it manually
+
+#### 2 — UI: Multiple Catalog Slots or Auto-Load
+
+Two approaches (pick one):
+
+**Option A — Auto-load from profile** (preferred): When the user opens a profile, the app resolves all `imports[].href` values relative to the profile file. Any that point to local JSON files are loaded automatically into the resolver. The info panel shows a list of all loaded catalogs (not just one). No extra UI controls needed.
+
+**Option B — Manual multi-catalog**: Add an "Add Catalog…" button that appends to a catalog list. The info panel shows a scrollable list of loaded catalogs with individual remove buttons.
+
+#### 3 — Profile Editor Integration
+
+The Profile Editor (Feature 1) should support adding multiple `imports` entries — each with its own catalog href and control selection. The merge strategy (`as-is` vs `combine`) should be configurable when more than one import is present.
+
+#### 4 — Control ID Namespace Awareness
+
+SP 800-53 uses IDs like `ac-2`, `si-2`; SP 800-171 uses `03.01.01`; ISM uses `ism-1490`. The app should handle these without collision. Since each import in a profile references a specific catalog, the resolver can use `(catalog_href, control_id)` as the lookup key to avoid ambiguity if two catalogs ever share an ID.
+
+### Example Data to Create
+
+Once multi-catalog support is implemented, create an example overlay profile in `example-data-nist/`:
+
+- `profile_SP800-53-Moderate-plus-SP800-171-overlay.json` — imports from both NIST catalogs, selects Moderate baseline from SP 800-53 plus the full SP 800-171 control set, demonstrating a dual-framework SSP baseline
+
+---
+
 ## Implementation Priority
 
 | Feature | Priority | Effort | Notes |
@@ -201,3 +271,4 @@ Examples:
 | Authorization Dashboard | ✅ Done | Low | Implemented — reads from open document tabs |
 | Profile Editor | High | High | Most impactful missing editor; every SSP needs a profile |
 | Component Definition Editor | Medium | Medium | High value for multi-system organisations |
+| Multi-Catalog Support | Medium | Medium | OSCAL schema already supports it; app needs CatalogResolver + UI update |
