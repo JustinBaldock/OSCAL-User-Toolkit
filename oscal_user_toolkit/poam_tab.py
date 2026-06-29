@@ -381,10 +381,11 @@ class POAMTab(tk.Frame):
             title="5 ·  POA&M Items",
             hint="Action items that cross-reference observations, risks, and findings.",
             columns=[
-                ("title",  "Title",       300, True),
-                ("obs",    "Observations",  80, False),
-                ("risks",  "Risks",         60, False),
-                ("finds",  "Findings",      60, False),
+                ("title",     "Title",                200, True),
+                ("sched",     "Scheduled Completion", 140, False),
+                ("obs",       "Obs",                   45, False),
+                ("risks",     "Risks",                 45, False),
+                ("finds",     "Findings",              55, False),
             ],
             add_cmd=self._add_poam_item,
             edit_cmd=self._edit_poam_item,
@@ -525,17 +526,19 @@ class POAMTab(tk.Frame):
         body.pack(fill="both", expand=True, padx=4, pady=4)
         body.columnconfigure(1, weight=1)
 
-        v_title     = self._dlg_field(body, "Title",      0, default=ex.get("title",""))
+        v_title      = self._dlg_field(body, "Title",       0, default=ex.get("title",""))
+        v_assessed   = self._dlg_field(body, "Assessed by", 1, default=ex.get("assessed_by",""),
+                                       width=40)
         default_collected = ex.get("collected", "") if existing else now_iso()[:10]
-        v_collected = self._dlg_field(body, "Collected *", 1, default=default_collected)
-        v_expires   = self._dlg_field(body, "Expires",    2, default=ex.get("expires",""))
+        v_collected  = self._dlg_field(body, "Collected *", 2, default=default_collected)
+        v_expires    = self._dlg_field(body, "Expires",     3, default=ex.get("expires",""))
 
         # Methods — multi-select via Listbox
         tk.Label(body, text="Methods *", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10), anchor="nw",
-                 ).grid(row=3, column=0, sticky="nw", padx=12, pady=4)
+                 ).grid(row=4, column=0, sticky="nw", padx=12, pady=4)
         meth_frame = tk.Frame(body, bg=C["BG"])
-        meth_frame.grid(row=3, column=1, sticky="w", padx=(0, 12), pady=4)
+        meth_frame.grid(row=4, column=1, sticky="w", padx=(0, 12), pady=4)
         meth_lb = tk.Listbox(meth_frame, selectmode="multiple",
                              bg=C["CARD_BG"], fg=C["TEXT"],
                              font=("Helvetica", 10), height=4, width=20,
@@ -553,9 +556,9 @@ class POAMTab(tk.Frame):
         # Types — multi-select via Listbox
         tk.Label(body, text="Types", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10), anchor="nw",
-                 ).grid(row=4, column=0, sticky="nw", padx=12, pady=4)
+                 ).grid(row=5, column=0, sticky="nw", padx=12, pady=4)
         type_frame = tk.Frame(body, bg=C["BG"])
-        type_frame.grid(row=4, column=1, sticky="w", padx=(0, 12), pady=4)
+        type_frame.grid(row=5, column=1, sticky="w", padx=(0, 12), pady=4)
         type_lb = tk.Listbox(type_frame, selectmode="multiple",
                              bg=C["CARD_BG"], fg=C["TEXT"],
                              font=("Helvetica", 10), height=6, width=30,
@@ -570,18 +573,18 @@ class POAMTab(tk.Frame):
                 type_lb.selection_set(i)
         type_lb.pack(side="left")
 
-        t_desc = self._dlg_text(body, "Description *", 5, height=3)
+        t_desc = self._dlg_text(body, "Description *", 6, height=3)
         t_desc.insert("1.0", ex.get("description", ""))
 
         # Relevant Evidence sub-table
         tk.Label(body, text="Relevant Evidence", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10), anchor="nw",
-                 ).grid(row=6, column=0, sticky="nw", padx=12, pady=4)
+                 ).grid(row=7, column=0, sticky="nw", padx=12, pady=4)
 
         ev_frame = tk.Frame(body, bg=C["CARD_BG"],
                             highlightthickness=1,
                             highlightbackground=C["HEADER_BG"])
-        ev_frame.grid(row=6, column=1, sticky="ew", padx=(0, 12), pady=4)
+        ev_frame.grid(row=7, column=1, sticky="ew", padx=(0, 12), pady=4)
 
         ev_btn_row = tk.Frame(ev_frame, bg=C["CARD_BG"])
         ev_btn_row.pack(fill="x", padx=6, pady=4)
@@ -635,7 +638,7 @@ class POAMTab(tk.Frame):
         ev_tree.pack(fill="x", padx=6, pady=(0, 6))
         _refresh_ev()
 
-        t_remarks = self._dlg_text(body, "Remarks", 7, height=2)
+        t_remarks = self._dlg_text(body, "Remarks", 8, height=2)
         t_remarks.insert("1.0", ex.get("remarks", ""))
 
         result = {}
@@ -656,6 +659,7 @@ class POAMTab(tk.Frame):
             result.update({
                 "uuid":             ex.get("uuid", new_uuid()),
                 "title":            v_title.get().strip(),
+                "assessed_by":      v_assessed.get().strip(),
                 "description":      desc,
                 "methods":          methods,
                 "types":            [OBSERVATION_TYPES[i]
@@ -761,21 +765,29 @@ class POAMTab(tk.Frame):
         v_deadline = self._dlg_field(body, "Deadline",   2,
                                      default=ex.get("deadline",""))
 
-        t_desc = self._dlg_text(body, "Description *", 3, height=3)
+        CIA_IMPACTS = ["", "high", "moderate", "low", "very-low", "not-applicable"]
+        v_cia_c = self._dlg_combo(body, "Confidentiality Impact", 3, CIA_IMPACTS,
+                                  default=ex.get("cia_c", ""))
+        v_cia_i = self._dlg_combo(body, "Integrity Impact",       4, CIA_IMPACTS,
+                                  default=ex.get("cia_i", ""))
+        v_cia_a = self._dlg_combo(body, "Availability Impact",    5, CIA_IMPACTS,
+                                  default=ex.get("cia_a", ""))
+
+        t_desc = self._dlg_text(body, "Description *", 6, height=3)
         t_desc.insert("1.0", ex.get("description", ""))
 
-        t_stmt = self._dlg_text(body, "Impact Statement *", 4, height=3)
+        t_stmt = self._dlg_text(body, "Impact Statement *", 7, height=3)
         t_stmt.insert("1.0", ex.get("statement", ""))
 
         # Remediations sub-table
         tk.Label(body, text="Remediations", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10), anchor="nw",
-                 ).grid(row=5, column=0, sticky="nw", padx=12, pady=4)
+                 ).grid(row=8, column=0, sticky="nw", padx=12, pady=4)
 
         rem_frame = tk.Frame(body, bg=C["CARD_BG"],
                              highlightthickness=1,
                              highlightbackground=C["HEADER_BG"])
-        rem_frame.grid(row=5, column=1, sticky="ew", padx=(0, 12), pady=4)
+        rem_frame.grid(row=8, column=1, sticky="ew", padx=(0, 12), pady=4)
 
         rem_btn_row = tk.Frame(rem_frame, bg=C["CARD_BG"])
         rem_btn_row.pack(fill="x", padx=6, pady=4)
@@ -849,7 +861,7 @@ class POAMTab(tk.Frame):
         rem_tree.pack(fill="x", padx=6, pady=(0, 6))
         _refresh_rem()
 
-        t_remarks = self._dlg_text(body, "Remarks", 6, height=2)
+        t_remarks = self._dlg_text(body, "Remarks", 9, height=2)
         t_remarks.insert("1.0", ex.get("remarks", ""))
 
         result = {}
@@ -870,6 +882,9 @@ class POAMTab(tk.Frame):
                 "statement":    stmt,
                 "status":       v_status.get(),
                 "deadline":     v_deadline.get().strip(),
+                "cia_c":        v_cia_c.get(),
+                "cia_i":        v_cia_i.get(),
+                "cia_a":        v_cia_a.get(),
                 "remediations": rem_list,
                 "remarks":      t_remarks.get("1.0", "end-1c").strip(),
             })
@@ -1016,9 +1031,10 @@ class POAMTab(tk.Frame):
     def _item_row(self, item):
         return (
             item.get("title", ""),
-            str(len(item.get("related_observation_uuids", []))),
-            str(len(item.get("related_risk_uuids", []))),
-            str(len(item.get("related_finding_uuids", []))),
+            item.get("scheduled_completion", ""),
+            str(len(item.get("related_observation_uuids", []))) or "",
+            str(len(item.get("related_risk_uuids", []))) or "",
+            str(len(item.get("related_finding_uuids", []))) or "",
         )
 
     def _refresh_item_tree(self):
@@ -1037,8 +1053,14 @@ class POAMTab(tk.Frame):
         body.pack(fill="both", expand=True, padx=4, pady=4)
         body.columnconfigure(1, weight=1)
 
-        v_title = self._dlg_field(body, "Title *",      0, default=ex.get("title",""))
-        t_desc  = self._dlg_text(body, "Description *", 1, height=3)
+        v_title      = self._dlg_field(body, "Title *",               0, default=ex.get("title",""))
+        v_sched_comp = self._dlg_field(body, "Scheduled Completion", 1,
+                                       default=ex.get("scheduled_completion", ""),
+                                       width=20)
+        tk.Label(body, text="  (YYYY-MM-DD)", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic"),
+                 ).grid(row=1, column=1, sticky="w", padx=(210, 0))
+        t_desc  = self._dlg_text(body, "Description *", 2, height=3)
         t_desc.insert("1.0", ex.get("description", ""))
 
         # Cross-reference pickers ─ show UUID+title of available records
@@ -1072,17 +1094,17 @@ class POAMTab(tk.Frame):
             lb.grid(row=row, column=1, sticky="ew", padx=(0, 12), pady=4)
             return lb
 
-        obs_lb  = _xref_section(body, 2, "Related Observations",
+        obs_lb  = _xref_section(body, 3, "Related Observations",
                                  self._observations, _obs_label,
                                  ex.get("related_observation_uuids", []))
-        risk_lb = _xref_section(body, 3, "Related Risks",
+        risk_lb = _xref_section(body, 4, "Related Risks",
                                  self._risks, _risk_label,
                                  ex.get("related_risk_uuids", []))
-        find_lb = _xref_section(body, 4, "Related Findings",
+        find_lb = _xref_section(body, 5, "Related Findings",
                                  self._findings, _find_label,
                                  ex.get("related_finding_uuids", []))
 
-        t_remarks = self._dlg_text(body, "Remarks", 5, height=2)
+        t_remarks = self._dlg_text(body, "Remarks", 6, height=2)
         t_remarks.insert("1.0", ex.get("remarks", ""))
 
         result = {}
@@ -1096,9 +1118,10 @@ class POAMTab(tk.Frame):
                                        parent=dlg)
                 return
             result.update({
-                "uuid":        ex.get("uuid", new_uuid()),
-                "title":       title,
-                "description": desc,
+                "uuid":                 ex.get("uuid", new_uuid()),
+                "title":                title,
+                "scheduled_completion": v_sched_comp.get().strip(),
+                "description":          desc,
                 "related_observation_uuids": [
                     self._observations[i]["uuid"]
                     for i in obs_lb.curselection()

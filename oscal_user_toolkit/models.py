@@ -1903,6 +1903,10 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
                 entry["types"] = [t for t in o["types"] if t]
             if o.get("expires"):
                 entry["expires"] = o["expires"]
+            if o.get("assessed_by"):
+                entry["props"] = [{"name": "assessed-by",
+                                   "value": o["assessed_by"],
+                                   "ns": "https://oscal-user-toolkit/ns/poam"}]
             if o.get("relevant_evidence"):
                 entry["relevant-evidence"] = [
                     {"href": e.get("href", ""), "description": e.get("description", "")}
@@ -1912,6 +1916,7 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
                 entry["remarks"] = o["remarks"]
             root["observations"].append(entry)
 
+    _CIA_SYSTEM = "https://oscal-user-toolkit/ns/cia-impact"
     # risks
     if poam.get("risks"):
         root["risks"] = []
@@ -1925,6 +1930,18 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
             }
             if r.get("deadline"):
                 entry["deadline"] = r["deadline"]
+            cia = {k: r.get(k, "") for k in ("cia_c", "cia_i", "cia_a")}
+            if any(cia.values()):
+                entry["characterizations"] = [{
+                    "facets": [
+                        {"name": dim, "system": _CIA_SYSTEM, "value": val}
+                        for dim, val in [
+                            ("confidentiality", cia["cia_c"]),
+                            ("integrity",       cia["cia_i"]),
+                            ("availability",    cia["cia_a"]),
+                        ] if val
+                    ]
+                }]
             if r.get("remediations"):
                 entry["remediations"] = []
                 for rem in r["remediations"]:
@@ -1964,6 +1981,7 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
             root["findings"].append(entry)
 
     # poam-items (required)
+    _POAM_NS = "https://oscal-user-toolkit/ns/poam"
     items = poam.get("poam_items", [])
     root["poam-items"] = []
     for item in items:
@@ -1972,6 +1990,10 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
             "title":       item.get("title", ""),
             "description": item.get("description", ""),
         }
+        if item.get("scheduled_completion"):
+            pi["props"] = [{"name": "scheduled-completion-date",
+                            "value": item["scheduled_completion"],
+                            "ns": _POAM_NS}]
         if item.get("related_observation_uuids"):
             pi["related-observations"] = [
                 {"observation-uuid": u}
@@ -2013,6 +2035,14 @@ def parse_poam_file(data):
     sid = root.get("system-id", {})
     poam["system_id"] = sid.get("id", "") if isinstance(sid, dict) else ""
 
+    def _prop_value(obj, name):
+        """Return the value of the first prop with the given name, or ''."""
+        return next(
+            (p.get("value", "") for p in obj.get("props", [])
+             if p.get("name") == name),
+            ""
+        )
+
     # observations
     for o in root.get("observations", []):
         ev = [
@@ -2027,10 +2057,12 @@ def parse_poam_file(data):
             "types":            list(o.get("types", [])),
             "collected":        o.get("collected", ""),
             "expires":          o.get("expires", ""),
+            "assessed_by":      _prop_value(o, "assessed-by"),
             "relevant_evidence": ev,
             "remarks":          o.get("remarks", ""),
         })
 
+    _CIA_SYSTEM = "https://oscal-user-toolkit/ns/cia-impact"
     # risks
     for r in root.get("risks", []):
         rems = []
@@ -2042,6 +2074,14 @@ def parse_poam_file(data):
                 "description": rem.get("description", ""),
                 "remarks":     rem.get("remarks", ""),
             })
+        cia_c = cia_i = cia_a = ""
+        for char in r.get("characterizations", []):
+            for facet in char.get("facets", []):
+                if facet.get("system") == _CIA_SYSTEM:
+                    n, v = facet.get("name", ""), facet.get("value", "")
+                    if n == "confidentiality": cia_c = v
+                    elif n == "integrity":     cia_i = v
+                    elif n == "availability":  cia_a = v
         poam["risks"].append({
             "uuid":        r.get("uuid", new_uuid()),
             "title":       r.get("title", ""),
@@ -2049,6 +2089,9 @@ def parse_poam_file(data):
             "statement":   r.get("statement", ""),
             "status":      r.get("status", "open"),
             "deadline":    r.get("deadline", ""),
+            "cia_c":       cia_c,
+            "cia_i":       cia_i,
+            "cia_a":       cia_a,
             "remediations": rems,
             "remarks":     r.get("remarks", ""),
         })
@@ -2074,6 +2117,7 @@ def parse_poam_file(data):
             "uuid":        item.get("uuid", new_uuid()),
             "title":       item.get("title", ""),
             "description": item.get("description", ""),
+            "scheduled_completion": _prop_value(item, "scheduled-completion-date"),
             "related_observation_uuids": [
                 ro.get("observation-uuid", "")
                 for ro in item.get("related-observations", [])
