@@ -41,6 +41,7 @@ from .capability_tab import CapabilityTab
 from .poam_tab import POAMTab
 from .ap_tab import APTab
 from .ar_tab import ARTab
+from .dashboard_tab import DashboardTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -509,6 +510,20 @@ class OSCALApp(tk.Tk):
 
         # ── POA&M Editor tab ─────────────────────────────────────────────────
         nb.add(self._poam_tab, text="📋  POA&M Editor")
+
+        # ── Authorization Dashboard tab ───────────────────────────────────────
+        # Constructed last so all tab lambdas resolve, then inserted at index 0
+        # so it appears as the first tab in the notebook.
+        self._dashboard_tab = DashboardTab(
+            parent       = nb,
+            colors       = COLORS,
+            get_ssp_tab  = lambda: self._ssp_tab,
+            get_ap_tab   = lambda: self._ap_tab,
+            get_ar_tab   = lambda: self._ar_tab,
+            get_poam_tab = lambda: self._poam_tab,
+        )
+        nb.insert(0, self._dashboard_tab, text="📊  Dashboard")
+        nb.select(0)
 
     # =========================================================================
     # STATUS BAR
