@@ -3,22 +3,95 @@
     "uuid": "2d8f329a-31e3-45bc-98e0-5952ecc02087",
     "metadata": {
       "title": "ERN POAM",
-      "last-modified": "2026-06-27T02:53:58Z",
+      "last-modified": "2026-06-29T00:16:38Z",
       "version": "1.0",
-      "oscal-version": "1.1.2"
+      "oscal-version": "1.2.2"
     },
     "import-ssp": {
-      "href": "/Users/justin/Documents/GitHub/OSCAL-User-Toolkit/example-data/ssp_ERN.json"
+      "href": "ssp_ERN.json"
     },
     "system-id": {
-      "identifier-type": "https://ietf.org/rfc/rfc4122",
+      "identifier-type": "https://oscal-user-toolkit/system-id",
       "id": "Example Research Network"
     },
+    "observations": [
+      {
+        "uuid": "b1000002-0000-4000-8000-000000000002",
+        "description": "Tenable Nessus Professional scan conducted against 42 Windows 11 workstations on 2025-07-11. 3 workstations were identified with outstanding critical patches (Microsoft Security Update KB5034441, released 2025-06-10). Patch age at time of scan: 31 days — exceeding the 30-day policy requirement. Affected hosts: WS-014, WS-027, WS-039.",
+        "methods": [
+          "TEST"
+        ],
+        "collected": "2025-07-11",
+        "title": "Nessus vulnerability scan — workstations",
+        "types": [
+          "finding",
+          "ssp-statement-issue"
+        ],
+        "relevant-evidence": [
+          {
+            "href": "nessus_scan_workstations_2025-07-11.csv",
+            "description": "Nessus scan report — workstations"
+          }
+        ],
+        "remarks": "Three hosts were offline during the scheduled patch window due to a public holiday."
+      }
+    ],
+    "risks": [
+      {
+        "uuid": "c1000001-0000-4000-8000-000000000001",
+        "title": "Unpatched workstations — delayed patch deployment",
+        "description": "Three workstations (WS-014, WS-027, WS-039) have a critical Microsoft security patch outstanding for 31 days, exceeding the 30-day patching policy.",
+        "statement": "If the outstanding critical patch is exploited before deployment, an attacker could gain code execution on the affected workstations, potentially pivoting to network resources. Impact assessed as Medium given network segmentation controls in place.",
+        "status": "open",
+        "deadline": "2025-08-11",
+        "remediations": [
+          {
+            "uuid": "e1000001-0000-4000-8000-000000000001",
+            "lifecycle": "planned",
+            "title": "Emergency patch deployment",
+            "description": "Deploy KB5034441 to WS-014, WS-027, and WS-039 within 10 business days. Update patch management records. Notify system owner on completion.",
+            "remarks": "Patch window scheduled for 2025-08-07."
+          }
+        ]
+      }
+    ],
     "poam-items": [
       {
         "uuid": "30b7576f-0a57-4645-acb1-01f2d60a7b8a",
         "title": "Secure software development policy",
         "description": "A secure software development policy will be developed for this system."
+      },
+      {
+        "uuid": "334378df-1355-48d9-a7d4-1a33d07b8fdd",
+        "title": "ISM-1486 — Patch currency not-satisfied (3 workstations)",
+        "description": "Three workstations exceed the 30-day patching deadline for a critical security update. ISM-1486 requires that critical patches be applied within 30 days for standard systems. The requirement is not universally met.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "remarks": "Remediation planned within 10 business days. Affected hosts were offline during the scheduled patch window."
+      },
+      {
+        "uuid": "843d8eb0-71ee-4fcf-b003-210480bf524d",
+        "title": "ISM-1486 — Patch currency not-satisfied (3 workstations)",
+        "description": "Three workstations exceed the 30-day patching deadline for a critical security update. ISM-1486 requires that critical patches be applied within 30 days for standard systems. The requirement is not universally met.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000001-0000-4000-8000-000000000001"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "remarks": "Remediation planned within 10 business days. Affected hosts were offline during the scheduled patch window."
       }
     ]
   }

@@ -142,20 +142,7 @@ class POAMTab(tk.Frame):
             side="left", fill="y", padx=8, pady=6
         )
 
-        tk.Button(
-            tb, text="📥  Import from AR",
-            command=self._import_from_ar,
-            bg=C["HEADER_BG"], fg=C["TEXT"],
-            font=("Helvetica", 10),
-            relief="flat", padx=10, pady=4, cursor="hand2",
-            activebackground=C["CARD_BG"], activeforeground=C["TEXT"],
-        ).pack(side="left", pady=8)
-        tk.Label(
-            tb,
-            text="  Load not-satisfied findings from an AR file",
-            bg=C["CARD_BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 9, "italic"),
-        ).pack(side="left", padx=(4, 0))
+        btn("📥  Import from AR", self._import_from_ar, C["BLUE"], "#6a9fd8")
 
         self._status_lbl = tk.Label(
             tb, text="POA&M not saved",
@@ -256,7 +243,7 @@ class POAMTab(tk.Frame):
                      ).pack(side="left", ipady=3)
 
         def table_section(title, hint, columns, add_cmd, edit_cmd, remove_cmd,
-                          height=5):
+                          height=5, extra_buttons=None):
             """Build a standard table section and return the Treeview."""
             section(title)
             if hint:
@@ -284,6 +271,18 @@ class POAMTab(tk.Frame):
                                 "bold" if bg == C["BLUE"] else "normal"),
                           relief="flat", padx=10, pady=3, cursor="hand2",
                           ).pack(side="left", padx=(0, 6))
+
+            if extra_buttons:
+                tk.Frame(btn_row, bg=C["HEADER_BG"], width=2).pack(
+                    side="left", fill="y", padx=6, pady=2
+                )
+                for text, cmd in extra_buttons:
+                    tk.Button(btn_row, text=text, command=cmd,
+                              bg=C["BLUE"], fg=C["BG"],
+                              font=("Helvetica", 10, "bold"),
+                              relief="flat", padx=10, pady=3, cursor="hand2",
+                              activebackground="#6a9fd8", activeforeground=C["BG"],
+                              ).pack(side="left", padx=(0, 6))
 
             tree = ttk.Treeview(frame,
                                 columns=tuple(c[0] for c in columns),
@@ -343,6 +342,7 @@ class POAMTab(tk.Frame):
             add_cmd=self._add_observation,
             edit_cmd=self._edit_observation,
             remove_cmd=self._remove_observation,
+            extra_buttons=[("📥  Import from AR", self._import_from_ar)],
         )
 
         # ── Section 3: Risks ─────────────────────────────────────────────────
@@ -350,10 +350,10 @@ class POAMTab(tk.Frame):
             title="3 ·  Risks",
             hint="Identified risks with status lifecycle and optional remediation plans.",
             columns=[
-                ("title",    "Title",    220, True),
-                ("status",   "Status",   130, False),
-                ("deadline", "Deadline", 110, False),
-                ("rems",     "Remediations", 80, False),
+                ("title",    "Title",              110, False),
+                ("status",   "Status",             110, False),
+                ("deadline", "Deadline",           100, False),
+                ("rem_detail", "Remediation Details", 280, True),
             ],
             add_cmd=self._add_risk,
             edit_cmd=self._edit_risk,
@@ -711,12 +711,21 @@ class POAMTab(tk.Frame):
 
     def _risk_row(self, r):
         """Convert a risk dict into a tuple of display values for the Treeview row."""
-        n_rems = len(r.get("remediations", []))
+        rems = r.get("remediations", [])
+        if rems:
+            first = rems[0]
+            lc    = first.get("lifecycle", "")
+            t     = first.get("title", "")
+            detail = f"[{lc}] {t}" if lc and t else (lc or t)
+            if len(rems) > 1:
+                detail += f"  (+{len(rems) - 1} more)"
+        else:
+            detail = ""
         return (
             r.get("title", ""),
             r.get("status", "open"),
             r.get("deadline", "")[:10],
-            str(n_rems) if n_rems else "",
+            detail,
         )
 
     def _refresh_risk_tree(self):
@@ -730,6 +739,17 @@ class POAMTab(tk.Frame):
             "Edit Risk" if existing else "Add Risk", width=580
         )
         ex  = existing or {}
+
+        if existing and existing.get("uuid"):
+            tk.Label(
+                dlg,
+                text="⚠  This risk was imported from an Assessment Results file. "
+                     "Review the description, impact statement, and add an "
+                     "organisational remediation plan before saving.",
+                bg="#4a3800", fg="#ffe080",
+                font=("Helvetica", 9, "italic"),
+                wraplength=540, justify="left", padx=10, pady=6,
+            ).pack(fill="x", padx=8, pady=(4, 0))
 
         body = tk.Frame(dlg, bg=C["BG"])
         body.pack(fill="both", expand=True, padx=4, pady=4)
@@ -1192,11 +1212,31 @@ class POAMTab(tk.Frame):
         ):
             return
 
-        obs_by_uuid = {o["uuid"]: o for o in ar.get("observations", [])}
-        existing_obs_uuids = {o["uuid"] for o in self._observations}
-        added_obs: set = set()
+        obs_by_uuid  = {o["uuid"]: o for o in ar.get("observations", [])}
+        risk_by_uuid = {r["uuid"]: r for r in ar.get("risks", [])}
+
+        existing_obs_uuids  = {o["uuid"] for o in self._observations}
+        existing_risk_uuids = {r["uuid"] for r in self._risks}
+        # Track finding UUIDs already imported so re-importing the same AR
+        # doesn't create duplicate POA&M items.
+        existing_finding_uuids = {
+            fu
+            for item in self._poam_items
+            for fu in item.get("related_finding_uuids", [])
+        }
+
+        added_obs:   set = set()
+        added_risks: set = set()
+        skipped = 0
+        added_items = 0
 
         for f in not_satisfied:
+            finding_uuid = f.get("uuid", "")
+            if finding_uuid and finding_uuid in existing_finding_uuids:
+                skipped += 1
+                continue
+
+            # ── observations ──────────────────────────────────────────────────
             new_obs_uuids = []
             for obs_uuid in f.get("related_obs_uuids", []):
                 if obs_uuid in obs_by_uuid and obs_uuid not in existing_obs_uuids:
@@ -1206,31 +1246,50 @@ class POAMTab(tk.Frame):
                 if obs_uuid in obs_by_uuid:
                     new_obs_uuids.append(obs_uuid)
 
+            # ── risks ─────────────────────────────────────────────────────────
+            new_risk_uuids = []
+            for risk_uuid in f.get("related_risk_uuids", []):
+                if risk_uuid in risk_by_uuid and risk_uuid not in existing_risk_uuids:
+                    self._risks.append(dict(risk_by_uuid[risk_uuid]))
+                    existing_risk_uuids.add(risk_uuid)
+                    added_risks.add(risk_uuid)
+                if risk_uuid in risk_by_uuid:
+                    new_risk_uuids.append(risk_uuid)
+
             ctrl_id = f.get("target_id", "")
             title   = f.get("title") or f"Not-satisfied: {ctrl_id}"
             self._poam_items.append({
-                "uuid":                     new_uuid(),
-                "title":                    title,
-                "description":              (
+                "uuid":                      new_uuid(),
+                "title":                     title,
+                "description":               (
                     f.get("description", "")
                     or f"Control {ctrl_id} was assessed as not-satisfied."
                 ),
                 "related_observation_uuids": new_obs_uuids,
-                "related_risk_uuids":        [],
-                "related_finding_uuids":     [],
+                "related_risk_uuids":        new_risk_uuids,
+                "related_finding_uuids":     [finding_uuid] if finding_uuid else [],
                 "remarks":                   f.get("remarks", ""),
             })
+            if finding_uuid:
+                existing_finding_uuids.add(finding_uuid)
+            added_items += 1
 
         if added_obs:
             self._refresh_obs_tree()
+        if added_risks:
+            self._refresh_risk_tree()
         self._refresh_item_tree()
         self._dirty = True
 
-        messagebox.showinfo(
-            "Import complete",
-            f"Added {len(not_satisfied)} POA&M item(s) and "
-            f"{len(added_obs)} observation(s).",
-        )
+        parts = [f"{added_items} POA&M item(s)"]
+        if added_obs:
+            parts.append(f"{len(added_obs)} observation(s)")
+        if added_risks:
+            parts.append(f"{len(added_risks)} risk(s)")
+        summary = "Added " + ", ".join(parts) + "."
+        if skipped:
+            summary += f"\n{skipped} finding(s) skipped (already imported)."
+        messagebox.showinfo("Import complete", summary)
 
     # =========================================================================
     # COLLECT / POPULATE / RESET

@@ -1872,8 +1872,9 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
                 poam_p = Path(save_path).resolve().parent
                 href   = ssp_p.relative_to(poam_p).as_posix()
             except ValueError:
-                # Different drive or unresolvable — use file:// URI
-                href = Path(ssp_raw).as_uri()
+                # Different drive or already relative — keep as-is
+                p = Path(ssp_raw)
+                href = p.as_uri() if p.is_absolute() else ssp_raw
         root["import-ssp"] = {"href": href}
 
     if poam.get("system_id"):
@@ -2148,7 +2149,8 @@ def build_oscal_ap(ap, oscal_version=None, save_path=None):
             ap_p   = Path(save_path).resolve().parent
             href   = ssp_p.relative_to(ap_p).as_posix()
         except ValueError:
-            href = Path(ssp_raw).as_uri()
+            p = Path(ssp_raw)
+            href = p.as_uri() if p.is_absolute() else ssp_raw
     root["import-ssp"]["href"] = href or ""
 
     # reviewed-controls
@@ -2313,7 +2315,8 @@ def build_oscal_ar(ar, oscal_version=None, save_path=None):
             ar_p  = Path(save_path).resolve().parent
             href  = ap_p.relative_to(ar_p).as_posix()
         except ValueError:
-            href  = Path(ap_raw).as_uri()
+            p = Path(ap_raw)
+            href = p.as_uri() if p.is_absolute() else ap_raw
     root["import-ap"]["href"] = href or ""
 
     # Build the single result object
