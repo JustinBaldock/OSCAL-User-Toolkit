@@ -3,7 +3,7 @@
     "uuid": "2d8f329a-31e3-45bc-98e0-5952ecc02087",
     "metadata": {
       "title": "ERN POAM",
-      "last-modified": "2026-06-29T00:16:38Z",
+      "last-modified": "2026-06-29T00:46:23Z",
       "version": "1.0",
       "oscal-version": "1.2.2"
     },
@@ -51,6 +51,12 @@
             "title": "Emergency patch deployment",
             "description": "Deploy KB5034441 to WS-014, WS-027, and WS-039 within 10 business days. Update patch management records. Notify system owner on completion.",
             "remarks": "Patch window scheduled for 2025-08-07."
+          },
+          {
+            "uuid": "a8286f67-afb1-4628-a986-bd9c70056885",
+            "lifecycle": "recommendation",
+            "title": "Investigate MS WSUS",
+            "description": "Investigate Microsoft Windows Software Update Service. Can we run it on this system and make it easier to apply patching."
           }
         ]
       }

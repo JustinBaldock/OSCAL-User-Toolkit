@@ -260,16 +260,16 @@ class POAMTab(tk.Frame):
             btn_row = tk.Frame(frame, bg=C["CARD_BG"])
             btn_row.pack(fill="x", padx=8, pady=6)
 
-            for text, cmd, bg in [
-                ("＋  Add",    add_cmd,    C["BLUE"]),
-                ("✎  Edit",   edit_cmd,   C["HEADER_BG"]),
-                ("✕  Remove", remove_cmd, C["HEADER_BG"]),
+            for text, cmd in [
+                ("＋  Add",    add_cmd),
+                ("✎  Edit",   edit_cmd),
+                ("✕  Remove", remove_cmd),
             ]:
                 tk.Button(btn_row, text=text, command=cmd,
-                          bg=bg, fg=C["TEXT"] if bg == C["HEADER_BG"] else C["BG"],
-                          font=("Helvetica", 10,
-                                "bold" if bg == C["BLUE"] else "normal"),
+                          bg=C["BLUE"], fg=C["BG"],
+                          font=("Helvetica", 10, "bold"),
                           relief="flat", padx=10, pady=3, cursor="hand2",
+                          activebackground="#6a9fd8", activeforeground=C["BG"],
                           ).pack(side="left", padx=(0, 6))
 
             if extra_buttons:
@@ -351,9 +351,9 @@ class POAMTab(tk.Frame):
             hint="Identified risks with status lifecycle and optional remediation plans.",
             columns=[
                 ("title",    "Title",              110, False),
-                ("status",   "Status",             110, False),
-                ("deadline", "Deadline",           100, False),
-                ("rem_detail", "Remediation Details", 280, True),
+                ("status",   "Status",              75, False),
+                ("deadline", "Deadline",            70, False),
+                ("rem_detail", "Remediation Details", 345, True),
             ],
             add_cmd=self._add_risk,
             edit_cmd=self._edit_risk,
@@ -716,15 +716,12 @@ class POAMTab(tk.Frame):
     def _risk_row(self, r):
         """Convert a risk dict into a tuple of display values for the Treeview row."""
         rems = r.get("remediations", [])
-        if rems:
-            first = rems[0]
-            lc    = first.get("lifecycle", "")
-            t     = first.get("title", "")
-            detail = f"[{lc}] {t}" if lc and t else (lc or t)
-            if len(rems) > 1:
-                detail += f"  (+{len(rems) - 1} more)"
-        else:
-            detail = ""
+        parts = []
+        for rem in rems:
+            lc = rem.get("lifecycle", "")
+            t  = rem.get("title", "")
+            parts.append(f"[{lc}] {t}" if lc and t else (lc or t))
+        detail = "  |  ".join(parts)
         return (
             r.get("title", ""),
             r.get("status", "open"),
