@@ -363,13 +363,14 @@ class POAMTab(tk.Frame):
         # ── Section 4: Findings ───────────────────────────────────────────────
         self._finding_tree = table_section(
             title="4 ·  Findings",
-            hint="Formal assessor verdicts against control statement IDs or objective IDs.",
+            hint="Formal assessor verdicts against control statement IDs or objective IDs. "
+                 "UUID shown for cross-reference back to the source Assessment Results document.",
             columns=[
-                ("title",        "Title",       220, True),
-                ("target_id",    "Target ID",   180, False),
-                ("target_type",  "Target Type", 110, False),
-                ("state",        "State",       110, False),
-                ("reason",       "Reason",       80, False),
+                ("uuid",         "UUID (AR ref)",  90, False),
+                ("title",        "Title",          200, True),
+                ("target_id",    "Target ID",      120, False),
+                ("state",        "State",           90, False),
+                ("reason",       "Reason",          70, False),
             ],
             add_cmd=self._add_finding,
             edit_cmd=self._edit_finding,
@@ -925,10 +926,12 @@ class POAMTab(tk.Frame):
     # =========================================================================
 
     def _finding_row(self, f):
+        uuid = f.get("uuid", "")
+        short_uuid = uuid[:8] + "…" if len(uuid) > 8 else uuid
         return (
+            short_uuid,
             f.get("title", ""),
             f.get("target_id", ""),
-            f.get("target_type", ""),
             f.get("status_state", ""),
             f.get("status_reason", ""),
         )
@@ -1235,18 +1238,13 @@ class POAMTab(tk.Frame):
         obs_by_uuid  = {o["uuid"]: o for o in ar.get("observations", [])}
         risk_by_uuid = {r["uuid"]: r for r in ar.get("risks", [])}
 
-        existing_obs_uuids  = {o["uuid"] for o in self._observations}
-        existing_risk_uuids = {r["uuid"] for r in self._risks}
-        # Track finding UUIDs already imported so re-importing the same AR
-        # doesn't create duplicate POA&M items.
-        existing_finding_uuids = {
-            fu
-            for item in self._poam_items
-            for fu in item.get("related_finding_uuids", [])
-        }
+        existing_obs_uuids     = {o["uuid"] for o in self._observations}
+        existing_risk_uuids    = {r["uuid"] for r in self._risks}
+        existing_finding_uuids = {f["uuid"] for f in self._findings}
 
-        added_obs:   set = set()
-        added_risks: set = set()
+        added_obs:      set = set()
+        added_risks:    set = set()
+        added_findings: set = set()
         skipped = 0
         added_items = 0
 
@@ -1255,6 +1253,21 @@ class POAMTab(tk.Frame):
             if finding_uuid and finding_uuid in existing_finding_uuids:
                 skipped += 1
                 continue
+
+            # ── finding ───────────────────────────────────────────────────────
+            self._findings.append({
+                "uuid":          finding_uuid or new_uuid(),
+                "title":         f.get("title", ""),
+                "description":   f.get("description", ""),
+                "target_type":   f.get("target_type", "statement-id"),
+                "target_id":     f.get("target_id", ""),
+                "status_state":  f.get("status_state", "not-satisfied"),
+                "status_reason": f.get("status_reason", ""),
+                "remarks":       f.get("remarks", ""),
+            })
+            if finding_uuid:
+                existing_finding_uuids.add(finding_uuid)
+                added_findings.add(finding_uuid)
 
             # ── observations ──────────────────────────────────────────────────
             new_obs_uuids = []
@@ -1281,6 +1294,7 @@ class POAMTab(tk.Frame):
             self._poam_items.append({
                 "uuid":                      new_uuid(),
                 "title":                     title,
+                "scheduled_completion":      "",
                 "description":               (
                     f.get("description", "")
                     or f"Control {ctrl_id} was assessed as not-satisfied."
@@ -1290,10 +1304,10 @@ class POAMTab(tk.Frame):
                 "related_finding_uuids":     [finding_uuid] if finding_uuid else [],
                 "remarks":                   f.get("remarks", ""),
             })
-            if finding_uuid:
-                existing_finding_uuids.add(finding_uuid)
             added_items += 1
 
+        if added_findings:
+            self._refresh_finding_tree()
         if added_obs:
             self._refresh_obs_tree()
         if added_risks:
@@ -1301,7 +1315,7 @@ class POAMTab(tk.Frame):
         self._refresh_item_tree()
         self._dirty = True
 
-        parts = [f"{added_items} POA&M item(s)"]
+        parts = [f"{added_items} POA&M item(s)", f"{len(added_findings)} finding(s)"]
         if added_obs:
             parts.append(f"{len(added_obs)} observation(s)")
         if added_risks:

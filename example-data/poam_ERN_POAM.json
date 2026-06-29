@@ -3,7 +3,7 @@
     "uuid": "2d8f329a-31e3-45bc-98e0-5952ecc02087",
     "metadata": {
       "title": "ERN POAM",
-      "last-modified": "2026-06-29T00:46:23Z",
+      "last-modified": "2026-06-29T01:06:44Z",
       "version": "1.0",
       "oscal-version": "1.2.2"
     },
@@ -34,6 +34,114 @@
           }
         ],
         "remarks": "Three hosts were offline during the scheduled patch window due to a public holiday."
+      },
+      {
+        "uuid": "b1000005-0000-4000-8000-000000000005",
+        "description": "MFA enforcement was tested on 2025-07-13 for: (1) GlobalProtect VPN — MFA via Microsoft Authenticator TOTP enforced for all 97 user accounts; confirmed by attempted VPN connection with MFA bypassed (connection rejected). (2) Azure AD admin portal — MFA enforced via Conditional Access policy CA-001 for all accounts in the 'Global Administrator' and 'Security Administrator' roles; confirmed via Conditional Access policy export and test sign-in. (3) On-premises server management (RDP to domain controllers) — MFA NOT enforced. Three IT administrators can authenticate to domain controllers using only username and password from within the corporate network. The Active Directory policy does not require MFA for RDP sessions to domain-joined servers.",
+        "methods": [
+          "TEST",
+          "EXAMINE"
+        ],
+        "collected": "2025-07-13",
+        "title": "MFA enforcement review — VPN and admin portals",
+        "types": [
+          "finding",
+          "ssp-statement-issue"
+        ],
+        "relevant-evidence": [
+          {
+            "href": "evidence/mfa_test_results_2025-07-13.pdf",
+            "description": "MFA enforcement test results — VPN, Azure AD, and on-premises RDP"
+          },
+          {
+            "href": "evidence/conditional_access_policy_CA-001.json",
+            "description": "Azure AD Conditional Access policy CA-001 export"
+          }
+        ],
+        "remarks": "The absence of MFA for on-premises RDP to domain controllers is a significant residual risk given that domain controller compromise would affect the entire directory environment."
+      },
+      {
+        "uuid": "b1000006-0000-4000-8000-000000000006",
+        "description": "The SIEM (Splunk Enterprise Security) log ingestion dashboard was examined on 2025-07-15 and compared against the asset register (50 in-scope hosts). Findings: 46 of 50 hosts are forwarding Windows Event Logs to Splunk. Four hosts are not logging: WS-031 (Windows 11 workstation — Splunk Universal Forwarder not installed post-rebuild), SRV-PRN-01 (print server — excluded from SIEM during migration and not re-added), WS-044 and WS-045 (two recently provisioned workstations, provisioned 2025-06-20, forwarder deployment pending). Critical event categories confirmed in ingestion: logon/logoff (4624/4634/4625), privilege use (4672), process creation (4688), object access (4663), and policy changes (4719).",
+        "methods": [
+          "EXAMINE",
+          "TEST"
+        ],
+        "collected": "2025-07-15",
+        "title": "SIEM log ingestion coverage review",
+        "types": [
+          "finding",
+          "ssp-statement-issue"
+        ],
+        "relevant-evidence": [
+          {
+            "href": "evidence/splunk_log_coverage_2025-07-15.pdf",
+            "description": "Splunk log ingestion coverage report — 50 hosts as at 2025-07-15"
+          },
+          {
+            "href": "evidence/asset_register_ERN_2025-07-01.xlsx",
+            "description": "ERN Asset Register — 50 in-scope hosts"
+          }
+        ],
+        "remarks": "The SIEM team confirmed that deployment of forwarders to WS-044 and WS-045 was scheduled for the 2025-07-20 maintenance window. WS-031 and SRV-PRN-01 require manual remediation."
+      },
+      {
+        "uuid": "b1000007-0000-4000-8000-000000000007",
+        "description": "Microsoft 365 tenant macro security settings were examined via the Microsoft 365 Admin Centre and Group Policy on 2025-07-15. Findings: Office macro execution is set to 'Disable all macros with notification' via Group Policy (GPO: ERN-Office-Security). This setting allows users to enable macros from any document with a single click from the notification bar — it does not block macros from internet-sourced or unsigned documents. ISM-1978 requires that macros from the internet are blocked and that only macros from trusted publishers or specific network locations are permitted. A test macro embedded in a simulated phishing document (unsigned, internet-zone attribute set) was successfully executed on workstation WS-007 after the user clicked 'Enable Content'. No application whitelisting exception is required to execute unsigned macros.",
+        "methods": [
+          "EXAMINE",
+          "TEST"
+        ],
+        "collected": "2025-07-15",
+        "title": "Office macro policy review and test",
+        "types": [
+          "finding",
+          "ssp-statement-issue"
+        ],
+        "relevant-evidence": [
+          {
+            "href": "evidence/m365_macro_policy_screenshot_2025-07-15.pdf",
+            "description": "Microsoft 365 macro policy configuration screenshots"
+          },
+          {
+            "href": "evidence/gpo_ERN-Office-Security_export_2025-07-15.xml",
+            "description": "Group Policy Object export — ERN-Office-Security"
+          },
+          {
+            "href": "evidence/macro_test_execution_log_2025-07-15.pdf",
+            "description": "Macro execution test log — unsigned document on WS-007"
+          }
+        ],
+        "remarks": "This is assessed as a critical finding. Macro-enabled malware (e.g. commodity RATs delivered via phishing) represents the most common initial access vector for ransomware and business email compromise. The current policy provides no effective protection against this threat."
+      },
+      {
+        "uuid": "b1000008-0000-4000-8000-000000000008",
+        "description": "Backup schedule, retention configuration, and restoration test records were examined on 2025-07-16. The Veeam Backup & Replication console confirmed: daily incremental backups of all 8 servers with a 30-day local retention and 12-month offsite tape retention; backup jobs completing successfully (last failure: SRV-DB-01 on 2025-04-03, resolved within 4 hours). However, no documented restoration test has been performed since 2024-02-14 — a gap of 17 months. The Backup and Recovery Procedure (v1.2) requires full restoration tests every 6 months and partial tests quarterly. The last partial restoration test was conducted 2024-05-20 (13 months ago).",
+        "methods": [
+          "EXAMINE",
+          "TEST"
+        ],
+        "collected": "2025-07-16",
+        "title": "Backup schedule and restoration test review",
+        "types": [
+          "finding",
+          "ssp-statement-issue"
+        ],
+        "relevant-evidence": [
+          {
+            "href": "evidence/veeam_backup_job_report_2025-07-16.pdf",
+            "description": "Veeam Backup & Replication job history report — all servers"
+          },
+          {
+            "href": "evidence/backup_restoration_test_register.xlsx",
+            "description": "Backup restoration test register — last entry 2024-02-14"
+          },
+          {
+            "href": "evidence/backup_recovery_procedure_v1.2.pdf",
+            "description": "Backup and Recovery Procedure v1.2"
+          }
+        ],
+        "remarks": "The system owner stated that staff turnover in the IT team was a contributing factor. The incoming IT lead confirmed a restoration test has been scheduled for 2025-08-20."
       }
     ],
     "risks": [
@@ -59,6 +167,181 @@
             "description": "Investigate Microsoft Windows Software Update Service. Can we run it on this system and make it easier to apply patching."
           }
         ]
+      },
+      {
+        "uuid": "c1000002-0000-4000-8000-000000000002",
+        "title": "MFA not enforced for on-premises server management (RDP)",
+        "description": "Three IT administrators can authenticate to all domain controllers and member servers via RDP using only username and password from within the corporate network. MFA is not enforced for on-premises RDP sessions via Active Directory policy or Network Policy Server.",
+        "statement": "If an IT administrator's credentials are compromised (e.g. via phishing, credential stuffing, or lateral movement from a compromised workstation), an attacker with network access to the server management VLAN could authenticate to domain controllers without a second factor. Domain controller access with valid administrator credentials would provide complete control over the Active Directory environment, enabling credential harvesting, persistence, and full network compromise. Probability assessed as Medium. Impact assessed as Critical.",
+        "status": "open",
+        "deadline": "2025-09-30",
+        "remediations": [
+          {
+            "uuid": "e1000003-0000-4000-8000-000000000003",
+            "lifecycle": "planned",
+            "title": "Enforce MFA for RDP to domain controllers via Remote Desktop Gateway",
+            "description": "Deploy Windows Server Remote Desktop Gateway (RD Gateway) to enforce MFA for all RDP connections to domain controllers and member servers. Integrate with Microsoft Entra ID via RADIUS/NPS extension. All administrator RDP sessions to be routed through RD Gateway — direct RDP to be blocked via firewall rule. Target completion: 2025-09-30.",
+            "remarks": "Architecture design to be completed by 2025-08-31. Pilot with one domain controller before full rollout."
+          },
+          {
+            "uuid": "e1000004-0000-4000-8000-000000000004",
+            "lifecycle": "recommendation",
+            "title": "Implement Privileged Access Workstations (PAWs) for server administration",
+            "description": "As a longer-term control, provision dedicated Privileged Access Workstations for the three IT administrators. PAWs should be restricted from internet access and email, reducing the attack surface for phishing-based credential compromise. This is a defence-in-depth measure complementary to MFA enforcement.",
+            "remarks": "Recommend including in the next annual security uplift budget cycle."
+          }
+        ]
+      },
+      {
+        "uuid": "c1000005-0000-4000-8000-000000000005",
+        "title": "Incomplete SIEM log coverage — 4 hosts not forwarding logs",
+        "description": "Four of 50 in-scope hosts are not forwarding event logs to the SIEM: WS-031 (Splunk forwarder not reinstalled post-rebuild), SRV-PRN-01 (excluded during migration, not re-added), WS-044 and WS-045 (newly provisioned, forwarder deployment pending). This represents an 8% gap in event log coverage.",
+        "statement": "Hosts not forwarding logs to the SIEM are invisible to the security monitoring function. Malicious activity on these hosts (e.g. lateral movement, privilege escalation, or data exfiltration) would not generate SIEM alerts and would only be detectable via manual log review of local event logs — if those logs have not been cleared. While the gap is limited to 4 hosts, two of those hosts (WS-031) was recently rebuilt following a suspected malware infection, making its logging gap particularly significant. Probability of exploitation targeting ungoverned hosts: Medium. Impact: High.",
+        "status": "investigating",
+        "deadline": "2025-08-15",
+        "remediations": [
+          {
+            "uuid": "e1000010-0000-4000-8000-000000000010",
+            "lifecycle": "planned",
+            "title": "Deploy Splunk Universal Forwarder to all 4 non-logging hosts",
+            "description": "Install and configure Splunk Universal Forwarder on WS-031, SRV-PRN-01, WS-044, and WS-045. Confirm log ingestion in Splunk within 24 hours of installation. Update the SIEM host inventory. WS-044 and WS-045 are already scheduled for the 2025-07-20 maintenance window. WS-031 and SRV-PRN-01 require manual deployment by the Splunk administrator by 2025-08-15.",
+            "remarks": "SIEM team to confirm coverage via the log ingestion dashboard within 48 hours of forwarder deployment on each host."
+          },
+          {
+            "uuid": "e1000011-0000-4000-8000-000000000011",
+            "lifecycle": "recommendation",
+            "title": "Add SIEM forwarder deployment to server build and rebuild checklists",
+            "description": "Update the server and workstation build checklists to include Splunk Universal Forwarder installation and SIEM registration as mandatory steps. Add a SIEM coverage check (dashboard verification) to the post-build sign-off process. This prevents recurrence of the WS-031 and SRV-PRN-01 gaps.",
+            "remarks": "Checklist update to be completed by IT lead within 10 business days."
+          }
+        ]
+      },
+      {
+        "uuid": "c1000003-0000-4000-8000-000000000003",
+        "title": "Office macro controls do not block unsigned or internet-sourced macros",
+        "description": "The current Group Policy macro setting ('Disable all macros with notification') allows users to enable macros from any document, including unsigned documents or documents downloaded from the internet, with a single click. ISM-1978 requires that macros from the internet are blocked and only macros from trusted locations or signed by trusted publishers are permitted.",
+        "statement": "Macro-enabled malware (commonly delivered via phishing as Office documents) represents the most prevalent initial access vector for ransomware and business email compromise campaigns targeting Australian organisations. The current policy provides no technical control preventing execution of malicious macros. A single user enabling a malicious macro could result in credential harvesting, ransomware deployment, or data exfiltration. Probability assessed as High given phishing volumes observed in the sector. Impact assessed as Critical.",
+        "status": "open",
+        "deadline": "2025-09-15",
+        "remediations": [
+          {
+            "uuid": "e1000005-0000-4000-8000-000000000005",
+            "lifecycle": "planned",
+            "title": "Block macros from internet-sourced documents via Group Policy",
+            "description": "Update GPO ERN-Office-Security to set 'Block macros from running in Office files from the Internet' (registry: HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\*\\Security\\blockcontentexecutionfrominternet = 1). This uses the Mark of the Web (MOTW) attribute to identify internet-sourced files. Deploy and test on pilot group (5 workstations) before organisation-wide rollout. Target: 2025-08-31.",
+            "remarks": "Pilot group to include at least one user who regularly receives macro-enabled documents from external parties to validate business impact before full rollout."
+          },
+          {
+            "uuid": "e1000006-0000-4000-8000-000000000006",
+            "lifecycle": "planned",
+            "title": "Restrict macros to digitally signed files from trusted publishers",
+            "description": "Update GPO to set macro security to 'Disable all macros except digitally signed macros'. Establish a process for IT to sign trusted macro-enabled workbooks. Identify all business-critical macro-enabled files and obtain or apply code signing certificates. Target: 2025-09-15.",
+            "remarks": "Finance team uses three macro-enabled Excel workbooks for monthly reporting — these will need to be signed before the policy is enforced."
+          },
+          {
+            "uuid": "e1000007-0000-4000-8000-000000000007",
+            "lifecycle": "recommendation",
+            "title": "Conduct targeted phishing simulation with macro lure",
+            "description": "Following remediation, conduct a phishing simulation campaign using a macro-lure document to test user awareness and verify that technical controls block execution. Results to be used to inform the next iteration of security awareness training.",
+            "remarks": "Recommend engaging the existing phishing simulation vendor to run this as part of the annual phishing programme."
+          }
+        ]
+      },
+      {
+        "uuid": "c1000004-0000-4000-8000-000000000004",
+        "title": "Backup restoration not tested within required timeframe",
+        "description": "No full backup restoration test has been performed since 2024-02-14 (17 months ago). The Backup and Recovery Procedure requires full restoration tests every 6 months and partial tests quarterly. No quarterly partial test has been completed since 2024-05-20 (13 months ago).",
+        "statement": "Untested backups present a significant risk to business continuity and system recovery. If a ransomware event, hardware failure, or data corruption occurs, the organisation cannot confirm that backups are recoverable or that the recovery process can be executed within the Recovery Time Objective (RTO) defined in the Business Continuity Plan (4 hours for critical systems). Probability assessed as Low for a major recovery event; however, the impact of an unrecoverable backup scenario is assessed as Critical. The untested backup risk is assessed as High.",
+        "status": "open",
+        "deadline": "2025-09-30",
+        "remediations": [
+          {
+            "uuid": "e1000008-0000-4000-8000-000000000008",
+            "lifecycle": "planned",
+            "title": "Conduct full backup restoration test — SRV-DB-01 and SRV-FILE-01",
+            "description": "Conduct a full restoration test for SRV-DB-01 (primary database server) and SRV-FILE-01 (primary file server) to an isolated test environment. Document restoration time, confirm data integrity via checksums, and compare restored data against the last known good backup. Complete by 2025-08-20. Provide restoration test report to system owner and CISO.",
+            "remarks": "Test environment has been provisioned in the DR site. IT lead to coordinate with Veeam administrator. System owner has approved a 2-hour maintenance window on 2025-08-20."
+          },
+          {
+            "uuid": "e1000009-0000-4000-8000-000000000009",
+            "lifecycle": "planned",
+            "title": "Establish quarterly backup restoration test schedule",
+            "description": "Update the Backup and Recovery Procedure to include a scheduled restoration test calendar. Assign responsibility to the IT lead. Quarterly partial tests (minimum 1 server or critical application) and 6-monthly full tests (all critical systems) to be entered into the IT maintenance calendar and tracked in the security assurance register. First quarterly test: 2025-09-28.",
+            "remarks": "Calendar entries and responsibility assignment to be completed by the IT lead within 10 business days of this report."
+          }
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "uuid": "f1000002-0000-4000-8000-000000000002",
+        "title": "ISM-1486 — Critical patch currency: NOT SATISFIED (3 workstations overdue)",
+        "description": "ISM-1486 requires that critical patches are applied within 30 days for standard systems. Three workstations (WS-014, WS-027, WS-039) have critical patches outstanding for 31 days. The remaining 47 hosts are fully patched. The requirement is not universally met across the asset base.",
+        "target": {
+          "type": "statement-id",
+          "target-id": "ism-1486",
+          "status": {
+            "state": "not-satisfied",
+            "reason": "fail"
+          }
+        },
+        "remarks": "Affected hosts were offline during the scheduled patch window due to a public holiday. Emergency patch deployment planned for 2025-08-07."
+      },
+      {
+        "uuid": "f1000005-0000-4000-8000-000000000005",
+        "title": "ISM-2012 — Multi-factor authentication: NOT SATISFIED (on-premises RDP gap)",
+        "description": "MFA is enforced for VPN and cloud admin portals, meeting ISM-2012 requirements for those access pathways. However, MFA is not enforced for RDP sessions to domain controllers and member servers from within the corporate network. This represents a partial implementation — the highest-risk access pathway (direct privileged access to domain controllers) lacks MFA protection.",
+        "target": {
+          "type": "statement-id",
+          "target-id": "ism-2012",
+          "status": {
+            "state": "not-satisfied",
+            "reason": "fail"
+          }
+        },
+        "remarks": "RD Gateway deployment planned for completion by 2025-09-30."
+      },
+      {
+        "uuid": "f1000006-0000-4000-8000-000000000006",
+        "title": "ISM-1864 — Event logging: NOT SATISFIED (4 hosts not logging to SIEM)",
+        "description": "ISM-1864 requires that event logs are collected and protected from unauthorised access or modification. Four of 50 in-scope hosts are not forwarding event logs to the SIEM. While local logging is active on these hosts, centralised collection is absent — logs are not protected from local tampering and are not monitored.",
+        "target": {
+          "type": "statement-id",
+          "target-id": "ism-1864",
+          "status": {
+            "state": "not-satisfied",
+            "reason": "fail"
+          }
+        },
+        "remarks": "WS-044 and WS-045 forwarder deployment scheduled for 2025-07-20. WS-031 and SRV-PRN-01 require manual remediation by 2025-08-15."
+      },
+      {
+        "uuid": "f1000007-0000-4000-8000-000000000007",
+        "title": "ISM-1978 — Office macro security: NOT SATISFIED (unsigned macros executable)",
+        "description": "ISM-1978 requires that macros from the internet are blocked and that only macros from trusted publishers or locations are permitted. The current Group Policy configuration allows users to enable any macro with a single click, including from unsigned or internet-sourced documents. This is assessed as a critical non-compliance given the prevalence of macro-based malware delivery in phishing campaigns.",
+        "target": {
+          "type": "statement-id",
+          "target-id": "ism-1978",
+          "status": {
+            "state": "not-satisfied",
+            "reason": "fail"
+          }
+        },
+        "remarks": "Assessed as highest priority remediation. Block of internet-sourced macros via GPO is technically straightforward and should be completed before next month-end."
+      },
+      {
+        "uuid": "f1000008-0000-4000-8000-000000000008",
+        "title": "ISM-1960 — Backup testing: NOT SATISFIED (restoration not tested in 17 months)",
+        "description": "ISM-1960 requires that backups are tested at defined intervals to confirm recoverability. No full restoration test has been performed since 2024-02-14 (17 months) and no partial test since 2024-05-20 (13 months). Both intervals exceed the requirements in the organisation's own Backup and Recovery Procedure.",
+        "target": {
+          "type": "statement-id",
+          "target-id": "ism-1960",
+          "status": {
+            "state": "not-satisfied",
+            "reason": "fail"
+          }
+        },
+        "remarks": "Full restoration test scheduled for 2025-08-20. Quarterly schedule to be established by IT lead."
       }
     ],
     "poam-items": [
@@ -98,6 +381,195 @@
           }
         ],
         "remarks": "Remediation planned within 10 business days. Affected hosts were offline during the scheduled patch window."
+      },
+      {
+        "uuid": "2eca9c1f-ce86-45e3-9dd9-0fe82374d376",
+        "title": "ISM-2012 — Multi-factor authentication: NOT SATISFIED (on-premises RDP gap)",
+        "description": "MFA is enforced for VPN and cloud admin portals, meeting ISM-2012 requirements for those access pathways. However, MFA is not enforced for RDP sessions to domain controllers and member servers from within the corporate network. This represents a partial implementation — the highest-risk access pathway (direct privileged access to domain controllers) lacks MFA protection.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000005-0000-4000-8000-000000000005"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000005-0000-4000-8000-000000000005"
+          }
+        ],
+        "remarks": "RD Gateway deployment planned for completion by 2025-09-30."
+      },
+      {
+        "uuid": "a55ecb09-826a-4267-8bc5-32a83d84e950",
+        "title": "ISM-1864 — Event logging: NOT SATISFIED (4 hosts not logging to SIEM)",
+        "description": "ISM-1864 requires that event logs are collected and protected from unauthorised access or modification. Four of 50 in-scope hosts are not forwarding event logs to the SIEM. While local logging is active on these hosts, centralised collection is absent — logs are not protected from local tampering and are not monitored.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000006-0000-4000-8000-000000000006"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000005-0000-4000-8000-000000000005"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000006-0000-4000-8000-000000000006"
+          }
+        ],
+        "remarks": "WS-044 and WS-045 forwarder deployment scheduled for 2025-07-20. WS-031 and SRV-PRN-01 require manual remediation by 2025-08-15."
+      },
+      {
+        "uuid": "7c7aea20-a716-4408-8033-5e0632bda056",
+        "title": "ISM-1978 — Office macro security: NOT SATISFIED (unsigned macros executable)",
+        "description": "ISM-1978 requires that macros from the internet are blocked and that only macros from trusted publishers or locations are permitted. The current Group Policy configuration allows users to enable any macro with a single click, including from unsigned or internet-sourced documents. This is assessed as a critical non-compliance given the prevalence of macro-based malware delivery in phishing campaigns.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000007-0000-4000-8000-000000000007"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000003-0000-4000-8000-000000000003"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000007-0000-4000-8000-000000000007"
+          }
+        ],
+        "remarks": "Assessed as highest priority remediation. Block of internet-sourced macros via GPO is technically straightforward and should be completed before next month-end."
+      },
+      {
+        "uuid": "cdcb5927-af4a-4ea2-b829-855584d3bbf3",
+        "title": "ISM-1960 — Backup testing: NOT SATISFIED (restoration not tested in 17 months)",
+        "description": "ISM-1960 requires that backups are tested at defined intervals to confirm recoverability. No full restoration test has been performed since 2024-02-14 (17 months) and no partial test since 2024-05-20 (13 months). Both intervals exceed the requirements in the organisation's own Backup and Recovery Procedure.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000008-0000-4000-8000-000000000008"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000004-0000-4000-8000-000000000004"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000008-0000-4000-8000-000000000008"
+          }
+        ],
+        "remarks": "Full restoration test scheduled for 2025-08-20. Quarterly schedule to be established by IT lead."
+      },
+      {
+        "uuid": "8f15fe12-486a-4b72-ad0a-a6550c99feb0",
+        "title": "ISM-1486 — Critical patch currency: NOT SATISFIED (3 workstations overdue)",
+        "description": "ISM-1486 requires that critical patches are applied within 30 days for standard systems. Three workstations (WS-014, WS-027, WS-039) have critical patches outstanding for 31 days. The remaining 47 hosts are fully patched. The requirement is not universally met across the asset base.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000001-0000-4000-8000-000000000001"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "remarks": "Affected hosts were offline during the scheduled patch window due to a public holiday. Emergency patch deployment planned for 2025-08-07."
+      },
+      {
+        "uuid": "75de7524-fa4a-41c6-8a95-ccae2752a306",
+        "title": "ISM-2012 — Multi-factor authentication: NOT SATISFIED (on-premises RDP gap)",
+        "description": "MFA is enforced for VPN and cloud admin portals, meeting ISM-2012 requirements for those access pathways. However, MFA is not enforced for RDP sessions to domain controllers and member servers from within the corporate network. This represents a partial implementation — the highest-risk access pathway (direct privileged access to domain controllers) lacks MFA protection.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000005-0000-4000-8000-000000000005"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000002-0000-4000-8000-000000000002"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000005-0000-4000-8000-000000000005"
+          }
+        ],
+        "remarks": "RD Gateway deployment planned for completion by 2025-09-30."
+      },
+      {
+        "uuid": "1589c34c-b897-461e-af76-e8434d684be8",
+        "title": "ISM-1864 — Event logging: NOT SATISFIED (4 hosts not logging to SIEM)",
+        "description": "ISM-1864 requires that event logs are collected and protected from unauthorised access or modification. Four of 50 in-scope hosts are not forwarding event logs to the SIEM. While local logging is active on these hosts, centralised collection is absent — logs are not protected from local tampering and are not monitored.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000006-0000-4000-8000-000000000006"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000005-0000-4000-8000-000000000005"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000006-0000-4000-8000-000000000006"
+          }
+        ],
+        "remarks": "WS-044 and WS-045 forwarder deployment scheduled for 2025-07-20. WS-031 and SRV-PRN-01 require manual remediation by 2025-08-15."
+      },
+      {
+        "uuid": "b4d7b71d-0965-4f99-a452-c77c566c53fd",
+        "title": "ISM-1978 — Office macro security: NOT SATISFIED (unsigned macros executable)",
+        "description": "ISM-1978 requires that macros from the internet are blocked and that only macros from trusted publishers or locations are permitted. The current Group Policy configuration allows users to enable any macro with a single click, including from unsigned or internet-sourced documents. This is assessed as a critical non-compliance given the prevalence of macro-based malware delivery in phishing campaigns.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000007-0000-4000-8000-000000000007"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000003-0000-4000-8000-000000000003"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000007-0000-4000-8000-000000000007"
+          }
+        ],
+        "remarks": "Assessed as highest priority remediation. Block of internet-sourced macros via GPO is technically straightforward and should be completed before next month-end."
+      },
+      {
+        "uuid": "84122afc-f4b0-430d-8ab5-659bd1d272a1",
+        "title": "ISM-1960 — Backup testing: NOT SATISFIED (restoration not tested in 17 months)",
+        "description": "ISM-1960 requires that backups are tested at defined intervals to confirm recoverability. No full restoration test has been performed since 2024-02-14 (17 months) and no partial test since 2024-05-20 (13 months). Both intervals exceed the requirements in the organisation's own Backup and Recovery Procedure.",
+        "related-observations": [
+          {
+            "observation-uuid": "b1000008-0000-4000-8000-000000000008"
+          }
+        ],
+        "related-risks": [
+          {
+            "risk-uuid": "c1000004-0000-4000-8000-000000000004"
+          }
+        ],
+        "related-findings": [
+          {
+            "finding-uuid": "f1000008-0000-4000-8000-000000000008"
+          }
+        ],
+        "remarks": "Full restoration test scheduled for 2025-08-20. Quarterly schedule to be established by IT lead."
       }
     ]
   }
