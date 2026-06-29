@@ -2,10 +2,11 @@
   "assessment-plan": {
     "uuid": "a1b2c3d4-0001-4000-8000-000000000001",
     "metadata": {
-      "title": "Example Research Network \u2014 Annual ISM Assessment Plan",
-      "last-modified": "2026-06-28T06:10:18Z",
-      "version": "1.0",
-      "oscal-version": "1.2.2"
+      "title": "Example Research Network — Annual ISM Assessment Plan FY2025",
+      "last-modified": "2025-06-15T09:00:00Z",
+      "version": "2.0",
+      "oscal-version": "1.2.2",
+      "remarks": "Annual ISM compliance assessment of the Example Research Network (ERN). Scope covers all 29 controls in the approved baseline. Assessment conducted by the Information Security team in accordance with the ERN Assessment Methodology v1.4. Results inform the Authorising Officer’s annual acceptance decision."
     },
     "import-ssp": {
       "href": "ssp_ERN.json"
@@ -56,7 +57,7 @@
         "uuid": "d1000001-0000-4000-8000-000000000001",
         "type": "milestone",
         "title": "Assessment kick-off",
-        "description": "Initial meeting with system owner to confirm scope, logistics, and document access.",
+        "description": "Initial meeting with system owner, IT lead, and security team. Confirm assessment scope, logistics, documentation access, and scheduling. Distribute evidence request list. Agree on points of contact for technical queries during the assessment.",
         "timing": {
           "on-date": {
             "date": "2025-07-01"
@@ -67,7 +68,7 @@
         "uuid": "d1000002-0000-4000-8000-000000000002",
         "type": "action",
         "title": "Document review (EXAMINE)",
-        "description": "Examine security policies, procedures, and configuration baselines for all 29 controls in scope.",
+        "description": "Examine security policies, procedures, and configuration baselines for all 29 controls in scope. Documents to be reviewed include: Patch Management Policy, Access Control Policy, Incident Response Plan, Business Continuity Plan, Network Architecture Diagrams, System Hardening Standards, Backup and Recovery Procedures, Remote Access Policy, Email Security Policy, Application Whitelisting Policy, Physical Security Plan, and the Information Security Management Framework. Assessors will check version currency, approval dates, and alignment with ISM requirements.",
         "timing": {
           "within-date-range": {
             "start": "2025-07-02",
@@ -78,20 +79,68 @@
       {
         "uuid": "d1000003-0000-4000-8000-000000000003",
         "type": "action",
-        "title": "Technical testing (TEST)",
-        "description": "Run Tenable Nessus scans, review Active Directory configuration, verify patch levels, and test network segmentation.",
+        "title": "Technical testing — vulnerability scanning (TEST)",
+        "description": "Run authenticated Tenable Nessus Professional scans against all 42 Windows 11 workstations and 8 Windows Server 2022 hosts. Review scan results for critical and high severity findings. Cross-reference missing patches against the patch management register. Verify scan coverage by comparing host count against asset register.",
         "timing": {
           "within-date-range": {
             "start": "2025-07-10",
-            "end": "2025-07-16"
+            "end": "2025-07-11"
           }
         }
       },
       {
         "uuid": "d1000004-0000-4000-8000-000000000004",
         "type": "action",
+        "title": "Technical testing — identity and access management (TEST/EXAMINE)",
+        "description": "Review Active Directory configuration: enumerate privileged accounts (Domain Admin, Enterprise Admin, Schema Admin), verify MFA enforcement for remote access and privileged roles, review account provisioning and de-provisioning records for the past 6 months, and confirm alignment with the Access Control Policy. Test MFA enforcement on the VPN gateway and admin portals.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-12",
+            "end": "2025-07-13"
+          }
+        }
+      },
+      {
+        "uuid": "d1000005-0000-4000-8000-000000000005",
+        "type": "action",
+        "title": "Technical testing — network and logging (TEST/EXAMINE)",
+        "description": "Test network segmentation between the research VLAN, corporate VLAN, and DMZ via controlled port scanning from each zone. Review firewall rulesets for least-privilege alignment. Examine SIEM log ingestion coverage: verify all in-scope hosts are forwarding event logs. Check DNS filtering configuration and review blocked domain categories. Verify application control policy enforcement on workstations.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-14",
+            "end": "2025-07-16"
+          }
+        }
+      },
+      {
+        "uuid": "d1000006-0000-4000-8000-000000000006",
+        "type": "action",
+        "title": "Technical testing — Office macros and email security (TEST/EXAMINE)",
+        "description": "Examine Microsoft 365 tenant configuration for Office macro policies, email filtering rules, and anti-spoofing controls (SPF, DKIM, DMARC). Test macro execution behaviour on a sample workstation. Review quarantine reports for the past 90 days. Confirm web proxy filtering categories and HTTPS inspection configuration.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-14",
+            "end": "2025-07-15"
+          }
+        }
+      },
+      {
+        "uuid": "d1000007-0000-4000-8000-000000000007",
+        "type": "action",
+        "title": "Technical testing — backup and recovery (TEST/EXAMINE)",
+        "description": "Examine backup schedule, retention policy, and offsite storage arrangements. Review the backup restoration test log. If restoration tests have not been conducted within 12 months, schedule and observe a partial restoration test during the assessment window. Verify backup encryption at rest and in transit.",
+        "timing": {
+          "within-date-range": {
+            "start": "2025-07-14",
+            "end": "2025-07-16"
+          }
+        }
+      },
+      {
+        "uuid": "d1000008-0000-4000-8000-000000000008",
+        "type": "action",
         "title": "Personnel interviews (INTERVIEW)",
-        "description": "Interview system owner, IT administrators, and a sample of end users regarding security awareness and operational procedures.",
+        "description": "Structured interviews with: system owner (authorisation obligations, risk appetite, incident history), lead IT administrator (patch management, backup procedures, incident response process), security officer (awareness training outcomes, security incident reporting culture), and a sample of 5 end users (awareness of phishing, password hygiene, physical security practices, reporting mechanisms).",
         "timing": {
           "within-date-range": {
             "start": "2025-07-17",
@@ -100,10 +149,32 @@
         }
       },
       {
-        "uuid": "d1000005-0000-4000-8000-000000000005",
+        "uuid": "d1000009-0000-4000-8000-000000000009",
+        "type": "action",
+        "title": "Physical security walkthrough (EXAMINE)",
+        "description": "Conduct a physical walkthrough of server rooms, comms racks, workstation areas, and storage of removable media. Check physical access controls (badge readers, visitor logs, CCTV coverage), environmental controls (UPS, temperature monitoring), and media labelling and storage practices.",
+        "timing": {
+          "on-date": {
+            "date": "2025-07-17"
+          }
+        }
+      },
+      {
+        "uuid": "d1000010-0000-4000-8000-000000000010",
         "type": "milestone",
-        "title": "Draft results review",
-        "description": "System owner reviews draft assessment findings before the final report is issued.",
+        "title": "Preliminary findings brief",
+        "description": "Internal assessor review of all evidence collected. Draft preliminary finding statements and risk ratings. Confirm all controls have been assessed and evidence is sufficient before commencing report writing.",
+        "timing": {
+          "on-date": {
+            "date": "2025-07-21"
+          }
+        }
+      },
+      {
+        "uuid": "d1000011-0000-4000-8000-000000000011",
+        "type": "milestone",
+        "title": "Draft results review with system owner",
+        "description": "Present draft Assessment Results to the system owner and IT lead. Allow 48 hours for factual corrections. Incorporate agreed corrections before final report is issued. Document any disputes in the assessment remarks.",
         "timing": {
           "on-date": {
             "date": "2025-07-24"
@@ -111,10 +182,10 @@
         }
       },
       {
-        "uuid": "d1000006-0000-4000-8000-000000000006",
+        "uuid": "d1000012-0000-4000-8000-000000000012",
         "type": "milestone",
-        "title": "Final assessment report issued",
-        "description": "Assessment Results document signed off and delivered to the Authorising Officer.",
+        "title": "Final Assessment Results issued to Authorising Officer",
+        "description": "Final Assessment Results document signed off by the Lead Assessor and delivered to the Authorising Officer. The Authorising Officer uses these results together with the current POA&M to make the annual authorisation acceptance decision. Assessment artefacts archived in accordance with records management policy.",
         "timing": {
           "on-date": {
             "date": "2025-07-31"

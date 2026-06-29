@@ -2,10 +2,11 @@
   "assessment-results": {
     "uuid": "a1b2c3d4-0002-4000-8000-000000000002",
     "metadata": {
-      "title": "Example Research Network \u2014 Annual ISM Assessment Results 2025",
-      "last-modified": "2026-06-28T06:10:18Z",
-      "version": "1.0",
-      "oscal-version": "1.2.2"
+      "title": "Example Research Network — Annual ISM Assessment Results FY2025",
+      "last-modified": "2025-07-31T14:30:00Z",
+      "version": "2.0",
+      "oscal-version": "1.2.2",
+      "remarks": "Annual ISM compliance assessment of the Example Research Network (ERN). Assessment conducted 1–31 July 2025 by the Information Security team. Five findings of non-compliance were identified: two critical (Office macro controls absent, backup restoration not tested) and three moderate (patch currency on workstations, MFA gaps on internal admin portals, incomplete SIEM log coverage). A POA&M has been raised for all not-satisfied findings."
     },
     "import-ap": {
       "href": "ap_ERN.json"
@@ -13,9 +14,10 @@
     "results": [
       {
         "uuid": "a1b2c3d4-0003-4000-8000-000000000003",
-        "title": "FY2025 Annual Assessment",
-        "description": "Annual ISM compliance assessment of the Example Research Network covering all 29 controls in the approved baseline.",
+        "title": "FY2025 Annual ISM Assessment",
+        "description": "Annual ISM compliance assessment of the Example Research Network covering all 29 controls in the approved baseline. Assessment methods included document examination, technical testing, and personnel interviews. Evidence collected 1–18 July 2025. Preliminary findings briefed to system owner 24 July 2025. Final results issued 31 July 2025.",
         "start": "2025-07-01",
+        "end": "2025-07-31",
         "reviewed-controls": {
           "control-selections": [
             {
@@ -23,81 +25,223 @@
             }
           ]
         },
-        "end": "2025-07-31",
         "observations": [
           {
             "uuid": "b1000001-0000-4000-8000-000000000001",
-            "description": "The Patch Management Policy (v2.3, dated 2025-01-15) was examined. The policy mandates patching of internet-facing services within 48 hours and all other systems within 30 days of patch release. The policy aligns with ISM-1490 requirements and references the approved patch management procedure.",
-            "methods": [
-              "EXAMINE"
-            ],
+            "title": "Patch Management Policy examined",
+            "description": "The Patch Management Policy (v2.3, approved 2025-01-15 by CISO) was examined. The policy mandates patching of internet-facing services within 48 hours and all other systems within 30 days of patch release. The policy defines roles and responsibilities for patch identification, testing, deployment, and verification. Escalation procedures for systems that cannot be patched within the required timeframe are documented. The policy was last reviewed 2025-01-10 and is due for review in January 2026.",
+            "methods": ["EXAMINE"],
+            "types": ["control-objective"],
             "collected": "2025-07-03",
-            "title": "Patch management policy reviewed",
-            "types": [
-              "control-objective"
-            ],
             "relevant-evidence": [
               {
-                "href": "policy_patch_management_v2.3.pdf",
-                "description": "Patch Management Policy v2.3"
+                "href": "evidence/policy_patch_management_v2.3.pdf",
+                "description": "Patch Management Policy v2.3 (CISO-approved, 2025-01-15)"
               }
             ]
           },
           {
             "uuid": "b1000002-0000-4000-8000-000000000002",
-            "description": "Tenable Nessus Professional scan conducted against 42 Windows 11 workstations on 2025-07-11. 3 workstations were identified with outstanding critical patches (Microsoft Security Update KB5034441, released 2025-06-10). Patch age at time of scan: 31 days \u2014 exceeding the 30-day policy requirement. Affected hosts: WS-014, WS-027, WS-039.",
-            "methods": [
-              "TEST"
-            ],
+            "title": "Nessus vulnerability scan — workstations",
+            "description": "Authenticated Tenable Nessus Professional scan conducted against all 42 Windows 11 workstations on 2025-07-11 (scan ID NSS-2025-0711-WS). Three workstations (WS-014, WS-027, WS-039) were identified with outstanding critical patches: Microsoft Security Update KB5034441 (CVE-2025-21308, CVSS 8.8, released 2025-06-10) and KB5034442 (CVE-2025-21309, CVSS 7.5, released 2025-06-10). Patch age at time of scan: 31 days, exceeding the 30-day policy requirement by 1 day. The remaining 39 workstations were fully patched. Scan coverage confirmed: all 42 hosts in the asset register responded to the scan.",
+            "methods": ["TEST"],
+            "types": ["finding", "ssp-statement-issue"],
             "collected": "2025-07-11",
-            "title": "Nessus vulnerability scan \u2014 workstations",
-            "types": [
-              "finding",
-              "ssp-statement-issue"
-            ],
             "relevant-evidence": [
               {
-                "href": "nessus_scan_workstations_2025-07-11.csv",
-                "description": "Nessus scan report \u2014 workstations"
+                "href": "evidence/nessus_scan_WS_2025-07-11.csv",
+                "description": "Nessus scan report — workstations (42 hosts, scan ID NSS-2025-0711-WS)"
+              },
+              {
+                "href": "evidence/patch_register_2025-07-11.xlsx",
+                "description": "Patch management register extract — outstanding items as at 2025-07-11"
               }
             ],
-            "remarks": "Three hosts were offline during the scheduled patch window due to a public holiday."
+            "remarks": "WS-014, WS-027, and WS-039 were offline during the scheduled 2025-06-28 patch window due to the Queen's Birthday public holiday. The IT team confirmed that no alternative patch window was scheduled before the 30-day deadline elapsed."
           },
           {
             "uuid": "b1000003-0000-4000-8000-000000000003",
-            "description": "Active Directory was queried to enumerate accounts with Domain Admin and Enterprise Admin privileges. 7 accounts were identified with Domain Admin rights. All 7 accounts are named service accounts or designated administrator accounts with documented business justification in the Access Control Register. Last access dates confirmed active use within the past 30 days for all accounts.",
-            "methods": [
-              "EXAMINE",
-              "TEST"
-            ],
-            "collected": "2025-07-10",
-            "title": "Active Directory privileged account review",
-            "types": [
-              "control-objective"
-            ],
+            "title": "Nessus vulnerability scan — servers",
+            "description": "Authenticated Tenable Nessus Professional scan conducted against all 8 Windows Server 2022 hosts on 2025-07-14 (scan ID NSS-2025-0714-SRV). No critical or high severity patch findings identified. All hosts current with Microsoft patches as at 2025-07-01. Two medium severity informational findings noted (TLS 1.0 listener on legacy application server SRV-APP-02) — these do not relate to ISM patching controls but are noted for the system owner's awareness.",
+            "methods": ["TEST"],
+            "types": ["control-objective"],
+            "collected": "2025-07-14",
             "relevant-evidence": [
               {
-                "href": "ad_privileged_accounts_report_2025-07-10.xlsx",
-                "description": "AD privileged account enumeration"
+                "href": "evidence/nessus_scan_SRV_2025-07-14.csv",
+                "description": "Nessus scan report — servers (8 hosts, scan ID NSS-2025-0714-SRV)"
+              }
+            ],
+            "remarks": "TLS 1.0 finding on SRV-APP-02 is outside the scope of this assessment but flagged to the system owner for remediation planning."
+          },
+          {
+            "uuid": "b1000004-0000-4000-8000-000000000004",
+            "title": "Active Directory privileged account review",
+            "description": "Active Directory was queried to enumerate accounts with Domain Admin, Enterprise Admin, and Schema Admin privileges on 2025-07-12. Findings: 7 Domain Admin accounts (all named service or administrator accounts with documented business justification in the Access Control Register v4.1); 0 Enterprise Admin accounts; 0 Schema Admin accounts. Last-logon timestamps confirmed active use within 30 days for all 7 accounts. Account creation dates and access review dates were checked against the provisioning register — all accounts have been reviewed within the past 6 months in accordance with the Access Control Policy. No stale, shared, or undocumented privileged accounts identified.",
+            "methods": ["EXAMINE", "TEST"],
+            "types": ["control-objective"],
+            "collected": "2025-07-12",
+            "relevant-evidence": [
+              {
+                "href": "evidence/ad_privileged_accounts_2025-07-12.xlsx",
+                "description": "AD privileged account enumeration and access review dates"
+              },
+              {
+                "href": "evidence/access_control_register_v4.1.xlsx",
+                "description": "Access Control Register v4.1 — justifications for all privileged accounts"
               }
             ]
           },
           {
-            "uuid": "b1000004-0000-4000-8000-000000000004",
-            "description": "The Learning Management System (LMS) report for FY2025 was examined. 94 of 97 staff (96.9%) completed mandatory annual security awareness training by the due date. 3 staff members completed training late (within 14 days of the deadline) due to approved leave. The system owner confirmed that completion tracking and follow-up procedures are in place.",
-            "methods": [
-              "EXAMINE",
-              "INTERVIEW"
-            ],
-            "collected": "2025-07-17",
-            "title": "Security awareness training completion rates",
-            "types": [
-              "control-objective"
-            ],
+            "uuid": "b1000005-0000-4000-8000-000000000005",
+            "title": "MFA enforcement review — VPN and admin portals",
+            "description": "MFA enforcement was tested on 2025-07-13 for: (1) GlobalProtect VPN — MFA via Microsoft Authenticator TOTP enforced for all 97 user accounts; confirmed by attempted VPN connection with MFA bypassed (connection rejected). (2) Azure AD admin portal — MFA enforced via Conditional Access policy CA-001 for all accounts in the 'Global Administrator' and 'Security Administrator' roles; confirmed via Conditional Access policy export and test sign-in. (3) On-premises server management (RDP to domain controllers) — MFA NOT enforced. Three IT administrators can authenticate to domain controllers using only username and password from within the corporate network. The Active Directory policy does not require MFA for RDP sessions to domain-joined servers.",
+            "methods": ["TEST", "EXAMINE"],
+            "types": ["finding", "ssp-statement-issue"],
+            "collected": "2025-07-13",
             "relevant-evidence": [
               {
-                "href": "lms_training_completion_FY2025.pdf",
-                "description": "LMS training completion report FY2025"
+                "href": "evidence/mfa_test_results_2025-07-13.pdf",
+                "description": "MFA enforcement test results — VPN, Azure AD, and on-premises RDP"
+              },
+              {
+                "href": "evidence/conditional_access_policy_CA-001.json",
+                "description": "Azure AD Conditional Access policy CA-001 export"
+              }
+            ],
+            "remarks": "The absence of MFA for on-premises RDP to domain controllers is a significant residual risk given that domain controller compromise would affect the entire directory environment."
+          },
+          {
+            "uuid": "b1000006-0000-4000-8000-000000000006",
+            "title": "SIEM log ingestion coverage review",
+            "description": "The SIEM (Splunk Enterprise Security) log ingestion dashboard was examined on 2025-07-15 and compared against the asset register (50 in-scope hosts). Findings: 46 of 50 hosts are forwarding Windows Event Logs to Splunk. Four hosts are not logging: WS-031 (Windows 11 workstation — Splunk Universal Forwarder not installed post-rebuild), SRV-PRN-01 (print server — excluded from SIEM during migration and not re-added), WS-044 and WS-045 (two recently provisioned workstations, provisioned 2025-06-20, forwarder deployment pending). Critical event categories confirmed in ingestion: logon/logoff (4624/4634/4625), privilege use (4672), process creation (4688), object access (4663), and policy changes (4719).",
+            "methods": ["EXAMINE", "TEST"],
+            "types": ["finding", "ssp-statement-issue"],
+            "collected": "2025-07-15",
+            "relevant-evidence": [
+              {
+                "href": "evidence/splunk_log_coverage_2025-07-15.pdf",
+                "description": "Splunk log ingestion coverage report — 50 hosts as at 2025-07-15"
+              },
+              {
+                "href": "evidence/asset_register_ERN_2025-07-01.xlsx",
+                "description": "ERN Asset Register — 50 in-scope hosts"
+              }
+            ],
+            "remarks": "The SIEM team confirmed that deployment of forwarders to WS-044 and WS-045 was scheduled for the 2025-07-20 maintenance window. WS-031 and SRV-PRN-01 require manual remediation."
+          },
+          {
+            "uuid": "b1000007-0000-4000-8000-000000000007",
+            "title": "Office macro policy review and test",
+            "description": "Microsoft 365 tenant macro security settings were examined via the Microsoft 365 Admin Centre and Group Policy on 2025-07-15. Findings: Office macro execution is set to 'Disable all macros with notification' via Group Policy (GPO: ERN-Office-Security). This setting allows users to enable macros from any document with a single click from the notification bar — it does not block macros from internet-sourced or unsigned documents. ISM-1978 requires that macros from the internet are blocked and that only macros from trusted publishers or specific network locations are permitted. A test macro embedded in a simulated phishing document (unsigned, internet-zone attribute set) was successfully executed on workstation WS-007 after the user clicked 'Enable Content'. No application whitelisting exception is required to execute unsigned macros.",
+            "methods": ["EXAMINE", "TEST"],
+            "types": ["finding", "ssp-statement-issue"],
+            "collected": "2025-07-15",
+            "relevant-evidence": [
+              {
+                "href": "evidence/m365_macro_policy_screenshot_2025-07-15.pdf",
+                "description": "Microsoft 365 macro policy configuration screenshots"
+              },
+              {
+                "href": "evidence/gpo_ERN-Office-Security_export_2025-07-15.xml",
+                "description": "Group Policy Object export — ERN-Office-Security"
+              },
+              {
+                "href": "evidence/macro_test_execution_log_2025-07-15.pdf",
+                "description": "Macro execution test log — unsigned document on WS-007"
+              }
+            ],
+            "remarks": "This is assessed as a critical finding. Macro-enabled malware (e.g. commodity RATs delivered via phishing) represents the most common initial access vector for ransomware and business email compromise. The current policy provides no effective protection against this threat."
+          },
+          {
+            "uuid": "b1000008-0000-4000-8000-000000000008",
+            "title": "Backup schedule and restoration test review",
+            "description": "Backup schedule, retention configuration, and restoration test records were examined on 2025-07-16. The Veeam Backup & Replication console confirmed: daily incremental backups of all 8 servers with a 30-day local retention and 12-month offsite tape retention; backup jobs completing successfully (last failure: SRV-DB-01 on 2025-04-03, resolved within 4 hours). However, no documented restoration test has been performed since 2024-02-14 — a gap of 17 months. The Backup and Recovery Procedure (v1.2) requires full restoration tests every 6 months and partial tests quarterly. The last partial restoration test was conducted 2024-05-20 (13 months ago).",
+            "methods": ["EXAMINE", "TEST"],
+            "types": ["finding", "ssp-statement-issue"],
+            "collected": "2025-07-16",
+            "relevant-evidence": [
+              {
+                "href": "evidence/veeam_backup_job_report_2025-07-16.pdf",
+                "description": "Veeam Backup & Replication job history report — all servers"
+              },
+              {
+                "href": "evidence/backup_restoration_test_register.xlsx",
+                "description": "Backup restoration test register — last entry 2024-02-14"
+              },
+              {
+                "href": "evidence/backup_recovery_procedure_v1.2.pdf",
+                "description": "Backup and Recovery Procedure v1.2"
+              }
+            ],
+            "remarks": "The system owner stated that staff turnover in the IT team was a contributing factor. The incoming IT lead confirmed a restoration test has been scheduled for 2025-08-20."
+          },
+          {
+            "uuid": "b1000009-0000-4000-8000-000000000009",
+            "title": "Network segmentation test",
+            "description": "Network segmentation between the Research VLAN (10.10.20.0/24), Corporate VLAN (10.10.10.0/24), and DMZ (10.10.30.0/24) was tested on 2025-07-15 via controlled port scans from each zone using Nmap v7.94. Results: (1) Research VLAN → Corporate VLAN: only permitted flows (SMB to file server, RDP to jump host, LDAP to domain controller) are accessible — all other ports blocked. (2) Research VLAN → DMZ: HTTP/HTTPS to web proxy only — all direct internet access blocked. (3) DMZ → Corporate/Research VLANs: no inbound flows permitted. (4) Corporate VLAN → Research VLAN: LDAP and management flows only. Firewall ruleset reviewed — rules are documented and match tested behaviour. No extraneous 'any-any' rules identified.",
+            "methods": ["TEST", "EXAMINE"],
+            "types": ["control-objective"],
+            "collected": "2025-07-15",
+            "relevant-evidence": [
+              {
+                "href": "evidence/nmap_segmentation_test_2025-07-15.txt",
+                "description": "Nmap segmentation test output — all zone pairs"
+              },
+              {
+                "href": "evidence/firewall_ruleset_review_2025-07-15.xlsx",
+                "description": "Firewall ruleset review — ERN perimeter and internal firewalls"
+              }
+            ]
+          },
+          {
+            "uuid": "b1000010-0000-4000-8000-000000000010",
+            "title": "Security awareness training completion review",
+            "description": "The Learning Management System (LMS) completion report for FY2025 mandatory security awareness training was examined on 2025-07-17. Results: 94 of 97 staff (96.9%) completed the mandatory annual module by the due date (2025-06-30). Three staff completed within 14 days of the deadline under approved leave arrangements. The training module covers: phishing recognition, password security, physical security, incident reporting, and acceptable use. A 10-question post-training quiz is required; minimum pass mark is 80% — all completers achieved this threshold. Completion tracking and automated follow-up reminders are in place. The system owner confirmed that non-completion results in account suspension after 30 days.",
+            "methods": ["EXAMINE", "INTERVIEW"],
+            "types": ["control-objective"],
+            "collected": "2025-07-17",
+            "relevant-evidence": [
+              {
+                "href": "evidence/lms_training_completion_FY2025.pdf",
+                "description": "LMS training completion report FY2025 — all 97 staff"
+              }
+            ]
+          },
+          {
+            "uuid": "b1000011-0000-4000-8000-000000000011",
+            "title": "Physical security and media handling walkthrough",
+            "description": "Physical security walkthrough conducted on 2025-07-17 covering: server room (Level 2, Room 2.14), comms racks (Floors 1–3), workstation areas, and the media storage cabinet. Findings: server room access controlled by proximity card reader with audit log (reviewed — no anomalous entries in past 90 days); CCTV coverage of server room entrance and all workstation areas operational; UPS and temperature/humidity monitoring in place with email alerting; removable media (USB drives, backup tapes) stored in a locked cabinet with a sign-out register — register reviewed and current. Visitor access policy implemented: all visitors escorted, visitor log current. One minor finding: the comms rack on Floor 1 was unlocked at time of inspection — IT administrator confirmed this was due to active maintenance work, not a policy gap.",
+            "methods": ["EXAMINE"],
+            "types": ["control-objective"],
+            "collected": "2025-07-17",
+            "relevant-evidence": [
+              {
+                "href": "evidence/physical_security_walkthrough_notes_2025-07-17.pdf",
+                "description": "Physical security walkthrough notes and photographs"
+              },
+              {
+                "href": "evidence/server_room_access_log_90days.pdf",
+                "description": "Server room proximity card access log — 90 days to 2025-07-17"
+              }
+            ],
+            "remarks": "The unlocked comms rack on Floor 1 is noted but not raised as a finding given the active maintenance context and prompt IT response to close the rack on assessor request."
+          },
+          {
+            "uuid": "b1000012-0000-4000-8000-000000000012",
+            "title": "Application control (whitelisting) policy review and test",
+            "description": "Application control policy configuration was examined on 2025-07-16. AppLocker is deployed via Group Policy (GPO: ERN-AppLocker) in Enforce mode on all 42 workstations. Policy rules allow: all executables in C:\\Windows, C:\\Program Files, and C:\\Program Files (x86); publisher rules for Microsoft, Adobe, and Google. A test attempted to execute an unsigned binary (Mimikatz v2.2.0 — a known credential harvesting tool used in red team exercises) from the user's Downloads folder — execution was blocked and the event was logged in AppLocker event log and forwarded to Splunk. Servers are managed via Windows Server AppLocker with equivalent policy. No bypass of AppLocker via script-based execution (PowerShell/WScript) was achieved — PowerShell is configured in Constrained Language Mode.",
+            "methods": ["EXAMINE", "TEST"],
+            "types": ["control-objective"],
+            "collected": "2025-07-16",
+            "relevant-evidence": [
+              {
+                "href": "evidence/applocker_policy_export_2025-07-16.xml",
+                "description": "AppLocker GPO policy export — ERN-AppLocker"
+              },
+              {
+                "href": "evidence/applocker_block_event_log_2025-07-16.pdf",
+                "description": "AppLocker block event log — Mimikatz test on WS-007"
               }
             ]
           }
@@ -105,18 +249,128 @@
         "risks": [
           {
             "uuid": "c1000001-0000-4000-8000-000000000001",
-            "title": "Unpatched workstations \u2014 delayed patch deployment",
-            "description": "Three workstations (WS-014, WS-027, WS-039) have a critical Microsoft security patch outstanding for 31 days, exceeding the 30-day patching policy.",
-            "statement": "If the outstanding critical patch is exploited before deployment, an attacker could gain code execution on the affected workstations, potentially pivoting to network resources. Impact assessed as Medium given network segmentation controls in place.",
+            "title": "Critical patch overdue — 3 workstations",
+            "description": "Three workstations (WS-014, WS-027, WS-039) have two critical Microsoft security patches (KB5034441, KB5034442) outstanding for 31 days, exceeding the 30-day patching policy by 1 day. CVSSv3 scores: 8.8 and 7.5 respectively.",
+            "statement": "Exploitation of CVE-2025-21308 or CVE-2025-21309 on an unpatched workstation could allow an authenticated local user to elevate privileges to SYSTEM. If combined with a phishing or social engineering attack to gain initial access, an attacker could achieve domain-level compromise. Probability assessed as Medium given network segmentation and application control mitigations. Impact assessed as High given domain-wide blast radius of a privilege escalation on a domain-joined workstation.",
             "status": "open",
             "deadline": "2025-08-11",
             "remediations": [
               {
                 "uuid": "e1000001-0000-4000-8000-000000000001",
                 "lifecycle": "planned",
-                "title": "Emergency patch deployment",
-                "description": "Deploy KB5034441 to WS-014, WS-027, and WS-039 within 10 business days. Update patch management records. Notify system owner on completion.",
-                "remarks": "Patch window scheduled for 2025-08-07."
+                "title": "Emergency patch deployment to affected workstations",
+                "description": "Deploy KB5034441 and KB5034442 to WS-014, WS-027, and WS-039 within 10 business days. Confirm successful installation via Nessus re-scan. Update the patch management register. Notify the system owner and CISO on completion.",
+                "remarks": "Patch window scheduled for 2025-08-07 (Thursday evening maintenance window). IT lead to confirm completion no later than 2025-08-08."
+              },
+              {
+                "uuid": "e1000002-0000-4000-8000-000000000002",
+                "lifecycle": "recommendation",
+                "title": "Review patch window scheduling to account for public holidays",
+                "description": "Update the Patch Management Procedure to require a compensating patch window within 5 business days when a scheduled patch window is missed due to a public holiday or system unavailability. This prevents a recurrence of the 30-day deadline being exceeded due to a single missed window.",
+                "remarks": "Procedure update to be completed by IT lead before next quarterly patch cycle (2025-09-28)."
+              }
+            ]
+          },
+          {
+            "uuid": "c1000002-0000-4000-8000-000000000002",
+            "title": "MFA not enforced for on-premises server management (RDP)",
+            "description": "Three IT administrators can authenticate to all domain controllers and member servers via RDP using only username and password from within the corporate network. MFA is not enforced for on-premises RDP sessions via Active Directory policy or Network Policy Server.",
+            "statement": "If an IT administrator's credentials are compromised (e.g. via phishing, credential stuffing, or lateral movement from a compromised workstation), an attacker with network access to the server management VLAN could authenticate to domain controllers without a second factor. Domain controller access with valid administrator credentials would provide complete control over the Active Directory environment, enabling credential harvesting, persistence, and full network compromise. Probability assessed as Medium. Impact assessed as Critical.",
+            "status": "open",
+            "deadline": "2025-09-30",
+            "remediations": [
+              {
+                "uuid": "e1000003-0000-4000-8000-000000000003",
+                "lifecycle": "planned",
+                "title": "Enforce MFA for RDP to domain controllers via Remote Desktop Gateway",
+                "description": "Deploy Windows Server Remote Desktop Gateway (RD Gateway) to enforce MFA for all RDP connections to domain controllers and member servers. Integrate with Microsoft Entra ID via RADIUS/NPS extension. All administrator RDP sessions to be routed through RD Gateway — direct RDP to be blocked via firewall rule. Target completion: 2025-09-30.",
+                "remarks": "Architecture design to be completed by 2025-08-31. Pilot with one domain controller before full rollout."
+              },
+              {
+                "uuid": "e1000004-0000-4000-8000-000000000004",
+                "lifecycle": "recommendation",
+                "title": "Implement Privileged Access Workstations (PAWs) for server administration",
+                "description": "As a longer-term control, provision dedicated Privileged Access Workstations for the three IT administrators. PAWs should be restricted from internet access and email, reducing the attack surface for phishing-based credential compromise. This is a defence-in-depth measure complementary to MFA enforcement.",
+                "remarks": "Recommend including in the next annual security uplift budget cycle."
+              }
+            ]
+          },
+          {
+            "uuid": "c1000003-0000-4000-8000-000000000003",
+            "title": "Office macro controls do not block unsigned or internet-sourced macros",
+            "description": "The current Group Policy macro setting ('Disable all macros with notification') allows users to enable macros from any document, including unsigned documents or documents downloaded from the internet, with a single click. ISM-1978 requires that macros from the internet are blocked and only macros from trusted locations or signed by trusted publishers are permitted.",
+            "statement": "Macro-enabled malware (commonly delivered via phishing as Office documents) represents the most prevalent initial access vector for ransomware and business email compromise campaigns targeting Australian organisations. The current policy provides no technical control preventing execution of malicious macros. A single user enabling a malicious macro could result in credential harvesting, ransomware deployment, or data exfiltration. Probability assessed as High given phishing volumes observed in the sector. Impact assessed as Critical.",
+            "status": "open",
+            "deadline": "2025-09-15",
+            "remediations": [
+              {
+                "uuid": "e1000005-0000-4000-8000-000000000005",
+                "lifecycle": "planned",
+                "title": "Block macros from internet-sourced documents via Group Policy",
+                "description": "Update GPO ERN-Office-Security to set 'Block macros from running in Office files from the Internet' (registry: HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\*\\Security\\blockcontentexecutionfrominternet = 1). This uses the Mark of the Web (MOTW) attribute to identify internet-sourced files. Deploy and test on pilot group (5 workstations) before organisation-wide rollout. Target: 2025-08-31.",
+                "remarks": "Pilot group to include at least one user who regularly receives macro-enabled documents from external parties to validate business impact before full rollout."
+              },
+              {
+                "uuid": "e1000006-0000-4000-8000-000000000006",
+                "lifecycle": "planned",
+                "title": "Restrict macros to digitally signed files from trusted publishers",
+                "description": "Update GPO to set macro security to 'Disable all macros except digitally signed macros'. Establish a process for IT to sign trusted macro-enabled workbooks. Identify all business-critical macro-enabled files and obtain or apply code signing certificates. Target: 2025-09-15.",
+                "remarks": "Finance team uses three macro-enabled Excel workbooks for monthly reporting — these will need to be signed before the policy is enforced."
+              },
+              {
+                "uuid": "e1000007-0000-4000-8000-000000000007",
+                "lifecycle": "recommendation",
+                "title": "Conduct targeted phishing simulation with macro lure",
+                "description": "Following remediation, conduct a phishing simulation campaign using a macro-lure document to test user awareness and verify that technical controls block execution. Results to be used to inform the next iteration of security awareness training.",
+                "remarks": "Recommend engaging the existing phishing simulation vendor to run this as part of the annual phishing programme."
+              }
+            ]
+          },
+          {
+            "uuid": "c1000004-0000-4000-8000-000000000004",
+            "title": "Backup restoration not tested within required timeframe",
+            "description": "No full backup restoration test has been performed since 2024-02-14 (17 months ago). The Backup and Recovery Procedure requires full restoration tests every 6 months and partial tests quarterly. No quarterly partial test has been completed since 2024-05-20 (13 months ago).",
+            "statement": "Untested backups present a significant risk to business continuity and system recovery. If a ransomware event, hardware failure, or data corruption occurs, the organisation cannot confirm that backups are recoverable or that the recovery process can be executed within the Recovery Time Objective (RTO) defined in the Business Continuity Plan (4 hours for critical systems). Probability assessed as Low for a major recovery event; however, the impact of an unrecoverable backup scenario is assessed as Critical. The untested backup risk is assessed as High.",
+            "status": "open",
+            "deadline": "2025-09-30",
+            "remediations": [
+              {
+                "uuid": "e1000008-0000-4000-8000-000000000008",
+                "lifecycle": "planned",
+                "title": "Conduct full backup restoration test — SRV-DB-01 and SRV-FILE-01",
+                "description": "Conduct a full restoration test for SRV-DB-01 (primary database server) and SRV-FILE-01 (primary file server) to an isolated test environment. Document restoration time, confirm data integrity via checksums, and compare restored data against the last known good backup. Complete by 2025-08-20. Provide restoration test report to system owner and CISO.",
+                "remarks": "Test environment has been provisioned in the DR site. IT lead to coordinate with Veeam administrator. System owner has approved a 2-hour maintenance window on 2025-08-20."
+              },
+              {
+                "uuid": "e1000009-0000-4000-8000-000000000009",
+                "lifecycle": "planned",
+                "title": "Establish quarterly backup restoration test schedule",
+                "description": "Update the Backup and Recovery Procedure to include a scheduled restoration test calendar. Assign responsibility to the IT lead. Quarterly partial tests (minimum 1 server or critical application) and 6-monthly full tests (all critical systems) to be entered into the IT maintenance calendar and tracked in the security assurance register. First quarterly test: 2025-09-28.",
+                "remarks": "Calendar entries and responsibility assignment to be completed by the IT lead within 10 business days of this report."
+              }
+            ]
+          },
+          {
+            "uuid": "c1000005-0000-4000-8000-000000000005",
+            "title": "Incomplete SIEM log coverage — 4 hosts not forwarding logs",
+            "description": "Four of 50 in-scope hosts are not forwarding event logs to the SIEM: WS-031 (Splunk forwarder not reinstalled post-rebuild), SRV-PRN-01 (excluded during migration, not re-added), WS-044 and WS-045 (newly provisioned, forwarder deployment pending). This represents an 8% gap in event log coverage.",
+            "statement": "Hosts not forwarding logs to the SIEM are invisible to the security monitoring function. Malicious activity on these hosts (e.g. lateral movement, privilege escalation, or data exfiltration) would not generate SIEM alerts and would only be detectable via manual log review of local event logs — if those logs have not been cleared. While the gap is limited to 4 hosts, two of those hosts (WS-031) was recently rebuilt following a suspected malware infection, making its logging gap particularly significant. Probability of exploitation targeting ungoverned hosts: Medium. Impact: High.",
+            "status": "investigating",
+            "deadline": "2025-08-15",
+            "remediations": [
+              {
+                "uuid": "e1000010-0000-4000-8000-000000000010",
+                "lifecycle": "planned",
+                "title": "Deploy Splunk Universal Forwarder to all 4 non-logging hosts",
+                "description": "Install and configure Splunk Universal Forwarder on WS-031, SRV-PRN-01, WS-044, and WS-045. Confirm log ingestion in Splunk within 24 hours of installation. Update the SIEM host inventory. WS-044 and WS-045 are already scheduled for the 2025-07-20 maintenance window. WS-031 and SRV-PRN-01 require manual deployment by the Splunk administrator by 2025-08-15.",
+                "remarks": "SIEM team to confirm coverage via the log ingestion dashboard within 48 hours of forwarder deployment on each host."
+              },
+              {
+                "uuid": "e1000011-0000-4000-8000-000000000011",
+                "lifecycle": "recommendation",
+                "title": "Add SIEM forwarder deployment to server build and rebuild checklists",
+                "description": "Update the server and workstation build checklists to include Splunk Universal Forwarder installation and SIEM registration as mandatory steps. Add a SIEM coverage check (dashboard verification) to the post-build sign-off process. This prevents recurrence of the WS-031 and SRV-PRN-01 gaps.",
+                "remarks": "Checklist update to be completed by IT lead within 10 business days."
               }
             ]
           }
@@ -124,8 +378,8 @@
         "findings": [
           {
             "uuid": "f1000001-0000-4000-8000-000000000001",
-            "title": "ISM-1490 \u2014 Patch management policy satisfied",
-            "description": "The organisation maintains a documented patch management policy meeting ISM-1490 requirements, with clear ownership and escalation procedures.",
+            "title": "ISM-1490 — Patch management policy: SATISFIED",
+            "description": "The organisation maintains an approved, current Patch Management Policy (v2.3) that meets ISM-1490 requirements. The policy defines patching timeframes, roles and responsibilities, escalation procedures, and review cadence. The policy was approved by the CISO and is due for review within the required period.",
             "target": {
               "type": "statement-id",
               "target-id": "ism-1490",
@@ -138,15 +392,13 @@
               }
             },
             "related-observations": [
-              {
-                "observation-uuid": "b1000001-0000-4000-8000-000000000001"
-              }
+              { "observation-uuid": "b1000001-0000-4000-8000-000000000001" }
             ]
           },
           {
             "uuid": "f1000002-0000-4000-8000-000000000002",
-            "title": "ISM-1486 \u2014 Patch currency not-satisfied (3 workstations)",
-            "description": "Three workstations exceed the 30-day patching deadline for a critical security update. ISM-1486 requires that critical patches be applied within 30 days for standard systems. The requirement is not universally met.",
+            "title": "ISM-1486 — Critical patch currency: NOT SATISFIED (3 workstations overdue)",
+            "description": "ISM-1486 requires that critical patches are applied within 30 days for standard systems. Three workstations (WS-014, WS-027, WS-039) have critical patches outstanding for 31 days. The remaining 47 hosts are fully patched. The requirement is not universally met across the asset base.",
             "target": {
               "type": "statement-id",
               "target-id": "ism-1486",
@@ -159,21 +411,37 @@
               }
             },
             "related-observations": [
-              {
-                "observation-uuid": "b1000002-0000-4000-8000-000000000002"
-              }
+              { "observation-uuid": "b1000002-0000-4000-8000-000000000002" }
             ],
             "related-risks": [
-              {
-                "risk-uuid": "c1000001-0000-4000-8000-000000000001"
-              }
+              { "risk-uuid": "c1000001-0000-4000-8000-000000000001" }
             ],
-            "remarks": "Remediation planned within 10 business days. Affected hosts were offline during the scheduled patch window."
+            "remarks": "Affected hosts were offline during the scheduled patch window due to a public holiday. Emergency patch deployment planned for 2025-08-07."
           },
           {
             "uuid": "f1000003-0000-4000-8000-000000000003",
-            "title": "ISM-1175 \u2014 Privileged access management satisfied",
-            "description": "Privileged accounts in Active Directory are limited to designated administrators with documented justifications. No unauthorised or stale accounts were identified.",
+            "title": "ISM-1485 — Non-critical patch currency: SATISFIED",
+            "description": "All 50 in-scope hosts are current with non-critical patches within the 30-day policy requirement. Server patching confirmed via Nessus scan on 2025-07-14 — no non-critical patch findings outstanding beyond 30 days.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1485",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000002-0000-4000-8000-000000000002" },
+              { "observation-uuid": "b1000003-0000-4000-8000-000000000003" }
+            ]
+          },
+          {
+            "uuid": "f1000004-0000-4000-8000-000000000004",
+            "title": "ISM-1175 — Privileged access management: SATISFIED",
+            "description": "Privileged accounts in Active Directory are limited to documented, justified administrator and service accounts. No unauthorised, stale, or undocumented privileged accounts were identified. Access reviews are current.",
             "target": {
               "type": "statement-id",
               "target-id": "ism-1175",
@@ -186,15 +454,124 @@
               }
             },
             "related-observations": [
-              {
-                "observation-uuid": "b1000003-0000-4000-8000-000000000003"
-              }
+              { "observation-uuid": "b1000004-0000-4000-8000-000000000004" }
             ]
           },
           {
-            "uuid": "f1000004-0000-4000-8000-000000000004",
-            "title": "ISM-0417 \u2014 Security awareness training satisfied",
-            "description": "Annual mandatory security awareness training completion rate of 96.9% meets the organisational target. Late completions had approved leave justifications.",
+            "uuid": "f1000005-0000-4000-8000-000000000005",
+            "title": "ISM-2012 — Multi-factor authentication: NOT SATISFIED (on-premises RDP gap)",
+            "description": "MFA is enforced for VPN and cloud admin portals, meeting ISM-2012 requirements for those access pathways. However, MFA is not enforced for RDP sessions to domain controllers and member servers from within the corporate network. This represents a partial implementation — the highest-risk access pathway (direct privileged access to domain controllers) lacks MFA protection.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-2012",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail"
+              },
+              "implementation-status": {
+                "state": "partial"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000005-0000-4000-8000-000000000005" }
+            ],
+            "related-risks": [
+              { "risk-uuid": "c1000002-0000-4000-8000-000000000002" }
+            ],
+            "remarks": "RD Gateway deployment planned for completion by 2025-09-30."
+          },
+          {
+            "uuid": "f1000006-0000-4000-8000-000000000006",
+            "title": "ISM-1864 — Event logging: NOT SATISFIED (4 hosts not logging to SIEM)",
+            "description": "ISM-1864 requires that event logs are collected and protected from unauthorised access or modification. Four of 50 in-scope hosts are not forwarding event logs to the SIEM. While local logging is active on these hosts, centralised collection is absent — logs are not protected from local tampering and are not monitored.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1864",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail"
+              },
+              "implementation-status": {
+                "state": "partial"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000006-0000-4000-8000-000000000006" }
+            ],
+            "related-risks": [
+              { "risk-uuid": "c1000005-0000-4000-8000-000000000005" }
+            ],
+            "remarks": "WS-044 and WS-045 forwarder deployment scheduled for 2025-07-20. WS-031 and SRV-PRN-01 require manual remediation by 2025-08-15."
+          },
+          {
+            "uuid": "f1000007-0000-4000-8000-000000000007",
+            "title": "ISM-1978 — Office macro security: NOT SATISFIED (unsigned macros executable)",
+            "description": "ISM-1978 requires that macros from the internet are blocked and that only macros from trusted publishers or locations are permitted. The current Group Policy configuration allows users to enable any macro with a single click, including from unsigned or internet-sourced documents. This is assessed as a critical non-compliance given the prevalence of macro-based malware delivery in phishing campaigns.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1978",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail"
+              },
+              "implementation-status": {
+                "state": "planned"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000007-0000-4000-8000-000000000007" }
+            ],
+            "related-risks": [
+              { "risk-uuid": "c1000003-0000-4000-8000-000000000003" }
+            ],
+            "remarks": "Assessed as highest priority remediation. Block of internet-sourced macros via GPO is technically straightforward and should be completed before next month-end."
+          },
+          {
+            "uuid": "f1000008-0000-4000-8000-000000000008",
+            "title": "ISM-1960 — Backup testing: NOT SATISFIED (restoration not tested in 17 months)",
+            "description": "ISM-1960 requires that backups are tested at defined intervals to confirm recoverability. No full restoration test has been performed since 2024-02-14 (17 months) and no partial test since 2024-05-20 (13 months). Both intervals exceed the requirements in the organisation's own Backup and Recovery Procedure.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1960",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail"
+              },
+              "implementation-status": {
+                "state": "partial"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000008-0000-4000-8000-000000000008" }
+            ],
+            "related-risks": [
+              { "risk-uuid": "c1000004-0000-4000-8000-000000000004" }
+            ],
+            "remarks": "Full restoration test scheduled for 2025-08-20. Quarterly schedule to be established by IT lead."
+          },
+          {
+            "uuid": "f1000009-0000-4000-8000-000000000009",
+            "title": "ISM-1906 — Network segmentation: SATISFIED",
+            "description": "Network segmentation between the Research VLAN, Corporate VLAN, and DMZ is implemented and enforced by firewall policy. Penetration testing via port scanning confirmed that only permitted flows traverse VLAN boundaries. No extraneous firewall rules were identified.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1906",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000009-0000-4000-8000-000000000009" }
+            ]
+          },
+          {
+            "uuid": "f1000010-0000-4000-8000-000000000010",
+            "title": "ISM-0417 — Security awareness training: SATISFIED",
+            "description": "Mandatory annual security awareness training completion rate of 96.9% meets the organisational target. All completers achieved the minimum quiz pass mark. Late completions had documented approved leave justifications. Completion tracking, automated reminders, and account suspension controls are in place.",
             "target": {
               "type": "statement-id",
               "target-id": "ism-0417",
@@ -207,9 +584,84 @@
               }
             },
             "related-observations": [
-              {
-                "observation-uuid": "b1000004-0000-4000-8000-000000000004"
+              { "observation-uuid": "b1000010-0000-4000-8000-000000000010" }
+            ]
+          },
+          {
+            "uuid": "f1000011-0000-4000-8000-000000000011",
+            "title": "ISM-0457 — Physical security: SATISFIED",
+            "description": "Physical security controls for the server room and workstation areas are implemented and functioning: proximity card access with audit logging, CCTV coverage, environmental monitoring, and visitor management. Removable media is stored in a locked cabinet with a sign-out register. The minor finding of an unlocked comms rack during maintenance is noted but not assessed as a control failure.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-0457",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
               }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000011-0000-4000-8000-000000000011" }
+            ]
+          },
+          {
+            "uuid": "f1000012-0000-4000-8000-000000000012",
+            "title": "ISM-1877 — Application control: SATISFIED",
+            "description": "AppLocker is deployed in Enforce mode on all 42 workstations and all servers, blocking unsigned executables from user-writable locations. PowerShell is configured in Constrained Language Mode. A test execution of a known credential harvesting tool was successfully blocked and logged.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1877",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000012-0000-4000-8000-000000000012" }
+            ]
+          },
+          {
+            "uuid": "f1000013-0000-4000-8000-000000000013",
+            "title": "ISM-1111 — Data backup: SATISFIED (backup jobs operational)",
+            "description": "Daily incremental backups of all 8 servers are completing successfully with 30-day local retention and 12-month offsite tape retention. Backup job history shows high reliability (one failure in the past year, resolved within 4 hours). Note: while backup jobs are operational, backup restoration has not been tested within the required timeframe — this is captured separately under ISM-1960.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1111",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000008-0000-4000-8000-000000000008" }
+            ],
+            "remarks": "Backup jobs are operationally sound. The ISM-1960 finding relates to restoration testing, not backup job execution."
+          },
+          {
+            "uuid": "f1000014-0000-4000-8000-000000000014",
+            "title": "ISM-1055 — Access control (personnel): SATISFIED",
+            "description": "Access provisioning and de-provisioning records reviewed for the past 6 months. All account changes are documented and approved. No orphaned accounts were identified. Joiners/movers/leavers process confirmed to be operating correctly via HR-IT workflow.",
+            "target": {
+              "type": "statement-id",
+              "target-id": "ism-1055",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass"
+              },
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            "related-observations": [
+              { "observation-uuid": "b1000004-0000-4000-8000-000000000004" }
             ]
           }
         ],
@@ -219,31 +671,55 @@
               "uuid": "log00001-0000-4000-8000-000000000001",
               "start": "2025-07-01",
               "end": "2025-07-01",
-              "description": "Assessment kick-off meeting held with system owner. Scope confirmed, document list provided."
+              "description": "Assessment kick-off meeting held with system owner (Director of Research Infrastructure), IT lead, and two members of the security team. Assessment scope confirmed as all 29 ISM controls in the approved baseline. Evidence request list distributed. Document access via SharePoint provided. Scheduling for technical testing windows confirmed with IT lead."
             },
             {
               "uuid": "log00002-0000-4000-8000-000000000002",
-              "start": "2025-07-03",
+              "start": "2025-07-02",
               "end": "2025-07-09",
-              "description": "Document review phase: examined patch management policy, access control register, incident response plan, backup schedule, and network architecture diagrams."
+              "description": "Document review phase. Examined: Patch Management Policy v2.3, Access Control Policy v4.0, Incident Response Plan v2.1, Business Continuity Plan v3.0, Network Architecture Diagrams (June 2025), System Hardening Standard v1.5 (Windows 11 and Windows Server 2022), Backup and Recovery Procedure v1.2, Remote Access Policy v2.0, Email Security Policy v1.3, Application Control Policy v1.1, Physical Security Plan v2.2, and the Information Security Management Framework v4.1. Two documents requested but not provided by end of document review phase: the Vulnerability Management Procedure (superseded — IT lead to confirm replacement) and the Media Sanitisation Procedure (being updated, draft version reviewed). Gap noted in evidence log."
             },
             {
               "uuid": "log00003-0000-4000-8000-000000000003",
               "start": "2025-07-10",
-              "end": "2025-07-16",
-              "description": "Technical testing phase: Nessus scans run against workstations (2025-07-11) and servers (2025-07-14). AD privileged account enumeration performed (2025-07-10). Network segmentation tested via port scan from DMZ (2025-07-15)."
+              "end": "2025-07-11",
+              "description": "Nessus vulnerability scanning. Authenticated scans conducted against all 42 Windows 11 workstations (2025-07-11, scan ID NSS-2025-0711-WS). Three workstations identified with critical patches overdue: WS-014, WS-027, WS-039. All other workstations fully patched. IT lead notified of critical findings on 2025-07-11 and advised of emergency patch window requirement."
             },
             {
               "uuid": "log00004-0000-4000-8000-000000000004",
-              "start": "2025-07-17",
-              "end": "2025-07-18",
-              "description": "Personnel interviews: system owner (2025-07-17), lead IT administrator (2025-07-17), 3 end users (2025-07-18)."
+              "start": "2025-07-12",
+              "end": "2025-07-13",
+              "description": "Identity and access management testing. Active Directory privileged account review conducted on 2025-07-12 — 7 Domain Admin accounts identified, all justified and active. MFA enforcement tested on 2025-07-13: VPN and Azure AD admin portal MFA confirmed enforced; RDP to domain controllers found to lack MFA enforcement — significant finding raised. IT lead acknowledged the finding and indicated awareness; confirmed no timeline for remediation had been established prior to assessment."
             },
             {
               "uuid": "log00005-0000-4000-8000-000000000005",
+              "start": "2025-07-14",
+              "end": "2025-07-16",
+              "description": "Technical testing phase — servers, network, logging, macros, application control, and backups. Server Nessus scan (2025-07-14): all 8 servers fully patched at critical/high level; 2 medium findings noted (TLS 1.0 on SRV-APP-02) for system owner awareness. Network segmentation testing (2025-07-15): VLAN segmentation confirmed effective. SIEM coverage review (2025-07-15): 4 of 50 hosts not forwarding logs. Office macro policy test (2025-07-15): unsigned macro executed successfully — critical finding raised. AppLocker test (2025-07-16): unauthorised binary blocked successfully. Backup restoration records reviewed (2025-07-16): no test in 17 months — finding raised."
+            },
+            {
+              "uuid": "log00006-0000-4000-8000-000000000006",
+              "start": "2025-07-17",
+              "end": "2025-07-18",
+              "description": "Personnel interviews and physical security walkthrough. Physical walkthrough conducted on 2025-07-17: server room access controls, CCTV, and media storage satisfactory; minor note of unlocked comms rack (active maintenance). Interviews conducted: system owner (2025-07-17) — confirmed risk appetite and commitment to remediation; IT lead (2025-07-17) — discussed patch management process, backup situation (staff turnover cited as contributing factor), and MFA roadmap; security officer (2025-07-18) — training completion tracking satisfactory; 5 end users (2025-07-18) — awareness of phishing and reporting procedures generally good; 2 of 5 users unaware of the formal incident reporting email address."
+            },
+            {
+              "uuid": "log00007-0000-4000-8000-000000000007",
+              "start": "2025-07-21",
+              "end": "2025-07-21",
+              "description": "Internal assessor review of all evidence. All 29 controls reviewed for evidence sufficiency. 5 not-satisfied findings confirmed: ISM-1486 (patch currency), ISM-2012 (MFA), ISM-1864 (event logging), ISM-1978 (macro security), ISM-1960 (backup testing). Risk ratings assigned. Draft finding statements prepared for system owner review."
+            },
+            {
+              "uuid": "log00008-0000-4000-8000-000000000008",
               "start": "2025-07-24",
               "end": "2025-07-24",
-              "description": "Draft findings reviewed with system owner. Factual corrections incorporated. System owner accepted findings."
+              "description": "Draft Assessment Results reviewed with system owner and IT lead. System owner accepted all 5 not-satisfied findings without dispute. Two factual corrections incorporated: (1) workstation count on ISM-1486 finding corrected from '4 workstations' to '3 workstations'; (2) backup failure date on ISM-1960 observation corrected to 2024-02-14. IT lead provided updated remediation timeline commitments: macro policy GPO change by 2025-08-31, patch deployment by 2025-08-07, SIEM forwarder deployment by 2025-08-15."
+            },
+            {
+              "uuid": "log00009-0000-4000-8000-000000000009",
+              "start": "2025-07-31",
+              "end": "2025-07-31",
+              "description": "Final Assessment Results document completed, reviewed by Lead Assessor, and delivered to the Authorising Officer. Assessment artefacts (evidence files, scan reports, interview notes) archived in the security assurance document repository (SharePoint: ERN/Assessments/FY2025). POA&M updated with 5 new action items corresponding to not-satisfied findings. System owner notified of delivery."
             }
           ]
         }
