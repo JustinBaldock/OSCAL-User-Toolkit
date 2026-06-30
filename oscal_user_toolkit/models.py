@@ -2292,7 +2292,8 @@ def parse_poam_file(data):
             "uuid":        item.get("uuid", new_uuid()),
             "title":       item.get("title", ""),
             "description": item.get("description", ""),
-            "scheduled_completion": _prop_value(item, "scheduled-completion-date"),
+            # _prop_value expects the props array, not the whole item object.
+            "scheduled_completion": _prop_value(item.get("props", []), "scheduled-completion-date"),
             "related_observation_uuids": [
                 ro.get("observation-uuid", "")
                 for ro in item.get("related-observations", [])
