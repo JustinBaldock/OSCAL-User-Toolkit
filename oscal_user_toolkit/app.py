@@ -473,6 +473,10 @@ class OSCALApp(tk.Tk):
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
             # Lets the SSP tab's "Change Profile…" button trigger the toolbar action
             open_profile      = self._open_profile,
+            # Provides the draw.io export with the live list of loaded capabilities
+            # from the Capability Editor tab. The lambda is evaluated at export time,
+            # not at construction time, so it always reflects the current state.
+            get_capabilities  = lambda: self._capability_tab._capabilities,
         )
         nb.add(self._ssp_tab, text="🛡  SSP Editor")
 

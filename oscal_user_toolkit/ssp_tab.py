@@ -86,7 +86,8 @@ class SSPTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, get_profile, get_catalog, set_status,
-                 get_components=None, get_oscal_version=None, open_profile=None):
+                 get_components=None, get_oscal_version=None, open_profile=None,
+                 get_capabilities=None):
         """
         Set up the SSPTab panel.
 
@@ -106,6 +107,9 @@ class SSPTab(tk.Frame):
             open_profile      - Optional callback that triggers the app's Open Profile
                                 dialog so the user can change the profile from within
                                 the SSP tab without switching to the toolbar.
+            get_capabilities  - Optional callback returning the list of capability dicts
+                                currently loaded in the Capability Editor tab. Used by
+                                the draw.io export to place capabilities in the diagram.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -118,6 +122,9 @@ class SSPTab(tk.Frame):
         # Use the shared DEFAULT_OSCAL_VERSION constant from models.py (M1 fix)
         self._get_oscal_version = get_oscal_version or (lambda: DEFAULT_OSCAL_VERSION)
         self._open_profile      = open_profile
+        # Callback to read the Capability Editor's loaded capabilities. Returns
+        # an empty list when not wired (e.g. unit tests or standalone use).
+        self._get_capabilities  = get_capabilities  or (lambda: [])
 
         # Dirty flag — True when there are unsaved changes in the form.
         # Set by any add/edit/remove action; cleared after a successful save.
@@ -235,7 +242,34 @@ class SSPTab(tk.Frame):
             activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
-        # ── Visual separator line ─────────────────────────────────────────────
+        # ── Visual separator before the draw.io export ────────────────────────
+        tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
+            side="left", fill="y", padx=8, pady=6
+        )
+
+        # Wrap the draw.io button and its hint label in a small frame so they
+        # sit together as a visual unit in the toolbar.
+        drawio_frame = tk.Frame(tb, bg=C["CARD_BG"])
+        drawio_frame.pack(side="left", pady=4)
+
+        tk.Button(
+            drawio_frame, text="📐  Export draw.io Diagram",
+            command=self._export_drawio,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground="#6a9fd8", activeforeground=C["BG"],
+        ).pack(side="left", padx=(0, 6))
+
+        # Hint so users know to load capabilities in the Capability Editor first.
+        # The hint is small and muted so it doesn't distract from the main toolbar.
+        tk.Label(
+            drawio_frame,
+            text="Load capabilities in the\nCapability Editor tab first",
+            bg=C["CARD_BG"], fg=C["MUTED"] if "MUTED" in C else "#888888",
+            font=("Helvetica", 8), justify="left",
+        ).pack(side="left")
+
+        # ── Second visual separator before the profile info box ───────────────
         tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
             side="left", fill="y", padx=8, pady=6
         )
@@ -3312,6 +3346,319 @@ class SSPTab(tk.Frame):
                 "Export Complete",
                 f"SSP exported to:\n{path}",
             )
+        except OSError as exc:
+            messagebox.showerror("Export Failed", str(exc))
+
+    # =========================================================================
+    # DRAW.IO DIAGRAM EXPORT
+    # =========================================================================
+
+    def _export_drawio(self):
+        """
+        Export a three-tier draw.io diagram showing:
+
+            System  →  Capabilities  →  Components
+
+        The diagram is saved as a .drawio XML file that can be opened directly
+        in draw.io (desktop app or app.diagrams.net in a browser).
+
+        Layout logic:
+          1. Capabilities (loaded in the Capability Editor) are placed first,
+             with their member components positioned beneath them.
+          2. Any SSP components that are NOT already part of a capability are
+             placed in a separate column on the right labelled "Uncategorised".
+          3. The system node sits at the top, with arrows pointing down to each
+             capability and to the uncategorised group (if any).
+
+        Component boxes are colour-coded by type so the diagram is easy to read
+        at a glance:
+          - policy   → amber
+          - software → blue
+          - hardware → green
+          - service  → purple
+          - others   → grey
+        """
+        from tkinter import filedialog
+        import xml.etree.ElementTree as ET
+
+        # ── Gather data ───────────────────────────────────────────────────────
+
+        # Read the current SSP form values into the internal dict so we have
+        # the latest system name even if the user hasn't saved yet.
+        self._ui_to_ssp()
+        system_name = self._ssp.get("system_name") or self._ssp.get("title") or "System"
+
+        # Get capabilities from the Capability Editor tab.
+        capabilities = self._get_capabilities()
+
+        # Build a set of all component UUIDs that appear in at least one
+        # capability, so we know which SSP components are uncategorised.
+        cap_component_uuids = set()
+        for cap in capabilities:
+            for uuid in cap.get("member_uuids", []):
+                cap_component_uuids.add(uuid)
+
+        # Get all components from the SSP's Section 8 list.
+        ssp_components = self._ssp.get("components", [])
+
+        # Separate SSP components into those covered by a capability and those
+        # that are standalone (not referenced by any capability).
+        uncategorised = [
+            c for c in ssp_components
+            if c.get("uuid", "") not in cap_component_uuids
+        ]
+
+        # Also pull the component details dictionary from the Component Editor
+        # so we can look up titles and types by UUID.
+        all_components = {c["uuid"]: c for c in self._get_components() if "uuid" in c}
+
+        # ── Draw.io XML structure ─────────────────────────────────────────────
+        # A draw.io file is XML with this hierarchy:
+        #   <mxGraphModel>
+        #     <root>
+        #       <mxCell id="0"/>          ← required root cell
+        #       <mxCell id="1" parent="0"/>  ← required default layer
+        #       ... your nodes and edges ...
+        #     </root>
+        #   </mxGraphModel>
+        #
+        # Each node is an mxCell with vertex="1"; each arrow is an mxCell with
+        # edge="1" and source/target attributes pointing to other cell ids.
+
+        root_el = ET.Element("mxGraphModel",
+                             dx="1422", dy="762", grid="1", gridSize="10",
+                             guides="1", tooltips="1", connect="1", arrows="1",
+                             fold="1", page="1", pageScale="1",
+                             pageWidth="1169", pageHeight="827",
+                             math="0", shadow="0")
+        root_node = ET.SubElement(root_el, "root")
+
+        # draw.io requires these two sentinel cells to exist.
+        ET.SubElement(root_node, "mxCell", id="0")
+        ET.SubElement(root_node, "mxCell", id="1", parent="0")
+
+        # Counter for generating unique cell IDs — draw.io needs every cell
+        # to have a unique string ID within the file.
+        _id_counter = [2]
+
+        def next_id():
+            """Return the next unique cell ID as a string."""
+            _id_counter[0] += 1
+            return str(_id_counter[0])
+
+        def add_node(label, x, y, width, height, style):
+            """
+            Add a rectangular node (vertex) to the draw.io diagram.
+
+            Parameters:
+                label  - Text shown inside the box
+                x, y   - Top-left position in pixels
+                width  - Box width in pixels
+                height - Box height in pixels
+                style  - draw.io style string controlling colour and shape
+
+            Returns the unique cell ID, which can be used as a source or
+            target for edges.
+            """
+            cid = next_id()
+            cell = ET.SubElement(root_node, "mxCell",
+                                 id=cid, value=label, style=style,
+                                 vertex="1", parent="1")
+            ET.SubElement(cell, "mxGeometry",
+                          x=str(x), y=str(y),
+                          width=str(width), height=str(height),
+                          **{"as": "geometry"})
+            return cid
+
+        def add_edge(source_id, target_id, label=""):
+            """
+            Add an arrow (edge) from source_id to target_id.
+
+            Parameters:
+                source_id - Cell ID of the arrow's tail (start)
+                target_id - Cell ID of the arrow's head (end)
+                label     - Optional text to show along the arrow
+            """
+            eid = next_id()
+            edge_style = (
+                "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;"
+                "jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+                "entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+            )
+            cell = ET.SubElement(root_node, "mxCell",
+                                 id=eid, value=label, style=edge_style,
+                                 edge="1", source=source_id, target=target_id,
+                                 parent="1")
+            ET.SubElement(cell, "mxGeometry", relative="1", **{"as": "geometry"})
+
+        # ── Colour map: component type → draw.io fill and stroke colours ─────
+        # Each component type gets a distinct background colour so the diagram
+        # is easy to read without needing a legend.
+        TYPE_STYLES = {
+            "policy":    "fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;",
+            "software":  "fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;",
+            "hardware":  "fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;",
+            "service":   "fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;",
+            "process":   "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+            "procedure": "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+            "plan":      "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+        }
+        # Default style for types not in the map above.
+        DEFAULT_COMP_STYLE = "fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;"
+
+        def comp_style(comp_type):
+            """Return the draw.io style string for a given component type."""
+            base = TYPE_STYLES.get(comp_type, DEFAULT_COMP_STYLE)
+            return (
+                f"{base}"
+                "rounded=1;whiteSpace=wrap;html=1;"
+                "arcSize=20;fontSize=10;"
+            )
+
+        # ── Layout constants ──────────────────────────────────────────────────
+        # All measurements are in pixels. draw.io uses a default 1px = 1 unit.
+        SYSTEM_W,  SYSTEM_H  = 280, 60   # System node (top)
+        CAP_W,     CAP_H     = 200, 50   # Capability node (middle row)
+        COMP_W,    COMP_H    = 180, 44   # Component node (bottom row)
+
+        PAGE_MARGIN   = 40    # Gap from the left/top edge of the page
+        CAP_GAP       = 30    # Horizontal gap between capability columns
+        COMP_GAP      = 10    # Vertical gap between component boxes in a column
+        ROW_GAP_1     = 80    # Vertical gap: system → capability row
+        ROW_GAP_2     = 60    # Vertical gap: capability → first component
+
+        # ── Compute column widths ─────────────────────────────────────────────
+        # Each capability gets its own column wide enough to hold its components.
+        # The column width is the wider of CAP_W and COMP_W.
+        col_width = max(CAP_W, COMP_W)
+
+        # ── Place the system node at the top centre ───────────────────────────
+        # We'll figure out the total diagram width after laying out the columns,
+        # then reposition the system node to be centred over everything.
+        # For now, place it at (PAGE_MARGIN, PAGE_MARGIN) and adjust later.
+
+        # First pass: calculate total layout width so we can centre the system.
+        n_cols = len(capabilities) + (1 if uncategorised else 0)
+        total_w = n_cols * col_width + max(0, n_cols - 1) * CAP_GAP
+
+        sys_x = PAGE_MARGIN + (total_w - SYSTEM_W) // 2
+        sys_y = PAGE_MARGIN
+
+        # Style for the system node — dark header colour to make it stand out.
+        system_style = (
+            "rounded=1;whiteSpace=wrap;html=1;arcSize=10;"
+            "fillColor=#1e3a5f;strokeColor=#1e3a5f;"
+            "fontColor=#ffffff;fontSize=13;fontStyle=1;"
+        )
+        system_id = add_node(system_name, sys_x, sys_y, SYSTEM_W, SYSTEM_H, system_style)
+
+        # ── Capability style ──────────────────────────────────────────────────
+        cap_style = (
+            "rounded=1;whiteSpace=wrap;html=1;arcSize=15;"
+            "fillColor=#0050ef;strokeColor=#0050ef;"
+            "fontColor=#ffffff;fontSize=11;fontStyle=1;"
+        )
+
+        # ── Place capability columns and their components ──────────────────────
+        cap_y = sys_y + SYSTEM_H + ROW_GAP_1   # Y position of the capability row
+
+        col_x = PAGE_MARGIN   # X position of the current column's left edge
+
+        for cap in capabilities:
+            # Centre the capability box within its column.
+            cap_node_x = col_x + (col_width - CAP_W) // 2
+            cap_id = add_node(
+                cap.get("name", "Capability"),
+                cap_node_x, cap_y, CAP_W, CAP_H,
+                cap_style
+            )
+            # Arrow from system → capability
+            add_edge(system_id, cap_id)
+
+            # Place each member component beneath the capability.
+            comp_y = cap_y + CAP_H + ROW_GAP_2
+            for member_uuid in cap.get("member_uuids", []):
+                # Look up this component's title and type so the box has
+                # useful text and the right colour.
+                comp_data  = all_components.get(member_uuid, {})
+                comp_title = comp_data.get("title", member_uuid[:8] + "…")
+                comp_type  = comp_data.get("type", "")
+                # Also check the capability's own member_descriptions for a
+                # description of the component's role in this capability.
+                role_desc  = cap.get("member_descriptions", {}).get(member_uuid, "")
+
+                # The label shows the component title; the role description is
+                # shown on a second line in smaller text if available.
+                if role_desc:
+                    label = f"{comp_title}\n{role_desc[:50]}"
+                else:
+                    label = comp_title
+
+                comp_node_x = col_x + (col_width - COMP_W) // 2
+                comp_id = add_node(
+                    label, comp_node_x, comp_y, COMP_W, COMP_H,
+                    comp_style(comp_type)
+                )
+                add_edge(cap_id, comp_id)
+                comp_y += COMP_H + COMP_GAP
+
+            col_x += col_width + CAP_GAP
+
+        # ── Uncategorised SSP components (not in any capability) ──────────────
+        if uncategorised:
+            # Add a grey "Uncategorised" placeholder capability-level box so the
+            # column has the same visual structure as the capability columns.
+            uncat_style = (
+                "rounded=1;whiteSpace=wrap;html=1;arcSize=15;"
+                "fillColor=#666666;strokeColor=#444444;"
+                "fontColor=#ffffff;fontSize=11;fontStyle=1;"
+            )
+            uncat_x = col_x + (col_width - CAP_W) // 2
+            uncat_id = add_node(
+                "Uncategorised Components",
+                uncat_x, cap_y, CAP_W, CAP_H,
+                uncat_style
+            )
+            add_edge(system_id, uncat_id)
+
+            comp_y = cap_y + CAP_H + ROW_GAP_2
+            for comp in uncategorised:
+                comp_title = comp.get("title", "(untitled)")
+                comp_type  = comp.get("type", "")
+                comp_node_x = col_x + (col_width - COMP_W) // 2
+                comp_id = add_node(
+                    comp_title, comp_node_x, comp_y, COMP_W, COMP_H,
+                    comp_style(comp_type)
+                )
+                add_edge(uncat_id, comp_id)
+                comp_y += COMP_H + COMP_GAP
+
+        # ── Serialise to XML ──────────────────────────────────────────────────
+        # ET.indent makes the XML human-readable with consistent indentation.
+        # It's available in Python 3.9+; we wrap it in a try/except for older
+        # Python versions where it doesn't exist.
+        try:
+            ET.indent(root_el, space="  ")
+        except AttributeError:
+            pass  # Python < 3.9 — the file is still valid, just less readable.
+
+        xml_string = ET.tostring(root_el, encoding="unicode", xml_declaration=False)
+
+        # ── Ask user where to save ────────────────────────────────────────────
+        save_path = filedialog.asksaveasfilename(
+            title="Export draw.io Diagram",
+            defaultextension=".drawio",
+            filetypes=[("draw.io diagram", "*.drawio"), ("XML file", "*.xml"), ("All files", "*.*")],
+            initialfile=f"{system_name.replace(' ', '_')}_system_diagram.drawio",
+        )
+        if not save_path:
+            # User cancelled the dialog — do nothing.
+            return
+
+        try:
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write(xml_string)
+            self._set_status(f"draw.io diagram exported → {save_path}")
         except OSError as exc:
             messagebox.showerror("Export Failed", str(exc))
 
