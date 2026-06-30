@@ -1,0 +1,225 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    <mxCell id="3" value="Example Research Network" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#1e3a5f;strokeColor=#1e3a5f;fontColor=#ffffff;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="920" y="40" width="280" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="4" value="Account Management" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="4" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="6" value="System usage&#10;The system usage policy describes what type of peo" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="50" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="4" target="6" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="8" value="Active Directory&#10;AD provides the method that we manage accounts for" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="50" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="4" target="8" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="10" value="Backup and Recovery" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="270" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="10" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="12" value="Backup and Recovery Policy&#10;Defines backup frequency, retention, encryption, a" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="280" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="10" target="12" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="14" value="Veeam Backup and Replication&#10;Performs daily encrypted backups and automated Sur" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="280" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="10" target="14" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="16" value="Offsite Backup Storage — AWS S3&#10;Provides immutable offsite backup storage with Obj" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="280" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="10" target="16" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="18" value="Email Security" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="500" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="18" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="20" value="Email Security Policy&#10;Defines email security policy requirements includi" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="510" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="18" target="20" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="22" value="Microsoft Defender for Office 365 — Email Filtering&#10;Provides cloud-based email scanning, attachment sa" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="510" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="18" target="22" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="24" value="Microsoft Outlook — Email Client&#10;Provides a hardened email client with active conte" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="510" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="25" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="18" target="24" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="26" value="Endpoint Protection" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="730" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="27" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="26" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="28" value="Endpoint Protection Policy&#10;Defines endpoint protection policy requirements ac" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="740" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="26" target="28" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="30" value="Microsoft Defender for Endpoint&#10;Provides AV, EDR, ASR, and exploit protection on a" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="740" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="31" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="26" target="30" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="32" value="Windows Defender Firewall&#10;Enforces host-based firewall on all workstations a" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="740" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="33" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="26" target="32" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="34" value="Patch Management" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="960" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="35" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="34" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="36" value="Patch Management Policy&#10;Defines the patch management policy and required t" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="970" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="37" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="34" target="36" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="38" value="Windows 11 — Patch Management&#10;Applies patches to workstations and verifies compl" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="970" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="39" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="34" target="38" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="40" value="Vulnerability Scanner — Tenable Nessus&#10;Identifies missing patches through authenticated v" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="970" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="41" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="34" target="40" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="42" value="Privileged Access Management" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1190" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="43" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="42" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="44" value="Privileged Access Management Policy&#10;Defines privileged access governance, approval req" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1200" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="45" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="42" target="44" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="46" value="Active Directory — Privileged Access&#10;Enforces privileged account separation and least-p" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1200" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="47" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="42" target="46" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="48" value="Multi-Factor Authentication — Microsoft Entra ID&#10;Enforces MFA for all privileged and standard user " style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1200" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="49" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="42" target="48" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="50" value="Remote office" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1420" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="51" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="50" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="52" value="network encryptor ABC&#10;This hardware ensures that all network communicati" style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1430" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="53" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="50" target="52" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="54" value="Cabling Infrastrucutre&#10;All office cabling follows the standard." style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1430" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="55" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="50" target="54" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="56" value="Security Monitoring and Logging" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1650" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="57" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="56" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="58" value="Security Logging and Monitoring Policy&#10;Defines logging requirements, event types, retenti" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1660" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="59" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="56" target="58" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="60" value="SIEM — Microsoft Sentinel&#10;Provides centralised log collection, threat detect" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1660" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="61" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="56" target="60" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="62" value="Windows Advanced Audit Policy&#10;Captures and forwards Windows security events to t" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1660" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="63" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="56" target="62" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="64" value="Uncategorised Components" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#666666;strokeColor=#444444;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1880" y="180" width="200" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="65" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="64" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="66" value="Firewall central" style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1890" y="290" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="67" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="66" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="68" value="Airlock Digital" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1890" y="344" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="69" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="68" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="70" value="AD GPO Client hardening" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1890" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="71" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="70" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="72" value="Windows Fileshare Network I:" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1890" y="452" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="73" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="72" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="74" value="No Internet Connection" style="fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1890" y="506" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="75" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="74" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>
