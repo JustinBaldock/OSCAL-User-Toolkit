@@ -3385,7 +3385,7 @@ class SSPTab(tk.Frame):
 
         # Read the current SSP form values into the internal dict so we have
         # the latest system name even if the user hasn't saved yet.
-        self._ui_to_ssp()
+        self._collect()
         system_name = self._ssp.get("system_name") or self._ssp.get("title") or "System"
 
         # Get capabilities from the Capability Editor tab.
