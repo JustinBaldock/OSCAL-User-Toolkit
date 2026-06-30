@@ -49,7 +49,12 @@ from .models import (new_uuid, now_iso, build_component_oscal_entry,
 # CONSTANTS — Allowed values from the OSCAL Component schema
 # =============================================================================
 
+# Updated to match OSCAL 1.2.2 allowed set. Added "physical" and
+# "defined-system" which were missing. (M7 fix)
 COMPONENT_TYPES = [
+    "defined-system", # A system defined in an SSP or component definition
+    "system",         # A generic system reference
+    "interconnection", # System interconnection agreement
     "software",       # Applications, operating systems
     "hardware",       # Physical or virtual hardware devices
     "service",        # External or internal services (APIs, cloud)
@@ -60,7 +65,7 @@ COMPONENT_TYPES = [
     "guidance",       # Guidance document (e.g. configuration guide)
     "standard",       # Technical or security standard
     "validation",     # Validation or audit activity
-    "interconnection", # System interconnection
+    "physical",       # Physical facility or hardware component
 ]
 
 COMPONENT_STATUS = [

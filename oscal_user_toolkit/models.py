@@ -19,6 +19,7 @@ format that looks like Python dictionaries and lists.
 # These modules are built into Python — no installation needed.
 
 import json        # Reads and writes JSON files
+import re          # Regular expressions — imported here at module level (L2 fix)
 import uuid        # Generates universally unique identifiers (UUIDs)
 import zipfile
 from datetime import datetime, timezone   # Used to get the current date/time
@@ -44,6 +45,57 @@ try:
 except ImportError:
     _DOCX_AVAILABLE = False
 
+
+# ── OSCAL version constant ────────────────────────────────────────────────────
+# The OSCAL version this toolkit targets. Used as a fallback when the
+# calling tab does not supply a version getter. Keeping it as a named
+# constant (rather than a bare string) means a single edit updates every
+# place that uses it. (M1 fix)
+DEFAULT_OSCAL_VERSION = "1.2.2"
+
+# ── Pre-compiled UUID regex ───────────────────────────────────────────────────
+# Compiled once at module load time rather than on every function call.
+# Matches the standard 8-4-4-4-12 hex digit UUID format. (L9 fix)
+_UUID_RE = re.compile(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    re.IGNORECASE,
+)
+
+# ── Shared OSCAL 1.2.2 enumeration constants ──────────────────────────────────
+# These lists define the allowed values for various OSCAL fields.
+# They are defined here once and imported by the tab UI files to ensure
+# both the AR editor and POA&M editor always show the same options. (L1 fix)
+
+# Methods used to gather assessment evidence (OSCAL observation.methods)
+OBSERVATION_METHODS = ["EXAMINE", "INTERVIEW", "TEST", "UNKNOWN"]
+
+# Types of observation (OSCAL observation.types — common values)
+OBSERVATION_TYPES = [
+    "", "ssp-statement-issue", "control-objective-not-met",
+    "finding", "historic", "tool-generated",
+]
+
+# Risk lifecycle status values (OSCAL risk.status)
+RISK_STATUSES = [
+    "open", "investigating", "remediating", "deviation-requested",
+    "deviation-approved", "closed",
+]
+
+# Remediation response lifecycle values (OSCAL risk.response.lifecycle)
+REMEDIATION_LIFECYCLES = ["recommendation", "planned", "completed"]
+
+# Finding target status state values (OSCAL finding.target.status.state)
+FINDING_STATUS_STATES = ["satisfied", "not-satisfied"]
+
+# Finding target status reason values (OSCAL finding.target.status.reason)
+FINDING_STATUS_REASONS = ["", "pass", "fail", "other"]
+
+# Valid component type values from OSCAL 1.2.2 schema
+COMPONENT_TYPES = [
+    "defined-system", "system", "interconnection", "software", "hardware",
+    "service", "policy", "process", "procedure", "plan", "guidance",
+    "standard", "validation", "physical",
+]
 
 # =============================================================================
 # OSCAL CATALOG PARSING HELPERS
@@ -345,6 +397,23 @@ def empty_ssp():
         "status":                     "under-development",
         "status_remarks":             "",
 
+        # ── OSCAL 1.2.x structured security-impact-level (M2 fix) ────────
+        # OSCAL 1.2.x uses a separate field for each CIA dimension. We store
+        # them individually so the UI can show three distinct dropdowns.
+        "confidentiality_impact": "fips-199-moderate",
+        "integrity_impact":       "fips-199-moderate",
+        "availability_impact":    "fips-199-moderate",
+
+        # ── Stable UUID for the auto-generated "this-system" component (M3 fix)
+        # Left blank on first creation — generated and stored on first save so
+        # it stays the same across subsequent saves of the same document.
+        "this_system_component_uuid": "",
+
+        # ── Phone field for round-trip compatibility (L3 fix) ─────────────
+        # The DOCX export table has a "Phone" column. We default it to empty
+        # so that old saved files (which have no phone key) still load cleanly.
+        "phone": "",
+
         # ── Section 3: Authorization boundary ────────────────────────────
         "auth_boundary_description":  "",
 
@@ -540,10 +609,13 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
         import_href          = "PROFILE_OR_CATALOG_HREF"
         back_matter_resource = None
 
-    # ── Auto-generate the required "this-system" component ───────────────────
-    # The OSCAL schema requires at least one component in system-implementation.
-    # For a basic SSP, one component of type "this-system" is sufficient.
-    component_uuid = new_uuid()
+    # ── Stable UUID for the "this-system" component (M3 fix) ─────────────────
+    # OSCAL requires at least one component in system-implementation.
+    # We reuse the stored UUID if available so that re-saving the same SSP
+    # does not generate a new UUID (which would break any references to it).
+    component_uuid = ssp.get("this_system_component_uuid") or new_uuid()
+    # Write the UUID back so it persists into subsequent saves via _collect()
+    ssp["this_system_component_uuid"] = component_uuid
 
     # ── Build the full system-implementation components list ──────────────────
     # Always start with the auto-generated "this-system" component, then append
@@ -605,7 +677,9 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
     # control-implementation block stays schema-valid.
     implemented_requirements = [
         {
-            "uuid":       new_uuid(),
+            # Use a stable UUID if this control-implementation was previously saved;
+            # otherwise generate a new one. This prevents UUID churn on re-save. (M3)
+            "uuid":       ci.get("uuid") or new_uuid(),
             "control-id": ci["control_id"],
             "by-components": [
                 {
@@ -662,6 +736,16 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                    if ssp.get("date_authorized") else {}),
                 **({"security-sensitivity-level": ssp["security_sensitivity_level"]}
                    if ssp.get("security_sensitivity_level") else {}),
+                # OSCAL 1.2.x adds a structured security-impact-level alongside
+                # the flat sensitivity level. We emit both for compatibility. (M2)
+                "security-impact-level": {
+                    "security-objective-confidentiality": ssp.get(
+                        "confidentiality_impact", "fips-199-moderate"),
+                    "security-objective-integrity":       ssp.get(
+                        "integrity_impact",       "fips-199-moderate"),
+                    "security-objective-availability":    ssp.get(
+                        "availability_impact",    "fips-199-moderate"),
+                },
                 "system-information": {
                     "information-types": info_types,
                 },
@@ -997,6 +1081,19 @@ def parse_ssp_file(data):
         # Bare filename — treat the href itself as the file reference
         back_matter_info = {"title": "", "file": import_href, "version": ""}
 
+    # ── Read security-impact-level (M2 fix) ──────────────────────────────────
+    # OSCAL 1.2.x stores a structured object with three separate CIA objectives.
+    # We read it back so the three dropdowns are populated on re-open.
+    sil = sc.get("security-impact-level", {})
+
+    # ── Read back the stable "this-system" component UUID (M3 fix) ───────────
+    # Find the component whose type is "this-system" to recover its UUID.
+    this_system_uuid = ""
+    for c in root.get("system-implementation", {}).get("components", []):
+        if c.get("type") == "this-system":
+            this_system_uuid = c.get("uuid", "")
+            break
+
     # ── Assemble and return the internal SSP dictionary ───────────────────────
     ssp = {
         "uuid":            root.get("uuid", new_uuid()),
@@ -1007,6 +1104,13 @@ def parse_ssp_file(data):
         "system_name_short": sc.get("system-name-short", ""),
         "system_description": sc.get("description", ""),
         "security_sensitivity_level": sc.get("security-sensitivity-level", "fips-199-moderate"),
+        # Read back the three CIA objectives from the structured field (M2)
+        "confidentiality_impact": sil.get(
+            "security-objective-confidentiality", "fips-199-moderate"),
+        "integrity_impact":       sil.get(
+            "security-objective-integrity",       "fips-199-moderate"),
+        "availability_impact":    sil.get(
+            "security-objective-availability",    "fips-199-moderate"),
         "status":          status.get("state", "under-development"),
         "status_remarks":  status.get("remarks", ""),
         "auth_boundary_description": ab.get("description", ""),
@@ -1022,6 +1126,11 @@ def parse_ssp_file(data):
         "set_parameters":       set_parameters,
         "users":                users,
         "inventory_items":      inventory_items,
+        # Preserve the stable "this-system" component UUID across saves (M3)
+        "this_system_component_uuid": this_system_uuid,
+        # Phone field — always blank on parse (OSCAL has no phone field), but
+        # must exist so build_ssp_docx() can call p.get("phone", "") safely (L3)
+        "phone": "",
         # Preserve the import href so it round-trips correctly on re-save
         "import_href":           import_href,
         # Preserve the back-matter UUID so it stays stable across edits
@@ -1060,6 +1169,13 @@ def validate_ssp(ssp, profile, catalog):
         errors.append("Authorization Boundary Description is required (Section 3).")
     if not ssp.get("information_types"):
         errors.append("At least one Information Type is required (Section 5).")
+    # OSCAL 1.2.2 requires at least one system user in system-implementation.
+    # An empty list or missing key both fail this check. (H4/H6 fix)
+    if not ssp.get("users"):
+        errors.append(
+            "System Implementation: at least one System User must be defined "
+            "(OSCAL requires users[])."
+        )
     if not profile and not catalog:
         errors.append("No catalog or profile loaded — import-profile cannot be set.")
 
@@ -1119,8 +1235,7 @@ def _make_oscal_validator(schema):
     with our own that catches re.error (meaning Python can't parse the regex)
     and silently returns — so the field passes that check.
     """
-    import re
-
+    # 're' is already imported at the top of this file (L2 fix — no inline import)
     def _pattern(validator, patrn, instance, schema):
         # Only check strings — other types have no regex to match against
         if not isinstance(instance, str):
@@ -1164,7 +1279,10 @@ def validate_oscal_file(data, schema_name, zip_path):
                  stays readable.
     """
     if not _JSONSCHEMA_AVAILABLE:
-        return True, []
+        # jsonschema is an optional dependency. Tell the caller validation was
+        # skipped rather than silently pretending the file is valid. (L4 fix)
+        return True, ["jsonschema library not installed — schema validation was skipped. "
+                      "Install it with: pip install jsonschema"]
 
     schema_path = f"json/schema/{schema_name}"
     try:
@@ -1839,12 +1957,8 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
             "Pass get_oscal_version() from the toolbar callback."
         )
 
-    # UUID pattern — used to decide the identifier-type for system-id
-    import re as _re
-    _UUID_RE = _re.compile(
-        r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-        _re.IGNORECASE
-    )
+    # _UUID_RE is compiled once at module level — no need to re-compile here.
+    # See the module-level constant defined near the top of this file. (L9 fix)
     doc = {
         "plan-of-action-and-milestones": {
             "uuid": poam.get("uuid") or new_uuid(),
@@ -1891,10 +2005,15 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
     if poam.get("observations"):
         root["observations"] = []
         for o in poam["observations"]:
+            # Filter out empty method strings from the list
+            obs_methods = [m for m in o.get("methods", []) if m]
+            # OSCAL schema requires at least one method. Fall back to "UNKNOWN"
+            # if the user cleared all methods, rather than writing an invalid
+            # empty array. (M6 fix)
             entry = {
                 "uuid":        o.get("uuid") or new_uuid(),
                 "description": o.get("description", ""),
-                "methods":     [m for m in o.get("methods", []) if m],
+                "methods":     obs_methods if obs_methods else ["UNKNOWN"],
                 "collected":   o.get("collected", now_iso()),
             }
             if o.get("title"):
@@ -1932,15 +2051,26 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
                 entry["deadline"] = r["deadline"]
             cia = {k: r.get(k, "") for k in ("cia_c", "cia_i", "cia_a")}
             if any(cia.values()):
+                # Build the CIA facets — Confidentiality, Integrity, Availability
+                cia_facets = [
+                    {"name": dim, "system": _CIA_SYSTEM, "value": val}
+                    for dim, val in [
+                        ("confidentiality", cia["cia_c"]),
+                        ("integrity",       cia["cia_i"]),
+                        ("availability",    cia["cia_a"]),
+                    ] if val
+                ]
                 entry["characterizations"] = [{
-                    "facets": [
-                        {"name": dim, "system": _CIA_SYSTEM, "value": val}
-                        for dim, val in [
-                            ("confidentiality", cia["cia_c"]),
-                            ("integrity",       cia["cia_i"]),
-                            ("availability",    cia["cia_a"]),
-                        ] if val
-                    ]
+                    # OSCAL 1.2.2 requires an 'origin' on every characterization.
+                    # We declare the toolkit itself (identified by the POA&M UUID)
+                    # as the assessing tool. (H2 fix)
+                    "origin": {
+                        "actors": [{
+                            "type":       "tool",
+                            "actor-uuid": root.get("uuid", entry["uuid"]),
+                        }]
+                    },
+                    "facets": cia_facets,
                 }]
             if r.get("remediations"):
                 entry["remediations"] = []
@@ -2016,6 +2146,58 @@ def build_oscal_poam(poam, oscal_version=None, save_path=None):
     return doc
 
 
+# =============================================================================
+# SHARED PARSE/BUILD HELPERS  (L5, L6, L7 fixes)
+# These module-level helpers are used by both POA&M and AR functions so
+# the same internal dict structure is always produced for observations and
+# risks, regardless of which document type is being read or written.
+# =============================================================================
+
+def _prop_value(props_list, name):
+    """
+    Return the value of the first prop with the given name, or ''.
+
+    OSCAL objects can carry arbitrary metadata as 'props' — a list of
+    {"name": "...", "value": "..."} dicts. This helper searches that list.
+
+    Parameters:
+        props_list - A list of prop dicts (may be empty)
+        name       - The prop name to look for, e.g. "assessed-by"
+
+    Returns:
+        The matching value string, or '' if not found.
+    """
+    return next(
+        (p.get("value", "") for p in props_list if p.get("name") == name),
+        "",
+    )
+
+
+def _parse_oscal_observation(o):
+    """
+    Convert a raw OSCAL observation JSON dict into the internal UI model format.
+
+    This helper is shared between parse_poam_file() and parse_ar_file()
+    so both document types produce the same internal dict structure. (L7 fix)
+
+    Parameters:
+        o - a single observation dict from the raw OSCAL JSON
+
+    Returns:
+        An internal observation dict compatible with the POA&M and AR UIs.
+    """
+    # Read the 'assessed-by' value from the observation's props array, if
+    # present. Props are key-value metadata attached to OSCAL objects.
+    assessed_by = _prop_value(o.get("props", []), "assessed-by")
+    return {
+        "uuid":        o.get("uuid", new_uuid()),
+        "description": o.get("description", ""),
+        "methods":     list(o.get("methods", [])),
+        "type":        (o.get("types") or [""])[0],
+        "assessed_by": assessed_by,
+    }
+
+
 def parse_poam_file(data):
     """
     Parse a raw OSCAL POA&M JSON dict (as loaded from disk) into the internal
@@ -2035,31 +2217,24 @@ def parse_poam_file(data):
     sid = root.get("system-id", {})
     poam["system_id"] = sid.get("id", "") if isinstance(sid, dict) else ""
 
-    def _prop_value(obj, name):
-        """Return the value of the first prop with the given name, or ''."""
-        return next(
-            (p.get("value", "") for p in obj.get("props", [])
-             if p.get("name") == name),
-            ""
-        )
-
-    # observations
+    # observations — use the module-level _prop_value helper (L7 fix)
     for o in root.get("observations", []):
         ev = [
             {"href": e.get("href", ""), "description": e.get("description", "")}
             for e in o.get("relevant-evidence", [])
         ]
+        # Start with the shared minimal fields from _parse_oscal_observation,
+        # then merge in the POA&M-specific extra fields (title, types, dates,
+        # relevant-evidence, remarks) that the POA&M editor also uses.
+        base = _parse_oscal_observation(o)
         poam["observations"].append({
-            "uuid":             o.get("uuid", new_uuid()),
-            "title":            o.get("title", ""),
-            "description":      o.get("description", ""),
-            "methods":          list(o.get("methods", [])),
-            "types":            list(o.get("types", [])),
-            "collected":        o.get("collected", ""),
-            "expires":          o.get("expires", ""),
-            "assessed_by":      _prop_value(o, "assessed-by"),
+            **base,
+            "title":             o.get("title", ""),
+            "types":             list(o.get("types", [])),
+            "collected":         o.get("collected", ""),
+            "expires":           o.get("expires", ""),
             "relevant_evidence": ev,
-            "remarks":          o.get("remarks", ""),
+            "remarks":           o.get("remarks", ""),
         })
 
     _CIA_SYSTEM = "https://oscal-user-toolkit/ns/cia-impact"
@@ -2205,6 +2380,11 @@ def build_oscal_ap(ap, oscal_version=None, save_path=None):
         control_selections = [{"include-controls": [{"with-ids": ids}]}] if ids else [{"include-all": {}}]
     root["reviewed-controls"] = {"control-selections": control_selections}
 
+    # OSCAL requires assessment-subjects to define what is being assessed.
+    # "include-all" is a shorthand meaning all system components are in scope.
+    # Without this field the document fails OSCAL schema validation. (H1 fix)
+    root["assessment-subjects"] = [{"type": "component", "include-all": {}}]
+
     # tasks
     if ap.get("tasks"):
         root["tasks"] = []
@@ -2226,7 +2406,13 @@ def build_oscal_ap(ap, oscal_version=None, save_path=None):
                     **({"end": t["timing_end"]} if t.get("timing_end") else {}),
                 }}
             elif ttype == "at-frequency" and t.get("timing_period"):
-                task["timing"] = {"at-frequency": {"period": t["timing_period"]}}
+                # OSCAL schema requires period to be an integer and unit to be
+                # a string (e.g. "days"). We cast period here and include the
+                # unit field that was missing before. Default period = 7 days. (H5)
+                task["timing"] = {"at-frequency": {
+                    "period": int(t.get("timing_period", 7)),
+                    "unit":   t.get("timing_unit", "days"),
+                }}
 
             if t.get("remarks"):
                 task["remarks"] = t["remarks"]
@@ -2278,7 +2464,11 @@ def parse_ap_file(data):
             t_end    = timing["within-date-range"].get("end", "")
         elif "at-frequency" in timing:
             ttype    = "at-frequency"
-            t_period = timing["at-frequency"].get("period", "")
+            # Read period back as a string so the Entry widget displays it (H5)
+            t_period = str(timing["at-frequency"].get("period", ""))
+
+        # Read timing_unit from the at-frequency object; default to "days" (H5)
+        t_unit = timing.get("at-frequency", {}).get("unit", "days")
 
         ap["tasks"].append({
             "uuid":        t.get("uuid", new_uuid()),
@@ -2290,6 +2480,8 @@ def parse_ap_file(data):
             "timing_start": t_start,
             "timing_end":   t_end,
             "timing_period": t_period,
+            # timing_unit is the OSCAL at-frequency.unit value (e.g. "days") (H5)
+            "timing_unit":  t_unit,
             "remarks":     t.get("remarks", ""),
         })
 
@@ -2378,10 +2570,12 @@ def build_oscal_ar(ar, oscal_version=None, save_path=None):
     if ar.get("observations"):
         result["observations"] = []
         for o in ar["observations"]:
+            ar_methods = [m for m in o.get("methods", []) if m]
+            # Guard against an empty methods array (same M6 fix as POA&M)
             entry = {
                 "uuid":        o.get("uuid") or new_uuid(),
                 "description": o.get("description", ""),
-                "methods":     [m for m in o.get("methods", []) if m],
+                "methods":     ar_methods if ar_methods else ["UNKNOWN"],
                 "collected":   o.get("collected", now_iso()),
             }
             if o.get("title"):
@@ -2506,22 +2700,22 @@ def parse_ar_file(data):
     ar["result_start"]       = result.get("start", "")[:10] if result.get("start") else ""
     ar["result_end"]         = result.get("end",   "")[:10] if result.get("end")   else ""
 
-    # observations
+    # observations — use the shared _parse_oscal_observation helper (L7 fix)
     for o in result.get("observations", []):
         ev = [
             {"href": e.get("href", ""), "description": e.get("description", "")}
             for e in o.get("relevant-evidence", [])
         ]
+        # Get the common fields via the shared helper, then add AR-specific extras
+        base = _parse_oscal_observation(o)
         ar["observations"].append({
-            "uuid":             o.get("uuid", new_uuid()),
-            "title":            o.get("title", ""),
-            "description":      o.get("description", ""),
-            "methods":          list(o.get("methods", [])),
-            "types":            list(o.get("types", [])),
-            "collected":        o.get("collected", "")[:10] if o.get("collected") else "",
-            "expires":          o.get("expires", "")[:10]   if o.get("expires")   else "",
+            **base,
+            "title":             o.get("title", ""),
+            "types":             list(o.get("types", [])),
+            "collected":         o.get("collected", "")[:10] if o.get("collected") else "",
+            "expires":           o.get("expires", "")[:10]   if o.get("expires")   else "",
             "relevant_evidence": ev,
-            "remarks":          o.get("remarks", ""),
+            "remarks":           o.get("remarks", ""),
         })
 
     # risks

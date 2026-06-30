@@ -37,6 +37,8 @@ from .models import (
     validate_ssp,      # Checks required fields before saving
     new_uuid,          # Generates a unique ID string
     refresh_ctrl_list, # Shared All/Applied control-list renderer (Section 9)
+    # Centralised OSCAL version constant — avoids hard-coded "1.1.2" (M1 fix)
+    DEFAULT_OSCAL_VERSION,
 )
 
 
@@ -47,10 +49,13 @@ from .models import (
 # Component type enum for SSP system-implementation components (Section 8).
 # Note this differs from the component-definition enum: an SSP may NOT use
 # "this-system" here (that one is auto-generated), so it is omitted.
+# Updated to OSCAL 1.2.2 valid values — removed "process-procedure" and
+# "network" (not valid in OSCAL 1.2.2), added "process", "procedure",
+# "defined-system", and kept "physical". (H3 fix)
 SSP_COMPONENT_TYPES = [
-    "software", "hardware", "service", "policy", "physical",
-    "process-procedure", "plan", "guidance", "standard",
-    "validation", "network", "system", "interconnection",
+    "defined-system", "system", "interconnection", "software", "hardware",
+    "service", "policy", "process", "procedure", "plan", "guidance",
+    "standard", "validation", "physical",
 ]
 
 # implementation-status state enum for a by-component entry (Section 9).
@@ -110,7 +115,8 @@ class SSPTab(tk.Frame):
         self._get_catalog = get_catalog
         self._set_status  = set_status
         self._get_components    = get_components    or (lambda: [])
-        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        # Use the shared DEFAULT_OSCAL_VERSION constant from models.py (M1 fix)
+        self._get_oscal_version = get_oscal_version or (lambda: DEFAULT_OSCAL_VERSION)
         self._open_profile      = open_profile
 
         # Dirty flag — True when there are unsaved changes in the form.
@@ -543,6 +549,26 @@ class SSPTab(tk.Frame):
             ["fips-199-low", "fips-199-moderate", "fips-199-high"],
             default="fips-199-moderate",
         )
+
+        # ── OSCAL 1.2.x structured security-impact-level dropdowns (M2 fix) ──
+        # OSCAL 1.2.x uses a separate CIA objective for each dimension.
+        # We add three Comboboxes so users can set each one independently.
+        # These map to confidentiality_impact, integrity_impact, availability_impact
+        # in the internal SSP dict (see models.py empty_ssp and build_oscal_ssp).
+        _cia_options = ["fips-199-low", "fips-199-moderate", "fips-199-high"]
+        combo(
+            "Confidentiality Impact", "confidentiality_impact",
+            _cia_options, default="fips-199-moderate",
+        )
+        combo(
+            "Integrity Impact", "integrity_impact",
+            _cia_options, default="fips-199-moderate",
+        )
+        combo(
+            "Availability Impact", "availability_impact",
+            _cia_options, default="fips-199-moderate",
+        )
+
         self._status_remarks = textbox("Status Remarks", height=2)
 
         # ── 3. Authorization Boundary ─────────────────────────────────────────

@@ -24,29 +24,16 @@ from pathlib import Path
 from .models import (
     new_uuid, now_iso,
     empty_poam, build_oscal_poam, parse_poam_file,
+    # Import shared enum constants — defined once in models.py so AR and POA&M
+    # always display the same option lists. (L1 / M1 fix)
+    DEFAULT_OSCAL_VERSION,
+    OBSERVATION_METHODS, OBSERVATION_TYPES,
+    RISK_STATUSES, REMEDIATION_LIFECYCLES,
+    FINDING_STATUS_STATES, FINDING_STATUS_REASONS,
 )
 
-# ── OSCAL enum constants ──────────────────────────────────────────────────────
-
-OBSERVATION_METHODS = ["EXAMINE", "INTERVIEW", "TEST", "UNKNOWN"]
-
-OBSERVATION_TYPES = [
-    "ssp-statement-issue", "control-objective", "mitigation",
-    "finding", "discovery", "historic",
-]
-
-RISK_STATUSES = [
-    "open", "investigating", "remediating",
-    "deviation-requested", "deviation-approved", "closed",
-]
-
-REMEDIATION_LIFECYCLES = ["recommendation", "planned", "completed"]
-
+# FINDING_TARGET_TYPES is specific to POA&M (not shared with AR) so it stays here.
 FINDING_TARGET_TYPES = ["statement-id", "objective-id"]
-
-FINDING_STATUS_STATES = ["satisfied", "not-satisfied"]
-
-FINDING_STATUS_REASONS = ["pass", "fail", "other", ""]
 
 
 class POAMTab(tk.Frame):
@@ -79,7 +66,8 @@ class POAMTab(tk.Frame):
 
         self._colors            = colors
         self._set_status        = set_status
-        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        # Use the shared DEFAULT_OSCAL_VERSION constant from models.py (M1 fix)
+        self._get_oscal_version = get_oscal_version or (lambda: DEFAULT_OSCAL_VERSION)
 
         # Dirty flag — True when there are unsaved changes in the form.
         # Set by any add/edit/remove action; cleared after a successful save

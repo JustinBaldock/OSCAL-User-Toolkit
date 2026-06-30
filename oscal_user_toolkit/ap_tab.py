@@ -23,6 +23,9 @@ from pathlib import Path
 from .models import (
     new_uuid, now_iso,
     empty_ap, build_oscal_ap, parse_ap_file,
+    # DEFAULT_OSCAL_VERSION is the version string used when no toolbar value is
+    # available. Centralised in models.py so updating it there updates all tabs. (M1)
+    DEFAULT_OSCAL_VERSION,
 )
 
 TASK_TYPES    = ["milestone", "action"]
@@ -60,7 +63,9 @@ class APTab(tk.Frame):
 
         self._colors            = colors
         self._set_status        = set_status
-        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        # Fall back to the constant from models.py instead of a hard-coded
+        # "1.1.2" string, so upgrading the target version only needs one edit. (M1)
+        self._get_oscal_version = get_oscal_version or (lambda: DEFAULT_OSCAL_VERSION)
         self._get_profile       = get_profile       or (lambda: None)
 
         self._dirty = False
@@ -394,9 +399,23 @@ class APTab(tk.Frame):
         v_period = self._dlg_field(body, "Period (at-frequency)", 6,
                                     default=ex.get("timing_period", ""))
 
-        t_desc    = self._dlg_text(body, "Description",  7, height=3)
+        # Unit Combobox — the OSCAL at-frequency.unit field (H5 fix).
+        # OSCAL 1.2.2 requires both 'period' (an integer) and 'unit' (a string
+        # like "days") in the at-frequency object. The old code only stored period.
+        tk.Label(body, text="Unit (at-frequency)", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10), anchor="w",
+                 ).grid(row=7, column=0, sticky="w", padx=12, pady=4)
+        v_unit = tk.StringVar(value=ex.get("timing_unit", "days"))
+        ttk.Combobox(
+            body, textvariable=v_unit,
+            # These values match the OSCAL at-frequency.unit enum
+            values=["seconds", "minutes", "hours", "days", "months", "years"],
+            state="readonly", width=12,
+        ).grid(row=7, column=1, sticky="w", padx=(0, 12), pady=4)
+
+        t_desc    = self._dlg_text(body, "Description",  9, height=3)
         t_desc.insert("1.0", ex.get("description", ""))
-        t_remarks = self._dlg_text(body, "Remarks",      8, height=2)
+        t_remarks = self._dlg_text(body, "Remarks",     10, height=2)
         t_remarks.insert("1.0", ex.get("remarks", ""))
 
         result = {}
@@ -416,6 +435,8 @@ class APTab(tk.Frame):
                 "timing_start":  v_start.get().strip(),
                 "timing_end":    v_end.get().strip(),
                 "timing_period": v_period.get().strip(),
+                # Save timing_unit so build_oscal_ap() can write the 'unit' field (H5)
+                "timing_unit":   v_unit.get(),
                 "remarks":       t_remarks.get("1.0", "end-1c").strip(),
             })
             dlg.destroy()

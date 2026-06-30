@@ -33,23 +33,16 @@ from .models import (
     new_uuid, now_iso,
     empty_ar, build_oscal_ar, parse_ar_file,
     empty_poam, build_oscal_poam,
+    # Import shared enum constants from models.py instead of defining duplicates
+    # here. This ensures AR and POA&M always show the same option lists. (L1 fix)
+    DEFAULT_OSCAL_VERSION,
+    OBSERVATION_METHODS, OBSERVATION_TYPES,
+    RISK_STATUSES, REMEDIATION_LIFECYCLES,
+    FINDING_STATUS_STATES, FINDING_STATUS_REASONS,
 )
 
-# ── OSCAL enum constants ──────────────────────────────────────────────────────
-
-OBSERVATION_METHODS = ["EXAMINE", "INTERVIEW", "TEST", "UNKNOWN"]
-OBSERVATION_TYPES   = [
-    "ssp-statement-issue", "control-objective", "mitigation",
-    "finding", "discovery", "historic",
-]
-RISK_STATUSES          = [
-    "open", "investigating", "remediating",
-    "deviation-requested", "deviation-approved", "closed",
-]
-REMEDIATION_LIFECYCLES = ["recommendation", "planned", "completed"]
-FINDING_STATUS_STATES  = ["satisfied", "not-satisfied"]
-FINDING_STATUS_REASONS = ["", "pass", "fail", "other"]
-IMPL_STATUS_VALUES     = [
+# IMPL_STATUS_VALUES is specific to AR (not shared with POA&M) so it stays here.
+IMPL_STATUS_VALUES = [
     "implemented", "partial", "planned", "alternative", "not-applicable",
 ]
 
@@ -90,7 +83,8 @@ class ARTab(tk.Frame):
 
         self._colors            = colors
         self._set_status        = set_status
-        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        # Use the shared DEFAULT_OSCAL_VERSION constant from models.py (M1 fix)
+        self._get_oscal_version = get_oscal_version or (lambda: DEFAULT_OSCAL_VERSION)
         self._get_poam_tab      = get_poam_tab      or (lambda: None)
 
         self._dirty        = False
@@ -1038,14 +1032,18 @@ class ARTab(tk.Frame):
         ):
             return
 
-        # Build a UUID map for observations in this AR result so POA&M items
-        # can link to matching observations that we'll also copy across.
-        ar_obs_by_uuid = {o["uuid"]: o for o in self._observations}
+        # Build UUID lookup maps for observations and risks in this AR result.
+        # The POA&M item will reference these by UUID, so the referenced objects
+        # must also exist in the POA&M — OSCAL requires referential integrity,
+        # meaning you cannot have a related-observation UUID that points to nothing. (M4)
+        ar_obs_by_uuid  = {o["uuid"]: o for o in self._observations}
+        ar_risk_by_uuid = {r["uuid"]: r for r in self._risks}
 
-        added_obs_uuids: set = set()
+        added_obs_uuids:  set = set()
+        added_risk_uuids: set = set()
 
         for f in not_satisfied:
-            # Copy any related observations that aren't already in the POA&M
+            # ── Copy related observations that aren't already in the POA&M ──
             new_obs_uuids = []
             for obs_uuid in f.get("related_obs_uuids", []):
                 if obs_uuid in ar_obs_by_uuid and obs_uuid not in added_obs_uuids:
@@ -1055,6 +1053,19 @@ class ARTab(tk.Frame):
                     added_obs_uuids.add(obs_uuid)
                 if obs_uuid in ar_obs_by_uuid:
                     new_obs_uuids.append(obs_uuid)
+
+            # ── Copy related risks that aren't already in the POA&M (M4 fix) ──
+            # Without copying risks, the POA&M related-risks[] UUIDs would
+            # point to objects that do not exist in the document — invalid OSCAL.
+            new_risk_uuids = []
+            for risk_uuid in f.get("related_risk_uuids", []):
+                if risk_uuid in ar_risk_by_uuid and risk_uuid not in added_risk_uuids:
+                    # Copy the AR risk into the POA&M risks list.
+                    # We keep all fields; POA&M risks use the same internal format.
+                    poam_tab._risks.append(dict(ar_risk_by_uuid[risk_uuid]))
+                    added_risk_uuids.add(risk_uuid)
+                if risk_uuid in ar_risk_by_uuid:
+                    new_risk_uuids.append(risk_uuid)
 
             # Create the POA&M item
             ctrl_id = f.get("target_id", "")
@@ -1067,7 +1078,8 @@ class ARTab(tk.Frame):
                     or f"Control {ctrl_id} was assessed as not-satisfied."
                 ),
                 "related_observation_uuids": new_obs_uuids,
-                "related_risk_uuids":        [],
+                # Link to the copied risks so the POA&M references are valid (M4)
+                "related_risk_uuids":        new_risk_uuids,
                 "related_finding_uuids":     [],
                 "remarks":                   f.get("remarks", ""),
             })
@@ -1075,13 +1087,18 @@ class ARTab(tk.Frame):
         # Refresh the POA&M tab's tables
         if added_obs_uuids:
             poam_tab._refresh_obs_tree()
+        if added_risk_uuids:
+            # Refresh the risks tree if POA&M tab has that method
+            if hasattr(poam_tab, "_refresh_risk_tree"):
+                poam_tab._refresh_risk_tree()
         poam_tab._refresh_item_tree()
         poam_tab._dirty = True
 
         messagebox.showinfo(
             "POA&M updated",
-            f"Added {len(not_satisfied)} POA&M item(s) and "
-            f"{len(added_obs_uuids)} observation(s) to the POA&M Editor.\n\n"
+            f"Added {len(not_satisfied)} POA&M item(s), "
+            f"{len(added_obs_uuids)} observation(s), and "
+            f"{len(added_risk_uuids)} risk(s) to the POA&M Editor.\n\n"
             "Switch to the POA&M Editor tab to review and save.",
         )
 
