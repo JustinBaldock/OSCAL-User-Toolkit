@@ -8,98 +8,169 @@ A desktop application for creating, editing, and managing [OSCAL](https://pages.
 
 ## Why this tool exists
 
-Large organisations — defence agencies, government departments, critical infrastructure operators — typically run many separate networks, each requiring its own System Security Plan (SSP). Without tooling, teams repeat the same work for every network: documenting the same firewall, the same identity platform, the same patching process, over and over, with slight variations.
+Large organisations — defence agencies, government departments, critical infrastructure operators — typically run many separate networks, each requiring its own System Security Plan (SSP). Without tooling, teams repeat the same work for every network: documenting the same firewall, the same identity platform, the same patching process, over and over.
 
 OSCAL solves this at the standard level by separating **what a component does** from **which system it appears in**. The OSCAL User Toolkit makes that practical:
 
 - Define a component once (e.g. "Managed Network Switch") and describe how it satisfies each relevant security control
 - Group components into reusable **capabilities** (e.g. "Perimeter Defence" or "Identity and Access Management")
-- Reference those components and capabilities in each SSP rather than rewriting the implementation narrative from scratch
-- When a component is patched or reconfigured, update it in one place — every SSP that references it benefits immediately
+- Reference those components and capabilities in each SSP rather than rewriting implementation narratives from scratch
+- Assess the system against those components using the Assessment Plan and Assessment Results editors
+- Track remediation work in the POAM editor and import findings directly from Assessment Results
 
-The result is a library of audited, reusable building blocks. As the library grows, producing a new SSP shifts from weeks of writing to days of composition.
+The result is a library of audited, reusable building blocks that grows over time, shifting SSP production from weeks of writing to days of composition.
 
 ---
 
 ## Features
 
+### Authorization Dashboard
+- **First tab** — provides a live overview of the entire assessment lifecycle at a glance
+- **System Identity** card: system name, version, and classification from the open SSP
+- **Assessment Currency** card: days since the last assessment completed, colour-coded by age
+- **Compliance Posture** card: count of satisfied vs not-satisfied findings with a breakdown list
+- **Risk Status** card: risks grouped by lifecycle state (open, investigating, remediating, closed)
+- **POA&M Health** card: POA&M items split into on-track, overdue, and no scheduled date
+- **Observations** card: observations grouped by method (EXAMINE, INTERVIEW, TEST) and type
+- Reads live data from all currently open documents — no need to save first
+
 ### Catalog Viewer
-- Load any OSCAL catalog (tested with the Australian ISM — 1,150+ controls)
+- Load any OSCAL catalog (tested with the Australian ISM — 1,150+ controls, and NIST SP 800-53 Rev 5 — 1,189 controls and enhancements)
 - Filter controls by **class**, **guideline group**, or **keyword search**
 - Browse the full control hierarchy — top-level guideline group, sub-category, and topic shown for every control
 - Select a control to see its full statement, applicability, revision history, and Essential Eight mapping in a detail panel
-- Apply a **profile** to restrict the view to a specific baseline (e.g. non-classified, SECRET)
+- Apply a **profile** to restrict the view to a specific baseline (e.g. ISM Non-Classified, NIST Moderate)
 
 ### Component Editor
 - Create OSCAL Component Definition files describing how a system component implements security controls
-- Supports all OSCAL component types: `software`, `hardware`, `service`, `policy`, `process`, `procedure`, `plan`, `guidance`, `standard`, `validation`, `interconnection`
+- Supports all OSCAL 1.2.2 component types: `defined-system`, `system`, `interconnection`, `software`, `hardware`, `service`, `policy`, `process`, `procedure`, `plan`, `guidance`, `standard`, `validation`, `physical`
 - **Live search and type filter** in the component list — find components instantly by name, description, or type even when hundreds are loaded
-- **Section 7 — Links**: attach external references to each component (vendor documentation, CVE advisories, configuration baselines, policy documents) with structured relationship types
 - **Section 6 — Protocols**: document the TCP/UDP ports and protocols the component uses or exposes
+- **Section 7 — Links**: attach external references (vendor documentation, CVE advisories, configuration baselines, policy documents) with structured relationship types
 - Write implementation narratives for individual controls with live dot indicators (● written / ○ not yet)
-- "All Controls" and "Applied Controls" tabs in the control list for quick navigation
+- "All Controls" and "Applied Controls" tabs for quick navigation
 - Add structured metadata: operational status, responsible roles, custom properties
 - Open multiple component files at once, or load an entire folder
-- Catalog required; profile optional (falls back to full control list if no profile is loaded)
 
 ### Capability Editor
-- Group components into named security capabilities (e.g. "Privileged Access Management", "Network Segmentation")
-- **Automatic inheritance** — when a component is added as a member, its control responses flow into the capability automatically, attributed to the source component
-- Write additional capability-level responses for controls that no single component can satisfy alone
-- Save capabilities as self-contained OSCAL files that bundle their member components — ready to reference from any SSP
+- Group components into named security capabilities (e.g. "Privileged Access Management", "Email Security")
+- **Automatic inheritance** — when a component is added as a member, its control responses flow into the capability automatically, attributed to the source component via `source-component-uuid` props
+- Write additional capability-level responses for controls that span multiple components
+- Save capabilities as self-contained OSCAL files that bundle their member components
 - Load individual capability files or an entire folder of capabilities
 
 ### SSP Editor
-- Create OSCAL System Security Plan documents
+- Create and edit OSCAL System Security Plan documents
 - Capture system characteristics, authorisation boundary, network architecture, and data flow descriptions
-- Manage roles, parties, and information types with CIA impact levels
-- Define system components and document how each one implements individual security controls
+- Manage roles, parties, and information types with full CIA impact levels
+- **Security Impact Level** (OSCAL 1.2.x): set Confidentiality, Integrity, and Availability objectives independently
+- Define system components and document how each implements individual security controls
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
-- Saves a self-documenting SSP that records the profile title, version, and filename in the back-matter section
-- **Export to Word** — generate a formatted `.docx` report from the SSP, with control implementations grouped and sorted under catalog guideline headings (requires `python-docx`)
+- **Export to Word** — generate a formatted `.docx` report with control implementations grouped under catalog guideline headings (requires `python-docx`)
+- **Export draw.io Diagram** — generate a System → Capability → Component hierarchy diagram:
+  - Loads capabilities currently open in the Capability Editor
+  - Capabilities and their member components are laid out in columns
+  - SSP components not covered by any capability appear in an "Uncategorised" column
+  - Component boxes are colour-coded by type (policy = amber, software = blue, hardware = green, service = purple)
+  - Output is a `.drawio` file that opens directly in the draw.io desktop app or [app.diagrams.net](https://app.diagrams.net)
+  - *Tip: load your capability files in the Capability Editor tab before exporting*
 
-### POAM Editor
-- Create and edit OSCAL Plan of Action and Milestones (POAM) documents
-- Track security findings, risks, and remediation activities
-- Link findings to specific controls from the loaded catalog
+### Assessment Plan (AP) Editor
+- Create and edit OSCAL Assessment Plan documents
+- Document assessment objectives, methodology, and scope
+- **Tasks**: define assessment tasks with type (milestone or action), timing (on-date, within-date, or repeating at-frequency with unit), associated activities, and responsible roles
+- **Reviewed Controls**: specify which controls are in scope for the assessment
+- **Assessment Subjects**: declare what system components, users, or locations are subject to assessment
+- Link the AP to the SSP it assesses via the system reference field
+- Save AP documents conformant with OSCAL 1.2.2
+
+### Assessment Results (AR) Editor
+- Create and edit OSCAL Assessment Results documents
+- Record findings, observations, and risks discovered during assessment
+- **Findings**: capture target control ID, target type, status (satisfied / not-satisfied), status reason, and remarks
+- **Observations**: record evidence with method (EXAMINE, INTERVIEW, TEST), type, and description; UUID displayed for cross-referencing
+- **Risks**: document open risks with title, description, status, lifecycle, and remediation responses; CIA impact characterizations (Confidentiality, Integrity, Availability) stored as OSCAL facets
+- **Assessment Log**: record timestamped log entries of assessment activities
+- **Import to POA&M**: export not-satisfied findings, their related observations, and risks directly into the POA&M editor — UUIDs are preserved for referential integrity
+
+### POA&M Editor
+- Create and edit OSCAL Plan of Action and Milestones documents
+- **Import from Assessment Results**: load findings, observations, and risks from an AR file in a single action; deduplicates by UUID so re-importing does not create duplicate entries
+- **POA&M Items**: track remediation work with scheduled completion dates, related findings, and related observations
+- **Findings**: display UUID from the source AR so users can cross-reference back to the assessment evidence
+- **Observations**: record observations with method, type, and assessed-by attribution
+- **Risks**: document risks with CIA impact (Confidentiality, Integrity, Availability), remediation lifecycle, and open/closed status; amber warning banner shown for risks imported from AR to indicate they originated from an assessment
+- Link the POA&M to its source SSP via the system reference field
 
 ### Schema Validation
 - Bundled OSCAL release zips (1.1.2, 1.2.0, 1.2.2) — select the target version from the toolbar
-- Catalog files are validated against the OSCAL schema when opened
+- Catalog files are validated against the OSCAL JSON schema when opened
 - Capability files are validated before saving
+- Informative message shown when the optional `jsonschema` package is not installed
 - Validation warnings allow the user to proceed — real-world files sometimes have minor deviations
 
 ---
 
-## Example Component Library
+## Example Data
 
-The `example-data/components/` folder contains **41 ready-to-use component files** covering a well-rounded example environment. Load them all at once using **📁 Open Folder** in the Component Editor.
+### ISM Example Data (`example-data-ism/`)
+
+A complete example environment built around the Australian Information Security Manual (ISM), including a sample SSP, AP, AR, and POA&M.
+
+**Components** — 38 ready-to-use component files. Load them all at once using **📁 Open Folder** in the Component Editor:
 
 | Category | Examples |
 |---|---|
-| **Hardware** (7) | Cabling Infrastructure, Central Firewall, Network Encryptor, Managed Network Switch, Enterprise Wireless AP, UPS, NAS Storage |
+| **Hardware** (6) | Cabling Infrastructure, Central Firewall, Network Encryptor, Managed Network Switch, Enterprise Wireless AP, UPS |
 | **Interconnection** (3) | No Internet Connection, Filtered Internet Connection, Site-to-Site WAN Link |
 | **Operating Systems** (4) | Windows 11 Workstation, Windows Server 2022, RHEL Linux Server, VMware ESXi Hypervisor |
 | **Policies** (8) | System Usage, AD GPO Client Hardening, Patch Management, Backup and Recovery, Remote Access, Incident Response, Access Control, Data Classification |
-| **Services** (12) | Active Directory, ManageEngine ServiceDesk Plus, Microsoft SQL Server 2022, Windows Fileshare, MongoDB, DHCP Server, Certificate Authority/PKI, VPN Remote Access, Exchange Online, Veeam Backup, Web Proxy, NTP Server |
-| **Software** (7) | Airlock Digital, Microsoft 365 Apps, Microsoft Defender for Endpoint, Microsoft Edge, Adobe Acrobat, Tenable Nessus, Microsoft Sentinel |
+| **Services** (11) | Active Directory, ManageEngine ServiceDesk Plus, Microsoft SQL Server 2022, Windows Fileshare, DHCP Server, Certificate Authority/PKI, VPN Remote Access, Exchange Online, Veeam Backup, Web Proxy, NTP Server |
+| **Software** (6) | Microsoft 365 Apps, Microsoft Defender for Endpoint, Microsoft Edge, Adobe Acrobat, Tenable Nessus, Microsoft Sentinel |
 
-All components include:
-- ISM control implementations with detailed implementation narratives
-- TCP/UDP protocol data (ports and transport) where applicable
-- Relevant links to vendor documentation and configuration baselines
+**Capabilities** — 8 capability files showing how components combine to satisfy control families:
 
----
-
-## Screenshots
-
-| Catalog Viewer | Component Editor |
+| Capability | Components |
 |---|---|
-| Browse and filter 1,150+ ISM controls by guideline group, class, or keyword | Search and filter components by name or type; write control implementation narratives |
+| Account Management | Active Directory + System Usage Policy |
+| Remote Office | Cabling Infrastructure + Network Encryptor |
+| Patch Management | Patch Management Policy + Windows 11 + Tenable Nessus |
+| Privileged Access Management | PAM Policy + Active Directory + Entra ID MFA |
+| Endpoint Protection | Endpoint Protection Policy + Defender for Endpoint + Windows Firewall |
+| Email Security | Email Security Policy + Defender for Office 365 + Outlook |
+| Backup and Recovery | Backup Policy + Veeam + AWS S3 offsite storage |
+| Security Monitoring and Logging | Logging Policy + Microsoft Sentinel + Windows Audit Policy/WEF |
 
-| Capability Editor | SSP Editor |
+**Assessment documents:**
+- `ssp_ERN.json` — example System Security Plan
+- `ap_ERN.json` — example Assessment Plan with 12 tasks across 4 phases
+- `ar_ERN.json` — example Assessment Results with 5 risks, 12 observations, 14 findings, and 9 log entries
+- `poam_ERN_POAM.json` — example POA&M with items imported from the AR
+
+### NIST Example Data (`example-data-nist/`)
+
+A parallel example environment for US federal and contractor use cases, referencing NIST SP 800-53 Rev 5 controls (`ac-2`, `si-2`, `ra-5`, etc.).
+
+**Catalogs and profiles** — downloaded directly from NIST OSCAL:
+
+| File | Description |
 |---|---|
-| Inherit control responses from member components automatically | Document system characteristics and reference a profile baseline |
+| `NIST_SP-800-53_rev5_catalog.json` | Full SP 800-53 Rev 5 catalog (324 controls + 872 enhancements) |
+| `NIST_SP-800-53_rev5_LOW-baseline_profile.json` | Low baseline (149 controls) |
+| `NIST_SP-800-53_rev5_MODERATE-baseline_profile.json` | Moderate baseline (287 controls) |
+| `NIST_SP-800-53_rev5_HIGH-baseline_profile.json` | High baseline (370 controls) |
+| `NIST_SP-800-53_rev5_PRIVACY-baseline_profile.json` | Privacy baseline (96 controls) |
+| `NIST_SP800-171_rev3_catalog.json` | SP 800-171 Rev 3 — CUI requirements (130 controls) |
+
+**Components** — 20 component files referencing SP 800-53 Rev 5 Moderate baseline controls:
+
+| Category | Examples |
+|---|---|
+| **Policies** (7) | Access Control, Patch Management, Incident Response, Backup & Recovery, Configuration Management, Remote Access, Security Awareness Training |
+| **Operating Systems** (2) | Windows 11 Workstation, Windows Server 2022 |
+| **Services** (5) | Active Directory, Exchange Online, VPN Remote Access, Veeam Backup, Microsoft Sentinel SIEM |
+| **Software** (3) | Microsoft Defender for Endpoint, Microsoft 365 Apps, Tenable Nessus |
+| **Hardware** (3) | Perimeter/Internal Firewalls, Network Switches, UPS |
 
 ---
 
@@ -108,7 +179,7 @@ All components include:
 ### Requirements
 
 - Python 3.10 or later
-- tkinter (included with standard Python on Windows and macOS; on Linux install `python3-tk`)
+- `tkinter` — included with standard Python on Windows and macOS; on Linux install `python3-tk`
 - `jsonschema` *(optional)* — enables schema validation on open/save
 - `python-docx` *(optional)* — enables the **Export to Word** button in the SSP Editor
 
@@ -124,11 +195,11 @@ cd OSCAL-User-Toolkit
 python main.py
 ```
 
-No installation steps beyond the optional packages above are required. All core functionality uses Python's standard library. If an optional package is not installed, the feature that depends on it is gracefully disabled with an informative message rather than crashing.
+No build steps required. All core functionality uses Python's standard library. If an optional package is not installed, the feature that depends on it is gracefully disabled with an informative message.
 
 ### OSCAL Schema Zips
 
-The `oscal/` folder should contain one or more OSCAL release zip files named `oscal-<version>.zip`, for example:
+The `oscal/` folder should contain one or more OSCAL release zip files:
 
 ```
 oscal/
@@ -137,40 +208,49 @@ oscal/
     oscal-1.1.2.zip
 ```
 
-Download releases from the [OSCAL GitHub releases page](https://github.com/usnistgov/OSCAL/releases). The application scans this folder at startup and populates the version selector in the toolbar automatically.
+Download releases from the [OSCAL GitHub releases page](https://github.com/usnistgov/OSCAL/releases). The application scans this folder at startup and populates the version selector automatically.
 
 ---
 
 ## Recommended Workflow
 
-### Building a component library
+### 1. Build a component library
 
-1. Open your OSCAL catalog (e.g. the ISM catalog) using **Open Catalog** in the toolbar
+1. Open your OSCAL catalog using **Open Catalog** in the toolbar
 2. Optionally open a profile to filter controls to your baseline
 3. Switch to the **Component Editor** tab
-4. Load the example components from `example-data/components/` using **📁 Open Folder** as a starting point
-5. For each system component unique to your environment:
-   - Add a component, set its type and description
-   - Add links to vendor documentation, CVE advisories, and configuration baselines
-   - Document TCP/UDP protocols the component uses
-   - Work through the control list in Section 9, writing implementation narratives
-   - Save as an individual component file (e.g. `hardware_Palo_Alto_Firewall.json`)
+4. Load the ISM example components from `example-data-ism/components/` using **📁 Open Folder** as a starting point
+5. For each component unique to your environment: set its type, add protocols and links, write implementation narratives per control, save as an individual JSON file
 6. Over time, build a library of component files in a dedicated folder
 
-### Building a capability library
+### 2. Build a capability library
 
 1. Open your component files using **Open Folder** in the Capability Editor
 2. Create a new capability (e.g. "Perimeter Defence")
-3. Add the relevant components as members — their control responses are inherited automatically
-4. Review the inherited responses; add capability-level narratives for controls that span multiple components
-5. Save the capability (e.g. `capability_Perimeter_Defence.json`) — it bundles its member components so it is self-contained
+3. Add the relevant components as members — their control responses inherit automatically
+4. Add capability-level narratives for controls that span multiple components
+5. Save the capability — it bundles its member components so it is self-contained
 
-### Producing an SSP
+### 3. Produce an SSP
 
-1. Open the catalog and profile for the target network's classification
-2. In the SSP Editor, fill in the system characteristics, boundary, and information types
-3. Reference components and capabilities from your library in the system-implementation section
-4. Save — the SSP records the profile provenance in its back-matter so auditors can verify the baseline used
+1. Open the catalog and profile for the target network
+2. In the SSP Editor, fill in system characteristics, boundary, information types, and security impact levels
+3. Add system components, referencing your component library
+4. Save the SSP
+5. Use **Export draw.io Diagram** (with capabilities loaded in the Capability Editor) to produce a System → Capability → Component architecture diagram
+
+### 4. Conduct an assessment
+
+1. In the **Assessment Plan** editor, create an AP linked to the SSP; define tasks, reviewed controls, and assessment scope; save as an AP JSON file
+2. In the **Assessment Results** editor, create an AR linked to the AP; record findings, observations, risks, and assessment log entries as the assessment progresses
+3. When the assessment is complete, use **Import to POA&M** in the AR editor to push not-satisfied findings, observations, and risks into a new or existing POA&M
+
+### 5. Track remediation
+
+1. In the **POA&M Editor**, open or create a POA&M; use **Import from AR** to pull in findings from Assessment Results
+2. For each POA&M item, set a scheduled completion date and link related findings and observations
+3. Update risk status as remediation progresses (open → investigating → remediating → closed)
+4. The **Authorization Dashboard** shows the current compliance posture, risk status, and POA&M health at a glance
 
 ---
 
@@ -178,12 +258,14 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 
 | Document Type | Read | Write | Notes |
 |---|:---:|:---:|---|
-| Catalog | ✅ | — | Any OSCAL catalog; tested with ISM |
-| Profile | ✅ | — | Filters the control list to a baseline |
-| Component Definition | ✅ | ✅ | One component per file; includes links, protocols, and control implementations |
-| Capability Definition | ✅ | ✅ | Bundles member components; automatic control inheritance |
-| System Security Plan | ✅ | ✅ | Metadata, characteristics, information types; control responses in progress |
-| Plan of Action & Milestones | ✅ | ✅ | Track findings, risks, and remediation milestones |
+| Catalog | ✅ | — | Any OSCAL catalog; tested with ISM and NIST SP 800-53 Rev 5 |
+| Profile | ✅ | — | Filters the control list to a selected baseline |
+| Component Definition | ✅ | ✅ | All 14 OSCAL 1.2.2 component types; includes protocols, links, and control implementations |
+| Capability Definition | ✅ | ✅ | Bundles member components; automatic control inheritance with source attribution |
+| System Security Plan | ✅ | ✅ | Full metadata, characteristics, information types, security impact levels, control implementations |
+| Assessment Plan | ✅ | ✅ | Tasks with timing and frequency, reviewed controls, assessment subjects |
+| Assessment Results | ✅ | ✅ | Findings, observations, risks with CIA characterizations, assessment log |
+| Plan of Action & Milestones | ✅ | ✅ | Items, findings, observations, risks; AR import with UUID deduplication |
 
 ---
 
@@ -191,62 +273,66 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 
 ```
 OSCAL-User-Toolkit/
-├── main.py                                  # Entry point — run this to start the app
+├── main.py                          # Entry point — run this to start the app
 ├── oscal_user_toolkit/
-│   ├── __init__.py                          # Package marker (empty)
-│   ├── models.py                            # All data logic — no GUI code
-│   ├── app.py                               # Main window, toolbar, and shared state
-│   ├── catalog_tab.py                       # Catalog Viewer tab
-│   ├── component_tab.py                     # Component Editor tab
-│   ├── capability_tab.py                    # Capability Editor tab
-│   ├── ssp_tab.py                           # SSP Editor tab
-│   └── poam_tab.py                          # POAM Editor tab
-├── oscal/                                   # OSCAL schema release zips
+│   ├── __init__.py
+│   ├── models.py                    # All data logic — parsing, building, validating OSCAL JSON; no GUI code
+│   ├── app.py                       # Main window, toolbar, tab wiring, and shared state
+│   ├── dashboard_tab.py             # Authorization Dashboard tab (first tab)
+│   ├── catalog_tab.py               # Catalog Viewer tab
+│   ├── component_tab.py             # Component Editor tab
+│   ├── capability_tab.py            # Capability Editor tab
+│   ├── ssp_tab.py                   # SSP Editor tab (includes draw.io and DOCX export)
+│   ├── ap_tab.py                    # Assessment Plan Editor tab
+│   ├── ar_tab.py                    # Assessment Results Editor tab
+│   └── poam_tab.py                  # POA&M Editor tab (includes AR import)
+├── oscal/                           # OSCAL schema release zips
 │   ├── oscal-1.2.2.zip
 │   ├── oscal-1.2.0.zip
 │   └── oscal-1.1.2.zip
-├── example-data/
-│   ├── ISM_catalog.json                     # Australian ISM catalog
+├── example-data-ism/                # Example environment — Australian ISM
+│   ├── ISM_catalog.json
 │   ├── ISM_NON_CLASSIFIED-baseline_profile.json
-│   ├── ISM_NON_CLASSIFIED-baseline-resolved-profile_catalog.json
-│   ├── ssp_ERN.json                         # Example SSP
-│   ├── poam_ERN_POAM.json                   # Example POAM
-│   ├── microsoft_office_component.json      # Comprehensive example components
-│   ├── windows_server_2022_component.json
-│   ├── windows_11_component.json
-│   ├── servicedesk_plus_component.json
-│   ├── mssql_server_component.json
-│   └── components/                          # 41 ready-to-use component files
-│       ├── hardware_*.json
-│       ├── interconnection_*.json
-│       ├── operating-system_*.json
-│       ├── policy_*.json
-│       ├── service_*.json
-│       └── software_*.json
-├── oscal_user_toolkit_design_document.md    # Full technical design document
+│   ├── ssp_ERN.json
+│   ├── ap_ERN.json
+│   ├── ar_ERN.json
+│   ├── poam_ERN_POAM.json
+│   ├── components/                  # 38 ISM component files
+│   └── capability/                  # 8 ISM capability files
+├── example-data-nist/               # Example environment — NIST SP 800-53 Rev 5
+│   ├── NIST_SP-800-53_rev5_catalog.json
+│   ├── NIST_SP-800-53_rev5_LOW-baseline_profile.json
+│   ├── NIST_SP-800-53_rev5_MODERATE-baseline_profile.json
+│   ├── NIST_SP-800-53_rev5_HIGH-baseline_profile.json
+│   ├── NIST_SP-800-53_rev5_PRIVACY-baseline_profile.json
+│   ├── NIST_SP800-171_rev3_catalog.json
+│   └── components/                  # 20 NIST SP 800-53 component files
+├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
 └── README.md
 ```
 
-The codebase follows a strict two-layer separation: `models.py` contains all data parsing, conversion, and validation logic with no GUI code; the tab files contain all GUI code with no direct JSON manipulation. See the [design document](oscal_user_toolkit_design_document.md) for a full architecture description.
+The codebase follows a strict two-layer separation: `models.py` contains all data parsing, serialisation, and validation logic with no GUI code; the tab files contain all GUI code with no direct JSON manipulation.
 
 ---
 
 ## Design and Authorship
 
 **Designed by:** Justin Baldock  
-**Built with:** [Claude AI](https://claude.ai) (Anthropic) — the application code, architecture, and documentation were written by Claude AI working interactively with the designer
+**Built with:** [Claude AI](https://claude.ai) (Anthropic) — application code, architecture, and documentation written by Claude AI working interactively with the designer
 
-This project is an example of human-AI collaboration in software development: the domain expertise, product vision, and design decisions came from the designer; the implementation, architecture, code structure, and documentation were produced by Claude AI through an iterative conversation.
+This project demonstrates human-AI collaboration in software development: the domain expertise, product vision, and design decisions came from the designer; the implementation, architecture, and documentation were produced by Claude AI through an iterative conversation.
 
 ---
 
 ## OSCAL Standard
 
-OSCAL is an open standard developed by [NIST](https://www.nist.gov/) (National Institute of Standards and Technology). It provides machine-readable formats for security control catalogues, baselines (profiles), component definitions, system security plans, and assessment artefacts.
+OSCAL is an open standard developed by [NIST](https://www.nist.gov/). It provides machine-readable formats for security control catalogues, baselines, component definitions, system security plans, and assessment artefacts.
 
 - [OSCAL documentation](https://pages.nist.gov/OSCAL/)
 - [OSCAL GitHub repository](https://github.com/usnistgov/OSCAL)
 - [Australian ISM (Information Security Manual)](https://www.cyber.gov.au/resources-business-and-government/essential-cyber-security/ism)
+- [NIST SP 800-53 Rev 5](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
+- [NIST SP 800-171 Rev 3](https://csrc.nist.gov/publications/detail/sp/800-171/rev-3/final)
 
 ---
 
@@ -260,4 +346,4 @@ Contributions, bug reports, and feature suggestions are welcome. Please open an 
 
 This project is released under the [GNU General Public License v3.0](LICENSE) (GPLv3).
 
-You are free to use, study, modify, and distribute this software, provided that any distributed modifications or derivative works are also released under the GPLv3. See the [LICENSE](LICENSE) file for the full licence text.
+You are free to use, study, modify, and distribute this software, provided that any distributed modifications or derivative works are also released under the GPLv3.
