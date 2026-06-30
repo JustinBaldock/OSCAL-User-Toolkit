@@ -1,0 +1,215 @@
+{
+  "component-definition": {
+    "uuid": "856eda54-467e-4b2e-b9e5-7aa7427b5c02",
+    "metadata": {
+      "title": "Capability: Endpoint Protection",
+      "last-modified": "2026-06-30T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "d151d124-adee-4e09-85cb-79f92d9ef595",
+        "type": "policy",
+        "title": "Endpoint Protection Policy",
+        "description": "Defines requirements for protecting endpoints from malware, unauthorised code execution, and network-based attacks. Mandates anti-malware deployment, host-based firewall enforcement, application control, and regular definition updates across all workstations and servers.",
+        "purpose": "Establish and enforce endpoint protection requirements.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "maintainer",
+            "remarks": "Security Operations Team"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "92cd46a8-b026-4676-80ac-09b79f0cce93",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Endpoint Protection Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "d34b5d62-c186-4480-af59-52cfc21c7c95",
+                "control-id": "ism-1417",
+                "description": "The endpoint protection policy requires that anti-malware software is deployed on all workstations and servers, with real-time scanning enabled and definitions updated at least daily."
+              },
+              {
+                "uuid": "7768e36b-823e-4fdf-ab1b-93ad5062c0d1",
+                "control-id": "ism-0843",
+                "description": "The endpoint protection policy mandates application control on all workstations to prevent execution of unapproved software, scripts, and code."
+              },
+              {
+                "uuid": "9f2c76d4-0959-4e36-b44b-4351075f1ffd",
+                "control-id": "ism-1416",
+                "description": "The endpoint protection policy requires host-based firewalls on all workstations in all network profiles (domain, private, public) with a default-deny inbound posture."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+        "type": "software",
+        "title": "Microsoft Defender for Endpoint",
+        "description": "Microsoft Defender for Endpoint (MDE) Plan 2 provides next-generation antivirus (AV), endpoint detection and response (EDR), attack surface reduction (ASR) rules, and threat and vulnerability management (TVM). Deployed on all Windows 11 workstations and Windows Server 2022 systems via Microsoft Intune.",
+        "purpose": "Detect, prevent, and respond to malware and advanced threats on all endpoints.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "ce081785-212c-4526-bb97-eb05e8dfe2b7",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Defender for Endpoint.",
+            "implemented-requirements": [
+              {
+                "uuid": "4038ea73-d85a-436b-b290-e34b4b48bac0",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus operates in active mode with real-time protection, cloud-delivered protection (MAPS), and automatic sample submission enabled. Definitions are updated every 4 hours. Scheduled full scan runs weekly on Sundays."
+              },
+              {
+                "uuid": "3a5ba9b1-d8e1-4a4e-b1c4-34d46190d6cf",
+                "control-id": "ism-1341",
+                "description": "MDE EDR provides behaviour-based detection of threats not caught by signature AV, including process injection, credential harvesting, and LOLBin abuse. Automated Investigation and Response (AIR) automatically contains confirmed malware."
+              },
+              {
+                "uuid": "3ad06d93-3977-48e4-8027-a33db621b684",
+                "control-id": "ism-0843",
+                "description": "MDE Attack Surface Reduction (ASR) rules are enforced in block mode: Office applications cannot create child processes, LSASS credential access is blocked, untrusted executables from USB are blocked, and obfuscated script execution is blocked."
+              },
+              {
+                "uuid": "7462be41-7fb0-47ac-a2f0-f74a6e7e29e6",
+                "control-id": "ism-1492",
+                "description": "Windows Defender Exploit Protection (WDEP) is enforced on all workstations: DEP, ASLR, CFG, and stack pivot protection are enabled for all processes. Settings are deployed via Intune Exploit Protection configuration profile."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+        "type": "software",
+        "title": "Windows Defender Firewall",
+        "description": "Windows Defender Firewall with Advanced Security is enforced on all Windows 11 workstations and Windows Server 2022 systems via Group Policy and Microsoft Intune. All three firewall profiles (Domain, Private, Public) are enabled with a default-deny inbound posture.",
+        "purpose": "Enforce host-based network access control on all endpoints.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5eda260f-e58f-4d5c-9024-7275913a83ff",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Windows Defender Firewall.",
+            "implemented-requirements": [
+              {
+                "uuid": "8b331da0-ee2b-457c-9d5d-b8f1efb68390",
+                "control-id": "ism-1416",
+                "description": "Windows Defender Firewall is enforced in all three network profiles on all workstations via Intune Firewall policy. Default inbound posture: block all unsolicited inbound connections. Only management traffic (WMI, RPC) from designated management subnets is permitted inbound."
+              },
+              {
+                "uuid": "93bc7123-20ba-40b3-a6ce-6532d39db56b",
+                "control-id": "ism-1417",
+                "description": "Windows Defender Firewall works in conjunction with Defender AV to block network access for detected malware \u2014 Defender AV can automatically block outbound connections from quarantined processes."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "b56b41fc-c243-4098-9c48-7b47436f7b62",
+        "name": "Endpoint Protection",
+        "description": "The endpoint protection capability combines policy, next-generation antivirus/EDR, and host-based firewall controls to protect all workstations and servers from malware and network-based threats. Microsoft Defender for Endpoint provides AV, EDR, and ASR; Windows Defender Firewall enforces host-level network segmentation.",
+        "incorporates-components": [
+          {
+            "component-uuid": "d151d124-adee-4e09-85cb-79f92d9ef595",
+            "description": "Defines endpoint protection policy requirements across all systems."
+          },
+          {
+            "component-uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+            "description": "Provides AV, EDR, ASR, and exploit protection on all endpoints."
+          },
+          {
+            "component-uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+            "description": "Enforces host-based firewall on all workstations and servers."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5a3de6d9-52ed-4c52-8fa7-9d4442b5d15c",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for capability: Endpoint Protection. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "4bce1220-a5ed-4e77-ac82-4bf65651af26",
+                "control-id": "ism-1417",
+                "description": "The endpoint protection policy mandates AV deployment; Microsoft Defender AV satisfies this with real-time protection and 4-hourly definition updates on all endpoints.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "a4df898d-600e-4a1a-9369-38db32b0c153"
+                  }
+                ]
+              },
+              {
+                "uuid": "39941b0f-6cae-44f9-aea7-8c910cee1fe5",
+                "control-id": "ism-1341",
+                "description": "MDE EDR satisfies the HIPS/EDR requirement with behavioural detection, automated investigation, and response capability.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "a4df898d-600e-4a1a-9369-38db32b0c153"
+                  }
+                ]
+              },
+              {
+                "uuid": "6b353a07-f322-48d1-ad43-123502362a1e",
+                "control-id": "ism-0843",
+                "description": "The endpoint protection policy mandates application control; MDE ASR rules in block mode restrict unauthorised code execution across all workstations.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "a4df898d-600e-4a1a-9369-38db32b0c153"
+                  }
+                ]
+              },
+              {
+                "uuid": "efb09305-3ae9-4534-9686-e7df24e1f648",
+                "control-id": "ism-1492",
+                "description": "Windows Defender Exploit Protection enforces ASLR, DEP, CFG, and stack pivot protection on all workstations via Intune configuration profile.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "a4df898d-600e-4a1a-9369-38db32b0c153"
+                  }
+                ]
+              },
+              {
+                "uuid": "2fa8ff7e-fa0d-4e2a-963d-ab667b86077b",
+                "control-id": "ism-1416",
+                "description": "The endpoint protection policy mandates host-based firewalls; Windows Defender Firewall is enforced in all three profiles with a default-deny inbound posture.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "869ae705-c6f7-481c-a617-01d309ef9757"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

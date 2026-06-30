@@ -1,0 +1,223 @@
+{
+  "component-definition": {
+    "uuid": "0b9d98b2-8669-495e-bad0-c367ff9cb857",
+    "metadata": {
+      "title": "Capability: Email Security",
+      "last-modified": "2026-06-30T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "1cb0533d-d819-4a83-9134-9a2e84ff82c9",
+        "type": "policy",
+        "title": "Email Security Policy",
+        "description": "Defines requirements for securing email communications, including anti-phishing controls, attachment and link scanning, email encryption, and acceptable use obligations for all email system users. Mandates SPF, DKIM, and DMARC configuration for all sending domains.",
+        "purpose": "Establish and enforce email security controls to protect against phishing and malware.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "CISO \u2014 responsible for policy approval"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "IT Operations \u2014 Microsoft 365 administrators"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b401b847-072d-43c6-8c29-7b97a228ca17",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Email Security Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "9e8fe719-02bd-4c46-9faa-1b2dec8b1d1c",
+                "control-id": "ism-1234",
+                "description": "The email security policy requires email content filtering capable of detecting and blocking malicious attachments and links, including sandbox detonation of attachments before delivery to end users."
+              },
+              {
+                "uuid": "1bd6f800-e04f-40c8-a32d-eb352dc6ce23",
+                "control-id": "ism-0961",
+                "description": "The email security policy restricts execution of active content (scripts, macros) delivered via email. Attachments containing active content must be evaluated by an email scanning solution before delivery."
+              },
+              {
+                "uuid": "89c6c6d6-159b-45a6-b4a2-53c40c8c582a",
+                "control-id": "ism-1748",
+                "description": "The email security policy requires that email client security settings are hardened and locked, preventing users from bypassing scanning or enabling unsafe content rendering in email messages."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "74bec560-02ed-4e05-afac-fa01101e2d35",
+        "type": "service",
+        "title": "Microsoft Defender for Office 365 \u2014 Email Filtering",
+        "description": "Microsoft Defender for Office 365 Plan 2 provides advanced email threat protection for the Microsoft 365 Exchange Online tenant. Provides Safe Attachments (sandbox detonation), Safe Links (URL rewriting and click-time scanning), anti-phishing (impersonation detection), and anti-spam policies. Configured for the Australian Government Community Cloud tenant.",
+        "purpose": "Scan and filter inbound and outbound email for malware, phishing, and malicious links.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "8da3f389-1dc4-41e2-b331-0c694a0a4f44",
+            "name": "smtp",
+            "title": "SMTP \u2014 Inbound/outbound mail (TLS enforced)",
+            "port-ranges": [
+              {
+                "start": 25,
+                "end": 25,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "23eb41e1-4ae0-4ac7-a8cc-18bb5a4df088",
+            "name": "https",
+            "title": "HTTPS \u2014 Admin portal and EWS",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "87ccd8bc-56ee-4746-ba74-aa74d250c8e6",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Defender for Office 365 \u2014 Email Filtering.",
+            "implemented-requirements": [
+              {
+                "uuid": "1c25c5b5-5f5f-497c-9d72-7a02c0ea5181",
+                "control-id": "ism-1234",
+                "description": "Defender for Office 365 Safe Attachments detonates all email attachments in a cloud sandbox before delivery. Malicious attachments are blocked and quarantined. Zero-hour auto purge (ZAP) retroactively removes malware delivered before signature updates were available."
+              },
+              {
+                "uuid": "bfb5b211-050a-40b9-b201-6d91d1b90f87",
+                "control-id": "ism-0961",
+                "description": "Safe Links rewrites and re-checks all URLs in emails at time of click, blocking navigation to known malicious sites even if the link was clean at delivery time. URL detonation analyses suspicious links in a sandbox before the user's browser opens them."
+              },
+              {
+                "uuid": "0a3bda02-5bd3-4bc9-9489-44a7297e2c51",
+                "control-id": "ism-1748",
+                "description": "Defender for Office 365 anti-phishing policy uses mailbox intelligence, impersonation protection for executive accounts, and spoof intelligence to detect and quarantine phishing attempts. DMARC, DKIM, and SPF are enforced for all outbound sending domains."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "5c0380e2-df77-4fb3-b1f4-0ffbb6621186",
+        "type": "software",
+        "title": "Microsoft Outlook \u2014 Email Client",
+        "description": "Microsoft Outlook (as part of Microsoft 365 Apps for Enterprise) is the approved email client on all Windows 11 workstations. Security settings are locked via Group Policy and Intune: macros are disabled, external content loading is blocked, and automatic preview of potentially dangerous attachment types is disabled.",
+        "purpose": "Provide a secure, hardened email client for all organisational users.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "fbc3ce69-f933-432c-96bb-e3ead558ce51",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Outlook \u2014 Email Client.",
+            "implemented-requirements": [
+              {
+                "uuid": "0b636254-6e2a-4eff-8776-4e87f5a9a0a5",
+                "control-id": "ism-1748",
+                "description": "Outlook security settings are enforced via Group Policy (ADMX templates): external image loading requires user confirmation, automatic download of external content in HTML email is disabled, attachment preview for executable file types is disabled, and S/MIME is configured for encrypted and digitally signed email where required."
+              },
+              {
+                "uuid": "5fccad5d-7efa-453f-a872-693abde43fbc",
+                "control-id": "ism-0961",
+                "description": "Outlook is configured to block active content in email: macros embedded in Office documents attached to email are blocked; JavaScript and VBScript execution in Outlook forms is disabled; automatic execution of email-delivered scripts is prevented via restricted attachment type rules."
+              },
+              {
+                "uuid": "6384ab0b-e0f3-4c66-afee-45585fb0e502",
+                "control-id": "ism-1234",
+                "description": "Outlook is integrated with Defender for Office 365: the Report Message add-in is deployed to all users for user-reported phishing; Defender protection applies to all mail rendered in Outlook clients via the Microsoft 365 ATP connector."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "d49ced8d-f734-456b-86c3-2dce6b8d2050",
+        "name": "Email Security",
+        "description": "The email security capability combines policy, cloud-based threat filtering, and hardened client configuration to protect against phishing, malware, and malicious links delivered via email. Microsoft Defender for Office 365 provides attachment sandboxing and URL scanning; Outlook configuration blocks active content; the email security policy establishes governance and anti-spoofing requirements.",
+        "incorporates-components": [
+          {
+            "component-uuid": "1cb0533d-d819-4a83-9134-9a2e84ff82c9",
+            "description": "Defines email security policy requirements including SPF/DKIM/DMARC obligations."
+          },
+          {
+            "component-uuid": "74bec560-02ed-4e05-afac-fa01101e2d35",
+            "description": "Provides cloud-based email scanning, attachment sandboxing, and URL rewriting."
+          },
+          {
+            "component-uuid": "5c0380e2-df77-4fb3-b1f4-0ffbb6621186",
+            "description": "Provides a hardened email client with active content and external image loading blocked."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "705e4892-a5a0-4119-9376-6a36541bcb8d",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for capability: Email Security. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "73176e69-3999-46a2-b010-723c487a8a9f",
+                "control-id": "ism-1234",
+                "description": "Defender for Office 365 Safe Attachments sandboxes all attachments; Outlook is integrated with Defender reporting; the email security policy mandates these controls.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "74bec560-02ed-4e05-afac-fa01101e2d35"
+                  }
+                ]
+              },
+              {
+                "uuid": "29f3bb34-afee-457d-b9f6-120dbc377cdb",
+                "control-id": "ism-0961",
+                "description": "Safe Links blocks malicious URLs at click time; Outlook blocks active content execution; the email security policy prohibits scripts delivered via email.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "74bec560-02ed-4e05-afac-fa01101e2d35"
+                  }
+                ]
+              },
+              {
+                "uuid": "6bf5928e-c599-4850-a225-5ea15cf3bd35",
+                "control-id": "ism-1748",
+                "description": "Anti-phishing impersonation detection and DMARC/DKIM/SPF enforcement are provided by Defender for Office 365; Outlook ADMX settings lock client-side security configuration.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "5c0380e2-df77-4fb3-b1f4-0ffbb6621186"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
