@@ -161,6 +161,8 @@ class ComponentTab(tk.Frame):
         # the listbox. A search or type-filter reduces this to a subset.
         # When no filter is active this is simply [0, 1, 2, …].
         self._filtered_indices = []
+        # Sort mode: "type" = group by type then A-Z; "alpha" = A-Z only
+        self._sort_mode = "type"
 
         # ── Control implementation state ──────────────────────────────────────
         # _ctrl_responses maps control_id → response text for the currently
@@ -503,6 +505,16 @@ class ComponentTab(tk.Frame):
             state="readonly", width=18,
         )
         self._comp_type_combo.pack(side="left", padx=(4, 0))
+
+        # Sort toggle button — cycles between "Sort by type" and "Sort A–Z"
+        self._sort_btn = tk.Button(
+            type_row, text="⊞ By type",
+            command=self._toggle_sort,
+            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 9),
+            relief="flat", padx=6, pady=1, cursor="hand2",
+            activebackground="#b4befe", activeforeground=C["BG"],
+        )
+        self._sort_btn.pack(side="right")
 
         # Add / Duplicate / Delete buttons
         btn_row = tk.Frame(left, bg=C["SIDEBAR_BG"])
@@ -1173,6 +1185,16 @@ class ComponentTab(tk.Frame):
                 pass
         self._search_after_id = self.after(250, self._refresh_list)
 
+    def _toggle_sort(self):
+        """Switch between grouping by type-then-title and sorting purely A-Z."""
+        if self._sort_mode == "type":
+            self._sort_mode = "alpha"
+            self._sort_btn.config(text="🔤 A–Z")
+        else:
+            self._sort_mode = "type"
+            self._sort_btn.config(text="⊞ By type")
+        self._refresh_list()
+
     def _build_filtered_indices(self):
         """
         Return a list of indices into self._components that pass the current
@@ -1219,6 +1241,18 @@ class ComponentTab(tk.Frame):
                 if search not in haystack:
                     continue
             result.append(i)
+
+        # Sort the matching indices according to the current sort mode.
+        # Both modes sort by title within a group; "type" adds type as the
+        # primary key so components are grouped by their type first.
+        if self._sort_mode == "type":
+            result.sort(key=lambda i: (
+                self._components[i].get("type", "").lower(),
+                self._components[i].get("title", "").lower(),
+            ))
+        else:
+            result.sort(key=lambda i: self._components[i].get("title", "").lower())
+
         return result
 
     def _refresh_list(self):
