@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "13331d0b-37bd-436f-b5b5-be6362a9a9d6",
+    "metadata": {
+      "title": "policy - Supplier Relationship Management Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "05fec59a-4991-46b9-b5a0-fd9bb64c3f82",
+        "type": "policy",
+        "title": "Supplier Relationship Management Policy",
+        "description": "The supplier relationship management policy defines the organisation's approach to managing risks associated with suppliers, service providers, and the cyber supply chain. It establishes requirements for supplier risk assessment, contractual security obligations, the approved supplier list, and ongoing monitoring of supplier security posture throughout the relationship lifecycle.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Supplier Relationship Management Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "ccd78d7e-4450-462d-b1ca-9e75c22addcb",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Supplier Relationship Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "aa6a479d-19a6-4c9e-8ae3-9c3ac4077ae5",
+                "control-id": "ism-1785",
+                "description": "This document is the supplier relationship management policy required by ISM-1785. It is developed, implemented, and maintained by the organisation. The policy covers: the requirement to perform a cyber supply chain risk assessment before engaging a new supplier for operating systems, applications, IT equipment, or managed services; the maintenance of an approved supplier list; contractual obligations for suppliers regarding security controls, incident notification, and audit rights; the process for ongoing monitoring of supplier security posture; and the process for offboarding suppliers, including data return and secure deletion obligations."
+              },
+              {
+                "uuid": "74ca67f7-07ce-4648-b73e-e6caafa080a5",
+                "control-id": "ism-1786",
+                "description": "As required by ISM-1786, an approved supplier list is developed, implemented, and maintained. The list identifies all current suppliers providing IT products or services, their risk classification, the date of their most recent security assessment, and their contractual security obligations. The list is reviewed quarterly and updated when new suppliers are engaged or existing suppliers are offboarded. Only suppliers on the approved list may be engaged for IT procurement."
+              },
+              {
+                "uuid": "51ba1d42-10da-4a0d-800f-460d45a4dc84",
+                "control-id": "ism-1452",
+                "description": "As required by ISM-1452, a supply chain risk assessment is performed for all suppliers of operating systems, applications, IT equipment, OT equipment, and services before they are added to the approved supplier list. The assessment evaluates the supplier's country of origin, ownership structure, security certifications (ISO 27001, SOC 2 Type II), vulnerability disclosure practices, incident response capability, and any known adverse history. High-risk suppliers identified by the assessment are not engaged."
+              },
+              {
+                "uuid": "26bfb96c-fc01-4073-9042-60fb5e8a8752",
+                "control-id": "ism-1567",
+                "description": "As required by ISM-1567, suppliers identified as high risk by a cyber supply chain risk assessment are not used. High-risk indicators include: ownership or control by a foreign government assessed as adversarial; history of supply chain compromise; inability to provide evidence of security controls; and legal jurisdictions that require disclosure of organisational data to foreign governments. Alternative suppliers are sourced where a preferred supplier is assessed as high risk."
+              },
+              {
+                "uuid": "3381f5c0-f683-42a3-876f-b1049f64a67a",
+                "control-id": "ism-1569",
+                "description": "As required by ISM-1569, a shared responsibility model is created, documented, and shared between the organisation and each supplier providing cloud or managed services. The model clearly defines which security controls are the supplier's responsibility, which are the organisation's responsibility, and which are shared. The shared responsibility model is reviewed when the service or contract changes and at least annually."
+              },
+              {
+                "uuid": "a715f030-7209-49f4-ba2c-75cb07731095",
+                "control-id": "ism-1631",
+                "description": "As required by ISM-1631, suppliers of operating systems, applications, IT equipment, OT equipment, and services associated with critical systems are required to notify the organisation within 24 hours of becoming aware of any cyber security incident, vulnerability, or supply chain compromise that may affect the organisation. This obligation is included in all supplier contracts. The organisation's supplier management team monitors for public disclosures by suppliers and proactively contacts suppliers when relevant incidents are publicly reported."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

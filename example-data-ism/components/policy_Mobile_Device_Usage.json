@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "1d9afddb-64c4-448c-9cca-48a3eb3e3d1d",
+    "metadata": {
+      "title": "policy - Mobile Device Usage Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "f87937ec-9c12-4cb0-8731-33a2c8eeda17",
+        "type": "policy",
+        "title": "Mobile Device Usage Policy",
+        "description": "The mobile device usage policy governs the use of organisational mobile devices (smartphones and tablets) and personally owned devices (BYOD) used to access organisational information. It defines the sensitivity or classification of information permitted on each device type, requirements for physical security of devices, Bluetooth and wireless usage restrictions, and obligations when travelling with mobile devices.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Mobile Device Usage Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f6701928-0697-4610-b460-5fbe7b158168",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Mobile Device Usage Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "6dbe5882-6def-478e-aa69-c58757885af2",
+                "control-id": "ism-1082",
+                "description": "This document is the mobile device usage policy required by ISM-1082. It is developed, implemented, and maintained by the organisation. The policy covers: approved device types and operating system versions for accessing organisational information; the maximum sensitivity or classification of information permitted on each device category; requirements for screen lock, encryption, and remote wipe capability; Bluetooth usage restrictions; precautions when travelling with mobile devices; and obligations to report lost or stolen devices immediately."
+              },
+              {
+                "uuid": "8b324e81-0cb9-4f58-8204-9b28ba6f558a",
+                "control-id": "ism-1083",
+                "description": "As required by ISM-1083, this policy advises personnel of the permitted sensitivity or classification of information for voice and data communications on each approved mobile device type. Non-classified devices: UNCLASSIFIED and OFFICIAL data only. OFFICIAL: Sensitive approved devices: OFFICIAL up to OFFICIAL: Sensitive. PROTECTED approved devices: up to PROTECTED. Personnel are prohibited from processing or storing information above the approved classification for their device."
+              },
+              {
+                "uuid": "1bc1cb44-5e85-4bc7-9d37-c37a3bb34ac8",
+                "control-id": "ism-1299",
+                "description": "As required by ISM-1299, personnel are advised to take the following precautions when using mobile devices: never leave a mobile device unattended in public areas or unsecured locations; never use a mobile device in locations where it could be observed by unauthorised persons during sensitive activities; disable Bluetooth when not actively in use; not connect mobile devices to public or untrusted Wi-Fi networks without using the approved organisational VPN; never charge mobile devices using untrusted USB charging points (juice-jacking risk); and report any suspected compromise, unusual behaviour, or loss of a device immediately."
+              },
+              {
+                "uuid": "19251c7f-a3c8-43f3-aaf4-040b4805a917",
+                "control-id": "ism-1200",
+                "description": "As required by ISM-1200, Bluetooth pairing for non-classified, OFFICIAL: Sensitive and PROTECTED mobile devices is only performed in a secure location where the process cannot be observed or interfered with. Personnel are instructed to check that no unexpected devices are visible during the pairing process and to reject any unexpected pairing requests."
+              },
+              {
+                "uuid": "3b19bb10-cd4e-4bfa-b381-607c254ab4a8",
+                "control-id": "ism-1196",
+                "description": "As required by ISM-1196, non-classified, OFFICIAL: Sensitive and PROTECTED mobile devices are configured to remain locked unless being actively used. Screen lock activates after 2 minutes of inactivity and requires biometric or PIN authentication to unlock. This setting is enforced via the Mobile Device Management solution and cannot be disabled by users."
+              },
+              {
+                "uuid": "c9cf2ef0-ae7d-4df1-82b1-517b7e1407b7",
+                "control-id": "ism-2099",
+                "description": "As required by ISM-2099, mobile devices are not connected to the infotainment systems of connected vehicles. Personnel are instructed not to pair organisational mobile devices with vehicle Bluetooth systems, Android Auto, Apple CarPlay, or any vehicle USB port. This prohibition applies to both organisational and personally owned vehicles. The risk of data exfiltration via vehicle infotainment systems is covered in the annual security awareness training."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

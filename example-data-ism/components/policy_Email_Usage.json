@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "e343248b-308e-4ff9-8919-a45c6bbc7edd",
+    "metadata": {
+      "title": "policy - Email Usage Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "7de58369-d6ec-413b-bc9d-7118aa58570f",
+        "type": "policy",
+        "title": "Email Usage Policy",
+        "description": "The email usage policy defines requirements for the appropriate use of organisational email systems. It sets out permitted and prohibited uses, establishes obligations around the handling of sensitive information in email, defines requirements for identifying and reporting phishing, and specifies email retention and archiving obligations. It also covers the use of email for out-of-band authentication.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Email Usage Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "aecd8ed8-963a-4fac-b0a0-c6061c250c11",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Email Usage Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "fb9b2be4-8b55-4563-aaf1-99ca72564ea5",
+                "control-id": "ism-0264",
+                "description": "This policy is the email usage policy required by ISM-0264. It is developed, implemented, and maintained by the organisation. It covers: permitted and prohibited uses of the organisational email system; prohibition on using personal or external email accounts to conduct official business; requirement to classify email containing sensitive information appropriately and use approved encryption; obligation to report suspected phishing, malicious links, and suspicious attachments without opening them; prohibition on auto-forwarding email to external accounts; and email retention obligations consistent with records management requirements."
+              },
+              {
+                "uuid": "6b541013-6bb2-4ae3-9302-b3c2f2be5774",
+                "control-id": "ism-2077",
+                "description": "This policy explicitly prohibits the use of email for out-of-band authentication purposes in accordance with ISM-2077. One-time codes, password reset links, and authentication tokens are not to be sent via email to authenticate users to systems. Approved multi-factor authentication methods (authenticator app push notifications, hardware tokens, FIDO2) are used instead. This requirement is communicated to all personnel during onboarding and in the annual security awareness training module."
+              },
+              {
+                "uuid": "cb145525-6780-4bd9-8030-33a2e3d4c6a6",
+                "control-id": "ism-1748",
+                "description": "This policy requires that email client security settings are maintained in a hardened state and cannot be changed by end users. Settings enforced include: automatic loading of external images and content disabled; preview pane restricted for potentially malicious attachment types; macro execution from email-delivered Office documents blocked; and script execution in email forms disabled. These settings are enforced via Group Policy and Microsoft Intune and cannot be modified by standard users."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

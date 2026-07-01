@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "5cf402d5-d090-4e25-8ba4-6d1e61a2afe2",
+    "metadata": {
+      "title": "policy - General-Purpose AI Usage Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "3a75ad78-6821-487a-addb-ffa230b4cb47",
+        "type": "policy",
+        "title": "General-Purpose AI Usage Policy",
+        "description": "The general-purpose artificial intelligence usage policy governs the use of general-purpose AI tools and services (such as large language model chatbots, AI-assisted coding tools, and AI image generators) by organisational personnel. It defines approved and prohibited uses, data handling obligations when using AI tools, and requirements for human oversight of AI-generated outputs in decision-making.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a General-Purpose AI Usage Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "89782b01-30cb-4638-a5a5-06d5f2056fd3",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for General-Purpose AI Usage Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "28c52e74-1657-4c06-9f3c-7ab582cf5c5f",
+                "control-id": "ism-2074",
+                "description": "This document is the general-purpose AI usage policy required by ISM-2074. It is developed, implemented, and maintained by the organisation. The policy covers: the approved general-purpose AI tools and services that personnel may use for work purposes; the prohibition on entering classified, OFFICIAL: Sensitive, or personally identifiable information into any AI tool or service not approved for that data classification; requirements for human review and verification of AI-generated content before it is used in official documents, communications, or decisions; obligations to disclose the use of AI assistance when producing official outputs; and the reporting process for AI-generated content that appears to violate security or ethical obligations."
+              },
+              {
+                "uuid": "bc946e90-899f-4ce6-81e0-e2be4f5ee3c7",
+                "control-id": "ism-principle-gov-08",
+                "description": "In accordance with ISM Principle GOV-08, the board of directors and executive committee are accountable for ensuring that artificial intelligence is used responsibly within the organisation. This policy fulfils the governance obligation by establishing clear rules for AI use, designating the CISO as the senior responsible officer for AI security, and requiring annual reporting to the executive committee on AI-related security risks and incidents."
+              },
+              {
+                "uuid": "e50ac32b-6c0a-47ab-ac8a-84449228e4f6",
+                "control-id": "ism-2103",
+                "description": "As required by ISM-2103, this policy prohibits the submission of organisational data generated, collected, or processed by AI applications for training of external AI models. Approved AI tools must be configured to opt out of training data collection where this option is available. Procurement of new AI tools requires confirmation that the vendor does not use customer data for model training without explicit consent."
+              },
+              {
+                "uuid": "c129f075-0649-4dac-a6e0-0b2feae57884",
+                "control-id": "ism-2123",
+                "description": "As required by ISM-2123, this policy requires that all prompts and outputs associated with AI chat sessions that contain organisational or sensitive information are securely deleted when the chat session ends. Personnel are instructed to clear chat history at the end of each session and not to use AI tools that persist conversation history across sessions for work-related queries involving organisational data."
+              },
+              {
+                "uuid": "40520602-8cfe-40b4-bf74-6a888ae3583f",
+                "control-id": "ism-2084",
+                "description": "As required by ISM-2084, AI-specific documentation \u2014 including AI model cards and AI system cards (or equivalent artefacts) \u2014 is maintained for any AI application developed or deployed by the organisation. For approved external AI services, the organisation reviews publicly available model cards and system documentation as part of the supplier risk assessment process before approving use."
+              },
+              {
+                "uuid": "9817c0bc-0130-4945-9425-837594a6b4c8",
+                "control-id": "ism-2113",
+                "description": "As required by ISM-2113, AI applications are configured to flag organisationally defined risky actions for human approval before execution. Risky actions include: sending external communications, making financial transactions, modifying access controls, and deleting or archiving data. No AI application is permitted to autonomously perform these actions without a human in the loop."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

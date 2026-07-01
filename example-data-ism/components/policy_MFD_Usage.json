@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "2e7b3b45-4af7-48d6-8b69-0f5b1c3208c0",
+    "metadata": {
+      "title": "policy - Multifunction Device (MFD) Usage Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "858e34ae-9e55-47f4-ab8e-35e023d38295",
+        "type": "policy",
+        "title": "Multifunction Device (MFD) Usage Policy",
+        "description": "The multifunction device usage policy defines requirements for the secure use of multifunction devices (printers, scanners, copiers, fax machines). It establishes obligations for authenticating before use, restricting use to the sensitivity level of the network, logging MFD activity, and securely disposing of consumables and media that may retain document images.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Multifunction Device (MFD) Usage Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6ba73d80-441c-4b9e-86d6-8225afe8baf5",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Multifunction Device (MFD) Usage Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "9e8aa15c-b35b-4472-8bd7-13ae554a99a1",
+                "control-id": "ism-0588",
+                "description": "This document is the MFD usage policy required by ISM-0588. It is developed, implemented, and maintained by the organisation. The policy covers: the requirement to authenticate before using any MFD (print, scan, or copy); restriction of MFD use to the sensitivity or classification level of the network to which the MFD is connected; obligations to retrieve printed documents promptly; prohibition on leaving sensitive or classified documents unattended at MFDs; requirements for secure printing (hold-for-release/pull-printing where available); obligations for logging MFD activity; and secure disposal of consumables."
+              },
+              {
+                "uuid": "6623285a-cda9-4c54-a3b5-72c950df04b8",
+                "control-id": "ism-1854",
+                "description": "As required by ISM-1854, all MFDs are configured to require authentication before a user can print, scan, or copy documents. Authentication is provided by proximity card tap (HID card reader integrated with MFD) or PIN entry. Unauthenticated printing (direct job submission without authentication) is disabled on all MFDs. This is enforced through the MFD management console and verified at each quarterly security configuration review."
+              },
+              {
+                "uuid": "2c7e9935-8bcc-4442-9200-5bd98f4df85a",
+                "control-id": "ism-0589",
+                "description": "As required by ISM-0589, MFDs are not used to scan or copy documents above the sensitivity or classification of the network to which they are connected. A physical label on each MFD clearly indicates the maximum classification of material that may be processed. Personnel are trained during induction on this restriction and reminded via the annual security awareness training program."
+              },
+              {
+                "uuid": "a0628d98-d672-4129-af2e-65eb8a3e7095",
+                "control-id": "ism-1855",
+                "description": "As required by ISM-1855, shadow copies (digital images retained in MFD memory or storage after a print, scan, or copy job) are managed in accordance with the sensitivity or classification of the material processed. MFDs are configured to automatically purge job data from internal storage immediately after job completion where the MFD supports this capability. Where automatic purging is not supported, the MFD storage is sanitised using the vendor-supplied sanitisation utility before the MFD is decommissioned, repaired, or returned to a vendor."
+              },
+              {
+                "uuid": "adf72e17-7e47-4440-ae57-3ba547046cfd",
+                "control-id": "ism-1036",
+                "description": "As required by ISM-1036, all MFDs are positioned in areas where their use can be observed by security-cleared personnel. MFDs are not placed in unsupervised areas, visitor zones, or locations where passers-by could observe displayed or printed documents. Placement of all MFDs is recorded in the MFD register and reviewed annually or when a physical reconfiguration occurs."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

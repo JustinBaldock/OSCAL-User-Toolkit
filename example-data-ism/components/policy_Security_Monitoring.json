@@ -1,0 +1,80 @@
+{
+  "component-definition": {
+    "uuid": "bd9248af-b251-42df-9e8e-3512d9c7deaf",
+    "metadata": {
+      "title": "policy - Security Monitoring Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "92bdda30-ba11-4c39-9867-8ab35060c555",
+        "type": "policy",
+        "title": "Security Monitoring Policy",
+        "description": "The security monitoring policy establishes the organisation's requirements for continuously monitoring systems and networks for cyber security events. It mandates centralised event logging, defines the event types that must be logged, sets log retention and protection requirements, and establishes the processes for reviewing and responding to detected events.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Security Monitoring Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "fdcdb8d8-f556-4b85-8b22-eaf2e919714d",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Security Monitoring Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "8cdb021e-718b-4795-a0bf-07e90b416f43",
+                "control-id": "ism-0580",
+                "description": "This document is the security monitoring policy required by ISM-0580. It is developed, implemented, and maintained by the organisation. The policy covers: the requirement to operate a centralised event logging facility (SIEM) to collect and correlate security events from all in-scope systems; the minimum event types to be captured; log retention requirements (minimum 18 months for all security-relevant logs); log protection requirements (integrity protection, access control, encryption in transit); the requirement for a Security Operations Centre (SOC) or equivalent function to review alerts; and escalation procedures when potential incidents are identified."
+              },
+              {
+                "uuid": "18b42869-9d54-4f78-97aa-b16f1ac42cd2",
+                "control-id": "ism-1405",
+                "description": "As required by ISM-1405, a centralised event logging facility (SIEM) is implemented to aggregate security event logs from all in-scope systems including servers, workstations, network devices, and cloud services. The SIEM is operated by the SOC and configured with detection rules to identify indicators of compromise, policy violations, and anomalous behaviour. Access to the SIEM is restricted to authorised security personnel."
+              },
+              {
+                "uuid": "3b33f529-a49a-43a9-868a-22149cf8aabe",
+                "control-id": "ism-0585",
+                "description": "As required by ISM-0585, event logs capture the following details for each event: the date and time of the event; the relevant user or process account; the event type; the source and destination of the event (IP address, hostname, file path); and the outcome (success or failure). Log sources that cannot provide structured log data are normalised using custom parsers in the SIEM."
+              },
+              {
+                "uuid": "20befce1-333f-49f2-8e95-0c6078666a94",
+                "control-id": "ism-1983",
+                "description": "As required by ISM-1983, event logs are forwarded to the centralised logging facility as soon as practicable after generation \u2014 target latency is less than 60 seconds for all critical systems. Agents and log shippers are monitored for failures; any agent that stops forwarding events generates an alert within 15 minutes."
+              },
+              {
+                "uuid": "a199ba5a-a551-425b-8472-f02ec60ac24d",
+                "control-id": "ism-1984",
+                "description": "As required by ISM-1984, event logs sent to the centralised event logging facility are encrypted in transit using ASD-approved cryptography (TLS 1.2 minimum). Log shippers authenticate to the SIEM using certificate-based mutual TLS to prevent log injection from unauthorised sources."
+              },
+              {
+                "uuid": "2e4842f3-6e6e-46a1-8186-ddd9b1579336",
+                "control-id": "ism-1985",
+                "description": "As required by ISM-1985, event logs are protected from unauthorised access. The SIEM and log storage system enforce role-based access control: SOC analysts have read access; SOC engineers have read/write access to detection rules; only the SIEM administrator can delete log data. All access to log data is itself logged."
+              },
+              {
+                "uuid": "e71d6853-0f44-4698-94af-8bf2b8efd4c7",
+                "control-id": "ism-1815",
+                "description": "As required by ISM-1815, event logs are protected from unauthorised modification and deletion. The SIEM uses append-only log storage with immutability controls. Bulk deletion of log data requires two authorised approvals. Log integrity is verified using cryptographic hashing at ingest."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

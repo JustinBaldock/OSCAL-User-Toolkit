@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "b6a9d043-63e0-4589-923e-8a1b97b1d7ee",
+    "metadata": {
+      "title": "policy - Media Management Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "5504beb3-b349-4feb-9208-288d42605deb",
+        "type": "policy",
+        "title": "Media Management Policy",
+        "description": "The media management policy defines the organisation's requirements for managing, protecting, transporting, and disposing of all types of physical and electronic media that store organisational information. It covers labelling, access control, encryption, transport, and sanitisation obligations for media throughout its lifecycle.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Media Management Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "830729a4-bed8-42d8-a10e-b973bef6f440",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Media Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "9984e8d5-13f5-4f4b-9b3e-f4c43ee3c3b3",
+                "control-id": "ism-1549",
+                "description": "This document is the media management policy required by ISM-1549. It is developed, implemented, and maintained by the organisation. The policy covers: the classification and labelling requirements for all media; access control requirements (media stored at the highest sensitivity of data it contains); requirements for encrypting sensitive or classified data on media; procedures for transporting media (protective packaging, chain of custody documentation, approved couriers); and sanitisation and destruction requirements before media is repurposed, disposed of, or returned to a vendor."
+              },
+              {
+                "uuid": "e6d5bd2b-2d8c-4852-9731-7f5469e18744",
+                "control-id": "ism-0332",
+                "description": "As required by ISM-0332, all media (except internally mounted fixed media within IT equipment) is labelled with its sensitivity or classification and any applicable handling caveats. Labels are applied using approved label formats and are visible when the media is in use and in storage. Unlabelled media is treated as the highest classification applicable to the system it is associated with until confirmed otherwise."
+              },
+              {
+                "uuid": "d9cbd0b3-c194-404c-815e-1724dd071a26",
+                "control-id": "ism-0323",
+                "description": "As required by ISM-0323, media is classified to the highest sensitivity or classification of data it stores, unless it has been sanitised to a lower level. This applies to all media types including USB drives, optical media, magnetic tape, SD cards, and external hard drives. When media is sanitised and reclassified, the sanitisation is documented in the media register."
+              },
+              {
+                "uuid": "b41da52c-2e1e-412a-b761-b8ee5aa19d47",
+                "control-id": "ism-1059",
+                "description": "As required by ISM-1059, all data stored on media is encrypted using ASD-approved cryptography. For removable media, BitLocker To Go with AES-256 is the approved encryption method. For backup tape, vendor-supplied AES-256 tape encryption is required. Encryption keys are managed centrally and escrowed to the key management service. Unencrypted sensitive media is prohibited."
+              },
+              {
+                "uuid": "c2a2e376-0a56-4a1d-8f0b-698de6aa6053",
+                "control-id": "ism-0459",
+                "description": "As required by ISM-0459, full disk encryption (or partial encryption with access controls restricting writes to encrypted areas) is implemented on all media that stores sensitive or classified information. BitLocker Drive Encryption with AES-256 XTS is the approved implementation for Windows systems. FileVault 2 with AES-256 is approved for macOS systems. Encryption status is monitored via the MDM/endpoint management solution and non-compliant devices are quarantined."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

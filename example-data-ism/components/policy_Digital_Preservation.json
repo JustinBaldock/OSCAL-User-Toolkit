@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "83c7b70a-b3af-4bec-8ef5-35abdef24a52",
+    "metadata": {
+      "title": "policy - Digital Preservation Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "faf259ca-47b4-4692-a2c9-e7dd633856e5",
+        "type": "policy",
+        "title": "Digital Preservation Policy",
+        "description": "The digital preservation policy defines the organisation's obligations for the long-term retention, protection, and recoverability of digital information assets. It establishes backup requirements (frequency, retention periods, encryption, offsite storage), restoration testing requirements, and the data backup and restoration procedures that must be maintained alongside the policy.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Digital Preservation Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "ba1ee393-531b-42f5-8fe6-cc097b3b4c08",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Digital Preservation Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "22101bd8-08a8-44c5-af8f-70cd8a42ba25",
+                "control-id": "ism-1510",
+                "description": "This document is the digital preservation policy required by ISM-1510. It is developed, implemented, and maintained by the organisation. The policy establishes that all organisational digital information of business, operational, or legal value must be backed up and retained in accordance with the backup schedule and retention periods defined in the associated data backup procedures. It designates the IT Operations Manager as the owner responsible for backup infrastructure and the system owner as responsible for identifying what data requires preservation and for how long. The policy is reviewed annually."
+              },
+              {
+                "uuid": "3bdf0a0a-1fe8-4963-b8d9-8aee74660008",
+                "control-id": "ism-1547",
+                "description": "As required by ISM-1547, data backup processes and supporting backup procedures are developed, implemented, and maintained. The backup procedures define: the backup schedule for each system tier (daily incremental, weekly full, monthly archive); the backup tool and storage destinations; the encryption requirements for backup data; the roles responsible for monitoring backup job completion; and the process for escalating and resolving backup failures within 24 hours."
+              },
+              {
+                "uuid": "31e728f8-9df3-4ca0-b083-456a29e559c9",
+                "control-id": "ism-1548",
+                "description": "As required by ISM-1548, data restoration processes and supporting restoration procedures are developed, implemented, and maintained. The restoration procedures define: the step-by-step process for restoring individual files, virtual machines, and entire systems; RTO (Recovery Time Objective) and RPO (Recovery Point Objective) targets for each system tier; the process for requesting a restoration (service desk ticket with system owner approval); and the documentation requirements for restoration activities."
+              },
+              {
+                "uuid": "2219734f-9b31-4068-9cf2-60cbaeb3a22a",
+                "control-id": "ism-1511",
+                "description": "As required by ISM-1511, backups of data, applications, and settings are performed and retained in accordance with business continuity requirements. Critical systems are backed up daily with a minimum 90-day local retention and 1-year offsite retention. Standard systems are backed up weekly with 30-day local retention. Backup retention periods align with the organisation's records disposal authority and legal hold obligations."
+              },
+              {
+                "uuid": "fbde6c70-3051-4abd-af0f-f335548a6cf2",
+                "control-id": "ism-1811",
+                "description": "As required by ISM-1811, backups are retained in a secure and resilient manner. Backup storage is encrypted at rest using AES-256. Offsite backup storage is geographically separated from the primary data centre. Cloud backup repositories use immutable storage (object lock) to prevent deletion during the retention period. Access to backup storage is restricted to backup administrators and is logged."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

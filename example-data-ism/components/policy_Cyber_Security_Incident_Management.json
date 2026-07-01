@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "7c93aca9-3dec-483a-9e18-0dc02ffa0867",
+    "metadata": {
+      "title": "policy - Cyber Security Incident Management Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "0b39e3ce-5fa8-44f5-a20f-05529ce6f4b5",
+        "type": "policy",
+        "title": "Cyber Security Incident Management Policy",
+        "description": "The cyber security incident management policy defines the organisation's approach to detecting, reporting, containing, eradicating, and recovering from cyber security incidents. It establishes roles and responsibilities for incident response, notification requirements (including to ASD and relevant government bodies), classification of incident severity, and the requirement for an associated incident response plan that is exercised at least annually.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Cyber Security Incident Management Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b0b4fdc9-1ad5-44f5-b749-b8846cda5648",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Cyber Security Incident Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "546711a7-f0ac-4c62-91c0-c3a863e093b1",
+                "control-id": "ism-0576",
+                "description": "This document is the cyber security incident management policy required by ISM-0576. It is developed, implemented, and maintained by the organisation. This policy defines: the scope of a cyber security incident (any event that actually or potentially compromises the confidentiality, integrity, or availability of organisational information or systems); incident severity classifications (P1 Critical \u2014 active compromise of critical systems; P2 High \u2014 credible threat or significant control failure; P3 Medium \u2014 suspicious activity requiring investigation; P4 Low \u2014 minor policy violations or near-miss events); roles (Incident Commander, CISO, Legal, Communications, system owners); the associated Cyber Security Incident Response Plan which provides step-by-step procedures for each severity level; and the requirement to report P1 and P2 incidents to ASD via cyber.gov.au within 12 hours."
+              },
+              {
+                "uuid": "8c877efb-48ce-4038-98e1-45d50dd9d8a2",
+                "control-id": "ism-1784",
+                "description": "As required by ISM-1784, the cyber security incident management policy and associated incident response plan are exercised at least annually. The organisation conducts a minimum of one tabletop exercise and one functional exercise per calendar year. Tabletop exercises involve key incident response personnel working through a realistic scenario (e.g. ransomware, insider threat, supply chain compromise). Functional exercises test actual technical capabilities including detection, containment, and eradication procedures. Exercise outcomes are documented, reviewed by the CISO, and used to update the policy and plan within 30 days of exercise completion."
+              },
+              {
+                "uuid": "ad27c024-1ec4-4774-be9b-1a6a34c13b1e",
+                "control-id": "ism-1819",
+                "description": "The policy requires that, following identification of a cyber security incident, the cyber security incident response plan is activated without delay. The on-call security contact is notified immediately; the Incident Commander is paged for P1/P2 incidents; the CISO is briefed within 1 hour of a P1 incident declaration. The plan specifies containment actions by incident type (network isolation procedures, account suspension process, forensic preservation requirements) to limit damage while an investigation proceeds in parallel."
+              },
+              {
+                "uuid": "e6e8a9a7-4fc0-49e5-a224-5fac5082e886",
+                "control-id": "ism-0733",
+                "description": "The policy requires that the CISO is fully aware of all cyber security incidents within the organisation. P1 and P2 incidents are escalated to the CISO immediately; P3 incidents are reported in a daily incident summary; P4 incidents are reported in the weekly security report. The CISO reviews all open incidents at the weekly security meeting and has authority to escalate, de-escalate, or close incidents."
+              },
+              {
+                "uuid": "2d31f988-3e0b-491f-9f88-7c60028d3181",
+                "control-id": "ism-1618",
+                "description": "The policy designates the CISO as the senior leader responsible for overseeing the organisation's response to cyber security incidents. The CISO authorises the incident response plan, approves the activation of crisis communications, authorises disclosure to regulators and affected parties, and is the primary liaison to the board during significant incidents."
+              },
+              {
+                "uuid": "b90f5bfe-37f4-4a4f-bc56-a974fd9fec11",
+                "control-id": "ism-0043",
+                "description": "The associated Cyber Security Incident Response Plan, mandated by this policy, covers the elements required by ISM-0043: guidelines on how to identify and report suspected cyber security incidents; guidelines on how to assess and prioritise cyber security incidents; guidelines on how to contain, eradicate and recover from cyber security incidents; a contact list for internal personnel and external parties (ASD, AFP, legal counsel, communications); a requirement to preserve evidence; and post-incident review and lessons-learned obligations."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "component-definition": {
+    "uuid": "98d05971-127d-4e88-ab43-3c6ed0afa1be",
+    "metadata": {
+      "title": "policy - Telephone System Usage Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "b402a4d9-9125-41ab-a640-a971bf114d5a",
+        "type": "policy",
+        "title": "Telephone System Usage Policy",
+        "description": "The telephone system usage policy governs the use of organisational telephone systems, including desk phones, IP telephony, voicemail, conference calling, and mobile devices used for voice calls. It establishes the maximum sensitivity or classification of information that may be discussed on each type of telephone system and the security precautions personnel must take when using telephone systems.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Telephone System Usage Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "4bae350c-4949-4f52-a729-1f29de58f9c2",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Telephone System Usage Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "e53e4285-95c4-44fa-812f-dd8512aa2850",
+                "control-id": "ism-1078",
+                "description": "This document is the telephone system usage policy required by ISM-1078. It is developed, implemented, and maintained by the organisation. The policy covers: the maximum sensitivity or classification of information that may be discussed on each approved telephone system; prohibition on discussing sensitive or classified information on non-secure or unapproved systems; requirements for using cryptographic equipment for classified calls; advisory information about the security risks posed by speakerphones, cordless phones, and unsecured areas; and requirements for voicemail security."
+              },
+              {
+                "uuid": "0d5818ec-cfe0-400a-8c6b-3fca4dee8cee",
+                "control-id": "ism-0229",
+                "description": "As required by ISM-0229, this policy advises all personnel of the permitted sensitivity or classification of information that can be communicated over each type of telephone system available in the organisation. A reference card is issued to all personnel summarising: standard PSTN desk phones (UNCLASSIFIED only); IP telephony (OFFICIAL up to OFFICIAL: Sensitive); and approved cryptographic devices (SECRET and TOP SECRET calls as applicable). The policy is communicated at induction and refreshed annually."
+              },
+              {
+                "uuid": "4c668a03-22b4-4603-a9b7-4b47d8e8be03",
+                "control-id": "ism-0230",
+                "description": "As required by ISM-0230, personnel are advised of the security risks posed by non-secure telephone systems in areas where sensitive or classified discussions may take place. This includes risks from: speakerphone use in open-plan areas; cordless handsets that transmit over radio frequencies; and IP telephone systems that may be vulnerable to eavesdropping if not encrypted. Personnel are instructed to use closed offices or secure phone rooms for sensitive discussions."
+              },
+              {
+                "uuid": "a3448ba7-ed3d-4255-a162-361727dcb4c5",
+                "control-id": "ism-0232",
+                "description": "As required by ISM-0232, telephone systems used for sensitive or classified conversations encrypt all traffic between handsets and switching infrastructure using ASD-approved cryptography. Encrypted voice capability is provided by approved secure telephone equipment. Personnel using encrypted telephone systems are trained in correct operating procedures including verification of the encrypted call indicator before commencing a classified conversation."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

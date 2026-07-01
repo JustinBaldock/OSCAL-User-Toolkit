@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "914ff93b-f674-40e6-ac1d-28161d08d6bd",
+    "metadata": {
+      "title": "policy - Web Usage Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "5f35bd4d-4506-4bca-a057-6de44ae6c07a",
+        "type": "policy",
+        "title": "Web Usage Policy",
+        "description": "The web usage policy governs how personnel access the internet and web-based services from organisational systems. It defines permitted and prohibited uses of web browsing, establishes requirements for content filtering and web proxy use, and sets out obligations for personnel to report suspected malicious or inappropriate sites.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Web Usage Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "405a7b71-49cf-42c0-ac13-1edf23e3cf41",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Web Usage Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "fdfead2f-cb24-444d-879a-5c442c593aba",
+                "control-id": "ism-0258",
+                "description": "This policy is the web usage policy required by ISM-0258. It is developed, implemented, and maintained by the organisation. The policy covers: permitted and prohibited uses of the internet during work hours and on work devices; requirement to route all web traffic through the organisational web proxy and content filter; prohibition on using personal proxies, VPNs, or anonymisation services to bypass content filtering; obligation to report suspected malicious websites or phishing attempts to the security team; and consequences for policy violation. The policy is reviewed annually and after any significant incident involving web-based threats."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
