@@ -246,6 +246,7 @@ class ComponentTab(tk.Frame):
             # If a component is being edited, refresh its control list
             if self._selected_index is not None:
                 self._refresh_control_list()
+            self._refresh_control_source_label()
         else:
             # No catalog — hide editor, show gate
             self._body_pane.pack_forget()
@@ -264,6 +265,18 @@ class ComponentTab(tk.Frame):
         profile's controls; otherwise it shows the full catalog control list.
         """
         return self._get_catalog() is not None
+
+    def _refresh_control_source_label(self):
+        """
+        Update the Section 9 label showing which catalog/profile filename will
+        be written to control-implementations[].source when this component is
+        saved. Uses the same get_source_href() logic as the actual save path,
+        so the label always matches what ends up in the OSCAL output.
+        """
+        if not hasattr(self, "_ctrl_source_lbl"):
+            return
+        source_href = get_source_href(self._get_profile(), self._get_catalog())
+        self._ctrl_source_lbl.config(text=f"  Source: {source_href}")
 
     # =========================================================================
     # BUILD — top-level layout
@@ -911,6 +924,13 @@ class ComponentTab(tk.Frame):
                  "  Dot legend:  ● = response written   ○ = no response yet",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
         ).pack(anchor="w", padx=20)
+        # Shows the filename that will be written to control-implementations[].source
+        # when this component is saved — i.e. the catalog or profile these controls
+        # are drawn from. Kept in sync via _refresh_control_source_label().
+        self._ctrl_source_lbl = tk.Label(
+            parent, text="", bg=C["BG"], fg=C["ACCENT"], font=("Helvetica", 9, "bold"),
+        )
+        self._ctrl_source_lbl.pack(anchor="w", padx=20, pady=(2, 0))
 
         # This section uses an inner horizontal split:
         #   LEFT  — scrollable list of controls from the profile
