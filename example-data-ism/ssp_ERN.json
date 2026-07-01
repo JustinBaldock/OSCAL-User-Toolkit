@@ -3,13 +3,17 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Research Network SSP",
-      "last-modified": "2026-07-01T04:55:14Z",
+      "last-modified": "2026-07-01T05:06:38Z",
       "version": "0.1",
       "oscal-version": "1.2.2",
       "roles": [
         {
           "id": "system-owner",
           "title": "System Owner"
+        },
+        {
+          "id": "system-poc-technical",
+          "title": "System Manager"
         }
       ],
       "parties": [
@@ -201,7 +205,7 @@
         },
         {
           "uuid": "33093ed5-9d58-40d4-891c-dabe9eacc9f5",
-          "title": "Privileged User \u2014 Security Operations",
+          "title": "Privileged User — Security Operations",
           "short-name": "soc-analyst",
           "description": "Reviews security alerts in the SIEM, performs event triage and investigation, and escalates confirmed incidents to the incident response team. Has read access to all system event logs and write access to SIEM detection rules and watchlists.",
           "role-ids": [
@@ -212,7 +216,7 @@
         },
         {
           "uuid": "09dedb80-8672-4cdc-954a-38ae18f72d84",
-          "title": "Privileged User \u2014 Database Administrator",
+          "title": "Privileged User — Database Administrator",
           "short-name": "dba",
           "description": "Manages database engines, schemas, user accounts, backup jobs, and performance tuning for all production database servers. Has elevated access to production database hosts and backup repositories. Cannot approve their own access changes.",
           "role-ids": [
@@ -222,7 +226,7 @@
         },
         {
           "uuid": "555a5bb4-93a8-4e98-99e3-312366ca82cf",
-          "title": "Privileged User \u2014 Network Engineer",
+          "title": "Privileged User — Network Engineer",
           "short-name": "net-eng",
           "description": "Configures and maintains firewalls, managed switches, routers, wireless infrastructure, and VPN concentrators. Has privileged access to all network devices via a dedicated jump server. Change requests must be approved before implementation.",
           "role-ids": [
@@ -233,7 +237,7 @@
         },
         {
           "uuid": "b5a558af-08d3-4b81-87d4-7b82346f7748",
-          "title": "Privileged User \u2014 IAM Administrator",
+          "title": "Privileged User — IAM Administrator",
           "short-name": "iam-admin",
           "description": "Manages Active Directory, Entra ID, group policy objects, and role assignments. Can create, modify, disable, and delete accounts across all systems. Role assignment changes require secondary approval from the system owner.",
           "role-ids": [
@@ -243,7 +247,7 @@
         },
         {
           "uuid": "e8950e1f-bfe4-4aca-b8ca-5084f641136f",
-          "title": "Privileged User \u2014 Backup and Recovery Operator",
+          "title": "Privileged User — Backup and Recovery Operator",
           "short-name": "backup-op",
           "description": "Operates the Veeam backup platform and offsite cloud backup repositories. Has access to restore data from production backups and to configure backup schedules and retention policies. Cannot initiate a restore to production without system owner approval.",
           "role-ids": [
@@ -253,7 +257,7 @@
         },
         {
           "uuid": "75332a12-2e28-4422-a6bd-7523e0e1ac43",
-          "title": "General Staff \u2014 Standard User",
+          "title": "General Staff — Standard User",
           "short-name": "staff",
           "description": "Standard business user with access to email, shared document management, and approved line-of-business applications. Access is scoped to the minimum required for the individual's role in accordance with least privilege.",
           "role-ids": [
@@ -284,7 +288,7 @@
         },
         {
           "uuid": "41b2f02a-285c-418a-b068-fbadd76405ac",
-          "title": "Developer \u2014 Development Environment",
+          "title": "Developer — Development Environment",
           "short-name": "developer",
           "description": "Software developer with access to the designated development and testing environments only. Has no access to production systems or production data. Deployment to production is performed exclusively through the approved CI/CD pipeline.",
           "role-ids": [
@@ -294,7 +298,7 @@
         },
         {
           "uuid": "7e835987-87d3-4bdb-b851-9b7de6de0e51",
-          "title": "Auditor \u2014 Read Only",
+          "title": "Auditor — Read Only",
           "short-name": "auditor",
           "description": "Internal or external auditor with read-only access to system logs, configuration outputs, security documentation, and evidence artefacts required for audit purposes. Cannot modify any system configuration or data. Access is time-limited to the duration of the audit engagement.",
           "role-ids": [
@@ -334,9 +338,9 @@
           },
           "protocols": [
             {
-              "uuid": "cdaa5d8a-b612-4828-8caf-ac96e28ef482",
+              "uuid": "cf84a84e-bc5e-4d27-943d-459f5a6fcfc4",
               "name": "dns",
-              "title": "DNS \u2014 Active Directory integrated DNS (authoritative for the AD domain)",
+              "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
                 {
                   "start": 53,
@@ -351,9 +355,9 @@
               ]
             },
             {
-              "uuid": "72b62d2f-0bcf-41a7-8d0d-785c986bb6f2",
+              "uuid": "e605e5be-44d3-43a5-9466-77a2caac26cb",
               "name": "kerberos",
-              "title": "Kerberos \u2014 Primary authentication protocol for the AD domain",
+              "title": "Kerberos — Primary authentication protocol for the AD domain",
               "port-ranges": [
                 {
                   "start": 88,
@@ -368,9 +372,9 @@
               ]
             },
             {
-              "uuid": "c2434c80-db76-455c-99df-2359e64677ad",
+              "uuid": "f60ae7a7-b31e-4e50-a92c-25b5eeed06c6",
               "name": "rpc-epmap",
-              "title": "RPC Endpoint Mapper \u2014 Required for AD replication and RPC-based AD operations",
+              "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
               "port-ranges": [
                 {
                   "start": 135,
@@ -380,9 +384,9 @@
               ]
             },
             {
-              "uuid": "e72f88dd-aab0-4bf9-81a6-3950d908d1bb",
+              "uuid": "1271b92b-2489-4393-b634-4643b65bbc63",
               "name": "ldap",
-              "title": "LDAP \u2014 Active Directory directory queries, user and computer object lookups",
+              "title": "LDAP — Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
                 {
                   "start": 389,
@@ -397,9 +401,9 @@
               ]
             },
             {
-              "uuid": "a83957fd-1ea6-46ba-b925-19cfff67fec2",
+              "uuid": "1d414ecb-8c21-41c8-ab02-2425df139dc6",
               "name": "ldaps",
-              "title": "LDAPS \u2014 LDAP over TLS (required for secure bind and credential operations)",
+              "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
                 {
                   "start": 636,
@@ -409,9 +413,9 @@
               ]
             },
             {
-              "uuid": "41d2d578-a256-4626-bd02-8e3d7d5de225",
+              "uuid": "5f92612a-5b27-46d1-a843-629ab28492f5",
               "name": "smb",
-              "title": "SMB \u2014 SYSVOL and NETLOGON share access for Group Policy delivery",
+              "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
                 {
                   "start": 445,
@@ -421,9 +425,9 @@
               ]
             },
             {
-              "uuid": "5cfa3a5c-f3c1-4413-a2a0-455cba0486dd",
+              "uuid": "68711539-45a8-4b4c-9693-1ed31049b586",
               "name": "ntp",
-              "title": "NTP \u2014 Domain controller as Windows Time authoritative source (W32tm)",
+              "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
                 {
                   "start": 123,
@@ -433,9 +437,9 @@
               ]
             },
             {
-              "uuid": "25b0299a-252f-47de-98dc-a1f7a4b7329a",
+              "uuid": "d3bd7477-6b48-47b6-8131-d28a8b05f682",
               "name": "ad-gc",
-              "title": "Active Directory Global Catalog \u2014 Forest-wide directory lookups",
+              "title": "Active Directory Global Catalog — Forest-wide directory lookups",
               "port-ranges": [
                 {
                   "start": 3268,
@@ -451,54 +455,54 @@
               ]
             },
             {
-              "uuid": "7d2f8a47-b704-47db-88ae-47a4d3832edd",
+              "uuid": "2b65343e-e6ca-4e67-bd3f-8a87c63c0bb0",
               "name": "ad-replication",
-              "title": "AD Replication \u2014 RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
+              "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
                 {
                   "start": 49152,
                   "end": 65535,
                   "transport": "TCP",
-                  "remarks": "Dynamic RPC high ports \u2014 restrict to DC-to-DC traffic only"
+                  "remarks": "Dynamic RPC high ports — restrict to DC-to-DC traffic only"
                 }
               ]
             },
             {
-              "uuid": "88dd008f-17e9-46cb-a350-304dadbb92de",
+              "uuid": "927bbb6c-4b5e-4369-9bc6-3a461d3e5ddc",
               "name": "netbios-ns",
-              "title": "NetBIOS Name Service \u2014 Legacy NetBIOS name resolution (disable where possible)",
+              "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
                 {
                   "start": 137,
                   "end": 137,
                   "transport": "UDP",
-                  "remarks": "Legacy \u2014 disable on all subnets where LLMNR/NetBIOS suppression is enforced"
+                  "remarks": "Legacy — disable on all subnets where LLMNR/NetBIOS suppression is enforced"
                 }
               ]
             },
             {
-              "uuid": "1dd1b1cd-bbc6-4ffb-a82d-628acf3b2ce4",
+              "uuid": "841ce2ee-bfaa-4aff-b8aa-6f0241b42984",
               "name": "netbios-dgm",
-              "title": "NetBIOS Datagram \u2014 Legacy NetBIOS datagram service",
+              "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
               "port-ranges": [
                 {
                   "start": 138,
                   "end": 138,
                   "transport": "UDP",
-                  "remarks": "Legacy \u2014 disable on all subnets where LLMNR/NetBIOS suppression is enforced"
+                  "remarks": "Legacy — disable on all subnets where LLMNR/NetBIOS suppression is enforced"
                 }
               ]
             },
             {
-              "uuid": "0941589f-6a6c-4449-87d1-d678c258ad63",
+              "uuid": "908fc784-70df-45fc-b10f-f4c061198ef2",
               "name": "netbios-ssn",
-              "title": "NetBIOS Session \u2014 Legacy NetBIOS session service",
+              "title": "NetBIOS Session — Legacy NetBIOS session service",
               "port-ranges": [
                 {
                   "start": 139,
                   "end": 139,
                   "transport": "TCP",
-                  "remarks": "Legacy \u2014 disable where SMB over TCP/445 is used exclusively"
+                  "remarks": "Legacy — disable where SMB over TCP/445 is used exclusively"
                 }
               ]
             }
@@ -543,9 +547,9 @@
           },
           "protocols": [
             {
-              "uuid": "1e81c6cf-6fa5-4dfe-a9e2-6f3a7cfce781",
+              "uuid": "60ba9c5e-30a2-4526-97ee-ede333a8a369",
               "name": "https",
-              "title": "HTTPS \u2014 Web-based management console",
+              "title": "HTTPS — Web-based management console",
               "port-ranges": [
                 {
                   "start": 443,
@@ -555,9 +559,9 @@
               ]
             },
             {
-              "uuid": "15c0c9dd-15d8-482c-964c-b66090d8e97a",
+              "uuid": "522f8b6a-bcec-4df9-9f16-116b2d151b7d",
               "name": "ssh",
-              "title": "SSH \u2014 Secure CLI management",
+              "title": "SSH — Secure CLI management",
               "port-ranges": [
                 {
                   "start": 22,
@@ -567,9 +571,9 @@
               ]
             },
             {
-              "uuid": "141ffc28-8d72-4558-89a3-e4cec0653810",
+              "uuid": "ccb1881b-d1d3-4f41-b71c-6f82b32ac061",
               "name": "snmp",
-              "title": "SNMP \u2014 Network monitoring (inbound queries / traps outbound)",
+              "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
                 {
                   "start": 161,
@@ -585,9 +589,9 @@
               ]
             },
             {
-              "uuid": "aa0d115b-250e-4af4-952c-4c4da34b8737",
+              "uuid": "dd5e9d52-2ed3-4f32-9603-97b866a62960",
               "name": "syslog",
-              "title": "Syslog \u2014 Security event forwarding to SIEM",
+              "title": "Syslog — Security event forwarding to SIEM",
               "port-ranges": [
                 {
                   "start": 514,
@@ -597,9 +601,9 @@
               ]
             },
             {
-              "uuid": "75cca0ea-bd54-4453-8702-5a4abe3d60a0",
+              "uuid": "a59810cc-b226-406f-81c9-3c613f3655f0",
               "name": "ntp",
-              "title": "NTP \u2014 Time synchronisation",
+              "title": "NTP — Time synchronisation",
               "port-ranges": [
                 {
                   "start": 123,
@@ -621,7 +625,7 @@
           },
           "protocols": [
             {
-              "uuid": "1b2467a2-047e-43dc-86c8-8d667a27f2d0",
+              "uuid": "ec802f7e-e1a3-4fd9-b097-a7964def3087",
               "name": "https",
               "title": "Secure local management",
               "port-ranges": [
@@ -633,7 +637,7 @@
               ]
             },
             {
-              "uuid": "9d37738b-0277-452f-ac3c-f2f06a0faef7",
+              "uuid": "6ff6a0ad-fa7b-467e-9ffa-c5d80eca6270",
               "name": "IKE",
               "title": "Encrypted data transport",
               "port-ranges": [
@@ -645,7 +649,7 @@
               ]
             },
             {
-              "uuid": "f2e44578-16fe-4933-b008-b4e8c0173ed1",
+              "uuid": "3da95fe7-56d1-47a4-942c-12d114719206",
               "name": "NAT-T",
               "title": "NAT Traversal",
               "port-ranges": [
@@ -669,9 +673,9 @@
           },
           "protocols": [
             {
-              "uuid": "f017dc4f-07af-4c45-9c9c-a473c361f62d",
+              "uuid": "bb17e145-97e0-4907-9c94-b119adf09783",
               "name": "https",
-              "title": "HTTPS \u2014 Airlock Digital management console and agent-to-server communication",
+              "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
                 {
                   "start": 443,
@@ -681,22 +685,22 @@
               ]
             },
             {
-              "uuid": "9321499a-d1d0-45e1-a9c6-8361d61c8c71",
+              "uuid": "eaf2f152-1afc-40e6-94e5-f2f16671575d",
               "name": "airlock-agent",
-              "title": "Airlock Digital agent communication \u2014 Agent check-in and policy download",
+              "title": "Airlock Digital agent communication — Agent check-in and policy download",
               "port-ranges": [
                 {
                   "start": 4433,
                   "end": 4433,
                   "transport": "TCP",
-                  "remarks": "Default Airlock Digital agent port \u2014 confirm with vendor deployment guide; may use 443"
+                  "remarks": "Default Airlock Digital agent port — confirm with vendor deployment guide; may use 443"
                 }
               ]
             },
             {
-              "uuid": "08a0c219-8b45-4632-bd4e-383235469d1a",
+              "uuid": "6a8ab358-c6f6-4896-9126-53f92df8a915",
               "name": "syslog",
-              "title": "Syslog \u2014 Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
+              "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
                 {
                   "start": 514,
@@ -706,9 +710,9 @@
               ]
             },
             {
-              "uuid": "7c6ebea6-3812-4e8e-9401-0bc367f898ab",
+              "uuid": "f8a5998f-6bf0-4a70-a543-c0fa74e812d8",
               "name": "ldaps",
-              "title": "LDAPS \u2014 Active Directory integration for Airlock Digital management console authentication",
+              "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
                 {
                   "start": 636,
@@ -718,9 +722,9 @@
               ]
             },
             {
-              "uuid": "5e3c48e5-7150-49b9-8d05-dd4ada19bb90",
+              "uuid": "12912285-a769-4e4b-8ead-11a7318effd9",
               "name": "ntp",
-              "title": "NTP \u2014 Time synchronisation for audit log timestamps",
+              "title": "NTP — Time synchronisation for audit log timestamps",
               "port-ranges": [
                 {
                   "start": 123,
@@ -756,7 +760,7 @@
           },
           "protocols": [
             {
-              "uuid": "a839b5b1-5b5a-4d75-b9ee-a23753b183c7",
+              "uuid": "e8993bf9-addf-4a8d-8951-3571ed228ac3",
               "name": "smb",
               "title": "Server Message Block",
               "port-ranges": [
@@ -811,7 +815,7 @@
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "954c0803-a4ae-4b86-88a9-367daf2928d0",
+          "uuid": "f6614d79-cedb-4886-b833-dc96a886d0c6",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -825,7 +829,7 @@
           ]
         },
         {
-          "uuid": "8340c5a9-1069-48d3-8bb1-3c0be619952e",
+          "uuid": "4f2b0fd4-53e6-4980-830a-61a39f942d63",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -839,7 +843,7 @@
           ]
         },
         {
-          "uuid": "4511ec58-86a7-4a5b-acc3-7973bcdeb97d",
+          "uuid": "bd96e3c9-b6d5-4710-99a1-06abb50666b9",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -853,7 +857,7 @@
           ]
         },
         {
-          "uuid": "231ff0d3-65cf-431d-a88b-79d913d1bffa",
+          "uuid": "63e4557b-2086-4238-ad3b-6adec1b757f7",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -867,7 +871,7 @@
           ]
         },
         {
-          "uuid": "508a61e8-8460-4c5c-a02e-948080834c87",
+          "uuid": "398a2c9a-aa76-4698-bef5-ed2c6900f9d1",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -881,7 +885,7 @@
           ]
         },
         {
-          "uuid": "5bf2ae37-0e2c-43f1-96b2-bf3ac84963a7",
+          "uuid": "585cabe6-22dd-4e12-add0-5870c994dabb",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -895,7 +899,7 @@
           ]
         },
         {
-          "uuid": "1162de7f-bb37-4fd3-8e85-55ba83a49007",
+          "uuid": "843233bf-9e39-4446-a508-7070b7e8a6d5",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -909,7 +913,7 @@
           ]
         },
         {
-          "uuid": "f1998fa8-8384-43e9-8d2d-898752ed78c6",
+          "uuid": "86ee42cf-fb84-4f74-b02f-3e1bb963af89",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -923,7 +927,7 @@
           ]
         },
         {
-          "uuid": "ba251721-334f-48af-ad6a-e31e55d72fe0",
+          "uuid": "e0140c07-417a-4e34-ba85-e31f632757e8",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -937,7 +941,7 @@
           ]
         },
         {
-          "uuid": "04f92f3b-07cb-427a-8cdc-0bb958f6c851",
+          "uuid": "70aad8fc-af4a-4056-94d0-bf286b3d83b9",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -951,7 +955,7 @@
           ]
         },
         {
-          "uuid": "806b8396-2e3c-4412-b389-616830308331",
+          "uuid": "6b1a510a-565e-4c93-8dff-8a311a4f714f",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -965,7 +969,7 @@
           ]
         },
         {
-          "uuid": "55ee71b4-80b2-483c-86e4-514d417461d1",
+          "uuid": "13d2bb71-846c-49e9-a8c9-e640cbea08e7",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -979,7 +983,7 @@
           ]
         },
         {
-          "uuid": "23f36256-41cc-4184-9e47-0504ee71d01d",
+          "uuid": "543989cb-9c06-4067-93cd-7086fd81d8a4",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -993,7 +997,7 @@
           ]
         },
         {
-          "uuid": "f3627068-6f1b-4d15-8df9-94a0982f5949",
+          "uuid": "348680fc-ce98-46af-8451-56cb423169f5",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -1007,7 +1011,7 @@
           ]
         },
         {
-          "uuid": "f0d3a40d-407a-4373-a8a2-abf98924530e",
+          "uuid": "b742244c-34ca-42ba-88e2-969945bdd5d9",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -1021,7 +1025,7 @@
           ]
         },
         {
-          "uuid": "cd0f2964-0f6f-4a74-8116-1c120cb44234",
+          "uuid": "ae6c056c-1ae2-4ee2-8abb-157280786974",
           "control-id": "ism-2012",
           "by-components": [
             {
@@ -1035,7 +1039,7 @@
           ]
         },
         {
-          "uuid": "6fa65153-c99e-4957-a400-8c17d423bfbf",
+          "uuid": "9e8bd760-37e5-4fca-9b1d-2613e53f3aea",
           "control-id": "ism-1175",
           "by-components": [
             {
@@ -1049,7 +1053,7 @@
           ]
         },
         {
-          "uuid": "5c55118a-695e-4367-b742-e8689c93e2cb",
+          "uuid": "4e1aff51-702a-4c0b-a310-d8b41a30da89",
           "control-id": "ism-0874",
           "by-components": [
             {
@@ -1063,7 +1067,7 @@
           ]
         },
         {
-          "uuid": "62045451-0452-4466-af74-2c50a7869fbc",
+          "uuid": "c764e26d-6db4-44b4-b41e-263b550fb9ed",
           "control-id": "ism-1490",
           "by-components": [
             {
@@ -1077,7 +1081,7 @@
           ]
         },
         {
-          "uuid": "ee9b66d3-54ea-4b50-a318-ce66879940e8",
+          "uuid": "ccd9764c-2b0d-473f-ac8e-4e4820b55a1b",
           "control-id": "ism-1486",
           "by-components": [
             {
@@ -1091,7 +1095,7 @@
           ]
         },
         {
-          "uuid": "0d9eb91e-c424-4876-aff3-48dd6c952a9a",
+          "uuid": "a652e5df-86bf-4f30-82bf-edf777cef945",
           "control-id": "ism-1485",
           "by-components": [
             {
@@ -1105,7 +1109,7 @@
           ]
         },
         {
-          "uuid": "a8d92c63-7043-4193-9424-2f71a7944fd1",
+          "uuid": "d68cdf68-9b71-4965-9352-2329eae3a9b5",
           "control-id": "ism-1483",
           "by-components": [
             {
@@ -1119,7 +1123,7 @@
           ]
         },
         {
-          "uuid": "d63d55f3-ff74-4d2f-94aa-3c4c99e06004",
+          "uuid": "b3de73da-1b9a-493e-bd63-323dd0c0ce83",
           "control-id": "ism-1978",
           "by-components": [
             {
@@ -1133,7 +1137,7 @@
           ]
         },
         {
-          "uuid": "3393035a-12d4-4f3d-b8fb-851bbc6b069a",
+          "uuid": "000f34dc-8c26-446d-9f05-10e3bb0a7081",
           "control-id": "ism-1877",
           "by-components": [
             {
@@ -1147,7 +1151,7 @@
           ]
         },
         {
-          "uuid": "f4cc4507-e4fa-40db-8b6b-9074551f756e",
+          "uuid": "64445a7e-09a4-4db4-9841-8eac48ddf77f",
           "control-id": "ism-1753",
           "by-components": [
             {
@@ -1161,7 +1165,7 @@
           ]
         },
         {
-          "uuid": "aae04054-579b-417e-b6b4-1af57611b9bd",
+          "uuid": "5a68e6ba-78c4-4c6e-a616-7ed317cd9eca",
           "control-id": "ism-1906",
           "by-components": [
             {
@@ -1175,7 +1179,7 @@
           ]
         },
         {
-          "uuid": "b5831ea0-e341-4d72-8a23-24c4c5ec2f76",
+          "uuid": "a1238d9b-0020-4aa2-8247-b491a3b12bce",
           "control-id": "ism-1960",
           "by-components": [
             {
@@ -1189,7 +1193,7 @@
           ]
         },
         {
-          "uuid": "ac4a5149-0ec3-40aa-9600-78de786bbf8b",
+          "uuid": "08bc30ab-83c4-4a21-b0cc-ec503ad1a425",
           "control-id": "ism-1701",
           "by-components": [
             {
@@ -1203,7 +1207,7 @@
           ]
         },
         {
-          "uuid": "5d119a3b-d510-4f32-b227-da2cb88a6fcb",
+          "uuid": "0d5a4958-637f-47fb-9239-262888da2bd8",
           "control-id": "ism-1818",
           "by-components": [
             {
@@ -1246,68 +1250,6 @@
               "href": "ISM_NON_CLASSIFIED-baseline_profile.json"
             }
           ]
-        }
-      ]
-    }
-  },
-  "system-characteristics": {
-    "system-information": {
-      "information-types": [
-        {
-          "uuid": "00360638-0de5-4ac5-9871-14918931dca0",
-          "title": "Research Data",
-          "description": "Scientific research datasets, experimental results, and raw data collected by the research network for analysis and publication.",
-          "confidentiality-impact": {
-            "base": "fips-199-moderate"
-          },
-          "integrity-impact": {
-            "base": "fips-199-high"
-          },
-          "availability-impact": {
-            "base": "fips-199-moderate"
-          }
-        },
-        {
-          "uuid": "e1e23815-0376-4c91-8d68-bab04c8e1403",
-          "title": "Personnel and HR Records",
-          "description": "Employee personal information, employment records, performance reviews, and payroll data held in support of human resources management.",
-          "confidentiality-impact": {
-            "base": "fips-199-high"
-          },
-          "integrity-impact": {
-            "base": "fips-199-moderate"
-          },
-          "availability-impact": {
-            "base": "fips-199-low"
-          }
-        },
-        {
-          "uuid": "016a11b6-a8b1-48c5-a292-a554704f7d5b",
-          "title": "Network Operations and Configuration Data",
-          "description": "Network topology diagrams, device configurations, IP addressing schemes, and operational logs used to manage and maintain the research network infrastructure.",
-          "confidentiality-impact": {
-            "base": "fips-199-moderate"
-          },
-          "integrity-impact": {
-            "base": "fips-199-high"
-          },
-          "availability-impact": {
-            "base": "fips-199-moderate"
-          }
-        },
-        {
-          "uuid": "77b94ac8-ad8a-4e1b-9414-e70ddd53923c",
-          "title": "System Security Information",
-          "description": "Security plans, vulnerability reports, audit logs, incident records, and access control lists used to protect and monitor the system.",
-          "confidentiality-impact": {
-            "base": "fips-199-high"
-          },
-          "integrity-impact": {
-            "base": "fips-199-high"
-          },
-          "availability-impact": {
-            "base": "fips-199-moderate"
-          }
         }
       ]
     }
