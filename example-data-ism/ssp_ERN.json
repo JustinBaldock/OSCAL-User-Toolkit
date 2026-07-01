@@ -2,8 +2,8 @@
   "system-security-plan": {
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
-      "title": "Example Network",
-      "last-modified": "2026-06-28T03:01:18Z",
+      "title": "Example Research Network SSP",
+      "last-modified": "2026-07-01T04:55:14Z",
       "version": "0.1",
       "oscal-version": "1.2.2",
       "roles": [
@@ -46,12 +46,109 @@
       "description": "This is a description of a small example network.",
       "date-authorized": "2026-06-24",
       "security-sensitivity-level": "fips-199-moderate",
+      "security-impact-level": {
+        "security-objective-confidentiality": "fips-199-moderate",
+        "security-objective-integrity": "fips-199-moderate",
+        "security-objective-availability": "fips-199-moderate"
+      },
       "system-information": {
         "information-types": [
           {
             "uuid": "8e9ba220-f567-4594-8db3-c7dcf1fd7d49",
-            "title": "policy abc",
-            "description": "A link to a policy document?",
+            "title": "Unofficial",
+            "description": "Information that is not part of official government duties or operations",
+            "confidentiality-impact": {
+              "base": "fips-199-moderate"
+            },
+            "integrity-impact": {
+              "base": "fips-199-moderate"
+            },
+            "availability-impact": {
+              "base": "fips-199-moderate"
+            },
+            "props": [
+              {
+                "name": "component-uuid",
+                "value": "d1c0fb4d-24e5-4d5c-ad4c-68ac05b252a7",
+                "class": "data-flow"
+              },
+              {
+                "name": "flow-direction",
+                "value": "internal",
+                "class": "data-flow"
+              },
+              {
+                "name": "component-title",
+                "value": "Windows Fileshare Network I:",
+                "class": "data-flow"
+              },
+              {
+                "name": "component-uuid",
+                "value": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+                "class": "data-flow"
+              },
+              {
+                "name": "flow-direction",
+                "value": "bidirectional",
+                "class": "data-flow"
+              },
+              {
+                "name": "component-title",
+                "value": "network encryptor ABC",
+                "class": "data-flow"
+              }
+            ]
+          },
+          {
+            "uuid": "e7d7b5ee-b2b8-415a-be35-a88b38344110",
+            "title": "Official",
+            "description": "Routine government business, operations, and services. This represents the vast majority of government data by volume.",
+            "confidentiality-impact": {
+              "base": "fips-199-moderate"
+            },
+            "integrity-impact": {
+              "base": "fips-199-moderate"
+            },
+            "availability-impact": {
+              "base": "fips-199-moderate"
+            },
+            "props": [
+              {
+                "name": "component-uuid",
+                "value": "d1c0fb4d-24e5-4d5c-ad4c-68ac05b252a7",
+                "class": "data-flow"
+              },
+              {
+                "name": "flow-direction",
+                "value": "internal",
+                "class": "data-flow"
+              },
+              {
+                "name": "component-title",
+                "value": "Windows Fileshare Network I:",
+                "class": "data-flow"
+              },
+              {
+                "name": "component-uuid",
+                "value": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+                "class": "data-flow"
+              },
+              {
+                "name": "flow-direction",
+                "value": "bidirectional",
+                "class": "data-flow"
+              },
+              {
+                "name": "component-title",
+                "value": "network encryptor ABC",
+                "class": "data-flow"
+              }
+            ]
+          },
+          {
+            "uuid": "9cfe2f24-3326-4928-9ace-fee2fad83ef1",
+            "title": "Official: Sensitive",
+            "description": "Official information that requires protective measures. This applies to data like",
             "confidentiality-impact": {
               "base": "fips-199-moderate"
             },
@@ -79,6 +176,143 @@
       }
     },
     "system-implementation": {
+      "users": [
+        {
+          "uuid": "e361a2a6-1d95-4e0e-8f18-6b9061280cea",
+          "title": "System Administrator",
+          "short-name": "sysadmin",
+          "description": "Manages servers, operating systems, network devices, and core infrastructure. Has full administrative rights across all in-scope systems including the ability to create and delete accounts, modify security configurations, and install software.",
+          "role-ids": [
+            "system-administrator",
+            "maintainer"
+          ],
+          "remarks": "Primary system administrator. Must hold a current baseline security clearance."
+        },
+        {
+          "uuid": "07be434b-a5a8-4e5c-8f21-588d8603e55b",
+          "title": "System Administrator",
+          "short-name": "sysadmin",
+          "description": "Secondary system administrator. Maintains high-availability standby access to support continuity of operations during the primary administrator's absence or in an incident response scenario.",
+          "role-ids": [
+            "system-administrator",
+            "maintainer"
+          ],
+          "remarks": "Backup system administrator. Must hold a current baseline security clearance."
+        },
+        {
+          "uuid": "33093ed5-9d58-40d4-891c-dabe9eacc9f5",
+          "title": "Privileged User — Security Operations",
+          "short-name": "soc-analyst",
+          "description": "Reviews security alerts in the SIEM, performs event triage and investigation, and escalates confirmed incidents to the incident response team. Has read access to all system event logs and write access to SIEM detection rules and watchlists.",
+          "role-ids": [
+            "security-operations",
+            "asset-administrator"
+          ],
+          "remarks": "Role requires completion of the annual SOC analyst training module and holds a need-to-know for all system log data."
+        },
+        {
+          "uuid": "09dedb80-8672-4cdc-954a-38ae18f72d84",
+          "title": "Privileged User — Database Administrator",
+          "short-name": "dba",
+          "description": "Manages database engines, schemas, user accounts, backup jobs, and performance tuning for all production database servers. Has elevated access to production database hosts and backup repositories. Cannot approve their own access changes.",
+          "role-ids": [
+            "asset-administrator"
+          ],
+          "remarks": "Must not share the DBA account. All privileged database sessions are recorded via session monitoring."
+        },
+        {
+          "uuid": "555a5bb4-93a8-4e98-99e3-312366ca82cf",
+          "title": "Privileged User — Network Engineer",
+          "short-name": "net-eng",
+          "description": "Configures and maintains firewalls, managed switches, routers, wireless infrastructure, and VPN concentrators. Has privileged access to all network devices via a dedicated jump server. Change requests must be approved before implementation.",
+          "role-ids": [
+            "asset-administrator",
+            "maintainer"
+          ],
+          "remarks": "Network device changes are subject to the change management process and require peer review."
+        },
+        {
+          "uuid": "b5a558af-08d3-4b81-87d4-7b82346f7748",
+          "title": "Privileged User — IAM Administrator",
+          "short-name": "iam-admin",
+          "description": "Manages Active Directory, Entra ID, group policy objects, and role assignments. Can create, modify, disable, and delete accounts across all systems. Role assignment changes require secondary approval from the system owner.",
+          "role-ids": [
+            "asset-administrator"
+          ],
+          "remarks": "IAM administrator account is separate from the individual's standard user account and must not be used for day-to-day tasks."
+        },
+        {
+          "uuid": "e8950e1f-bfe4-4aca-b8ca-5084f641136f",
+          "title": "Privileged User — Backup and Recovery Operator",
+          "short-name": "backup-op",
+          "description": "Operates the Veeam backup platform and offsite cloud backup repositories. Has access to restore data from production backups and to configure backup schedules and retention policies. Cannot initiate a restore to production without system owner approval.",
+          "role-ids": [
+            "maintainer"
+          ],
+          "remarks": "Restore-to-production requests must be logged in the ITSM system with system owner approval before execution."
+        },
+        {
+          "uuid": "75332a12-2e28-4422-a6bd-7523e0e1ac43",
+          "title": "General Staff — Standard User",
+          "short-name": "staff",
+          "description": "Standard business user with access to email, shared document management, and approved line-of-business applications. Access is scoped to the minimum required for the individual's role in accordance with least privilege.",
+          "role-ids": [
+            "end-user"
+          ],
+          "remarks": "Standard user account. Access is provisioned during onboarding and reviewed at 12-month intervals, or immediately on change of role."
+        },
+        {
+          "uuid": "1f6c1c7f-352f-4249-a170-62dc79412d67",
+          "title": "Remote / VPN User",
+          "short-name": "remote-user",
+          "description": "Personnel who access organisational systems from outside the office over the approved IPSec or SSL VPN. No additional access beyond standard user entitlements is granted by virtue of remote access. All traffic is routed through the organisational perimeter.",
+          "role-ids": [
+            "end-user"
+          ],
+          "remarks": "Remote access requires MFA. Sessions are subject to a 60-minute idle timeout and are logged by the VPN gateway."
+        },
+        {
+          "uuid": "f46d5f3d-8de3-474e-98e7-3836d4f0fda9",
+          "title": "Service Desk Operator",
+          "short-name": "helpdesk",
+          "description": "Handles IT support requests via the ITSM portal. Can reset passwords and unlock accounts for standard users only. Cannot modify group memberships, grant privileged access, or action requests relating to privileged accounts. Escalates privileged access issues to the IAM administrator.",
+          "role-ids": [
+            "end-user",
+            "asset-administrator"
+          ],
+          "remarks": "Service desk operators use a shared functional account for ITSM access only; all other system access is via their individual standard user account."
+        },
+        {
+          "uuid": "41b2f02a-285c-418a-b068-fbadd76405ac",
+          "title": "Developer — Development Environment",
+          "short-name": "developer",
+          "description": "Software developer with access to the designated development and testing environments only. Has no access to production systems or production data. Deployment to production is performed exclusively through the approved CI/CD pipeline.",
+          "role-ids": [
+            "end-user"
+          ],
+          "remarks": "Developer accounts in the development environment do not carry over to staging or production. Production access requests must follow the privileged access process."
+        },
+        {
+          "uuid": "7e835987-87d3-4bdb-b851-9b7de6de0e51",
+          "title": "Auditor — Read Only",
+          "short-name": "auditor",
+          "description": "Internal or external auditor with read-only access to system logs, configuration outputs, security documentation, and evidence artefacts required for audit purposes. Cannot modify any system configuration or data. Access is time-limited to the duration of the audit engagement.",
+          "role-ids": [
+            "assessor"
+          ],
+          "remarks": "Time-limited account. Access is provisioned on commencement of the audit engagement and revoked within 5 business days of completion. Access must be approved by the CISO."
+        },
+        {
+          "uuid": "abbf2e46-8081-4772-b04d-2f41382a313a",
+          "title": "Automated Service Account",
+          "short-name": "svc-acct",
+          "description": "Non-human account used by automated processes, scheduled tasks, and application-to-application integrations. Access is scoped to the minimum required for the associated service. Service accounts do not have interactive login capability and cannot be used by human users.",
+          "role-ids": [
+            "asset-administrator"
+          ],
+          "remarks": "Each service account is owned by a nominated system owner. Service accounts are reviewed quarterly. Passwords are managed by the privileged access management solution and are rotated automatically every 90 days."
+        }
+      ],
       "components": [
         {
           "uuid": "5e0ce04c-8f82-4432-bb87-3c916fae842b",
@@ -100,7 +334,7 @@
           },
           "protocols": [
             {
-              "uuid": "4693d46e-335a-4dca-82c8-b2be34660a15",
+              "uuid": "cdaa5d8a-b612-4828-8caf-ac96e28ef482",
               "name": "dns",
               "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
@@ -117,7 +351,7 @@
               ]
             },
             {
-              "uuid": "68c156f1-2ba3-410d-85bb-5b109abc4e3f",
+              "uuid": "72b62d2f-0bcf-41a7-8d0d-785c986bb6f2",
               "name": "kerberos",
               "title": "Kerberos — Primary authentication protocol for the AD domain",
               "port-ranges": [
@@ -134,7 +368,7 @@
               ]
             },
             {
-              "uuid": "8917ec83-2a68-4894-92a1-4bd61e7e1de5",
+              "uuid": "c2434c80-db76-455c-99df-2359e64677ad",
               "name": "rpc-epmap",
               "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
               "port-ranges": [
@@ -146,7 +380,7 @@
               ]
             },
             {
-              "uuid": "9d1f4ca4-a107-41cb-934d-48eeaf5244c2",
+              "uuid": "e72f88dd-aab0-4bf9-81a6-3950d908d1bb",
               "name": "ldap",
               "title": "LDAP — Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
@@ -163,7 +397,7 @@
               ]
             },
             {
-              "uuid": "9832c887-7bf9-48f1-9c60-fb533be00a34",
+              "uuid": "a83957fd-1ea6-46ba-b925-19cfff67fec2",
               "name": "ldaps",
               "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
@@ -175,7 +409,7 @@
               ]
             },
             {
-              "uuid": "03f3b4a7-f428-45ed-9e82-caf74ee99b86",
+              "uuid": "41d2d578-a256-4626-bd02-8e3d7d5de225",
               "name": "smb",
               "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
@@ -187,7 +421,7 @@
               ]
             },
             {
-              "uuid": "c2bc9605-c0c5-42c1-9bf5-f053c8e85618",
+              "uuid": "5cfa3a5c-f3c1-4413-a2a0-455cba0486dd",
               "name": "ntp",
               "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
@@ -199,7 +433,7 @@
               ]
             },
             {
-              "uuid": "7ebf9c83-2cc6-43e0-9f12-7df08aa5db78",
+              "uuid": "25b0299a-252f-47de-98dc-a1f7a4b7329a",
               "name": "ad-gc",
               "title": "Active Directory Global Catalog — Forest-wide directory lookups",
               "port-ranges": [
@@ -217,7 +451,7 @@
               ]
             },
             {
-              "uuid": "a9d95c61-027b-441d-bd96-92b6ac0b251c",
+              "uuid": "7d2f8a47-b704-47db-88ae-47a4d3832edd",
               "name": "ad-replication",
               "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
@@ -230,7 +464,7 @@
               ]
             },
             {
-              "uuid": "8f637e47-7704-4a9d-bc7e-ec706b5dd6c2",
+              "uuid": "88dd008f-17e9-46cb-a350-304dadbb92de",
               "name": "netbios-ns",
               "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
@@ -243,7 +477,7 @@
               ]
             },
             {
-              "uuid": "c2926f8e-b68f-437c-a638-9995489ef898",
+              "uuid": "1dd1b1cd-bbc6-4ffb-a82d-628acf3b2ce4",
               "name": "netbios-dgm",
               "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
               "port-ranges": [
@@ -256,7 +490,7 @@
               ]
             },
             {
-              "uuid": "284de6a4-d2dc-4f4d-a141-13cfb6134690",
+              "uuid": "0941589f-6a6c-4449-87d1-d678c258ad63",
               "name": "netbios-ssn",
               "title": "NetBIOS Session — Legacy NetBIOS session service",
               "port-ranges": [
@@ -309,7 +543,7 @@
           },
           "protocols": [
             {
-              "uuid": "d0f238c8-bbe1-4f4a-9920-bdc03a59d667",
+              "uuid": "1e81c6cf-6fa5-4dfe-a9e2-6f3a7cfce781",
               "name": "https",
               "title": "HTTPS — Web-based management console",
               "port-ranges": [
@@ -321,7 +555,7 @@
               ]
             },
             {
-              "uuid": "67b202e9-6717-4c95-99bc-f01c6d6fe690",
+              "uuid": "15c0c9dd-15d8-482c-964c-b66090d8e97a",
               "name": "ssh",
               "title": "SSH — Secure CLI management",
               "port-ranges": [
@@ -333,7 +567,7 @@
               ]
             },
             {
-              "uuid": "eb022fd5-e492-460b-b461-10c7cc35fecd",
+              "uuid": "141ffc28-8d72-4558-89a3-e4cec0653810",
               "name": "snmp",
               "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
@@ -351,7 +585,7 @@
               ]
             },
             {
-              "uuid": "3d2124a0-752e-4b97-99e9-4c611018c7f6",
+              "uuid": "aa0d115b-250e-4af4-952c-4c4da34b8737",
               "name": "syslog",
               "title": "Syslog — Security event forwarding to SIEM",
               "port-ranges": [
@@ -363,7 +597,7 @@
               ]
             },
             {
-              "uuid": "a9eb2a7a-eb18-4b33-a1d7-156a70264827",
+              "uuid": "75cca0ea-bd54-4453-8702-5a4abe3d60a0",
               "name": "ntp",
               "title": "NTP — Time synchronisation",
               "port-ranges": [
@@ -387,7 +621,7 @@
           },
           "protocols": [
             {
-              "uuid": "a84a9341-7a53-4895-8feb-6ec9b367913c",
+              "uuid": "1b2467a2-047e-43dc-86c8-8d667a27f2d0",
               "name": "https",
               "title": "Secure local management",
               "port-ranges": [
@@ -399,7 +633,7 @@
               ]
             },
             {
-              "uuid": "8bc8ec86-f06d-42bb-8a9c-94e438a2253a",
+              "uuid": "9d37738b-0277-452f-ac3c-f2f06a0faef7",
               "name": "IKE",
               "title": "Encrypted data transport",
               "port-ranges": [
@@ -411,7 +645,7 @@
               ]
             },
             {
-              "uuid": "a62ad07c-0eb8-4b02-98ac-173ee3a1612a",
+              "uuid": "f2e44578-16fe-4933-b008-b4e8c0173ed1",
               "name": "NAT-T",
               "title": "NAT Traversal",
               "port-ranges": [
@@ -435,7 +669,7 @@
           },
           "protocols": [
             {
-              "uuid": "98a75a0c-894b-4e84-966c-c204dab28012",
+              "uuid": "f017dc4f-07af-4c45-9c9c-a473c361f62d",
               "name": "https",
               "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
@@ -447,7 +681,7 @@
               ]
             },
             {
-              "uuid": "b76faa80-1b7f-4a16-b68a-6a3538d0840b",
+              "uuid": "9321499a-d1d0-45e1-a9c6-8361d61c8c71",
               "name": "airlock-agent",
               "title": "Airlock Digital agent communication — Agent check-in and policy download",
               "port-ranges": [
@@ -460,7 +694,7 @@
               ]
             },
             {
-              "uuid": "3adddfe0-cb83-4548-9ade-180c298eeb1d",
+              "uuid": "08a0c219-8b45-4632-bd4e-383235469d1a",
               "name": "syslog",
               "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
@@ -472,7 +706,7 @@
               ]
             },
             {
-              "uuid": "dfc8623e-2b81-41bc-b96c-42911dd2f5f2",
+              "uuid": "7c6ebea6-3812-4e8e-9401-0bc367f898ab",
               "name": "ldaps",
               "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
@@ -484,7 +718,7 @@
               ]
             },
             {
-              "uuid": "244c6f60-24b9-4412-be20-5ccfbe2ac55f",
+              "uuid": "5e3c48e5-7150-49b9-8d05-dd4ada19bb90",
               "name": "ntp",
               "title": "NTP — Time synchronisation for audit log timestamps",
               "port-ranges": [
@@ -522,7 +756,7 @@
           },
           "protocols": [
             {
-              "uuid": "c9b40247-dbe0-4fab-b8ff-37611f368a51",
+              "uuid": "a839b5b1-5b5a-4d75-b9ee-a23753b183c7",
               "name": "smb",
               "title": "Server Message Block",
               "port-ranges": [
@@ -577,7 +811,7 @@
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "fcdd8568-ace3-48ae-86d5-ba9cac30d8e9",
+          "uuid": "954c0803-a4ae-4b86-88a9-367daf2928d0",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -591,7 +825,7 @@
           ]
         },
         {
-          "uuid": "ca821f1a-da7c-4667-aeec-dc585e1573ac",
+          "uuid": "8340c5a9-1069-48d3-8bb1-3c0be619952e",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -605,7 +839,7 @@
           ]
         },
         {
-          "uuid": "3e2198be-a3eb-4a15-b3c1-2e4fbcef8814",
+          "uuid": "4511ec58-86a7-4a5b-acc3-7973bcdeb97d",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -619,7 +853,7 @@
           ]
         },
         {
-          "uuid": "5f1f943a-3bda-4fe2-b132-c7f4863d139f",
+          "uuid": "231ff0d3-65cf-431d-a88b-79d913d1bffa",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -633,7 +867,7 @@
           ]
         },
         {
-          "uuid": "890c5c28-c4cc-4552-85f5-aa523d85b9d2",
+          "uuid": "508a61e8-8460-4c5c-a02e-948080834c87",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -647,7 +881,7 @@
           ]
         },
         {
-          "uuid": "9a78fd03-096b-4d0b-bd0e-3532818a4a76",
+          "uuid": "5bf2ae37-0e2c-43f1-96b2-bf3ac84963a7",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -661,7 +895,7 @@
           ]
         },
         {
-          "uuid": "e4cb46f9-6594-45b4-9d87-f61a52fea9da",
+          "uuid": "1162de7f-bb37-4fd3-8e85-55ba83a49007",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -675,7 +909,7 @@
           ]
         },
         {
-          "uuid": "ed1469bc-809f-4da4-bcb6-c9e3f080541c",
+          "uuid": "f1998fa8-8384-43e9-8d2d-898752ed78c6",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -689,7 +923,7 @@
           ]
         },
         {
-          "uuid": "af969639-f058-44c5-840b-f88bb67f1795",
+          "uuid": "ba251721-334f-48af-ad6a-e31e55d72fe0",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -703,7 +937,7 @@
           ]
         },
         {
-          "uuid": "3baf19a8-d359-4970-98bd-4463292f35f4",
+          "uuid": "04f92f3b-07cb-427a-8cdc-0bb958f6c851",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -717,7 +951,7 @@
           ]
         },
         {
-          "uuid": "72ea1d1e-a31c-4167-a807-a260a5fe1e93",
+          "uuid": "806b8396-2e3c-4412-b389-616830308331",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -731,7 +965,7 @@
           ]
         },
         {
-          "uuid": "b4b62ae8-25e7-4e92-ac1e-f7dfa77cc2f1",
+          "uuid": "55ee71b4-80b2-483c-86e4-514d417461d1",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -745,7 +979,7 @@
           ]
         },
         {
-          "uuid": "327a3343-7f9a-427a-81f6-5173d99612b4",
+          "uuid": "23f36256-41cc-4184-9e47-0504ee71d01d",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -759,7 +993,7 @@
           ]
         },
         {
-          "uuid": "abb00987-5b4a-49db-8510-d9fe5a47f3e5",
+          "uuid": "f3627068-6f1b-4d15-8df9-94a0982f5949",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -773,7 +1007,7 @@
           ]
         },
         {
-          "uuid": "22cc2ab5-c0d5-4bea-970f-afac367e0d43",
+          "uuid": "f0d3a40d-407a-4373-a8a2-abf98924530e",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -787,7 +1021,7 @@
           ]
         },
         {
-          "uuid": "8c2b84b6-7c25-49d0-954d-a121a43042ec",
+          "uuid": "cd0f2964-0f6f-4a74-8116-1c120cb44234",
           "control-id": "ism-2012",
           "by-components": [
             {
@@ -801,7 +1035,7 @@
           ]
         },
         {
-          "uuid": "bb159c98-99e7-4d61-a0d3-fbb410e0babc",
+          "uuid": "6fa65153-c99e-4957-a400-8c17d423bfbf",
           "control-id": "ism-1175",
           "by-components": [
             {
@@ -815,7 +1049,7 @@
           ]
         },
         {
-          "uuid": "0ca1876d-e26e-4f0e-afa1-fcba2d3ebf39",
+          "uuid": "5c55118a-695e-4367-b742-e8689c93e2cb",
           "control-id": "ism-0874",
           "by-components": [
             {
@@ -829,7 +1063,7 @@
           ]
         },
         {
-          "uuid": "8df31dc3-2d45-4c7c-bb23-eaa493d5f3af",
+          "uuid": "62045451-0452-4466-af74-2c50a7869fbc",
           "control-id": "ism-1490",
           "by-components": [
             {
@@ -843,7 +1077,7 @@
           ]
         },
         {
-          "uuid": "c08793e5-e2b0-4f23-ab77-d682e903585c",
+          "uuid": "ee9b66d3-54ea-4b50-a318-ce66879940e8",
           "control-id": "ism-1486",
           "by-components": [
             {
@@ -857,7 +1091,7 @@
           ]
         },
         {
-          "uuid": "96dcbea3-0c8d-4775-b77e-fb1a7cb94cc9",
+          "uuid": "0d9eb91e-c424-4876-aff3-48dd6c952a9a",
           "control-id": "ism-1485",
           "by-components": [
             {
@@ -871,7 +1105,7 @@
           ]
         },
         {
-          "uuid": "26e2735b-9693-46d4-ac08-940f61ba4faa",
+          "uuid": "a8d92c63-7043-4193-9424-2f71a7944fd1",
           "control-id": "ism-1483",
           "by-components": [
             {
@@ -885,7 +1119,7 @@
           ]
         },
         {
-          "uuid": "ac1a82c7-490e-4642-b4eb-e9a7a5063504",
+          "uuid": "d63d55f3-ff74-4d2f-94aa-3c4c99e06004",
           "control-id": "ism-1978",
           "by-components": [
             {
@@ -899,7 +1133,7 @@
           ]
         },
         {
-          "uuid": "963671ff-7c9d-40d4-bf61-ae074320cf93",
+          "uuid": "3393035a-12d4-4f3d-b8fb-851bbc6b069a",
           "control-id": "ism-1877",
           "by-components": [
             {
@@ -913,7 +1147,7 @@
           ]
         },
         {
-          "uuid": "6a66ebcb-b010-4ede-b517-233e99f837c4",
+          "uuid": "f4cc4507-e4fa-40db-8b6b-9074551f756e",
           "control-id": "ism-1753",
           "by-components": [
             {
@@ -927,7 +1161,7 @@
           ]
         },
         {
-          "uuid": "15048c01-4ddb-467b-926c-e0c8cdd16f64",
+          "uuid": "aae04054-579b-417e-b6b4-1af57611b9bd",
           "control-id": "ism-1906",
           "by-components": [
             {
@@ -941,7 +1175,7 @@
           ]
         },
         {
-          "uuid": "a8446249-51a6-4ad7-85aa-f931e8970799",
+          "uuid": "b5831ea0-e341-4d72-8a23-24c4c5ec2f76",
           "control-id": "ism-1960",
           "by-components": [
             {
@@ -955,7 +1189,7 @@
           ]
         },
         {
-          "uuid": "558b7ffb-1bbc-475f-92b0-407632f5b658",
+          "uuid": "ac4a5149-0ec3-40aa-9600-78de786bbf8b",
           "control-id": "ism-1701",
           "by-components": [
             {
@@ -969,7 +1203,7 @@
           ]
         },
         {
-          "uuid": "54fcfd1d-4efe-4e9c-b786-57ed24bbf20b",
+          "uuid": "5d119a3b-d510-4f32-b227-da2cb88a6fcb",
           "control-id": "ism-1818",
           "by-components": [
             {
