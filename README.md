@@ -66,8 +66,11 @@ The result is a library of audited, reusable building blocks that grows over tim
 - **Security Impact Level** (OSCAL 1.2.x): set Confidentiality, Integrity, and Availability objectives independently
 - Define system components and document how each implements individual security controls
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
-- **Export to Word** — generate a formatted `.docx` report with control implementations grouped under catalog guideline headings (requires `python-docx`)
-- **Export draw.io Diagram** — generate a System → Capability → Component hierarchy diagram:
+- **Capabilities Used** (Section 8): pick a capability from the Capability Editor's loaded list and it is recorded on the SSP (as an OSCAL metadata prop, since OSCAL 1.2.2 has no native "capabilities" field on an SSP) — its member components and their control responses are pulled straight into Section 8/9 automatically, provided the component files are already loaded in the Component Editor
+- **System Users → Import CSV** (Section 11): bulk-import system user entries from a CSV exported by another tool. Expected columns: `title, short_name, role_ids, description, remarks` (`role_ids` may list multiple roles separated by commas within the cell) — see `example-data-ism/ssp_system_users.csv` for a template
+- **Inventory Items → Import CSV** (Section 12): bulk-import inventory items from a CSV — typically an export from an external asset management system. Expected columns: `description, asset_tag, serial_number, hostname, ip_address, mac_address, physical_location, components, remarks`. Only `description` is required; the metadata columns become OSCAL props, and `components` (semicolon-separated for multiple) is matched case-insensitively against Section 8's current component titles — an asset management export won't usually know the OSCAL mapping, so most rows are expected to have this column blank and only link where the title matches exactly. See `example-data-ism/inventory_items.csv` for a template
+- **Export to Word** — generate a formatted `.docx` report, including a Capabilities Used table (capability name alongside its member components) and control implementations grouped under catalog guideline headings (requires `python-docx`)
+- **Export Capability and Component Map** (Section 8): generate a System → Capability → Component hierarchy diagram:
   - Loads capabilities currently open in the Capability Editor
   - Capabilities and their member components are laid out in columns
   - SSP components not covered by any capability appear in an "Uncategorised" column
@@ -237,7 +240,7 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 2. In the SSP Editor, fill in system characteristics, boundary, information types, and security impact levels
 3. Add system components, referencing your component library
 4. Save the SSP
-5. Use **Export draw.io Diagram** (with capabilities loaded in the Capability Editor) to produce a System → Capability → Component architecture diagram
+5. Use **Export Capability and Component Map** (with capabilities loaded in the Capability Editor) to produce a System → Capability → Component architecture diagram
 
 ### 4. Conduct an assessment
 
@@ -282,7 +285,7 @@ OSCAL-User-Toolkit/
 │   ├── catalog_tab.py               # Catalog Viewer tab
 │   ├── component_tab.py             # Component Editor tab
 │   ├── capability_tab.py            # Capability Editor tab
-│   ├── ssp_tab.py                   # SSP Editor tab (includes draw.io and DOCX export)
+│   ├── ssp_tab.py                   # SSP Editor tab (includes Capability/Component map and DOCX export, CSV import)
 │   ├── ap_tab.py                    # Assessment Plan Editor tab
 │   ├── ar_tab.py                    # Assessment Results Editor tab
 │   └── poam_tab.py                  # POA&M Editor tab (includes AR import)
