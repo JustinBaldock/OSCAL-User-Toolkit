@@ -413,6 +413,11 @@ class SSPTab(tk.Frame):
             """
             Add a label + multi-line Text widget for longer descriptions.
 
+            Includes a vertical scrollbar so content that overflows the
+            visible height (e.g. a multi-paragraph description) can still be
+            reached — without one, text below the visible area was previously
+            impossible to scroll to and edit.
+
             Returns the Text widget so the caller can read/write its content.
             """
             tk.Label(
@@ -433,7 +438,10 @@ class SSPTab(tk.Frame):
                 wrap="word",   # Wrap long lines at word boundaries
                 padx=8, pady=6,
             )
-            t.pack(fill="both")
+            vsb = ttk.Scrollbar(frame, orient="vertical", command=t.yview)
+            t.configure(yscrollcommand=vsb.set)
+            vsb.pack(side="right", fill="y")
+            t.pack(side="left", fill="both", expand=True)
             return t   # Return so the caller can .get() and .insert() later
 
         # ── Local helper: dropdown (combobox) ─────────────────────────────────
@@ -556,7 +564,7 @@ class SSPTab(tk.Frame):
 
         # The description text widget is stored as an instance variable
         # so _collect() and _populate() can read/write it later.
-        self._system_desc = textbox("System Description *", height=4)
+        self._system_desc = textbox("System Description *", height=12)
 
         combo(
             "Operational Status *", "status",
@@ -593,12 +601,12 @@ class SSPTab(tk.Frame):
 
         # ── 3. Authorization Boundary ─────────────────────────────────────────
         section("3 ·  Authorization Boundary")
-        self._auth_boundary = textbox("Boundary Description *", height=4)
+        self._auth_boundary = textbox("Boundary Description *", height=12)
 
         # ── 4. Network Architecture & Data Flow (optional) ────────────────────
         section("4 ·  Network Architecture & Data Flow  (optional)")
-        self._network  = textbox("Network Architecture", height=3)
-        self._dataflow = textbox("Data Flow",            height=3)
+        self._network  = textbox("Network Architecture", height=10)
+        self._dataflow = textbox("Data Flow",            height=10)
 
         # ── 4b. Data Flow Diagrams sub-table (optional) ───────────────────────
         tk.Label(
