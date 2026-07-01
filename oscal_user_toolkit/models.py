@@ -443,6 +443,14 @@ def empty_ssp():
         # auto-generated "this-system" component) in system-implementation.
         "components":           [],
 
+        # ── Section 8b: Capabilities Used ──────────────────────────────────
+        # Records which capabilities (from the Capability Editor) were used
+        # to auto-populate Section 8's components and Section 9's control
+        # responses. Not a native SSP field in OSCAL 1.2.2 — written out as
+        # metadata props (name="capability") so the association is traceable.
+        # Each entry: {"uuid": capability_uuid, "name": capability_name}
+        "capabilities_used":    [],
+
         # ── Section 9: Control Implementations ───────────────────────────
         # Each entry describes how the system implements one control:
         #   {"control_id", "remarks", "by_components": [
@@ -716,6 +724,14 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                 **({"roles":                roles}                if roles                else {}),
                 **({"parties":             parties}             if parties             else {}),
                 **({"responsible-parties": responsible_parties} if responsible_parties else {}),
+                # Capabilities are not a native SSP field in OSCAL 1.2.2 — record
+                # each one loaded from the Capability Editor as a metadata prop
+                # so which capabilities populated Section 8 is traceable.
+                **({"props": [
+                    {"name": "capability", "uuid": cap["uuid"], "value": cap["name"],
+                     "remarks": "Capability loaded from the Capability Editor"}
+                    for cap in ssp.get("capabilities_used", [])
+                ]} if ssp.get("capabilities_used") else {}),
             },
 
             # Declare which profile this SSP is based on
@@ -884,6 +900,16 @@ def parse_ssp_file(data):
     # OSCAL stores one entry per role with a list of party UUIDs.
     # We expand to one row per (role, party) pair so the treeview UI is flat.
     # We also look up the party name for display purposes.
+    # ── Capabilities used ─────────────────────────────────────────────────────
+    # Capabilities are not a native SSP field in OSCAL 1.2.2 — they are recorded
+    # as metadata props (name="capability") so the SSP records which capabilities
+    # from the Capability Editor its Section 8 components were populated from.
+    capabilities_used = [
+        {"uuid": p.get("uuid", ""), "name": p.get("value", "")}
+        for p in meta.get("props", [])
+        if p.get("name") == "capability"
+    ]
+
     party_by_uuid = {p["uuid"]: p["name"] for p in parties}
     responsible_parties = []
     for rp in meta.get("responsible-parties", []):
@@ -1121,6 +1147,7 @@ def parse_ssp_file(data):
         "roles":                roles,
         "parties":              parties,
         "responsible_parties":  responsible_parties,
+        "capabilities_used":    capabilities_used,
         "information_types":    info_types,
         "components":           components,
         "ctrl_implementations": ctrl_implementations,

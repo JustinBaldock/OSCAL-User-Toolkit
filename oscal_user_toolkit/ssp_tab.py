@@ -148,6 +148,7 @@ class SSPTab(tk.Frame):
         self._ssp_set_params = []   # mirrors ssp["set_parameters"]
         self._ssp_users      = []   # mirrors ssp["users"]
         self._ssp_inv_items  = []   # mirrors ssp["inventory_items"]
+        self._ssp_capabilities_used = []   # mirrors ssp["capabilities_used"]
         self._sel_comp_index = None # selected component row in Section 8
         self._sel_ctrl_id    = None # selected control id in Section 9
 
@@ -247,32 +248,10 @@ class SSPTab(tk.Frame):
             activebackground="#6a9fd8", activeforeground=C["BG"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
-        # ── Visual separator before the draw.io export ────────────────────────
-        tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
-            side="left", fill="y", padx=8, pady=6
-        )
-
-        # Wrap the draw.io button and its hint label in a small frame so they
-        # sit together as a visual unit in the toolbar.
-        drawio_frame = tk.Frame(tb, bg=C["CARD_BG"])
-        drawio_frame.pack(side="left", pady=4)
-
-        tk.Button(
-            drawio_frame, text="📐  Export draw.io Diagram",
-            command=self._export_drawio,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
-            relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
-        ).pack(side="left", padx=(0, 6))
-
-        # Hint so users know to load capabilities in the Capability Editor first.
-        # The hint is small and muted so it doesn't distract from the main toolbar.
-        tk.Label(
-            drawio_frame,
-            text="Load capabilities in the\nCapability Editor tab first",
-            bg=C["CARD_BG"], fg=C["MUTED"] if "MUTED" in C else "#888888",
-            font=("Helvetica", 8), justify="left",
-        ).pack(side="left")
+        # NOTE: the draw.io export button used to live here. It has moved to
+        # Section 8 (System Components), next to the new Capabilities Used
+        # list, since both are about the same capability/component data —
+        # see _build_section8() and _export_drawio().
 
         # ── Second visual separator before the profile info box ───────────────
         tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
@@ -848,6 +827,77 @@ class SSPTab(tk.Frame):
             justify="left",
         ).pack(anchor="w", padx=28)
 
+        # ── Capabilities Used ───────────────────────────────────────────────────
+        # OSCAL 1.2.2 has no native "capabilities" field on an SSP — capability
+        # is a component-definition concept. Adding a capability here records it
+        # as a metadata prop (see build_oscal_ssp()/parse_ssp_file() in models.py)
+        # so the association is traceable, AND auto-imports every member
+        # component (from the Component Editor's live list) plus its control
+        # responses into Section 8/9 below — the same thing manually adding each
+        # member component and re-typing its control responses would achieve.
+        tk.Label(
+            parent, text="  Capabilities Used",
+            bg=C["BG"], fg=C["ACCENT"], font=("Helvetica", 10, "bold"),
+        ).pack(anchor="w", padx=28, pady=(8, 0))
+        tk.Label(
+            parent,
+            text="  Adding a capability here pulls in every member component and its control\n"
+                 "  responses from the Component Editor automatically. Load the capability's\n"
+                 "  member component files in the Component Editor first, or nothing will import.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            justify="left",
+        ).pack(anchor="w", padx=28)
+
+        cap8_btn = tk.Frame(parent, bg=C["BG"])
+        cap8_btn.pack(fill="x", padx=28, pady=4)
+        tk.Button(
+            cap8_btn, text="＋  Add Capability", command=self._add_ssp_capability,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            cap8_btn, text="✕  Remove", command=self._remove_ssp_capability,
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+
+        # The draw.io export lives here now — it visualises exactly this
+        # System -> Capability -> Component relationship, so it belongs next
+        # to where capabilities are chosen rather than in the top toolbar.
+        tk.Frame(cap8_btn, bg=C["HEADER_BG"], width=2).pack(
+            side="left", fill="y", padx=8, pady=2
+        )
+        tk.Button(
+            cap8_btn, text="📐  Export Capability and Component Map",
+            command=self._export_drawio,
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=(0, 6))
+
+        cap8_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        cap8_frame.pack(fill="x", padx=28, pady=(0, 6))
+
+        self._cap8_tree = ttk.Treeview(
+            cap8_frame,
+            columns=("name", "components"),
+            show="headings", height=3, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("name",       "Capability",           220, False),
+            ("components", "Member Components",    400, True),
+        ]:
+            self._cap8_tree.heading(col, text=heading, anchor="w")
+            self._cap8_tree.column(col, width=w, anchor="w", stretch=stretch)
+        cap8_scroll = ttk.Scrollbar(
+            cap8_frame, orient="vertical", command=self._cap8_tree.yview,
+        )
+        self._cap8_tree.configure(yscrollcommand=cap8_scroll.set)
+        cap8_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._cap8_tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=8)
+
         # ── Toolbar of component actions ──────────────────────────────────────
         comp8_btn = tk.Frame(parent, bg=C["BG"])
         comp8_btn.pack(fill="x", padx=28, pady=4)
@@ -1366,6 +1416,222 @@ class SSPTab(tk.Frame):
     # SECTION 8 — SYSTEM COMPONENT METHODS
     # =========================================================================
 
+    def _refresh_cap8_tree(self):
+        """
+        Clear and repopulate the Capabilities Used table.
+
+        Looks up each capability's current member titles from the live
+        Capability Editor list (if still loaded) purely for display — the
+        SSP itself only stores {uuid, name} per capability (see empty_ssp()).
+        """
+        self._cap8_tree.delete(*self._cap8_tree.get_children())
+        caps_by_uuid = {c.get("uuid", ""): c for c in self._get_capabilities()}
+        for used in self._ssp_capabilities_used:
+            live_cap = caps_by_uuid.get(used.get("uuid", ""))
+            if live_cap:
+                comps_by_uuid = {c.get("uuid", ""): c for c in self._get_components()}
+                titles = [
+                    comps_by_uuid[u]["title"]
+                    for u in live_cap.get("member_uuids", [])
+                    if u in comps_by_uuid
+                ]
+                members_text = ", ".join(titles) if titles else "(members not currently loaded)"
+            else:
+                members_text = "(capability not currently loaded in Capability Editor)"
+            self._cap8_tree.insert("", "end", values=(used.get("name", ""), members_text))
+
+    def _add_ssp_capability(self):
+        """
+        Show a dialog to pick a capability from the Capability Editor's
+        currently loaded list, then:
+
+          1. Record it in Capabilities Used (as {uuid, name}).
+          2. Auto-import every member component that is currently loaded in
+             the Component Editor into Section 8 (skipping ones already
+             present, same dedup behaviour as every other import path).
+          3. Auto-import each imported component's control responses into
+             Section 9, same as importing a component file directly.
+          4. Any capability-level-only responses (control text typed
+             directly on the capability rather than derived from a member
+             component) are appended to that control's Section 9 remarks,
+             since OSCAL's by-component entries require a real component
+             UUID that a capability-only response doesn't have.
+
+        Member components that are not currently loaded in the Component
+        Editor are skipped (with a note in the summary) — there's no full
+        component definition to pull in for them.
+        """
+        available = [
+            c for c in self._get_capabilities()
+            if c.get("uuid", "") not in {u["uuid"] for u in self._ssp_capabilities_used}
+        ]
+        if not available:
+            messagebox.showinfo(
+                "No capabilities available",
+                "Every currently loaded capability has already been added, or "
+                "no capabilities are loaded. Load some in the Capability Editor "
+                "tab first."
+            )
+            return
+
+        C   = self._colors
+        dlg = self._make_dialog("Add Capability", width=420)
+        tk.Label(dlg, text="Capability", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(10, 2))
+        names = [c.get("name", "(untitled)") for c in available]
+        v_choice = tk.StringVar(value=names[0])
+        ttk.Combobox(dlg, textvariable=v_choice, values=names,
+                     state="readonly", width=40).pack(anchor="w", padx=20)
+
+        result = {}
+
+        def _ok():
+            idx = names.index(v_choice.get())
+            result["cap"] = available[idx]
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  Add  ", command=_ok,
+                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+
+        if "cap" not in result:
+            return   # User cancelled
+
+        cap = result["cap"]
+        added_components, skipped_members, added_responses = self._import_capability_into_ssp(cap)
+
+        self._ssp_capabilities_used.append({"uuid": cap["uuid"], "name": cap.get("name", "")})
+        self._refresh_cap8_tree()
+        self._refresh_comp8_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+        self._refresh_bycomp_tree()
+
+        summary = (
+            f"Capability '{cap.get('name', '')}' added.\n\n"
+            f"Components imported: {added_components}\n"
+            f"Control responses imported: {added_responses}"
+        )
+        if skipped_members:
+            summary += (
+                f"\n\nSkipped {skipped_members} member component(s) not currently "
+                f"loaded in the Component Editor."
+            )
+        messagebox.showinfo("Capability Added", summary)
+
+    def _remove_ssp_capability(self):
+        """
+        Remove the selected entry from Capabilities Used.
+
+        Only removes the capability tag itself — any components or control
+        responses it auto-imported earlier are left in place, since they may
+        have since been edited independently and shouldn't silently vanish.
+        """
+        sel = self._cap8_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a capability to remove.")
+            return
+        idx = self._cap8_tree.index(sel[0])
+        self._ssp_capabilities_used.pop(idx)
+        self._refresh_cap8_tree()
+
+    def _import_capability_into_ssp(self, cap):
+        """
+        Core import logic shared by _add_ssp_capability(). Pulls every member
+        component that is currently loaded in the Component Editor into
+        Section 8, imports each one's control responses into Section 9, and
+        folds any capability-level-only responses into the relevant control's
+        Section 9 remarks.
+
+        Returns (added_components, skipped_members, added_responses) counts.
+        """
+        live_components = {c.get("uuid", ""): c for c in self._get_components()}
+
+        added_components = 0
+        skipped_members  = 0
+        added_responses  = 0
+
+        for member_uuid in cap.get("member_uuids", []):
+            live = live_components.get(member_uuid)
+            if live is None:
+                skipped_members += 1
+                continue
+
+            comp_dict = {
+                "uuid":              live["uuid"],
+                "type":              live.get("type", "software"),
+                "title":             live.get("title", ""),
+                "description":       live.get("description", ""),
+                "purpose":           live.get("purpose", ""),
+                "status":            live.get("status", "operational"),
+                "status_remarks":    "",
+                "responsible_roles": [r.get("role_id", "") for r in live.get("roles", []) if r.get("role_id")],
+                "protocols":         live.get("protocols", []),
+                "remarks":           live.get("remarks", ""),
+            }
+            if self._add_ssp_component_dict(comp_dict):
+                added_components += 1
+
+            for ctrl_id, description in live.get("ctrl_responses", {}).items():
+                if self._add_by_component_response(ctrl_id, live["uuid"], description):
+                    added_responses += 1
+
+        # Capability-level-only responses have no single owning component, so
+        # they can't become a by-component entry (OSCAL requires a real
+        # component-uuid there) — record them as a note on the control instead.
+        for ctrl_id, description in cap.get("ctrl_responses", {}).items():
+            if not description.strip():
+                continue
+            existing = next(
+                (e for e in self._ssp_ctrl_impls if e["control_id"] == ctrl_id), None
+            )
+            if existing is None:
+                existing = {"control_id": ctrl_id, "remarks": "", "by_components": []}
+                self._ssp_ctrl_impls.append(existing)
+            note = f"Capability '{cap.get('name', '')}': {description}"
+            if note not in existing["remarks"]:
+                existing["remarks"] = (existing["remarks"] + "\n\n" + note).strip()
+                added_responses += 1
+
+        return added_components, skipped_members, added_responses
+
+    def _add_by_component_response(self, ctrl_id, comp_uuid, description):
+        """
+        Shared core of _import_ctrl_responses(): find or create the SSP-level
+        ctrl_impl entry for ctrl_id, then add a by-component entry for
+        comp_uuid if one doesn't already exist for this control.
+
+        Returns True if a new by-component entry was added, False if it was
+        skipped (empty description, or comp_uuid already has an entry).
+        """
+        description = (description or "").strip()
+        if not ctrl_id or not description:
+            return False
+
+        existing = next(
+            (e for e in self._ssp_ctrl_impls if e["control_id"] == ctrl_id), None
+        )
+        if existing is None:
+            existing = {"control_id": ctrl_id, "remarks": "", "by_components": []}
+            self._ssp_ctrl_impls.append(existing)
+
+        if any(bc["component_uuid"] == comp_uuid for bc in existing["by_components"]):
+            return False
+
+        existing["by_components"].append({
+            "uuid":           new_uuid(),
+            "component_uuid": comp_uuid,
+            "description":    description,
+            "impl_status":    "implemented",
+            "remarks":        "",
+        })
+        return True
+
     def _refresh_comp8_tree(self):
         """Clear and repopulate the Section 8 component table and counter."""
         self._comp8_tree.delete(*self._comp8_tree.get_children())
@@ -1524,42 +1790,15 @@ class SSPTab(tk.Frame):
         entry to _ssp_ctrl_impls for every control that has a description.
 
         Skips any control for which this component already has a by-component
-        entry (so re-importing a file never duplicates responses).
+        entry (so re-importing a file never duplicates responses). Shares its
+        find-or-create/dedup logic with _add_by_component_response(), which is
+        also used by the Capabilities Used import path.
         """
         for ci in oscal_component.get("control-implementations", []):
             for ir in ci.get("implemented-requirements", []):
-                ctrl_id    = ir.get("control-id", "")
-                description = ir.get("description", "").strip()
-                if not ctrl_id or not description:
-                    continue
-
-                # Find or create the SSP-level ctrl_impl entry for this control.
-                existing = next(
-                    (e for e in self._ssp_ctrl_impls
-                     if e["control_id"] == ctrl_id),
-                    None,
+                self._add_by_component_response(
+                    ir.get("control-id", ""), comp_uuid, ir.get("description", "")
                 )
-                if existing is None:
-                    existing = {
-                        "control_id":    ctrl_id,
-                        "remarks":       "",
-                        "by_components": [],
-                    }
-                    self._ssp_ctrl_impls.append(existing)
-
-                # Only add if this component does not already have an entry
-                # for this control (guards against importing the same file twice).
-                if any(bc["component_uuid"] == comp_uuid
-                       for bc in existing["by_components"]):
-                    continue
-
-                existing["by_components"].append({
-                    "uuid":           new_uuid(),
-                    "component_uuid": comp_uuid,
-                    "description":    description,
-                    "impl_status":    "implemented",
-                    "remarks":        "",
-                })
 
     def _import_components_from_files(self):
         """Import components from one or more chosen component JSON files."""
@@ -3158,6 +3397,7 @@ class SSPTab(tk.Frame):
         self._ssp["set_parameters"]       = self._ssp_set_params
         self._ssp["users"]                = self._ssp_users
         self._ssp["inventory_items"]      = self._ssp_inv_items
+        self._ssp["capabilities_used"]    = self._ssp_capabilities_used
 
     def _populate(self):
         """
@@ -3228,6 +3468,7 @@ class SSPTab(tk.Frame):
         self._ssp_set_params = list(ssp.get("set_parameters", []))
         self._ssp_users      = list(ssp.get("users", []))
         self._ssp_inv_items  = list(ssp.get("inventory_items", []))
+        self._ssp_capabilities_used = list(ssp.get("capabilities_used", []))
         self._sel_ctrl_id    = None
 
         # Rebuild set-parameters tree
@@ -3260,6 +3501,7 @@ class SSPTab(tk.Frame):
             self._rebuild_protocols_from_component_editor()
 
         self._refresh_comp8_tree()
+        self._refresh_cap8_tree()
         self._refresh_ctrl9_list()
         self._refresh_bycomp_tree()
         # Population from a saved file is not a user edit — reset dirty flag
@@ -3383,9 +3625,11 @@ class SSPTab(tk.Frame):
         self._ssp_set_params = []
         self._ssp_users      = []
         self._ssp_inv_items  = []
+        self._ssp_capabilities_used = []
         self._sel_comp_index = None
         self._sel_ctrl_id    = None
         self._refresh_comp8_tree()
+        self._refresh_cap8_tree()
         self._refresh_ctrl9_list()
         self._refresh_bycomp_tree()
         for tree in (self._sp_tree, self._usr_tree, self._inv_tree):
