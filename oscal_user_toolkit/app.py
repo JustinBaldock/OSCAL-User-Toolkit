@@ -42,6 +42,7 @@ from .poam_tab import POAMTab
 from .ap_tab import APTab
 from .ar_tab import ARTab
 from .dashboard_tab import DashboardTab
+from .welcome_tab import WelcomeTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -527,6 +528,12 @@ class OSCALApp(tk.Tk):
             get_poam_tab = lambda: self._poam_tab,
         )
         nb.insert(0, self._dashboard_tab, text="📊  Dashboard")
+
+        # ── Welcome tab ──────────────────────────────────────────────────────
+        # Static, no callbacks — inserted at index 0 so it appears first and
+        # is the tab shown when the application starts.
+        self._welcome_tab = WelcomeTab(parent=nb, colors=COLORS)
+        nb.insert(0, self._welcome_tab, text="👋  Welcome")
         nb.select(0)
 
     # =========================================================================
