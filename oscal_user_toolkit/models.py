@@ -1752,8 +1752,9 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
         7. System Users (table)
         7a. Capabilities Used (table)
         7b. System Components (table)
-        7c. Inventory Items (table)
         8. Control Implementations (grouped by guideline when catalog provided)
+        9. Inventory Items (table) — placed last, as a closing appendix after
+           every control has been documented
     """
     if not _DOCX_AVAILABLE:
         return None
@@ -1982,30 +1983,6 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
         doc.add_paragraph("(No components defined)")
 
     # ────────────────────────────────────────────────────────────────────────
-    # SECTION 7c — INVENTORY ITEMS
-    # ────────────────────────────────────────────────────────────────────────
-    inventory_items = ssp.get("inventory_items", [])
-    doc.add_heading("7c.  Inventory Items", level=1)
-    if inventory_items:
-        t = styled_table(3)
-        add_header_row(t, ["Description", "Properties", "Components"])
-        comp_titles = {c["uuid"]: c.get("title", c["uuid"]) for c in ssp.get("components", [])}
-        for ii in inventory_items:
-            row = t.add_row()
-            row.cells[0].text = ii.get("description", "")
-            props_text = "\n".join(
-                f"{p['name']}: {p['value']}" for p in ii.get("props", [])
-            )
-            row.cells[1].text = props_text
-            comp_names = ", ".join(
-                comp_titles.get(c_uuid, c_uuid)
-                for c_uuid in ii.get("implemented_components", [])
-            )
-            row.cells[2].text = comp_names
-    else:
-        doc.add_paragraph("(No inventory items defined)")
-
-    # ────────────────────────────────────────────────────────────────────────
     # SECTION 8 — CONTROL IMPLEMENTATIONS
     # When a catalog is provided, controls are sorted and grouped under their
     # catalog guideline headings in catalog order. Controls in the SSP that
@@ -2097,6 +2074,33 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
                 _write_ctrl_impl(ci)
     else:
         doc.add_paragraph("(No control implementations defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 9 — INVENTORY ITEMS
+    # Placed after Control Implementations, rather than alongside System
+    # Components earlier in the document, so the inventory register reads
+    # as a closing appendix once every control has already been documented.
+    # ────────────────────────────────────────────────────────────────────────
+    inventory_items = ssp.get("inventory_items", [])
+    doc.add_heading("9.  Inventory Items", level=1)
+    if inventory_items:
+        t = styled_table(3)
+        add_header_row(t, ["Description", "Properties", "Components"])
+        comp_titles = {c["uuid"]: c.get("title", c["uuid"]) for c in ssp.get("components", [])}
+        for ii in inventory_items:
+            row = t.add_row()
+            row.cells[0].text = ii.get("description", "")
+            props_text = "\n".join(
+                f"{p['name']}: {p['value']}" for p in ii.get("props", [])
+            )
+            row.cells[1].text = props_text
+            comp_names = ", ".join(
+                comp_titles.get(c_uuid, c_uuid)
+                for c_uuid in ii.get("implemented_components", [])
+            )
+            row.cells[2].text = comp_names
+    else:
+        doc.add_paragraph("(No inventory items defined)")
 
     return doc
 
