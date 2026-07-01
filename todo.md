@@ -248,6 +248,21 @@ Two approaches (pick one):
 
 **Option B — Manual multi-catalog**: Add an "Add Catalog…" button that appends to a catalog list. The info panel shows a scrollable list of loaded catalogs with individual remove buttons.
 
+#### 2b — New idea: dedicated "Data Sources" tab (under discussion, not yet decided)
+
+Instead of (or alongside) the global toolbar, move catalog/profile management into its own tab:
+
+- Relocates "Open Catalog" and "Open Profile" (currently in the global toolbar — see `_build_toolbar()` in `app.py`) plus the current catalog/profile info panel into a new first tab in the Notebook
+- Supports loading **multiple** catalog files at once (a manual multi-catalog UI, i.e. Option B above, rather than auto-load)
+- The Catalog Viewer tab would then display combined data from all loaded catalogs, not just one
+- Working name: **"📚 Data Sources"** (alternatives considered: "Catalog Manager", "Library")
+
+Open questions to resolve before this becomes a committed plan:
+- Does this tab *replace* Option A (auto-load from profile) or sit alongside it? Auto-load is lower-friction for the common case; a manual tab is more explicit and more discoverable for users who don't yet understand profiles/catalogs.
+- If multiple catalogs are loaded with no profile, how does the Catalog Viewer disambiguate controls that happen to share an ID across catalogs? (See namespace note in #4 below.)
+- Does every other tab (Component Editor, SSP Editor, etc.) need to let the user pick *which* loaded catalog a component's controls come from, or is the profile still the sole source of truth for control resolution?
+- Should removing a catalog from this tab warn the user if components/SSPs currently reference controls from it?
+
 #### 3 — Profile Editor Integration
 
 The Profile Editor (Feature 1) should support adding multiple `imports` entries — each with its own catalog href and control selection. The merge strategy (`as-is` vs `combine`) should be configurable when more than one import is present.
