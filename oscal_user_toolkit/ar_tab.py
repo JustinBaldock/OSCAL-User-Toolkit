@@ -88,6 +88,9 @@ class ARTab(tk.Frame):
         self._get_poam_tab      = get_poam_tab      or (lambda: None)
 
         self._dirty        = False
+        # Path of the file this Assessment Results doc was last opened from
+        # or saved to. Read by the Workspace tab when saving a manifest.
+        self._current_path = None
         self._ar           = empty_ar()
         self._observations: list = []
         self._risks:        list = []
@@ -1261,19 +1264,28 @@ class ARTab(tk.Frame):
             messagebox.showerror("Save failed", str(exc))
             return
 
+        self._current_path = path
         self._dirty = False
         name = Path(path).name
         self._status_lbl.config(text=f"Saved: {name}",
                                 fg=self._colors["GREEN"])
         self._set_status(f"Saved Assessment Results: {name}")
 
-    def _open(self):
-        path = filedialog.askopenfilename(
-            title="Open OSCAL Assessment Results",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-        if not path:
-            return
+    def _open(self, path=None):
+        """
+        Load an Assessment Results JSON file.
+
+        Parameters:
+            path - If given, load this file directly (used by the Workspace
+                   tab). If None, ask the user via a file dialog.
+        """
+        if path is None:
+            path = filedialog.askopenfilename(
+                title="Open OSCAL Assessment Results",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            )
+            if not path:
+                return
 
         try:
             with open(path, encoding="utf-8") as fh:
@@ -1297,10 +1309,12 @@ class ARTab(tk.Frame):
             return
 
         self._populate()
+        self._current_path = path
         name = Path(path).name
         self._status_lbl.config(text=f"Opened: {name}",
                                 fg=self._colors["TEXT"])
         self._set_status(f"Opened Assessment Results: {name}")
+        return True
 
     def _new(self):
         if messagebox.askyesno(

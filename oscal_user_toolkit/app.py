@@ -31,7 +31,8 @@ from tkinter import ttk, filedialog, messagebox
 from pathlib import Path   # Cross-platform file path handling
 
 # Import the data-loading functions from our models module
-from .models import load_catalog, load_profile, validate_oscal_file
+from .models import (load_catalog, load_profile, validate_oscal_file,
+                     build_workspace_manifest, load_workspace_manifest)
 
 # Import the tab classes
 from .catalog_tab import CatalogTab
@@ -42,7 +43,7 @@ from .poam_tab import POAMTab
 from .ap_tab import APTab
 from .ar_tab import ARTab
 from .dashboard_tab import DashboardTab
-from .welcome_tab import WelcomeTab
+from .workspace_tab import WorkspaceTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab,
@@ -95,6 +96,9 @@ class OSCALApp(tk.Tk):
         # None means "nothing loaded yet".
         self._catalog = None    # The loaded catalog dict (from models.load_catalog)
         self._profile = None    # The loaded profile dict (from models.load_profile)
+        # Path of the last workspace manifest opened or saved. Used so
+        # "Save Workspace" can default to overwriting the same file.
+        self._workspace_path = None
         # Note: the class filter, search box and control count all live inside
         # CatalogTab now — they are only relevant to the catalog viewer.
 
@@ -529,11 +533,17 @@ class OSCALApp(tk.Tk):
         )
         nb.insert(0, self._dashboard_tab, text="📊  Dashboard")
 
-        # ── Welcome tab ──────────────────────────────────────────────────────
-        # Static, no callbacks — inserted at index 0 so it appears first and
-        # is the tab shown when the application starts.
-        self._welcome_tab = WelcomeTab(parent=nb, colors=COLORS)
-        nb.insert(0, self._welcome_tab, text="👋  Welcome")
+        # ── Workspace tab ──────────────────────────────────────────────────────
+        # Inserted at index 0 so it appears first and is the tab shown when
+        # the application starts. Provides Open/Save Workspace buttons plus
+        # the static per-tab reference cards (formerly the Welcome tab).
+        self._workspace_tab = WorkspaceTab(
+            parent         = nb,
+            colors         = COLORS,
+            open_workspace = self._open_workspace,
+            save_workspace = self._save_workspace,
+        )
+        nb.insert(0, self._workspace_tab, text="🗂  Workspace")
         nb.select(0)
 
     # =========================================================================
@@ -615,20 +625,26 @@ class OSCALApp(tk.Tk):
                     self._prof_controls_lbl):
             lbl.config(text="—")
 
-    def _open_catalog(self):
+    def _open_catalog(self, path=None):
         """
-        Ask the user to select an OSCAL catalog JSON file, load it,
-        and update the catalog card and control list.
+        Load an OSCAL catalog JSON file and update the catalog card and
+        control list.
+
+        Parameters:
+            path - If given, load this file directly (used by the Workspace
+                   tab's "Open Workspace" action). If None (the normal
+                   toolbar button case), ask the user via a file dialog.
         """
         C = COLORS
 
-        # Open a file browser dialog. Returns the chosen path, or "" if cancelled.
-        path = filedialog.askopenfilename(
-            title="Open OSCAL Catalog",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-        if not path:
-            return   # User cancelled — do nothing
+        if path is None:
+            # Open a file browser dialog. Returns the chosen path, or "" if cancelled.
+            path = filedialog.askopenfilename(
+                title="Open OSCAL Catalog",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            )
+            if not path:
+                return   # User cancelled — do nothing
 
         # Try to parse the raw JSON first so we can validate it before loading.
         try:
@@ -691,13 +707,19 @@ class OSCALApp(tk.Tk):
         self._capability_tab.on_state_changed()
 
         self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
+        return True
 
-    def _open_profile(self):
+    def _open_profile(self, path=None):
         """
-        Ask the user to select an OSCAL profile JSON file, load it,
-        and filter the control list to only show selected controls.
+        Load an OSCAL profile JSON file and filter the control list to only
+        show selected controls.
 
         A profile must be loaded AFTER a catalog — it filters the catalog.
+
+        Parameters:
+            path - If given, load this file directly (used by the Workspace
+                   tab's "Open Workspace" action). If None (the normal
+                   toolbar button case), ask the user via a file dialog.
         """
         C = COLORS
 
@@ -709,12 +731,13 @@ class OSCALApp(tk.Tk):
             )
             return
 
-        path = filedialog.askopenfilename(
-            title="Open OSCAL Profile",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-        if not path:
-            return
+        if path is None:
+            path = filedialog.askopenfilename(
+                title="Open OSCAL Profile",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            )
+            if not path:
+                return
 
         try:
             profile = load_profile(path)
@@ -744,6 +767,7 @@ class OSCALApp(tk.Tk):
         # The tab keeps its own class filter and search term unchanged.
         self._catalog_tab.apply_profile(profile["ids"])
         self._status_lbl.config(text=f"Profile applied: {Path(path).name}")
+        return True
 
     def _clear_profile(self):
         """
@@ -767,6 +791,164 @@ class OSCALApp(tk.Tk):
         # The tab keeps its own class filter and search term unchanged.
         self._catalog_tab.apply_profile(None)
         self._status_lbl.config(text="Profile cleared — showing full catalog.")
+
+    # =========================================================================
+    # WORKSPACE — load/save a manifest of every file for one system
+    # =========================================================================
+    #
+    # A workspace is a small JSON file (see build_workspace_manifest() and
+    # load_workspace_manifest() in models.py) that records which catalog,
+    # profile, SSP, components, capabilities, Assessment Plan, Assessment
+    # Results, and POA&M files belong together for one system. These two
+    # methods are the only place that knows about every other tab at once —
+    # exactly the same reason DashboardTab's callbacks are wired here rather
+    # than inside any individual tab.
+
+    def _open_workspace(self):
+        """
+        Ask the user to choose a workspace JSON file, then load every file
+        it references into the matching tab.
+
+        Files are loaded in dependency order: catalog before profile (a
+        profile cannot be applied without a catalog), then everything else.
+        Any referenced file that no longer exists is skipped with a warning
+        collected into the final summary rather than aborting the whole load.
+        """
+        path = filedialog.askopenfilename(
+            title="Open Workspace",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+
+        try:
+            ws = load_workspace_manifest(path)
+        except (json.JSONDecodeError, OSError, KeyError) as exc:
+            messagebox.showerror("Failed to open workspace", str(exc))
+            return
+
+        loaded  = []
+        missing = []
+
+        def _exists(p):
+            return p and Path(p).is_file()
+
+        # ── Catalog first — profile cannot be applied without one ──────────────
+        if ws["catalog"]:
+            if _exists(ws["catalog"]):
+                if self._open_catalog(path=ws["catalog"]):
+                    loaded.append(f"Catalog: {Path(ws['catalog']).name}")
+            else:
+                missing.append(f"Catalog: {ws['catalog']}")
+
+        if ws["profile"]:
+            if _exists(ws["profile"]):
+                if self._open_profile(path=ws["profile"]):
+                    loaded.append(f"Profile: {Path(ws['profile']).name}")
+            else:
+                missing.append(f"Profile: {ws['profile']}")
+
+        if ws["ssp"]:
+            if _exists(ws["ssp"]):
+                if self._ssp_tab._open(path=ws["ssp"]):
+                    loaded.append(f"SSP: {Path(ws['ssp']).name}")
+            else:
+                missing.append(f"SSP: {ws['ssp']}")
+
+        if ws["components"]:
+            existing = [p for p in ws["components"] if _exists(p)]
+            missing += [f"Component: {p}" for p in ws["components"] if not _exists(p)]
+            if existing:
+                added, _skipped = self._component_tab.load_from_paths(existing)
+                if added:
+                    loaded.append(f"Components: {added} loaded")
+
+        if ws["capabilities"]:
+            existing = [p for p in ws["capabilities"] if _exists(p)]
+            missing += [f"Capability: {p}" for p in ws["capabilities"] if not _exists(p)]
+            if existing:
+                added, _skipped = self._capability_tab.load_from_paths(existing)
+                if added:
+                    loaded.append(f"Capabilities: {added} loaded")
+
+        if ws["assessment_plan"]:
+            if _exists(ws["assessment_plan"]):
+                if self._ap_tab._open(path=ws["assessment_plan"]):
+                    loaded.append(f"Assessment Plan: {Path(ws['assessment_plan']).name}")
+            else:
+                missing.append(f"Assessment Plan: {ws['assessment_plan']}")
+
+        if ws["assessment_results"]:
+            if _exists(ws["assessment_results"]):
+                if self._ar_tab._open(path=ws["assessment_results"]):
+                    loaded.append(f"Assessment Results: {Path(ws['assessment_results']).name}")
+            else:
+                missing.append(f"Assessment Results: {ws['assessment_results']}")
+
+        if ws["poam"]:
+            if _exists(ws["poam"]):
+                if self._poam_tab._open(path=ws["poam"]):
+                    loaded.append(f"POA&M: {Path(ws['poam']).name}")
+            else:
+                missing.append(f"POA&M: {ws['poam']}")
+
+        self._workspace_path = path
+
+        summary = f"Workspace: {ws['title'] or Path(path).name}\n\n"
+        summary += "Loaded:\n" + "\n".join(f"  • {x}" for x in loaded) if loaded else "Nothing was loaded."
+        if missing:
+            summary += "\n\nMissing (skipped):\n" + "\n".join(f"  • {x}" for x in missing)
+        messagebox.showinfo("Workspace Opened", summary)
+        self._status_lbl.config(text=f"Workspace opened: {Path(path).name}")
+
+    def _save_workspace(self):
+        """
+        Ask the user where to save a workspace manifest, then write down the
+        path of every file currently loaded across every tab, relative to
+        the manifest's own location.
+
+        Nothing is re-saved here — this only records the paths of files
+        that have already been saved/opened in each tab. If a tab has
+        unsaved changes, save it in that tab first so the path it records
+        points at the latest version.
+        """
+        path = filedialog.asksaveasfilename(
+            title="Save Workspace",
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            initialfile="workspace.json",
+        )
+        if not path:
+            return
+
+        # Deduplicate component/capability paths while preserving order —
+        # a file may appear twice in _loaded_paths if opened then re-saved.
+        def dedup(paths):
+            seen = []
+            for p in paths:
+                if p not in seen:
+                    seen.append(p)
+            return seen
+
+        manifest = build_workspace_manifest(
+            workspace_path      = path,
+            title               = Path(path).stem,
+            catalog             = self._catalog.get("filepath") if self._catalog else None,
+            profile             = self._profile.get("filepath") if self._profile else None,
+            ssp                 = self._ssp_tab._current_path,
+            components          = dedup(self._component_tab._loaded_paths),
+            capabilities        = dedup(self._capability_tab._loaded_paths),
+            assessment_plan     = self._ap_tab._current_path,
+            assessment_results  = self._ar_tab._current_path,
+            poam                = self._poam_tab._current_path,
+        )
+
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2, ensure_ascii=False)
+
+        self._workspace_path = path
+        self._status_lbl.config(text=f"Workspace saved: {Path(path).name}")
+        messagebox.showinfo("Workspace Saved", f"Workspace saved successfully:\n{path}")
 
     # =========================================================================
     # FILTERING

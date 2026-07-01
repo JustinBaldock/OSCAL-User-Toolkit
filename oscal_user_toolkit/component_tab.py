@@ -154,6 +154,10 @@ class ComponentTab(tk.Frame):
 
         # ── Component list state ──────────────────────────────────────────────
         self._components      = []   # List of component dicts
+        # Paths of every component file opened or saved, in load/save order.
+        # Used by the Workspace tab to record which files this tab currently
+        # represents. Deduplicated (order-preserving) whenever it is read.
+        self._loaded_paths   = []
         self._selected_index  = None # Index into self._components (not listbox position)
         self._dirty           = False
         self._search_after_id = None  # debounce handle for component search
@@ -2616,7 +2620,26 @@ class ComponentTab(tk.Frame):
             return False
 
         self._components.append(comp)
+        self._loaded_paths.append(str(path))
         return True
+
+    def load_from_paths(self, paths):
+        """
+        Load multiple component files by path, e.g. from a Workspace manifest.
+
+        Shares the same _load_component_from_path()/_after_open() logic as
+        _open_files() and _open_folder(), so duplicate UUIDs and invalid
+        files are handled identically. Returns (added, skipped) counts.
+        """
+        added   = 0
+        skipped = 0
+        for path in paths:
+            if self._load_component_from_path(path):
+                added += 1
+            else:
+                skipped += 1
+        self._after_open(added, skipped)
+        return added, skipped
 
     # =========================================================================
     # FILE ACTIONS
@@ -2688,6 +2711,7 @@ class ComponentTab(tk.Frame):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
+        self._loaded_paths.append(path)
         self._dirty = False
         fname = Path(path).name
         self._status_lbl.config(text=f"Saved: {fname}", fg=self._colors["GREEN"])
@@ -2817,6 +2841,7 @@ class ComponentTab(tk.Frame):
         self._file_title.set("")
         self._file_version.set("1.0")
         self._components       = []
+        self._loaded_paths     = []
         self._filtered_indices = []
         self._selected_index   = None
         self._ctrl_responses   = {}

@@ -69,6 +69,9 @@ class APTab(tk.Frame):
         self._get_profile       = get_profile       or (lambda: None)
 
         self._dirty = False
+        # Path of the file this Assessment Plan was last opened from or saved
+        # to. Read by the Workspace tab when saving a workspace manifest.
+        self._current_path = None
         self._ap    = empty_ap()
         self._tasks: list = []
         self._vars:  dict = {}
@@ -634,19 +637,28 @@ class APTab(tk.Frame):
             messagebox.showerror("Save failed", str(exc))
             return
 
+        self._current_path = path
         self._dirty = False
         name = Path(path).name
         self._status_lbl.config(text=f"Saved: {name}",
                                 fg=self._colors["GREEN"])
         self._set_status(f"Saved Assessment Plan: {name}")
 
-    def _open(self):
-        path = filedialog.askopenfilename(
-            title="Open OSCAL Assessment Plan",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-        if not path:
-            return
+    def _open(self, path=None):
+        """
+        Load an Assessment Plan JSON file.
+
+        Parameters:
+            path - If given, load this file directly (used by the Workspace
+                   tab). If None, ask the user via a file dialog.
+        """
+        if path is None:
+            path = filedialog.askopenfilename(
+                title="Open OSCAL Assessment Plan",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            )
+            if not path:
+                return
 
         try:
             with open(path, encoding="utf-8") as fh:
@@ -670,10 +682,12 @@ class APTab(tk.Frame):
             return
 
         self._populate()
+        self._current_path = path
         name = Path(path).name
         self._status_lbl.config(text=f"Opened: {name}",
                                 fg=self._colors["TEXT"])
         self._set_status(f"Opened Assessment Plan: {name}")
+        return True
 
     def _new(self):
         if messagebox.askyesno(

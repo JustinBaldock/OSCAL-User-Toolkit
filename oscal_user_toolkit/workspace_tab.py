@@ -1,14 +1,25 @@
 """
-welcome_tab.py — static Welcome tab for the OSCAL User Toolkit.
+workspace_tab.py — Workspace tab for the OSCAL User Toolkit.
 
-This is the very first tab shown when the application starts. It has no
-live state and reads nothing from the rest of the app — it is a plain,
-scrollable reference page describing what each tab does and which tabs
-require a catalog and/or profile to be loaded before they can be used.
+This is the very first tab shown when the application starts. It has two
+jobs:
 
-Being static keeps this tab simple to maintain: there is no data to keep
-in sync, no callbacks into other tabs. If the purpose or prerequisites of
-a tab change, update the TAB_INFO list below to match.
+1. A reference page describing what each other tab does and which tabs
+   require a catalog and/or profile to be loaded before they can be used
+   (unchanged from the original Welcome tab this replaces).
+
+2. Open Workspace / Save Workspace buttons. A "workspace" is a small JSON
+   manifest file (see build_workspace_manifest()/apply_workspace_manifest()
+   in models.py) that records which catalog, profile, SSP, components,
+   capabilities, Assessment Plan, Assessment Results, and POA&M files
+   belong together for one system — so a system owner or auditor can load
+   everything for that system in one action instead of opening each file
+   individually across six tabs.
+
+The actual reading/writing of files happens in app.py (via the
+open_workspace/save_workspace callbacks) because only the main app has
+direct references to every other tab. This tab just provides the buttons
+and the manifest-relative-path resolution helper used by both callbacks.
 """
 
 import tkinter as tk
@@ -88,18 +99,22 @@ TAB_INFO = [
 ]
 
 
-class WelcomeTab(tk.Frame):
+class WorkspaceTab(tk.Frame):
     """
-    Static reference tab shown first, describing every other tab.
+    First tab shown on startup: Open/Save Workspace buttons plus a static
+    reference describing every other tab.
 
-    Deliberately has no callbacks into the rest of the app — it only
-    reads the TAB_INFO list above, so there is no live state to keep in
-    sync with the rest of the application.
+    The Open/Save Workspace buttons delegate to callbacks supplied by the
+    main app (open_workspace, save_workspace) — this tab has no direct
+    references to the other tabs, so it stays decoupled the same way every
+    other tab in this app is decoupled from its siblings.
     """
 
-    def __init__(self, parent, colors, **kwargs):
+    def __init__(self, parent, colors, open_workspace=None, save_workspace=None, **kwargs):
         super().__init__(parent, bg=colors["BG"], **kwargs)
-        self._colors = colors
+        self._colors         = colors
+        self._open_workspace = open_workspace or (lambda: None)
+        self._save_workspace = save_workspace or (lambda: None)
         self._build()
 
     # =========================================================================
@@ -113,7 +128,7 @@ class WelcomeTab(tk.Frame):
         header = tk.Frame(self, bg=C["HEADER_BG"])
         header.pack(fill="x", side="top")
         tk.Label(
-            header, text="👋  Welcome to the OSCAL User Toolkit",
+            header, text="🗂  Workspace",
             bg=C["HEADER_BG"], fg=C["ACCENT"],
             font=("Helvetica", 16, "bold"),
         ).pack(anchor="w", padx=20, pady=(14, 2))
@@ -122,7 +137,33 @@ class WelcomeTab(tk.Frame):
             text="A quick tour of each tab, and what you need loaded before using it.",
             bg=C["HEADER_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 10, "italic"),
-        ).pack(anchor="w", padx=20, pady=(0, 14))
+        ).pack(anchor="w", padx=20, pady=(0, 6))
+
+        # ── Open/Save Workspace buttons ──────────────────────────────────────
+        # A workspace is a small JSON manifest recording which catalog,
+        # profile, SSP, components, capabilities, AP, AR, and POA&M files
+        # belong together for one system, so they can all be loaded in one
+        # action. See build_workspace_manifest()/apply_workspace_manifest()
+        # in models.py for the manifest format.
+        btn_row = tk.Frame(header, bg=C["HEADER_BG"])
+        btn_row.pack(anchor="w", padx=20, pady=(0, 14))
+        tk.Button(
+            btn_row, text="📂  Open Workspace", command=lambda: self._open_workspace(),
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            btn_row, text="💾  Save Workspace", command=lambda: self._save_workspace(),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+            highlightthickness=1, highlightbackground=C["ACCENT"],
+        ).pack(side="left", padx=(8, 0))
+        tk.Label(
+            btn_row,
+            text="  A workspace remembers every file for one system — catalog, "
+                 "profile, SSP, components, capabilities, AP, AR, and POA&M.",
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        ).pack(side="left", padx=(10, 0))
 
         # ── Scrollable body ──────────────────────────────────────────────────
         outer = tk.Frame(self, bg=C["BG"])
@@ -169,7 +210,12 @@ class WelcomeTab(tk.Frame):
             text="Click '📂 Open Catalog' in the toolbar above to load an OSCAL "
                  "catalog first — most tabs are locked behind a gate panel until "
                  "one is loaded. Loading a '🔖 Profile' afterwards narrows the "
-                 "control list to a specific baseline and is required by some tabs.",
+                 "control list to a specific baseline and is required by some tabs.\n\n"
+                 "If someone has already saved a workspace file for this system, use "
+                 "'📂 Open Workspace' above instead — it loads the catalog, profile, "
+                 "SSP, components, capabilities, Assessment Plan, Assessment Results, "
+                 "and POA&M all in one step. Use '💾 Save Workspace' once you have "
+                 "everything loaded to create that file for next time.",
             bg=C["CARD_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             justify="left", wraplength=760,
         ).pack(anchor="w", padx=12, pady=(0, 10))

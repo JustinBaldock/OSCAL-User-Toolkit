@@ -144,6 +144,9 @@ class CapabilityTab(tk.Frame):
         self._capabilities       = []
         self._sel_index          = None   # index into self._capabilities
         self._dirty              = False
+        # Paths of every capability file opened or saved, in load/save order.
+        # Used by the Workspace tab to record which files this tab represents.
+        self._loaded_paths       = []
 
         # ── Control implementation state ──────────────────────────────────────
         self._ctrl_responses  = {}    # {control_id: description} for selected cap
@@ -1694,6 +1697,7 @@ class CapabilityTab(tk.Frame):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
+        self._loaded_paths.append(path)
         self._dirty = False
         n_comps     = len(cap.get("member_uuids", []))
         n_inherited = len(cap.get("inherited_ctrl_responses", []))
@@ -1811,10 +1815,28 @@ class CapabilityTab(tk.Frame):
             })
 
         self._capabilities.append(cap)
+        self._loaded_paths.append(str(path))
         # Resolve source_component_title for inherited entries now that
         # bundled components have been added to the component list.
         self._resync_inherited_for_cap(cap)
         return True
+
+    def load_from_paths(self, paths):
+        """
+        Load multiple capability files by path, e.g. from a Workspace manifest.
+
+        Shares the same _load_capability_from_path()/_after_open() logic as
+        _open_files() and _open_folder(). Returns (added, skipped) counts.
+        """
+        added   = 0
+        skipped = 0
+        for path in paths:
+            if self._load_capability_from_path(path):
+                added += 1
+            else:
+                skipped += 1
+        self._after_open(added, skipped)
+        return added, skipped
 
     def _open_files(self):
         """Open one or more capability JSON files selected by the user."""
@@ -1878,6 +1900,7 @@ class CapabilityTab(tk.Frame):
                 return
 
         self._capabilities   = []
+        self._loaded_paths   = []
         self._sel_index      = None
         self._ctrl_responses = {}
         self._sel_ctrl_id    = None

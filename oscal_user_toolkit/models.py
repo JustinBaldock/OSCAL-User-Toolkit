@@ -19,6 +19,7 @@ format that looks like Python dictionaries and lists.
 # These modules are built into Python — no installation needed.
 
 import json        # Reads and writes JSON files
+import os          # Used for os.path.relpath() when building workspace manifests
 import re          # Regular expressions — imported here at module level (L2 fix)
 import uuid        # Generates universally unique identifiers (UUIDs)
 import zipfile
@@ -1384,6 +1385,114 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
         progress_lbl.config(text=f"{done_count} of {total} controls have responses")
     else:
         progress_lbl.config(text="")
+
+
+def build_workspace_manifest(workspace_path, title="", catalog=None, profile=None,
+                              ssp=None, components=None, capabilities=None,
+                              assessment_plan=None, assessment_results=None,
+                              poam=None):
+    """
+    Build a workspace manifest dict ready to be written to workspace_path.
+
+    A workspace manifest is a small JSON file that records which catalog,
+    profile, SSP, components, capabilities, Assessment Plan, Assessment
+    Results, and POA&M files belong together for one system, so a system
+    owner or auditor can load all of them in one action instead of opening
+    each file individually across six tabs.
+
+    Every path parameter is an ABSOLUTE filesystem path (or a list of them
+    for components/capabilities) — this function converts them to paths
+    relative to workspace_path's own directory before writing, so the
+    workspace file and everything it references stays portable if the
+    whole folder is moved, copied, or shared elsewhere.
+
+    Parameters:
+        workspace_path - Where the manifest will be saved. Only its
+                          directory is used, to compute relative paths.
+        title           - Optional human-readable name for the workspace.
+        catalog, profile, ssp, assessment_plan, assessment_results, poam
+                        - Absolute path strings, or None if not loaded.
+        components, capabilities
+                        - Lists of absolute path strings, or None/[].
+
+    Returns:
+        A dict of the form {"workspace": {...}} ready for json.dump().
+        Keys for anything not loaded are simply omitted.
+    """
+    base_dir = Path(workspace_path).resolve().parent
+
+    def rel(p):
+        return os.path.relpath(Path(p).resolve(), base_dir)
+
+    ws = {"title": title}
+    for key, val in [
+        ("catalog", catalog), ("profile", profile), ("ssp", ssp),
+        ("assessment_plan", assessment_plan),
+        ("assessment_results", assessment_results),
+        ("poam", poam),
+    ]:
+        if val:
+            ws[key] = rel(val)
+
+    for key, val in [("components", components), ("capabilities", capabilities)]:
+        if val:
+            # Deduplicate while preserving order — the same file can appear
+            # twice in a tab's loaded-paths list if it was opened once and
+            # then re-saved to the same path.
+            seen = []
+            for p in val:
+                r = rel(p)
+                if r not in seen:
+                    seen.append(r)
+            ws[key] = seen
+
+    return {"workspace": ws}
+
+
+def load_workspace_manifest(workspace_path):
+    """
+    Read a workspace manifest file and resolve every path inside it to an
+    absolute filesystem path, relative to the manifest file's own
+    directory (matching how build_workspace_manifest() wrote them).
+
+    Parameters:
+        workspace_path - Path to the workspace JSON file.
+
+    Returns:
+        A dict: {"title": str, "catalog": str|None, "profile": str|None,
+                 "ssp": str|None, "components": [str], "capabilities": [str],
+                 "assessment_plan": str|None, "assessment_results": str|None,
+                 "poam": str|None}
+        Keys not present in the file resolve to None (for single-file
+        entries) or [] (for components/capabilities).
+
+    Raises:
+        json.JSONDecodeError, OSError - if the file cannot be read or parsed.
+        KeyError - if the file does not contain a "workspace" object.
+    """
+    with open(workspace_path, encoding="utf-8") as f:
+        raw = json.load(f)
+
+    if "workspace" not in raw:
+        raise KeyError("Missing 'workspace' key — not a workspace manifest.")
+
+    ws       = raw["workspace"]
+    base_dir = Path(workspace_path).resolve().parent
+
+    def abs_path(p):
+        return str((base_dir / p).resolve())
+
+    return {
+        "title":              ws.get("title", ""),
+        "catalog":            abs_path(ws["catalog"]) if ws.get("catalog") else None,
+        "profile":            abs_path(ws["profile"]) if ws.get("profile") else None,
+        "ssp":                abs_path(ws["ssp"]) if ws.get("ssp") else None,
+        "components":         [abs_path(p) for p in ws.get("components", [])],
+        "capabilities":       [abs_path(p) for p in ws.get("capabilities", [])],
+        "assessment_plan":    abs_path(ws["assessment_plan"]) if ws.get("assessment_plan") else None,
+        "assessment_results": abs_path(ws["assessment_results"]) if ws.get("assessment_results") else None,
+        "poam":               abs_path(ws["poam"]) if ws.get("poam") else None,
+    }
 
 
 def get_source_href(profile, catalog):

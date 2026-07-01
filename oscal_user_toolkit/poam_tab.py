@@ -74,6 +74,10 @@ class POAMTab(tk.Frame):
         # or when a file is opened (populating the form is not a user edit).
         self._dirty = False
 
+        # Path of the file this POA&M was last opened from or saved to.
+        # Read by the Workspace tab when saving a workspace manifest.
+        self._current_path = None
+
         # Working data — mirrors the POA&M dict while editing.
         # empty_poam() returns a blank dict with the correct keys pre-filled
         # so the rest of the code never needs to guard against missing keys.
@@ -1396,18 +1400,27 @@ class POAMTab(tk.Frame):
             messagebox.showerror("Save failed", str(exc))
             return
 
+        self._current_path = path
         self._dirty = False
         name = Path(path).name
         self._status_lbl.config(text=f"Saved: {name}", fg=self._colors["GREEN"])
         self._set_status(f"Saved POA&M: {name}")
 
-    def _open(self):
-        path = filedialog.askopenfilename(
-            title="Open OSCAL POA&M",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-        if not path:
-            return
+    def _open(self, path=None):
+        """
+        Load a POA&M JSON file.
+
+        Parameters:
+            path - If given, load this file directly (used by the Workspace
+                   tab). If None, ask the user via a file dialog.
+        """
+        if path is None:
+            path = filedialog.askopenfilename(
+                title="Open OSCAL POA&M",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            )
+            if not path:
+                return
 
         try:
             with open(path, encoding="utf-8") as f:
@@ -1431,11 +1444,13 @@ class POAMTab(tk.Frame):
             return
 
         self._populate()
+        self._current_path = path
         name = Path(path).name
         self._status_lbl.config(
             text=f"Opened: {name}", fg=self._colors["TEXT"]
         )
         self._set_status(f"Opened POA&M: {name}")
+        return True
 
     def _new(self):
         if messagebox.askyesno(

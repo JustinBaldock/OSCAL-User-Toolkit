@@ -131,6 +131,10 @@ class SSPTab(tk.Frame):
         # Set by any add/edit/remove action; cleared after a successful save.
         self._dirty = False
 
+        # Path of the file this SSP was last opened from or saved to.
+        # Read by the Workspace tab when saving a workspace manifest.
+        self._current_path = None
+
         # The SSP data is stored as a plain Python dictionary.
         # All form widgets read from and write to this dictionary.
         self._ssp = empty_ssp()
@@ -3803,6 +3807,7 @@ class SSPTab(tk.Frame):
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
         # Update the status labels
+        self._current_path = path
         self._dirty = False
         self._status_lbl.config(
             text=f"Saved: {Path(path).name}", fg=self._colors["GREEN"]
@@ -3810,18 +3815,24 @@ class SSPTab(tk.Frame):
         self._set_status(f"SSP saved: {Path(path).name}")
         messagebox.showinfo("SSP Saved", f"OSCAL SSP saved successfully:\n{path}")
 
-    def _open(self):
+    def _open(self, path=None):
         """
-        Ask the user to choose a saved SSP JSON file, then load it into
-        the form so they can continue editing.
+        Load a saved SSP JSON file into the form so the user can continue
+        editing.
+
+        Parameters:
+            path - If given, load this file directly (used by the Workspace
+                   tab). If None (the normal case), ask the user to choose
+                   a file via a dialog.
         """
-        # Ask the user to choose a file
-        path = filedialog.askopenfilename(
-            title="Open OSCAL SSP",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-        )
-        if not path:
-            return   # User cancelled
+        if path is None:
+            # Ask the user to choose a file
+            path = filedialog.askopenfilename(
+                title="Open OSCAL SSP",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            )
+            if not path:
+                return   # User cancelled
 
         # Read the file into a Python dictionary
         try:
@@ -3859,10 +3870,12 @@ class SSPTab(tk.Frame):
         # Update the profile info box from the SSP's back-matter
         self._update_profile_box_from_bm(bm_info)
 
+        self._current_path = path
         self._status_lbl.config(
             text=f"Opened: {Path(path).name}", fg=self._colors["BLUE"]
         )
         self._set_status(f"SSP opened: {Path(path).name}")
+        return True
 
     def _new(self):
         """
