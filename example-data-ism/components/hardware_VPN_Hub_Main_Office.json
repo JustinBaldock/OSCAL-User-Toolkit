@@ -1,0 +1,166 @@
+{
+  "component-definition": {
+    "uuid": "8576cb39-ca04-44a6-8a7f-1a51ab6703dc",
+    "metadata": {
+      "title": "VPN Hub (Main Office) Component",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+        "type": "hardware",
+        "title": "VPN Hub (Main Office)",
+        "description": "A SonicWall TZ670 next-generation firewall deployed at the main office, sized to terminate site-to-site IPsec VPN tunnels from every remote office simultaneously in a hub-and-spoke topology. Acts as the gateway between the main office network and each remote office's security domain, routing traffic between spokes only via the hub and enforcing the organisation's firewall policy on all inter-site traffic.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "SonicWall"
+          },
+          {
+            "name": "model",
+            "value": "TZ670"
+          },
+          {
+            "name": "role",
+            "value": "vpn-hub"
+          },
+          {
+            "name": "site",
+            "value": "main-office"
+          },
+          {
+            "name": "topology",
+            "value": "hub-and-spoke (terminates all remote office tunnels)"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "9d5ff566-cdfd-4f58-9e28-41f4cda49ccc",
+            "name": "ike",
+            "title": "IKEv2 — VPN tunnel negotiation with each remote office spoke",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "46997fb9-7d5e-46f1-a121-079cfff82e4d",
+            "name": "ipsec-nat-t",
+            "title": "IPsec NAT-Traversal encapsulation",
+            "port-ranges": [
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "914b0d18-fe27-4536-a267-d93635199538",
+            "name": "https",
+            "title": "HTTPS — SonicOS management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "7865ed75-72cb-4bd4-8ee7-d1e03937077a",
+            "name": "ssh",
+            "title": "SSH — CLI management access",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "e32817cd-d985-4127-b6b2-68d73c01717f",
+            "name": "syslog",
+            "title": "Syslog — event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "7fd64584-0777-4627-96bc-d9567534d39a",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for VPN Hub (Main Office).",
+            "implemented-requirements": [
+              {
+                "uuid": "e6278fd7-c232-48b0-bdbf-274af22acbe7",
+                "control-id": "ism-0628",
+                "description": "This gateway is implemented at the boundary between the main office network and each remote office's network, which are treated as separate security domains connected only via authenticated, encrypted site-to-site VPN tunnels."
+              },
+              {
+                "uuid": "2d5c18a1-930c-4b4a-836d-c1048691e196",
+                "control-id": "ism-0631",
+                "description": "The hub firewall policy only permits explicitly authorised data flows between the main office and each remote office spoke; all other inter-site traffic is denied by default."
+              },
+              {
+                "uuid": "871ff22c-07a9-48e9-8806-babea1cfa0a5",
+                "control-id": "ism-1192",
+                "description": "The hub inspects and filters all inter-site data flows at the transport layer and above, including deep packet inspection of decrypted VPN traffic before it is routed onward."
+              },
+              {
+                "uuid": "c26f7d3c-f98a-481b-a8d2-25fc33eec413",
+                "control-id": "ism-0494",
+                "description": "Tunnel mode is used for every IPsec site-to-site VPN connection between the hub and each remote office spoke."
+              },
+              {
+                "uuid": "6357e801-9cd2-4f7f-9be5-930973cb3d7e",
+                "control-id": "ism-0496",
+                "description": "The ESP protocol is used for authentication and encryption of all IPsec connections terminated at the hub."
+              },
+              {
+                "uuid": "bf3dc730-96ab-4b20-8531-d37318311e75",
+                "control-id": "ism-1233",
+                "description": "IKEv2 is used for key exchange when establishing every IPsec connection between the hub and each remote office spoke."
+              },
+              {
+                "uuid": "430a3ebb-391f-4a92-a21a-b1d40084d5ae",
+                "control-id": "ism-1771",
+                "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting all IPsec connections terminated at the hub."
+              },
+              {
+                "uuid": "68e45c86-7c24-44db-80b8-29ee91413af2",
+                "control-id": "ism-1000",
+                "description": "Perfect Forward Secrecy is enabled for every IPsec connection between the hub and each remote office spoke."
+              },
+              {
+                "uuid": "48ad7b11-60b0-4dda-8c8a-c79435dbf71f",
+                "control-id": "ism-0634",
+                "description": "Security-relevant events for the hub — permitted and denied data flows, tunnel establishment and teardown, and administrative access — are centrally logged to the SIEM."
+              },
+              {
+                "uuid": "42f42534-68d4-4559-bec0-c40825d50865",
+                "control-id": "ism-1774",
+                "description": "The hub is managed via a dedicated out-of-band management interface, isolated from every connected network including all remote office VPN tunnels."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
