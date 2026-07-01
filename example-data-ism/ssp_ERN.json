@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Research Network SSP",
-      "last-modified": "2026-07-01T05:06:38Z",
+      "last-modified": "2026-07-01T06:53:26Z",
       "version": "0.1",
       "oscal-version": "1.2.2",
       "roles": [
@@ -32,6 +32,50 @@
           "party-uuids": [
             "fd12f3df-a31d-45c9-a644-833da085f1ff"
           ]
+        }
+      ],
+      "props": [
+        {
+          "name": "capability",
+          "uuid": "8b54e448-60e9-44d9-bd5e-f4388e3a48bb",
+          "value": "Account Management",
+          "remarks": "Capability loaded from the Capability Editor"
+        },
+        {
+          "name": "capability",
+          "uuid": "85d36880-43b5-4559-8199-6f81b028e9fb",
+          "value": "Remote office",
+          "remarks": "Capability loaded from the Capability Editor"
+        },
+        {
+          "name": "capability",
+          "uuid": "b56b41fc-c243-4098-9c48-7b47436f7b62",
+          "value": "Endpoint Protection",
+          "remarks": "Capability loaded from the Capability Editor"
+        },
+        {
+          "name": "capability",
+          "uuid": "f1edb83d-28f0-4d41-8805-208fd80a6ea0",
+          "value": "Patch Management",
+          "remarks": "Capability loaded from the Capability Editor"
+        },
+        {
+          "name": "capability",
+          "uuid": "43b4400f-c72b-4f63-a5fc-361a945a0ab1",
+          "value": "Privileged Access Management",
+          "remarks": "Capability loaded from the Capability Editor"
+        },
+        {
+          "name": "capability",
+          "uuid": "30970cbd-839d-4394-a708-aed4c38a9765",
+          "value": "Security Monitoring and Logging",
+          "remarks": "Capability loaded from the Capability Editor"
+        },
+        {
+          "name": "capability",
+          "uuid": "dee8e688-b10c-4246-9627-e20b72f7c5e3",
+          "value": "Backup and Recovery",
+          "remarks": "Capability loaded from the Capability Editor"
         }
       ]
     },
@@ -338,7 +382,7 @@
           },
           "protocols": [
             {
-              "uuid": "cf84a84e-bc5e-4d27-943d-459f5a6fcfc4",
+              "uuid": "7bbe259b-876a-4830-81d3-1a66886cdeb9",
               "name": "dns",
               "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
@@ -355,7 +399,7 @@
               ]
             },
             {
-              "uuid": "e605e5be-44d3-43a5-9466-77a2caac26cb",
+              "uuid": "34091431-a4b8-49ee-9494-88b290558b74",
               "name": "kerberos",
               "title": "Kerberos — Primary authentication protocol for the AD domain",
               "port-ranges": [
@@ -372,7 +416,7 @@
               ]
             },
             {
-              "uuid": "f60ae7a7-b31e-4e50-a92c-25b5eeed06c6",
+              "uuid": "3ac1abb8-527b-41b5-ad24-fe1ed66294af",
               "name": "rpc-epmap",
               "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
               "port-ranges": [
@@ -384,7 +428,7 @@
               ]
             },
             {
-              "uuid": "1271b92b-2489-4393-b634-4643b65bbc63",
+              "uuid": "37784adf-7c4c-4e91-8a4f-1cf1502ef2cd",
               "name": "ldap",
               "title": "LDAP — Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
@@ -401,7 +445,7 @@
               ]
             },
             {
-              "uuid": "1d414ecb-8c21-41c8-ab02-2425df139dc6",
+              "uuid": "8666c4af-1af4-4f6a-b018-0bd3b6bfb176",
               "name": "ldaps",
               "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
@@ -413,7 +457,7 @@
               ]
             },
             {
-              "uuid": "5f92612a-5b27-46d1-a843-629ab28492f5",
+              "uuid": "59e13589-328f-471a-9d62-f69895872f74",
               "name": "smb",
               "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
@@ -425,7 +469,7 @@
               ]
             },
             {
-              "uuid": "68711539-45a8-4b4c-9693-1ed31049b586",
+              "uuid": "339b4654-0808-48db-bc43-6c515545a893",
               "name": "ntp",
               "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
@@ -437,7 +481,7 @@
               ]
             },
             {
-              "uuid": "d3bd7477-6b48-47b6-8131-d28a8b05f682",
+              "uuid": "b2e8789f-2ede-470d-8ac6-8532bb164b50",
               "name": "ad-gc",
               "title": "Active Directory Global Catalog — Forest-wide directory lookups",
               "port-ranges": [
@@ -455,7 +499,7 @@
               ]
             },
             {
-              "uuid": "2b65343e-e6ca-4e67-bd3f-8a87c63c0bb0",
+              "uuid": "3408e116-b325-4455-9365-7f6cd32c6e40",
               "name": "ad-replication",
               "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
@@ -468,7 +512,7 @@
               ]
             },
             {
-              "uuid": "927bbb6c-4b5e-4369-9bc6-3a461d3e5ddc",
+              "uuid": "4f36249d-0521-4858-968f-f7baf926fcce",
               "name": "netbios-ns",
               "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
@@ -481,7 +525,7 @@
               ]
             },
             {
-              "uuid": "841ce2ee-bfaa-4aff-b8aa-6f0241b42984",
+              "uuid": "99142298-5e61-47e9-afb0-eebdd34b4b72",
               "name": "netbios-dgm",
               "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
               "port-ranges": [
@@ -494,7 +538,7 @@
               ]
             },
             {
-              "uuid": "908fc784-70df-45fc-b10f-f4c061198ef2",
+              "uuid": "f97390dd-c87d-4794-a61f-91f738491e9f",
               "name": "netbios-ssn",
               "title": "NetBIOS Session — Legacy NetBIOS session service",
               "port-ranges": [
@@ -547,7 +591,7 @@
           },
           "protocols": [
             {
-              "uuid": "60ba9c5e-30a2-4526-97ee-ede333a8a369",
+              "uuid": "af1866d3-7ab4-4054-be6f-20a3db4c4e06",
               "name": "https",
               "title": "HTTPS — Web-based management console",
               "port-ranges": [
@@ -559,7 +603,7 @@
               ]
             },
             {
-              "uuid": "522f8b6a-bcec-4df9-9f16-116b2d151b7d",
+              "uuid": "a647a5aa-7834-4304-8fc0-97ef5b712d0a",
               "name": "ssh",
               "title": "SSH — Secure CLI management",
               "port-ranges": [
@@ -571,7 +615,7 @@
               ]
             },
             {
-              "uuid": "ccb1881b-d1d3-4f41-b71c-6f82b32ac061",
+              "uuid": "e862409d-af2f-4802-8155-0eb6e96dfbef",
               "name": "snmp",
               "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
@@ -589,7 +633,7 @@
               ]
             },
             {
-              "uuid": "dd5e9d52-2ed3-4f32-9603-97b866a62960",
+              "uuid": "25c8a572-f0c4-47ce-8e5f-ed50110eab79",
               "name": "syslog",
               "title": "Syslog — Security event forwarding to SIEM",
               "port-ranges": [
@@ -601,7 +645,7 @@
               ]
             },
             {
-              "uuid": "a59810cc-b226-406f-81c9-3c613f3655f0",
+              "uuid": "56d0ecee-db2b-43ae-b2a0-ffb979c140af",
               "name": "ntp",
               "title": "NTP — Time synchronisation",
               "port-ranges": [
@@ -625,7 +669,7 @@
           },
           "protocols": [
             {
-              "uuid": "ec802f7e-e1a3-4fd9-b097-a7964def3087",
+              "uuid": "9e6e5ddb-dbd4-4d4a-bb4f-dd2e6f9c40c9",
               "name": "https",
               "title": "Secure local management",
               "port-ranges": [
@@ -637,7 +681,7 @@
               ]
             },
             {
-              "uuid": "6ff6a0ad-fa7b-467e-9ffa-c5d80eca6270",
+              "uuid": "5018ac06-94e2-4b23-97b8-d6ef1cb59af0",
               "name": "IKE",
               "title": "Encrypted data transport",
               "port-ranges": [
@@ -649,7 +693,7 @@
               ]
             },
             {
-              "uuid": "3da95fe7-56d1-47a4-942c-12d114719206",
+              "uuid": "595e63ea-bc40-44b1-8c5a-4e8c2c0f11f5",
               "name": "NAT-T",
               "title": "NAT Traversal",
               "port-ranges": [
@@ -673,7 +717,7 @@
           },
           "protocols": [
             {
-              "uuid": "bb17e145-97e0-4907-9c94-b119adf09783",
+              "uuid": "1bf37654-48c4-40a1-8f14-4164774efe71",
               "name": "https",
               "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
@@ -685,7 +729,7 @@
               ]
             },
             {
-              "uuid": "eaf2f152-1afc-40e6-94e5-f2f16671575d",
+              "uuid": "46028c9b-a3d3-468a-a342-39812435e9c2",
               "name": "airlock-agent",
               "title": "Airlock Digital agent communication — Agent check-in and policy download",
               "port-ranges": [
@@ -698,7 +742,7 @@
               ]
             },
             {
-              "uuid": "6a8ab358-c6f6-4896-9126-53f92df8a915",
+              "uuid": "50883b02-7484-4ec0-b31f-15c45c50ceb9",
               "name": "syslog",
               "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
@@ -710,7 +754,7 @@
               ]
             },
             {
-              "uuid": "f8a5998f-6bf0-4a70-a543-c0fa74e812d8",
+              "uuid": "c1b27e2d-be07-4bd6-a28b-7e45d56e2e81",
               "name": "ldaps",
               "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
@@ -722,7 +766,7 @@
               ]
             },
             {
-              "uuid": "12912285-a769-4e4b-8ead-11a7318effd9",
+              "uuid": "56183684-e148-42cd-a3d5-f82ffd29c452",
               "name": "ntp",
               "title": "NTP — Time synchronisation for audit log timestamps",
               "port-ranges": [
@@ -760,7 +804,7 @@
           },
           "protocols": [
             {
-              "uuid": "e8993bf9-addf-4a8d-8951-3571ed228ac3",
+              "uuid": "a75dfd73-6d3a-4a4c-a37c-ae209bea2349",
               "name": "smb",
               "title": "Server Message Block",
               "port-ranges": [
@@ -808,6 +852,159 @@
               "role-id": "isso"
             }
           ]
+        },
+        {
+          "uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+          "type": "hardware",
+          "title": "VPN Hub (Main Office)",
+          "description": "A SonicWall TZ670 next-generation firewall deployed at the main office, sized to terminate site-to-site IPsec VPN tunnels from every remote office simultaneously in a hub-and-spoke topology. Acts as the gateway between the main office network and each remote office's security domain, routing traffic between spokes only via the hub and enforcing the organisation's firewall policy on all inter-site traffic.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+          "type": "hardware",
+          "title": "VPN Client (Remote Office)",
+          "description": "A SonicWall TZ270 firewall/router deployed at each remote office — a smaller, lower-cost model than the main office hub, sized only for that site's own traffic. Establishes a single site-to-site IPsec VPN tunnel back to the main office VPN Hub, acting as the spoke in a hub-and-spoke topology. This component is defined once and reused across every remote office site via a separate inventory item per site (see SSP Section 12).",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "d151d124-adee-4e09-85cb-79f92d9ef595",
+          "type": "policy",
+          "title": "Endpoint Protection Policy",
+          "description": "Defines requirements for protecting endpoints from malware, unauthorised code execution, and network-based attacks. Mandates anti-malware deployment, host-based firewall enforcement, application control, and regular definition updates across all workstations and servers.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+          "type": "software",
+          "title": "Microsoft Defender for Endpoint",
+          "description": "Microsoft Defender for Endpoint (MDE) Plan 2 provides next-generation antivirus (AV), endpoint detection and response (EDR), attack surface reduction (ASR) rules, and threat and vulnerability management (TVM). Deployed on all Windows 11 workstations and Windows Server 2022 systems via Microsoft Intune.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+          "type": "software",
+          "title": "Windows Defender Firewall",
+          "description": "Windows Defender Firewall with Advanced Security is enforced on all Windows 11 workstations and Windows Server 2022 systems via Group Policy and Microsoft Intune. All three firewall profiles (Domain, Private, Public) are enabled with a default-deny inbound posture.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "72947d21-b5ac-45ca-ac24-a83926ce23e4",
+          "type": "policy",
+          "title": "Patch Management Policy",
+          "description": "The patch management policy defines organisational requirements and timeframes for applying security patches to all systems, including operating systems, applications, and firmware. It mandates vulnerability scanning to verify patch compliance.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+          "type": "software",
+          "title": "Windows 11 — Patch Management",
+          "description": "Windows 11 is the standard workstation operating system. Patching is managed via Windows Update for Business (WUfB) and Microsoft Intune. Patch compliance is verified via Tenable Nessus vulnerability scans run fortnightly from the central scan server.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "a081ecb0-27fb-4018-948a-1d7cd8fe6a28",
+          "type": "software",
+          "title": "Vulnerability Scanner — Tenable Nessus",
+          "description": "Tenable Nessus Professional is deployed as the vulnerability scanner for all on-premises endpoints and servers. Authenticated scans use a domain service account with local admin rights to ensure accurate patch and configuration findings.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+          "type": "policy",
+          "title": "Privileged Access Management Policy",
+          "description": "Defines requirements for granting, managing, reviewing, and revoking privileged access across all organisational systems. Mandates the use of separate privileged accounts, multi-factor authentication for all privileged activities, and quarterly access reviews.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+          "type": "service",
+          "title": "Active Directory — Privileged Access",
+          "description": "Active Directory implements the technical controls for privileged access management. Privileged groups (Domain Admins, Server Admins, Workstation Admins) are tightly controlled. LAPS manages unique local administrator passwords per device. PAM tooling enforces just-in-time privileged access with session recording.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+          "type": "software",
+          "title": "Multi-Factor Authentication — Microsoft Entra ID",
+          "description": "Microsoft Entra ID (formerly Azure AD) enforces MFA for all user and privileged access. Conditional Access policies require MFA for all cloud services, VPN, and privileged administrative actions. Microsoft Authenticator is the primary MFA method; FIDO2 hardware tokens are required for privileged accounts.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+          "type": "policy",
+          "title": "Security Logging and Monitoring Policy",
+          "description": "Defines requirements for capturing, protecting, retaining, and reviewing security event logs from all organisational systems. Mandates centralised log collection, minimum event types to be logged, log retention periods, and alert response timeframes.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+          "type": "service",
+          "title": "SIEM — Microsoft Sentinel",
+          "description": "Microsoft Sentinel is the cloud-native SIEM and SOAR platform collecting security telemetry from all in-scope systems. Data connectors ingest Windows events via Windows Event Forwarding (WEF), Defender for Endpoint events, Entra ID sign-in and audit logs, and Microsoft 365 activity logs. Analytics Rules detect threats; Playbooks automate initial response.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+          "type": "software",
+          "title": "Windows Advanced Audit Policy",
+          "description": "Windows Advanced Audit Policy is configured via Group Policy on all domain-joined systems to capture the event types required by the logging policy. Windows Event Forwarding (WEF) streams events to a Windows Event Collector (WEC) server, which forwards them to Microsoft Sentinel. Critical event IDs monitored include: 4624, 4625, 4634, 4648, 4672, 4688, 4698, 4720, 4726, 4740.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "664b2cda-94b5-4642-9a3d-942c3c916575",
+          "type": "policy",
+          "title": "Backup and Recovery Policy",
+          "description": "Defines requirements for backing up all organisational information and systems to support recovery from data loss, ransomware, hardware failure, and disaster events. Mandates backup frequency, retention periods, encryption, offsite storage, and mandatory restoration testing.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "34922b84-a480-4301-9687-1d9676396901",
+          "type": "software",
+          "title": "Veeam Backup and Replication",
+          "description": "Veeam Backup and Replication is deployed as the primary backup solution for all on-premises virtual machines (VMware vSphere) and physical servers. Performs daily incremental and weekly full backups to local backup storage with replication to an immutable cloud repository (AWS S3 with Object Lock). Backup encryption is enforced via AES-256.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "f64d3f45-1b04-408a-8dfd-ac0950e72020",
+          "type": "service",
+          "title": "Offsite Backup Storage — AWS S3",
+          "description": "Amazon Web Services S3 (Simple Storage Service) is used as the immutable offsite backup repository for Veeam backups. The S3 bucket is in a different AWS region from the primary workload. S3 Object Lock is enabled in Compliance mode to prevent modification or deletion of backup objects during the retention period.",
+          "status": {
+            "state": "operational"
+          }
         }
       ]
     },
@@ -815,7 +1012,7 @@
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "f6614d79-cedb-4886-b833-dc96a886d0c6",
+          "uuid": "26d23c8b-3bc6-49bb-a431-e80938f7b2e8",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -829,7 +1026,7 @@
           ]
         },
         {
-          "uuid": "4f2b0fd4-53e6-4980-830a-61a39f942d63",
+          "uuid": "7a363aea-015e-42fb-af0e-e2cdeb1c93d9",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -843,7 +1040,7 @@
           ]
         },
         {
-          "uuid": "bd96e3c9-b6d5-4710-99a1-06abb50666b9",
+          "uuid": "6373d938-c067-4dca-b747-c29a1346c250",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -857,7 +1054,7 @@
           ]
         },
         {
-          "uuid": "63e4557b-2086-4238-ad3b-6adec1b757f7",
+          "uuid": "9a741ec1-1465-4295-a5b7-c8cf186eb72b",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -871,7 +1068,7 @@
           ]
         },
         {
-          "uuid": "398a2c9a-aa76-4698-bef5-ed2c6900f9d1",
+          "uuid": "df375176-fcc2-455c-84ca-ec2ee226da58",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -885,7 +1082,7 @@
           ]
         },
         {
-          "uuid": "585cabe6-22dd-4e12-add0-5870c994dabb",
+          "uuid": "dfbd88fa-28ae-4640-b681-7b065c668e0e",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -895,11 +1092,35 @@
               "implementation-status": {
                 "state": "implemented"
               }
+            },
+            {
+              "component-uuid": "664b2cda-94b5-4642-9a3d-942c3c916575",
+              "uuid": "a08c1703-952b-4987-a02d-31b96fbb238f",
+              "description": "The backup and recovery policy mandates that backups are encrypted at rest and in transit using AES-256. Backup encryption keys are stored separately from the backed-up data and backed up to secure offline storage.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "34922b84-a480-4301-9687-1d9676396901",
+              "uuid": "393b1918-f7af-4c22-8ccc-b0fcac23e6fd",
+              "description": "Veeam Backup and Replication encrypts all backup files at rest using AES-256 with a per-job encryption key managed by the Veeam key management service. Backup traffic to the cloud repository uses TLS 1.2 in transit.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "f64d3f45-1b04-408a-8dfd-ac0950e72020",
+              "uuid": "7206c449-2fab-4b7d-b522-e403d0f8e87b",
+              "description": "Veeam client-side AES-256 encryption is applied before backup data is uploaded to S3. S3 server-side encryption (SSE-S3) is also enabled as a secondary layer. The S3 bucket policy enforces HTTPS-only access (denies HTTP puts and gets).",
+              "implementation-status": {
+                "state": "implemented"
+              }
             }
           ]
         },
         {
-          "uuid": "843233bf-9e39-4446-a508-7070b7e8a6d5",
+          "uuid": "7b70f7a9-d235-4a3d-bf5a-83983235fbcf",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -913,7 +1134,7 @@
           ]
         },
         {
-          "uuid": "86ee42cf-fb84-4f74-b02f-3e1bb963af89",
+          "uuid": "80dc80d6-9033-4492-83bf-73603e17967f",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -927,7 +1148,7 @@
           ]
         },
         {
-          "uuid": "e0140c07-417a-4e34-ba85-e31f632757e8",
+          "uuid": "a19c9f27-cca7-4b44-8896-1bcdc3a4443c",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -941,7 +1162,7 @@
           ]
         },
         {
-          "uuid": "70aad8fc-af4a-4056-94d0-bf286b3d83b9",
+          "uuid": "5498a4d4-7f89-4152-b4ba-8dedf00d52a7",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -955,7 +1176,7 @@
           ]
         },
         {
-          "uuid": "6b1a510a-565e-4c93-8dff-8a311a4f714f",
+          "uuid": "f619e84b-fb90-4d05-87c8-94e4bb5c9618",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -965,11 +1186,27 @@
               "implementation-status": {
                 "state": "implemented"
               }
+            },
+            {
+              "component-uuid": "d151d124-adee-4e09-85cb-79f92d9ef595",
+              "uuid": "e5e84e2e-7a0f-451d-90e2-553103105b67",
+              "description": "The endpoint protection policy mandates application control on all workstations to prevent execution of unapproved software, scripts, and code.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+              "uuid": "b4deac29-f2f7-466a-8a4e-007506bb5e28",
+              "description": "MDE Attack Surface Reduction (ASR) rules are enforced in block mode: Office applications cannot create child processes, LSASS credential access is blocked, untrusted executables from USB are blocked, and obfuscated script execution is blocked.",
+              "implementation-status": {
+                "state": "implemented"
+              }
             }
           ]
         },
         {
-          "uuid": "13d2bb71-846c-49e9-a8c9-e640cbea08e7",
+          "uuid": "28b580c3-5569-46f9-8901-e5cd63296bab",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -983,7 +1220,7 @@
           ]
         },
         {
-          "uuid": "543989cb-9c06-4067-93cd-7086fd81d8a4",
+          "uuid": "3c9be050-c378-4ec9-9dbc-629cb06a9479",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -997,7 +1234,7 @@
           ]
         },
         {
-          "uuid": "348680fc-ce98-46af-8451-56cb423169f5",
+          "uuid": "a525c4dd-2367-4305-bc6f-69a5e602728a",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -1011,7 +1248,7 @@
           ]
         },
         {
-          "uuid": "b742244c-34ca-42ba-88e2-969945bdd5d9",
+          "uuid": "fae3e4b7-ae8c-48f8-ba61-49486cf60f86",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -1025,7 +1262,7 @@
           ]
         },
         {
-          "uuid": "ae6c056c-1ae2-4ee2-8abb-157280786974",
+          "uuid": "4fc37e27-69f7-48e7-b118-1bae8fc65206",
           "control-id": "ism-2012",
           "by-components": [
             {
@@ -1035,11 +1272,19 @@
               "implementation-status": {
                 "state": "implemented"
               }
+            },
+            {
+              "component-uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+              "uuid": "f2347ab1-9bac-418d-a51f-06877b9a8f7b",
+              "description": "MFA is enforced for all remote access to organisational systems. The VPN gateway integrates with Entra ID MFA via RADIUS/NPS extension. SMS OTP is not permitted; only app-based OTP, push notification, and FIDO2 are accepted.",
+              "implementation-status": {
+                "state": "implemented"
+              }
             }
           ]
         },
         {
-          "uuid": "9e8bd760-37e5-4fca-9b1d-2613e53f3aea",
+          "uuid": "bd5ea856-abb8-489a-b87c-1dca1bf781b0",
           "control-id": "ism-1175",
           "by-components": [
             {
@@ -1049,11 +1294,27 @@
               "implementation-status": {
                 "state": "implemented"
               }
+            },
+            {
+              "component-uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+              "uuid": "1553edb6-5715-466d-a92c-dc241559d463",
+              "description": "The PAM policy prohibits the use of privileged accounts for standard activities such as email, web browsing, or general productivity tasks. Privileged accounts are restricted to administrative tasks only.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+              "uuid": "2347eef8-dd44-4dce-8242-9dad20cdbf06",
+              "description": "Privileged AD accounts (Domain Admin, Server Admin) are not used for email or web browsing. All privileged users have a separate standard user account for daily productivity tasks.",
+              "implementation-status": {
+                "state": "implemented"
+              }
             }
           ]
         },
         {
-          "uuid": "4e1aff51-702a-4c0b-a310-d8b41a30da89",
+          "uuid": "128fe917-9c8d-4e6f-9a0d-53d0cff27933",
           "control-id": "ism-0874",
           "by-components": [
             {
@@ -1067,7 +1328,7 @@
           ]
         },
         {
-          "uuid": "c764e26d-6db4-44b4-b41e-263b550fb9ed",
+          "uuid": "b4026041-e718-423a-8579-a8186b84cfe1",
           "control-id": "ism-1490",
           "by-components": [
             {
@@ -1081,7 +1342,7 @@
           ]
         },
         {
-          "uuid": "ccd9764c-2b0d-473f-ac8e-4e4820b55a1b",
+          "uuid": "0573dc47-ef53-4aeb-98cc-7a0262027239",
           "control-id": "ism-1486",
           "by-components": [
             {
@@ -1095,7 +1356,7 @@
           ]
         },
         {
-          "uuid": "a652e5df-86bf-4f30-82bf-edf777cef945",
+          "uuid": "6ba09055-7e50-4f61-874f-d1f1dd8e8153",
           "control-id": "ism-1485",
           "by-components": [
             {
@@ -1109,7 +1370,7 @@
           ]
         },
         {
-          "uuid": "d68cdf68-9b71-4965-9352-2329eae3a9b5",
+          "uuid": "283fc438-17ef-4d35-9262-e0167ad915aa",
           "control-id": "ism-1483",
           "by-components": [
             {
@@ -1123,7 +1384,7 @@
           ]
         },
         {
-          "uuid": "b3de73da-1b9a-493e-bd63-323dd0c0ce83",
+          "uuid": "bb88d198-59ce-4b3a-981a-b8afcb21b6f6",
           "control-id": "ism-1978",
           "by-components": [
             {
@@ -1137,7 +1398,7 @@
           ]
         },
         {
-          "uuid": "000f34dc-8c26-446d-9f05-10e3bb0a7081",
+          "uuid": "e0508519-69e6-4bcd-a100-0fe46b501971",
           "control-id": "ism-1877",
           "by-components": [
             {
@@ -1151,7 +1412,7 @@
           ]
         },
         {
-          "uuid": "64445a7e-09a4-4db4-9841-8eac48ddf77f",
+          "uuid": "d5e29f08-89d9-435e-8fb8-55fa5c8b106a",
           "control-id": "ism-1753",
           "by-components": [
             {
@@ -1165,7 +1426,7 @@
           ]
         },
         {
-          "uuid": "5a68e6ba-78c4-4c6e-a616-7ed317cd9eca",
+          "uuid": "6c244703-329d-42bd-a79a-962768f4b72f",
           "control-id": "ism-1906",
           "by-components": [
             {
@@ -1179,7 +1440,7 @@
           ]
         },
         {
-          "uuid": "a1238d9b-0020-4aa2-8247-b491a3b12bce",
+          "uuid": "2d66a9c2-d058-46d7-81d9-f8eeb71f2f56",
           "control-id": "ism-1960",
           "by-components": [
             {
@@ -1189,11 +1450,35 @@
               "implementation-status": {
                 "state": "implemented"
               }
+            },
+            {
+              "component-uuid": "664b2cda-94b5-4642-9a3d-942c3c916575",
+              "uuid": "891821d9-2d77-4600-874d-3bf564122e47",
+              "description": "The backup and recovery policy requires that backups of all production systems are stored in a separate location from the primary system. Offsite backup storage must be geographically separated to protect against site-level disaster.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "34922b84-a480-4301-9687-1d9676396901",
+              "uuid": "040100c7-3c37-48bc-ac33-14b22d72de42",
+              "description": "Veeam replicates all backup data nightly to an AWS S3 bucket in a different region from the primary data centre. AWS S3 Object Lock (WORM) is enabled with a 30-day immutability period to prevent ransomware from deleting offsite backups.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "f64d3f45-1b04-408a-8dfd-ac0950e72020",
+              "uuid": "4b5dfbeb-360f-41da-a4ef-0b1c28bf244b",
+              "description": "AWS S3 stores all Veeam backup data in a geographically separated region (Sydney primary, Melbourne replica). The S3 bucket is access-controlled via IAM policy — only the Veeam backup server service account can write objects; no account can delete objects within the Object Lock retention window.",
+              "implementation-status": {
+                "state": "implemented"
+              }
             }
           ]
         },
         {
-          "uuid": "08bc30ab-83c4-4a21-b0cc-ec503ad1a425",
+          "uuid": "ea43f5c1-6810-4451-9b0f-821812e43be1",
           "control-id": "ism-1701",
           "by-components": [
             {
@@ -1207,13 +1492,645 @@
           ]
         },
         {
-          "uuid": "0d5a4958-637f-47fb-9239-262888da2bd8",
+          "uuid": "542431db-e15b-4c9b-9bb8-d7f649e505a7",
           "control-id": "ism-1818",
           "by-components": [
             {
               "component-uuid": "2bba09dd-2258-4079-87fe-1c4f051f3c49",
               "uuid": "6830c521-74f0-43fb-b8f8-32ccbf069d90",
               "description": "The system has no access to the internet. No authentication or authorisation of clients is allowed to happen outside of the system.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "5214fa1f-a92b-48b4-a94b-6619e2dd7811",
+          "control-id": "ism-0628",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "ac970430-1578-4df5-b112-1aa173abff7a",
+              "description": "This gateway is implemented at the boundary between the main office network and each remote office's network, which are treated as separate security domains connected only via authenticated, encrypted site-to-site VPN tunnels.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "87a78470-050d-44e6-a8d6-859da909199a",
+          "control-id": "ism-0631",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "75106873-ced0-49f5-bcf5-055dbd105169",
+              "description": "The hub firewall policy only permits explicitly authorised data flows between the main office and each remote office spoke; all other inter-site traffic is denied by default.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "ed33194e-6539-4825-b821-13c1724d0ec5",
+          "control-id": "ism-1192",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "107ef583-52d3-4a6d-a849-c115efdd132d",
+              "description": "The hub inspects and filters all inter-site data flows at the transport layer and above, including deep packet inspection of decrypted VPN traffic before it is routed onward.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "6846d0ff-dc92-45e4-8a62-9c50b66465c3",
+          "control-id": "ism-0494",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "3adedc7b-a4a9-4b09-8c2d-ea00aa1fc1c8",
+              "description": "Tunnel mode is used for every IPsec site-to-site VPN connection between the hub and each remote office spoke.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "9746755f-6614-4cca-944a-6833ac1381a9",
+              "description": "Tunnel mode is used for the IPsec site-to-site VPN connection back to the main office hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "56412619-dd23-4482-a46b-8cce678fbb42",
+          "control-id": "ism-0496",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "a4f24912-4ac5-472e-b605-d8799651cdd6",
+              "description": "The ESP protocol is used for authentication and encryption of all IPsec connections terminated at the hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "96be4da4-c41b-40c8-a8eb-3b8a5745ed36",
+              "description": "The ESP protocol is used for authentication and encryption of the IPsec connection to the hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "aabe4ccb-a4b3-40ad-8be4-9b01511297a6",
+          "control-id": "ism-1233",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "68f8dcd5-80a9-43ce-8568-aa8bd1f37639",
+              "description": "IKEv2 is used for key exchange when establishing every IPsec connection between the hub and each remote office spoke.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "4e405af0-fbc1-4dd4-a49b-ef6189013448",
+              "description": "IKEv2 is used for key exchange when establishing the IPsec connection to the main office hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "0a4a323b-ddef-440a-b3f8-3171d0f4ba7d",
+          "control-id": "ism-1771",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "c179eb07-05ce-494b-9819-b118b87697c1",
+              "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting all IPsec connections terminated at the hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "48455c75-53a3-4678-ae37-52c110b9b0f0",
+              "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting the IPsec connection to the main office hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "f5abbff9-0aad-4ecf-85fc-6f9334cbd96b",
+          "control-id": "ism-1000",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "69d2197a-a528-4384-af98-874130b960cf",
+              "description": "Perfect Forward Secrecy is enabled for every IPsec connection between the hub and each remote office spoke.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "81702859-8246-4c67-9783-1e2435dabce4",
+              "description": "Perfect Forward Secrecy is enabled for the IPsec connection back to the main office hub.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "251a0800-7def-4cf9-bc92-1aa8507f1a82",
+          "control-id": "ism-0634",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "c3cee9c0-41c0-4fd9-9d54-cf1e143b6e25",
+              "description": "Security-relevant events for the hub — permitted and denied data flows, tunnel establishment and teardown, and administrative access — are centrally logged to the SIEM.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "8f6e75cb-7d6b-4abf-aff3-fe7d5f602a90",
+          "control-id": "ism-1774",
+          "by-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+              "uuid": "223cef1d-d369-4dff-b564-91cc61ebd355",
+              "description": "The hub is managed via a dedicated out-of-band management interface, isolated from every connected network including all remote office VPN tunnels.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "e5f19c1a-c851-4684-b5ff-41e985b06505",
+          "control-id": "ism-0705",
+          "by-components": [
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "1142f5ca-dc4f-4c5a-97fc-0fc312e25443",
+              "description": "Split tunnelling is disabled on this device — all traffic from the remote office is routed through the single IPsec tunnel back to the main office hub, with no direct path to the internet.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "1291e91e-0976-4184-a120-798ffd931b22",
+          "control-id": "ism-0622",
+          "by-components": [
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+              "uuid": "671fb42c-c541-4f0b-8b19-74ebefa2be7a",
+              "description": "This device authenticates to the main office network using IKEv2 with certificate-based authentication before its site-to-site VPN tunnel is established.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "fadfe2a6-b597-4c47-9573-74e10e43a684",
+          "control-id": "ism-1417",
+          "by-components": [
+            {
+              "component-uuid": "d151d124-adee-4e09-85cb-79f92d9ef595",
+              "uuid": "bfe30f48-ded8-4445-9f02-c071a1e4b0f8",
+              "description": "The endpoint protection policy requires that anti-malware software is deployed on all workstations and servers, with real-time scanning enabled and definitions updated at least daily.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+              "uuid": "82e3f5cd-9fae-44c6-a389-e187de7bb7a7",
+              "description": "Microsoft Defender Antivirus operates in active mode with real-time protection, cloud-delivered protection (MAPS), and automatic sample submission enabled. Definitions are updated every 4 hours. Scheduled full scan runs weekly on Sundays.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+              "uuid": "1b767003-eef1-49d3-8d49-0e94619cd964",
+              "description": "Windows Defender Firewall works in conjunction with Defender AV to block network access for detected malware — Defender AV can automatically block outbound connections from quarantined processes.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "f7c8a7b3-3d97-461d-943f-6e43b1ea8690",
+          "control-id": "ism-1416",
+          "by-components": [
+            {
+              "component-uuid": "d151d124-adee-4e09-85cb-79f92d9ef595",
+              "uuid": "18dc4b4a-579e-474d-abac-8974c8f52c2b",
+              "description": "The endpoint protection policy requires host-based firewalls on all workstations in all network profiles (domain, private, public) with a default-deny inbound posture.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+              "uuid": "faebe3a4-ee08-4ffc-9c47-f31df823896b",
+              "description": "Windows Defender Firewall is enforced in all three network profiles on all workstations via Intune Firewall policy. Default inbound posture: block all unsolicited inbound connections. Only management traffic (WMI, RPC) from designated management subnets is permitted inbound.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "f65abc8a-7736-4246-a5e1-0c13e183e703",
+          "control-id": "ism-1341",
+          "by-components": [
+            {
+              "component-uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+              "uuid": "876c953e-3cf4-4e4c-a40b-4fd93ff2944f",
+              "description": "MDE EDR provides behaviour-based detection of threats not caught by signature AV, including process injection, credential harvesting, and LOLBin abuse. Automated Investigation and Response (AIR) automatically contains confirmed malware.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "dcec468e-ee9a-4af8-8d63-2d6c72f9ce54",
+          "control-id": "ism-1492",
+          "by-components": [
+            {
+              "component-uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+              "uuid": "1de8b15d-aed9-4a45-a46c-719ea77e91c4",
+              "description": "Windows Defender Exploit Protection (WDEP) is enforced on all workstations: DEP, ASLR, CFG, and stack pivot protection are enabled for all processes. Settings are deployed via Intune Exploit Protection configuration profile.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "5141df0e-5dcf-42c5-8bbf-7f590d46eadc",
+          "control-id": "ism-1696",
+          "by-components": [
+            {
+              "component-uuid": "72947d21-b5ac-45ca-ac24-a83926ce23e4",
+              "uuid": "5f19e772-4939-4dc0-8fb2-450cba21c816",
+              "description": "The patch management policy requires that patches for operating systems are applied within 48 hours when assessed as critical or when working exploits exist in the wild.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+              "uuid": "39826f37-ad77-4749-86cd-12d399972a64",
+              "description": "Security patches assessed as critical, or where working exploits exist, are deployed to Windows 11 workstations within 48 hours via Windows Update for Business configured in the Semi-Annual Channel with accelerated deadline policy.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "770a0787-8e68-4f2d-a80d-9ae7a26cdf87",
+          "control-id": "ism-1693",
+          "by-components": [
+            {
+              "component-uuid": "72947d21-b5ac-45ca-ac24-a83926ce23e4",
+              "uuid": "f9a572a2-338b-4767-93d9-06d703d72069",
+              "description": "The patch management policy requires that patches for standard applications (non-high-risk) are applied within one month of release.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+              "uuid": "b9dfd792-ea29-4bdf-8f25-3467540fd64f",
+              "description": "All other security patches for the Windows 11 operating system are deployed within one month via the standard monthly Patch Tuesday deployment ring.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "b015a52d-c135-4841-94aa-d08011403868",
+          "control-id": "ism-1702",
+          "by-components": [
+            {
+              "component-uuid": "72947d21-b5ac-45ca-ac24-a83926ce23e4",
+              "uuid": "0e02f606-d936-4209-87b0-ca1ab9a1f10c",
+              "description": "The patch management policy mandates fortnightly vulnerability scanning to identify missing operating system patches across all endpoints.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+              "uuid": "13c2fa9a-9122-4ac2-9087-e04633e3e2bd",
+              "description": "A vulnerability scanner is run at least fortnightly to identify missing OS-level patches on Windows 11 workstations. Results are reviewed by the security team and outstanding patches are escalated within 5 business days.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "a081ecb0-27fb-4018-948a-1d7cd8fe6a28",
+              "uuid": "dc36e807-c435-4931-8177-407eb6a241aa",
+              "description": "Nessus performs authenticated fortnightly scans of all workstation and server operating systems to identify missing patches. Scan results are exported to the SIEM and summarised in the monthly patch compliance report.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "da0b2505-bb2e-420e-a814-dd6eb9125321",
+          "control-id": "ism-1699",
+          "by-components": [
+            {
+              "component-uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+              "uuid": "cac782b1-f83e-4adf-bb16-f6247330d601",
+              "description": "A vulnerability scanner (Tenable Nessus) is used at least weekly to identify missing patches for high-risk applications on Windows 11 workstations, including web browsers, Microsoft Office, and PDF readers.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "a081ecb0-27fb-4018-948a-1d7cd8fe6a28",
+              "uuid": "f807b0cf-a86a-475b-8242-ea341c981a75",
+              "description": "Nessus performs authenticated weekly scans targeting high-risk applications (browsers, email clients, Microsoft Office, PDF readers) on all workstations. Critical findings are reviewed within 24 hours.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "db731888-46e5-478c-a14b-abb463b68b3e",
+          "control-id": "ism-1704",
+          "by-components": [
+            {
+              "component-uuid": "a081ecb0-27fb-4018-948a-1d7cd8fe6a28",
+              "uuid": "baa1fc09-ad93-48f5-8b27-d9e120ed4b52",
+              "description": "Nessus scan results include end-of-life (EOL) detection. Applications and operating systems flagged as no longer receiving vendor security support are escalated to the system owner for removal or exception approval.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "d7d024f5-8ee4-4dfb-9716-42ab4fe5b05d",
+          "control-id": "ism-0445",
+          "by-components": [
+            {
+              "component-uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+              "uuid": "1c4d0188-7b69-413e-8f65-6d3a0f2985d4",
+              "description": "The PAM policy requires that privileged access requests are approved by the relevant system owner and the CISO before access is granted. All privileged accounts are individually named — shared privileged accounts are prohibited.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+              "uuid": "78e3ddf6-d938-410b-b9c2-23d22c2c843b",
+              "description": "Membership of privileged AD groups is reviewed quarterly. Any additions to Domain Admins, Enterprise Admins, or Schema Admins require written approval from the CISO.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "a3d894b8-74cb-47ff-b7fe-062ea5420452",
+          "control-id": "ism-1507",
+          "by-components": [
+            {
+              "component-uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+              "uuid": "1f3b3087-04ea-4ae4-afef-80306a7eb2ab",
+              "description": "The PAM policy mandates formal requests for privileged access, including business justification, the specific systems and actions required, and a defined review date (maximum 12 months).",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "82690b4e-1327-4aa9-8ad5-27a8431dfbb3",
+          "control-id": "ism-1508",
+          "by-components": [
+            {
+              "component-uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+              "uuid": "bc097a17-ff79-4da6-a3a2-1f1d525b7f11",
+              "description": "The PAM policy requires that privileged access is limited to the minimum required to perform approved administrative tasks (principle of least privilege).",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+              "uuid": "ed7f08a3-c719-4c6b-ac51-4a05d1482d27",
+              "description": "AD group nesting and role assignments are reviewed to ensure no account holds more privileges than required. LAPS generates unique 20-character local admin passwords per workstation.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "a7ac3dac-d2a1-454b-8b98-1e622a99795c",
+          "control-id": "ism-1173",
+          "by-components": [
+            {
+              "component-uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+              "uuid": "1da3e897-b29e-4dcb-82e2-540b80b187a4",
+              "description": "MFA is enforced for all privileged users authenticating to domain resources and cloud services via Entra ID Conditional Access policy. FIDO2 hardware tokens are required for accounts with Domain Admin or equivalent privileges.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "314f521c-5b23-4657-a574-667e4372ac91",
+          "control-id": "ism-0974",
+          "by-components": [
+            {
+              "component-uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+              "uuid": "f0400efa-c37e-4382-84ea-43661c0d78b6",
+              "description": "MFA is enforced for all standard users accessing organisational systems via the corporate VPN, Microsoft 365, and web-based applications through Entra ID Conditional Access policies.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "aa6f56eb-66b9-4f42-8476-a47f0ce1dccb",
+          "control-id": "ism-1405",
+          "by-components": [
+            {
+              "component-uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+              "uuid": "a9ed2415-c364-4c88-95ca-3ad181bc3115",
+              "description": "The logging policy requires a centralised event logging facility (SIEM) to collect security events from all in-scope systems. Log data must be protected from unauthorised access and deletion.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+              "uuid": "036e2e7e-0c74-4de5-ab7d-7c2158dc814b",
+              "description": "Microsoft Sentinel is the centralised event logging facility. Log Analytics Workspace retains hot data for 90 days and archive data for 1 year. Write access to the workspace is restricted to the Sentinel service principal and authorised security administrators. Log purging requires two authorised approvals.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+              "uuid": "5236a72f-4818-45e9-b581-8bfda2e0d2f5",
+              "description": "Windows Event Forwarding (WEF) is configured on all Windows endpoints and servers via Group Policy. Events are forwarded to the WEC server within 60 seconds using a subscription-based push model. The WEC server forwards all collected events to Microsoft Sentinel.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "3c8f862a-5145-45a0-b167-b4587fe10dca",
+          "control-id": "ism-0585",
+          "by-components": [
+            {
+              "component-uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+              "uuid": "70740fb1-bc79-4f2c-a9b4-e4d72148809d",
+              "description": "The logging policy mandates that each logged security event includes: date and time of the event, the user or service account that performed the action, the source and destination of the event, and the outcome (success or failure).",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+              "uuid": "b5e03369-f1ee-4d19-89cd-cebc7547515f",
+              "description": "Sentinel Analytics Rules require structured log fields: timestamp, source host, user identity, action performed, and outcome. Custom parsers (KQL functions) normalise unstructured logs into this schema before alerting rules operate on them.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+              "uuid": "e9a5598f-47f0-40f6-bfcb-07364c243d21",
+              "description": "Windows Advanced Audit Policy is configured to capture: Account Logon (success and failure), Account Management (all), Privilege Use (success and failure), Process Creation (success), Object Access (failure), Policy Change (all), and System events (all). Each event includes timestamp, host, user SID, and outcome.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "e32227c7-faa4-4bce-b73b-da6cd8619d6e",
+          "control-id": "ism-1509",
+          "by-components": [
+            {
+              "component-uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+              "uuid": "06c38a3e-9064-4026-bbf4-de02d6490def",
+              "description": "The logging policy requires that privileged access events (logon, logoff, account management, group policy changes, security policy changes) are centrally logged and reviewed by the security team within each business day.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+              "uuid": "84d6ecd4-ac82-438f-b3a9-796d8a6a1bfd",
+              "description": "Sentinel Analytics Rules detect privileged access events in real time: new Domain Admin additions, failed privileged logons, privileged account use outside business hours. Alerts are triaged by the SOC within 15 minutes (P1) or 4 hours (P2/P3).",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+              "uuid": "c11ab775-3bbb-49f4-a632-a9dde5568144",
+              "description": "Security event log maximum size is 1GB with 'Archive when full' policy. Privileged access events (EID 4672 — Special Logon, EID 4673 — Privileged Service Called, EID 4674 — Operation on Privileged Object) are forwarded to Sentinel and trigger review alerts.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "6a078ae5-e68c-4167-929c-31a82603fa08",
+          "control-id": "ism-1566",
+          "by-components": [
+            {
+              "component-uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+              "uuid": "01238d55-aa1a-498d-9ebc-e2234c98a127",
+              "description": "The logging policy requires that standard user access events are centrally logged. Anomalous user activity (after-hours access, impossible travel, bulk data access) is flagged for security team review.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+              "uuid": "167d4fc1-62f0-4341-a711-fea778772191",
+              "description": "Sentinel detects anomalous standard user behaviour via Analytics Rules and Microsoft Entra ID Protection: impossible travel, atypical locations, mass file access (ransomware indicator), and sign-in risk detections generate alerts for SOC review.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "1ad8648c-3736-4a57-aeaf-5824513e5c7d",
+          "control-id": "ism-1683",
+          "by-components": [
+            {
+              "component-uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+              "uuid": "e5992557-72c0-441f-ae42-742260625e34",
+              "description": "Sentinel ingests Entra ID Sign-In logs via the Entra ID data connector. MFA authentication events (success and failure) are available for analysis. MFA bypass attempts trigger a P1 alert with automated account review.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            }
+          ]
+        },
+        {
+          "uuid": "cec3fe16-70fa-440d-85aa-7405c4709a99",
+          "control-id": "ism-1118",
+          "by-components": [
+            {
+              "component-uuid": "664b2cda-94b5-4642-9a3d-942c3c916575",
+              "uuid": "6e7dd71d-e9cc-4d8a-a272-a6102c66308e",
+              "description": "The backup and recovery policy requires that backup restoration is tested at least quarterly. Restoration test results are documented and reviewed by the system owner to confirm recovery objectives can be met.",
+              "implementation-status": {
+                "state": "implemented"
+              }
+            },
+            {
+              "component-uuid": "34922b84-a480-4301-9687-1d9676396901",
+              "uuid": "98f9cf27-28a1-4509-8bb1-dad3076e1de0",
+              "description": "Veeam SureBackup performs automated recovery verification: after each backup job completes, it boots the backed-up VM in an isolated virtual lab environment and runs application-specific heartbeat tests to verify recoverability. Test results are emailed to the IT operations team and logged in Veeam ONE.",
               "implementation-status": {
                 "state": "implemented"
               }
@@ -1247,7 +2164,7 @@
           ],
           "rlinks": [
             {
-              "href": "ISM_NON_CLASSIFIED-baseline_profile.json"
+              "href": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json"
             }
           ]
         }

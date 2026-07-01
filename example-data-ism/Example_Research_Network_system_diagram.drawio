@@ -161,64 +161,76 @@
     <mxCell id="55" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="50" target="54" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="56" value="Security Monitoring and Logging" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+    <mxCell id="56" value="VPN Hub (Main Office)&#10;Terminates this remote office's site-to-site VPN t" style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1430" y="398" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="57" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="50" target="56" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="58" value="VPN Client (Remote Office)&#10;Establishes the remote office's site-to-site VPN t" style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1430" y="452" width="180" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="59" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="50" target="58" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="60" value="Security Monitoring and Logging" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#0050ef;strokeColor=#0050ef;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
       <mxGeometry x="1650" y="180" width="200" height="50" as="geometry" />
     </mxCell>
-    <mxCell id="57" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="56" parent="1">
+    <mxCell id="61" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="60" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="58" value="Security Logging and Monitoring Policy&#10;Defines logging requirements, event types, retenti" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="62" value="Security Logging and Monitoring Policy&#10;Defines logging requirements, event types, retenti" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1660" y="290" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="59" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="56" target="58" parent="1">
+    <mxCell id="63" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="60" target="62" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="60" value="SIEM — Microsoft Sentinel&#10;Provides centralised log collection, threat detect" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="64" value="SIEM — Microsoft Sentinel&#10;Provides centralised log collection, threat detect" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1660" y="344" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="61" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="56" target="60" parent="1">
+    <mxCell id="65" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="60" target="64" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="62" value="Windows Advanced Audit Policy&#10;Captures and forwards Windows security events to t" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="66" value="Windows Advanced Audit Policy&#10;Captures and forwards Windows security events to t" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1660" y="398" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="63" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="56" target="62" parent="1">
+    <mxCell id="67" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="60" target="66" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="64" value="Uncategorised Components" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#666666;strokeColor=#444444;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+    <mxCell id="68" value="Uncategorised Components" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;fillColor=#666666;strokeColor=#444444;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
       <mxGeometry x="1880" y="180" width="200" height="50" as="geometry" />
     </mxCell>
-    <mxCell id="65" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="64" parent="1">
+    <mxCell id="69" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="3" target="68" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="66" value="Firewall central" style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="70" value="Firewall central" style="fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1890" y="290" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="67" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="66" parent="1">
+    <mxCell id="71" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="68" target="70" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="68" value="Airlock Digital" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="72" value="Airlock Digital" style="fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1890" y="344" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="69" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="68" parent="1">
+    <mxCell id="73" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="68" target="72" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="70" value="AD GPO Client hardening" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="74" value="AD GPO Client hardening" style="fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1890" y="398" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="71" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="70" parent="1">
+    <mxCell id="75" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="68" target="74" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="72" value="Windows Fileshare Network I:" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="76" value="Windows Fileshare Network I:" style="fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1890" y="452" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="73" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="72" parent="1">
+    <mxCell id="77" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="68" target="76" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
-    <mxCell id="74" value="No Internet Connection" style="fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
+    <mxCell id="78" value="No Internet Connection" style="fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;" vertex="1" parent="1">
       <mxGeometry x="1890" y="506" width="180" height="44" as="geometry" />
     </mxCell>
-    <mxCell id="75" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="64" target="74" parent="1">
+    <mxCell id="79" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="68" target="78" parent="1">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
   </root>
