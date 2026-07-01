@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Research Network SSP",
-      "last-modified": "2026-07-01T06:53:26Z",
+      "last-modified": "2026-07-01T07:39:39Z",
       "version": "0.1",
       "oscal-version": "1.2.2",
       "roles": [
@@ -382,7 +382,7 @@
           },
           "protocols": [
             {
-              "uuid": "7bbe259b-876a-4830-81d3-1a66886cdeb9",
+              "uuid": "a36e40c1-d73c-4a81-a044-47b716b74ddb",
               "name": "dns",
               "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
@@ -399,7 +399,7 @@
               ]
             },
             {
-              "uuid": "34091431-a4b8-49ee-9494-88b290558b74",
+              "uuid": "83528196-b702-465b-bb7b-380b629ab605",
               "name": "kerberos",
               "title": "Kerberos — Primary authentication protocol for the AD domain",
               "port-ranges": [
@@ -416,7 +416,7 @@
               ]
             },
             {
-              "uuid": "3ac1abb8-527b-41b5-ad24-fe1ed66294af",
+              "uuid": "1e5c1fed-be4f-4b7a-a000-bdb1ac3b3100",
               "name": "rpc-epmap",
               "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
               "port-ranges": [
@@ -428,7 +428,7 @@
               ]
             },
             {
-              "uuid": "37784adf-7c4c-4e91-8a4f-1cf1502ef2cd",
+              "uuid": "3893fdbe-74b7-4429-abdd-924cc28fad29",
               "name": "ldap",
               "title": "LDAP — Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
@@ -445,7 +445,7 @@
               ]
             },
             {
-              "uuid": "8666c4af-1af4-4f6a-b018-0bd3b6bfb176",
+              "uuid": "cbab3e5b-b277-458b-9d14-1f3143ba9c7f",
               "name": "ldaps",
               "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
@@ -457,7 +457,7 @@
               ]
             },
             {
-              "uuid": "59e13589-328f-471a-9d62-f69895872f74",
+              "uuid": "525d6290-8f38-4c73-8a38-0b47274f1f6a",
               "name": "smb",
               "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
@@ -469,7 +469,7 @@
               ]
             },
             {
-              "uuid": "339b4654-0808-48db-bc43-6c515545a893",
+              "uuid": "2d6c826d-c810-4bd0-96c3-fece2616de8e",
               "name": "ntp",
               "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
@@ -481,7 +481,7 @@
               ]
             },
             {
-              "uuid": "b2e8789f-2ede-470d-8ac6-8532bb164b50",
+              "uuid": "da6d00ea-c3b9-42a4-b8c0-1d3f03db9dae",
               "name": "ad-gc",
               "title": "Active Directory Global Catalog — Forest-wide directory lookups",
               "port-ranges": [
@@ -499,7 +499,7 @@
               ]
             },
             {
-              "uuid": "3408e116-b325-4455-9365-7f6cd32c6e40",
+              "uuid": "c3e23119-900f-4b7b-b960-b8e6e5167a9f",
               "name": "ad-replication",
               "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
@@ -512,7 +512,7 @@
               ]
             },
             {
-              "uuid": "4f36249d-0521-4858-968f-f7baf926fcce",
+              "uuid": "f9500b88-71e7-49f2-aef5-c279c476c658",
               "name": "netbios-ns",
               "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
@@ -525,7 +525,7 @@
               ]
             },
             {
-              "uuid": "99142298-5e61-47e9-afb0-eebdd34b4b72",
+              "uuid": "fa171e68-0568-4ecb-871c-e9ee4e6f61c1",
               "name": "netbios-dgm",
               "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
               "port-ranges": [
@@ -538,7 +538,7 @@
               ]
             },
             {
-              "uuid": "f97390dd-c87d-4794-a61f-91f738491e9f",
+              "uuid": "898d783d-0726-4c2c-afff-5923ebfd4927",
               "name": "netbios-ssn",
               "title": "NetBIOS Session — Legacy NetBIOS session service",
               "port-ranges": [
@@ -591,7 +591,7 @@
           },
           "protocols": [
             {
-              "uuid": "af1866d3-7ab4-4054-be6f-20a3db4c4e06",
+              "uuid": "c0a9a2d9-cdc0-4cbe-9b55-8157bec5fe84",
               "name": "https",
               "title": "HTTPS — Web-based management console",
               "port-ranges": [
@@ -603,7 +603,7 @@
               ]
             },
             {
-              "uuid": "a647a5aa-7834-4304-8fc0-97ef5b712d0a",
+              "uuid": "4c9ef0ab-bc9d-4395-9d81-1c30bb85630e",
               "name": "ssh",
               "title": "SSH — Secure CLI management",
               "port-ranges": [
@@ -615,7 +615,7 @@
               ]
             },
             {
-              "uuid": "e862409d-af2f-4802-8155-0eb6e96dfbef",
+              "uuid": "aba8bad1-60fc-455c-8e82-d2a0515f2fc3",
               "name": "snmp",
               "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
@@ -633,7 +633,7 @@
               ]
             },
             {
-              "uuid": "25c8a572-f0c4-47ce-8e5f-ed50110eab79",
+              "uuid": "5ce65d32-99ec-4f60-830a-cfcc44098317",
               "name": "syslog",
               "title": "Syslog — Security event forwarding to SIEM",
               "port-ranges": [
@@ -645,7 +645,7 @@
               ]
             },
             {
-              "uuid": "56d0ecee-db2b-43ae-b2a0-ffb979c140af",
+              "uuid": "85394fd0-bb95-4725-8c2a-72f0ce193eda",
               "name": "ntp",
               "title": "NTP — Time synchronisation",
               "port-ranges": [
@@ -669,7 +669,7 @@
           },
           "protocols": [
             {
-              "uuid": "9e6e5ddb-dbd4-4d4a-bb4f-dd2e6f9c40c9",
+              "uuid": "41c2fb77-5d78-4485-b38b-4f6428a6e0b6",
               "name": "https",
               "title": "Secure local management",
               "port-ranges": [
@@ -681,7 +681,7 @@
               ]
             },
             {
-              "uuid": "5018ac06-94e2-4b23-97b8-d6ef1cb59af0",
+              "uuid": "cde90010-a120-40e2-8ce6-4d9ab0a2b1c4",
               "name": "IKE",
               "title": "Encrypted data transport",
               "port-ranges": [
@@ -693,7 +693,7 @@
               ]
             },
             {
-              "uuid": "595e63ea-bc40-44b1-8c5a-4e8c2c0f11f5",
+              "uuid": "f529ba73-4f5c-4f31-a811-a72ccf987b33",
               "name": "NAT-T",
               "title": "NAT Traversal",
               "port-ranges": [
@@ -717,7 +717,7 @@
           },
           "protocols": [
             {
-              "uuid": "1bf37654-48c4-40a1-8f14-4164774efe71",
+              "uuid": "5739c568-946d-4a3d-a733-b7551bfd90cf",
               "name": "https",
               "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
@@ -729,7 +729,7 @@
               ]
             },
             {
-              "uuid": "46028c9b-a3d3-468a-a342-39812435e9c2",
+              "uuid": "6525a12d-0082-4762-aeaa-00c4ebf6adcf",
               "name": "airlock-agent",
               "title": "Airlock Digital agent communication — Agent check-in and policy download",
               "port-ranges": [
@@ -742,7 +742,7 @@
               ]
             },
             {
-              "uuid": "50883b02-7484-4ec0-b31f-15c45c50ceb9",
+              "uuid": "716810e0-f1ae-452f-aa26-c0d88bad6107",
               "name": "syslog",
               "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
@@ -754,7 +754,7 @@
               ]
             },
             {
-              "uuid": "c1b27e2d-be07-4bd6-a28b-7e45d56e2e81",
+              "uuid": "e8db1438-ddf3-4acd-af6f-66c233d5a0b3",
               "name": "ldaps",
               "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
@@ -766,7 +766,7 @@
               ]
             },
             {
-              "uuid": "56183684-e148-42cd-a3d5-f82ffd29c452",
+              "uuid": "6b19c1fb-a349-4b9e-9755-aca5bd983910",
               "name": "ntp",
               "title": "NTP — Time synchronisation for audit log timestamps",
               "port-ranges": [
@@ -804,7 +804,7 @@
           },
           "protocols": [
             {
-              "uuid": "a75dfd73-6d3a-4a4c-a37c-ae209bea2349",
+              "uuid": "e096c574-b5b1-43e5-af93-5e4c5f1ee276",
               "name": "smb",
               "title": "Server Message Block",
               "port-ranges": [
@@ -1006,13 +1006,764 @@
             "state": "operational"
           }
         }
+      ],
+      "inventory-items": [
+        {
+          "uuid": "0e1c9610-8686-4d85-9a1f-b36295a06ff7",
+          "description": "SonicWall TZ670 firewall — main office VPN hub",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0001"
+            },
+            {
+              "name": "serial-number",
+              "value": "S1J-670-88221"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-FW-HUB-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.0.1"
+            },
+            {
+              "name": "mac-address",
+              "value": "44:D4:37:12:AB:01"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — comms room"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96"
+            }
+          ],
+          "remarks": "Primary VPN termination point for all remote offices."
+        },
+        {
+          "uuid": "284dac44-e65b-4704-a0da-924a2efa2069",
+          "description": "SonicWall TZ270 firewall — Sydney branch",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0002"
+            },
+            {
+              "name": "serial-number",
+              "value": "S1J-270-40912"
+            },
+            {
+              "name": "hostname",
+              "value": "SYD-VPN-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.20.1.1"
+            },
+            {
+              "name": "mac-address",
+              "value": "44:D4:37:12:AB:02"
+            },
+            {
+              "name": "physical-location",
+              "value": "Sydney remote office — comms cabinet"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251"
+            }
+          ],
+          "remarks": "Spoke tunnel back to HQ-FW-HUB-01."
+        },
+        {
+          "uuid": "b6479bde-b92c-487d-b751-f2cbcc215fd5",
+          "description": "SonicWall TZ270 firewall — Melbourne branch",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0003"
+            },
+            {
+              "name": "serial-number",
+              "value": "S1J-270-40913"
+            },
+            {
+              "name": "hostname",
+              "value": "MEL-VPN-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.20.2.1"
+            },
+            {
+              "name": "mac-address",
+              "value": "44:D4:37:12:AB:03"
+            },
+            {
+              "name": "physical-location",
+              "value": "Melbourne remote office — comms cabinet"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251"
+            }
+          ],
+          "remarks": "Spoke tunnel back to HQ-FW-HUB-01."
+        },
+        {
+          "uuid": "b25178db-06f1-467f-9ee6-0d977c795154",
+          "description": "SonicWall TZ270 firewall — Brisbane branch",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0004"
+            },
+            {
+              "name": "serial-number",
+              "value": "S1J-270-40914"
+            },
+            {
+              "name": "hostname",
+              "value": "BNE-VPN-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.20.3.1"
+            },
+            {
+              "name": "mac-address",
+              "value": "44:D4:37:12:AB:04"
+            },
+            {
+              "name": "physical-location",
+              "value": "Brisbane remote office — comms cabinet"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251"
+            }
+          ],
+          "remarks": "Spoke tunnel back to HQ-FW-HUB-01."
+        },
+        {
+          "uuid": "29732732-9341-412e-a7d6-c5f6fa70c41e",
+          "description": "Dell PowerEdge R750 — domain controller / AD server",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0010"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-R750-99012"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-DC-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.1.10"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ],
+          "remarks": "Runs Active Directory Domain Services. No component yet models AD."
+        },
+        {
+          "uuid": "ff9b01cf-6a87-41cb-8e1e-d3fdbc34649d",
+          "description": "Dell PowerEdge R750 — file and print server",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0011"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-R750-99013"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-FS-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.1.11"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ]
+        },
+        {
+          "uuid": "9fede8b9-f550-478e-b38b-152b1598ef96",
+          "description": "Dell PowerEdge R650 — Linux application server",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0012"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-R650-99021"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-APP-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.1.20"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ],
+          "remarks": "Hosts internal line-of-business application."
+        },
+        {
+          "uuid": "f0b4c308-86c5-4f03-b84f-8ab8a15cf816",
+          "description": "HPE ProLiant DL380 — VMware ESXi host 1",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0013"
+            },
+            {
+              "name": "serial-number",
+              "value": "HPE-DL380-88101"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-ESXI-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.1.30"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ],
+          "remarks": "Two-node vSphere cluster with HQ-ESXI-02."
+        },
+        {
+          "uuid": "f557c67f-9e4b-462a-9b5a-ba35afffc243",
+          "description": "HPE ProLiant DL380 — VMware ESXi host 2",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0014"
+            },
+            {
+              "name": "serial-number",
+              "value": "HPE-DL380-88102"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-ESXI-02"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.1.31"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ],
+          "remarks": "Two-node vSphere cluster with HQ-ESXI-01."
+        },
+        {
+          "uuid": "9fa3016d-cd5a-49fa-8d01-f595f467f80d",
+          "description": "Synology RS3621RPxs NAS — primary storage array",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0015"
+            },
+            {
+              "name": "serial-number",
+              "value": "SYN-RS3621-77201"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-NAS-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.1.40"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ],
+          "remarks": "Hosts VM datastores and department file shares."
+        },
+        {
+          "uuid": "c450f54c-a91c-4849-b7a4-3ad48398f9c6",
+          "description": "Cisco Catalyst 9300 core switch",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0016"
+            },
+            {
+              "name": "serial-number",
+              "value": "CS9300-66301"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-SW-CORE-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.0.10"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — comms room"
+            }
+          ]
+        },
+        {
+          "uuid": "a3f0c71e-7a6b-49c5-be3e-d533ddb774a3",
+          "description": "Cisco Catalyst 9200 access switch — level 1",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0017"
+            },
+            {
+              "name": "serial-number",
+              "value": "CS9200-66302"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-SW-L1-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.0.11"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — level 1 comms cabinet"
+            }
+          ]
+        },
+        {
+          "uuid": "74e959ce-4ed3-4d3c-a071-f5ff7ea60947",
+          "description": "Cisco Catalyst 9200 access switch — level 2",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0018"
+            },
+            {
+              "name": "serial-number",
+              "value": "CS9200-66303"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-SW-L2-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.0.12"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — level 2 comms cabinet"
+            }
+          ]
+        },
+        {
+          "uuid": "1f91ff69-d4b8-48b5-b934-55d33337b672",
+          "description": "APC Smart-UPS 3000VA — server room",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0019"
+            },
+            {
+              "name": "serial-number",
+              "value": "APC-SU3000-55401"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-UPS-01"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room"
+            }
+          ],
+          "remarks": "Provides 20 minutes runtime for server room rack."
+        },
+        {
+          "uuid": "36f18cf7-5092-4d5e-8f9b-50821aa4979f",
+          "description": "APC Smart-UPS 1500VA — comms room",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0020"
+            },
+            {
+              "name": "serial-number",
+              "value": "APC-SU1500-55402"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-UPS-02"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — comms room"
+            }
+          ]
+        },
+        {
+          "uuid": "729155c5-82ae-48d2-a722-88de1d92046b",
+          "description": "Cisco Meraki MR46 wireless access point — level 1",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0021"
+            },
+            {
+              "name": "serial-number",
+              "value": "MR46-44501"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-AP-L1-01"
+            },
+            {
+              "name": "mac-address",
+              "value": "B4:5D:50:AA:01:01"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — level 1 ceiling"
+            }
+          ]
+        },
+        {
+          "uuid": "c3e16ccc-65bb-47cb-be4b-65671af1692f",
+          "description": "Cisco Meraki MR46 wireless access point — level 2",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0022"
+            },
+            {
+              "name": "serial-number",
+              "value": "MR46-44502"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-AP-L2-01"
+            },
+            {
+              "name": "mac-address",
+              "value": "B4:5D:50:AA:01:02"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — level 2 ceiling"
+            }
+          ]
+        },
+        {
+          "uuid": "efc08370-ccca-43b6-95d3-b5b35b3dac16",
+          "description": "Dell Latitude 5540 laptop — Finance team",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0030"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-LAT5540-33001"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-WKS-FIN-01"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — desk allocation"
+            }
+          ]
+        },
+        {
+          "uuid": "bef6cd59-158f-4544-aa38-7ec49d390c87",
+          "description": "Dell Latitude 5540 laptop — HR team",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0031"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-LAT5540-33002"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-WKS-HR-01"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — desk allocation"
+            }
+          ]
+        },
+        {
+          "uuid": "cc52e3f6-da2e-4f64-9c19-ad5eee1bf5d7",
+          "description": "Dell Latitude 5540 laptop — spare pool unit 1",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0032"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-LAT5540-33003"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — IT storage"
+            }
+          ],
+          "remarks": "Unallocated spare, not currently issued."
+        },
+        {
+          "uuid": "085cdafc-4565-44c9-8320-da580fd9eced",
+          "description": "Dell OptiPlex 7010 desktop — reception",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0033"
+            },
+            {
+              "name": "serial-number",
+              "value": "DL-OPT7010-33010"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-WKS-RECEP-01"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — reception desk"
+            }
+          ]
+        },
+        {
+          "uuid": "3de91563-0de7-43de-87c3-f63cf0e87e08",
+          "description": "Fibre patch panel — server room rack A",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0040"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — server room rack A"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b"
+            }
+          ],
+          "remarks": "Terminates all server room fibre runs."
+        },
+        {
+          "uuid": "001c15c5-1bdc-4db7-a661-47e02c00832d",
+          "description": "Fibre patch panel — comms room rack B",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0041"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — comms room rack B"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b"
+            }
+          ]
+        },
+        {
+          "uuid": "554ce007-842c-4dc1-b4d3-db67a7db5685",
+          "description": "Thales network encryptor — inter-site link",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0042"
+            },
+            {
+              "name": "serial-number",
+              "value": "THL-ENC-22101"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-ENC-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.0.5"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — comms room"
+            }
+          ],
+          "implemented-components": [
+            {
+              "component-uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d"
+            }
+          ],
+          "remarks": "Encrypts the dedicated inter-site WAN link (not the SonicWall VPN path)."
+        },
+        {
+          "uuid": "fbf6d323-db22-48eb-9a64-e3006fb27e93",
+          "description": "HP LaserJet Enterprise M612 — level 1 print room",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0050"
+            },
+            {
+              "name": "serial-number",
+              "value": "HP-M612-11201"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-PRT-L1-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.5.10"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — level 1 print room"
+            }
+          ],
+          "remarks": "Multifunction printer; not yet modelled as a component."
+        },
+        {
+          "uuid": "a95617aa-db27-4d64-ba60-d36fe7f8c37e",
+          "description": "HP LaserJet Enterprise M612 — level 2 print room",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0051"
+            },
+            {
+              "name": "serial-number",
+              "value": "HP-M612-11202"
+            },
+            {
+              "name": "hostname",
+              "value": "HQ-PRT-L2-01"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.5.11"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — level 2 print room"
+            }
+          ]
+        },
+        {
+          "uuid": "d1768771-0faa-474b-8e09-3d49395b7e93",
+          "description": "Poly CCX 500 desk phone — reception",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0060"
+            },
+            {
+              "name": "serial-number",
+              "value": "PLY-CCX500-09901"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.6.10"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — reception desk"
+            }
+          ],
+          "remarks": "VoIP handset; telephone system not yet modelled as a component."
+        },
+        {
+          "uuid": "03e55e1f-1f9b-45aa-b867-1bba36a50ec1",
+          "description": "Poly CCX 500 desk phone — boardroom",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0061"
+            },
+            {
+              "name": "serial-number",
+              "value": "PLY-CCX500-09902"
+            },
+            {
+              "name": "ip-address",
+              "value": "10.10.6.11"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — boardroom"
+            }
+          ]
+        },
+        {
+          "uuid": "a342b5b1-733c-42f2-9127-a5cbc939a84c",
+          "description": "Portable label printer — IT storeroom",
+          "props": [
+            {
+              "name": "asset-tag",
+              "value": "AST-0070"
+            },
+            {
+              "name": "physical-location",
+              "value": "Main office — IT storeroom"
+            }
+          ],
+          "remarks": "Loose asset; not networked and not linked to any component."
+        }
       ]
     },
     "control-implementation": {
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "26d23c8b-3bc6-49bb-a431-e80938f7b2e8",
+          "uuid": "56f23f96-2303-43f1-bef9-b04690fabd8f",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -1026,7 +1777,7 @@
           ]
         },
         {
-          "uuid": "7a363aea-015e-42fb-af0e-e2cdeb1c93d9",
+          "uuid": "89206406-8f2e-4d9f-a318-4a6cc89d4400",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -1040,7 +1791,7 @@
           ]
         },
         {
-          "uuid": "6373d938-c067-4dca-b747-c29a1346c250",
+          "uuid": "00ed843d-76b2-4204-bd8b-abbb3ebaf8ca",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -1054,7 +1805,7 @@
           ]
         },
         {
-          "uuid": "9a741ec1-1465-4295-a5b7-c8cf186eb72b",
+          "uuid": "3b602d17-d1d0-44ee-af6f-9f7793ede001",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -1068,7 +1819,7 @@
           ]
         },
         {
-          "uuid": "df375176-fcc2-455c-84ca-ec2ee226da58",
+          "uuid": "0051de2e-ef07-4c57-a83a-f36f8bf3072f",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -1082,7 +1833,7 @@
           ]
         },
         {
-          "uuid": "dfbd88fa-28ae-4640-b681-7b065c668e0e",
+          "uuid": "665b4706-cc8a-440a-ba85-25f2dfebb160",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -1120,7 +1871,7 @@
           ]
         },
         {
-          "uuid": "7b70f7a9-d235-4a3d-bf5a-83983235fbcf",
+          "uuid": "4f998448-f73e-4e65-8344-b8e7746a409e",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -1134,7 +1885,7 @@
           ]
         },
         {
-          "uuid": "80dc80d6-9033-4492-83bf-73603e17967f",
+          "uuid": "e7ae75a8-672e-41fe-b126-c0156fd8f456",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -1148,7 +1899,7 @@
           ]
         },
         {
-          "uuid": "a19c9f27-cca7-4b44-8896-1bcdc3a4443c",
+          "uuid": "97e5ec8b-4aee-4622-a141-d2521df51537",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -1162,7 +1913,7 @@
           ]
         },
         {
-          "uuid": "5498a4d4-7f89-4152-b4ba-8dedf00d52a7",
+          "uuid": "40bde33e-be21-4a2a-b74f-038d7fd52f7f",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -1176,7 +1927,7 @@
           ]
         },
         {
-          "uuid": "f619e84b-fb90-4d05-87c8-94e4bb5c9618",
+          "uuid": "699e0697-e106-460a-9871-4bda592dca4b",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -1206,7 +1957,7 @@
           ]
         },
         {
-          "uuid": "28b580c3-5569-46f9-8901-e5cd63296bab",
+          "uuid": "d3d59f40-8779-4c2e-ae32-7b4f10266982",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -1220,7 +1971,7 @@
           ]
         },
         {
-          "uuid": "3c9be050-c378-4ec9-9dbc-629cb06a9479",
+          "uuid": "1534f582-1582-438b-9b6b-6dfb4ba5855d",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -1234,7 +1985,7 @@
           ]
         },
         {
-          "uuid": "a525c4dd-2367-4305-bc6f-69a5e602728a",
+          "uuid": "cb2f6de3-401a-4129-b5a8-c94a47b85eb5",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -1248,7 +1999,7 @@
           ]
         },
         {
-          "uuid": "fae3e4b7-ae8c-48f8-ba61-49486cf60f86",
+          "uuid": "ff230146-26e6-4d01-a865-a48910526297",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -1262,7 +2013,7 @@
           ]
         },
         {
-          "uuid": "4fc37e27-69f7-48e7-b118-1bae8fc65206",
+          "uuid": "ac87fcf9-5207-410b-bb60-1f5d6328ba41",
           "control-id": "ism-2012",
           "by-components": [
             {
@@ -1284,7 +2035,7 @@
           ]
         },
         {
-          "uuid": "bd5ea856-abb8-489a-b87c-1dca1bf781b0",
+          "uuid": "45f3f214-c081-4e32-b6f5-9d1c156ba3da",
           "control-id": "ism-1175",
           "by-components": [
             {
@@ -1314,7 +2065,7 @@
           ]
         },
         {
-          "uuid": "128fe917-9c8d-4e6f-9a0d-53d0cff27933",
+          "uuid": "71166417-40ff-4083-b5f3-ffa9b87b8d07",
           "control-id": "ism-0874",
           "by-components": [
             {
@@ -1328,7 +2079,7 @@
           ]
         },
         {
-          "uuid": "b4026041-e718-423a-8579-a8186b84cfe1",
+          "uuid": "cdae0ab2-ac29-4f6e-adea-6d978f2f3ff2",
           "control-id": "ism-1490",
           "by-components": [
             {
@@ -1342,7 +2093,7 @@
           ]
         },
         {
-          "uuid": "0573dc47-ef53-4aeb-98cc-7a0262027239",
+          "uuid": "795b2616-8255-405f-ad5a-0127f18a4a0b",
           "control-id": "ism-1486",
           "by-components": [
             {
@@ -1356,7 +2107,7 @@
           ]
         },
         {
-          "uuid": "6ba09055-7e50-4f61-874f-d1f1dd8e8153",
+          "uuid": "d8dfb41b-77bd-4736-91a6-d960882561e9",
           "control-id": "ism-1485",
           "by-components": [
             {
@@ -1370,7 +2121,7 @@
           ]
         },
         {
-          "uuid": "283fc438-17ef-4d35-9262-e0167ad915aa",
+          "uuid": "511ca7c3-f108-4202-8302-a0e4acefa511",
           "control-id": "ism-1483",
           "by-components": [
             {
@@ -1384,7 +2135,7 @@
           ]
         },
         {
-          "uuid": "bb88d198-59ce-4b3a-981a-b8afcb21b6f6",
+          "uuid": "66fd5780-fc8e-44c5-a92b-c1e1405c139e",
           "control-id": "ism-1978",
           "by-components": [
             {
@@ -1398,7 +2149,7 @@
           ]
         },
         {
-          "uuid": "e0508519-69e6-4bcd-a100-0fe46b501971",
+          "uuid": "db1ac41a-472c-4ee4-badb-10fe07afa57c",
           "control-id": "ism-1877",
           "by-components": [
             {
@@ -1412,7 +2163,7 @@
           ]
         },
         {
-          "uuid": "d5e29f08-89d9-435e-8fb8-55fa5c8b106a",
+          "uuid": "4c41b9c1-693e-4ddc-b5bf-7e91fb4ac76c",
           "control-id": "ism-1753",
           "by-components": [
             {
@@ -1426,7 +2177,7 @@
           ]
         },
         {
-          "uuid": "6c244703-329d-42bd-a79a-962768f4b72f",
+          "uuid": "e4446a70-7dc3-471d-b05e-cf7d77c6e15b",
           "control-id": "ism-1906",
           "by-components": [
             {
@@ -1440,7 +2191,7 @@
           ]
         },
         {
-          "uuid": "2d66a9c2-d058-46d7-81d9-f8eeb71f2f56",
+          "uuid": "45035a60-7825-48e9-ac76-14971bf15afc",
           "control-id": "ism-1960",
           "by-components": [
             {
@@ -1478,7 +2229,7 @@
           ]
         },
         {
-          "uuid": "ea43f5c1-6810-4451-9b0f-821812e43be1",
+          "uuid": "9a6473c7-064b-4091-ba9e-8e28f6d53899",
           "control-id": "ism-1701",
           "by-components": [
             {
@@ -1492,7 +2243,7 @@
           ]
         },
         {
-          "uuid": "542431db-e15b-4c9b-9bb8-d7f649e505a7",
+          "uuid": "696e69c8-0921-445e-aa20-4a81a33c37dd",
           "control-id": "ism-1818",
           "by-components": [
             {
@@ -1506,7 +2257,7 @@
           ]
         },
         {
-          "uuid": "5214fa1f-a92b-48b4-a94b-6619e2dd7811",
+          "uuid": "066899f7-238d-4930-a96a-d2ad4462962e",
           "control-id": "ism-0628",
           "by-components": [
             {
@@ -1520,7 +2271,7 @@
           ]
         },
         {
-          "uuid": "87a78470-050d-44e6-a8d6-859da909199a",
+          "uuid": "569cb8cc-ddad-4a3c-b66d-d9786f9023f0",
           "control-id": "ism-0631",
           "by-components": [
             {
@@ -1534,7 +2285,7 @@
           ]
         },
         {
-          "uuid": "ed33194e-6539-4825-b821-13c1724d0ec5",
+          "uuid": "b1cdf4f1-1038-4558-aafe-d6f63b235059",
           "control-id": "ism-1192",
           "by-components": [
             {
@@ -1548,7 +2299,7 @@
           ]
         },
         {
-          "uuid": "6846d0ff-dc92-45e4-8a62-9c50b66465c3",
+          "uuid": "034a8952-a7a2-4c2b-8dfc-1cb0205c971d",
           "control-id": "ism-0494",
           "by-components": [
             {
@@ -1570,7 +2321,7 @@
           ]
         },
         {
-          "uuid": "56412619-dd23-4482-a46b-8cce678fbb42",
+          "uuid": "a39f5c00-4407-4767-b402-72ce905b422b",
           "control-id": "ism-0496",
           "by-components": [
             {
@@ -1592,7 +2343,7 @@
           ]
         },
         {
-          "uuid": "aabe4ccb-a4b3-40ad-8be4-9b01511297a6",
+          "uuid": "be851b55-02eb-42b4-8fd5-d6fe10bcf301",
           "control-id": "ism-1233",
           "by-components": [
             {
@@ -1614,7 +2365,7 @@
           ]
         },
         {
-          "uuid": "0a4a323b-ddef-440a-b3f8-3171d0f4ba7d",
+          "uuid": "49e8adf6-90b2-483b-8bb6-c8f9f5611183",
           "control-id": "ism-1771",
           "by-components": [
             {
@@ -1636,7 +2387,7 @@
           ]
         },
         {
-          "uuid": "f5abbff9-0aad-4ecf-85fc-6f9334cbd96b",
+          "uuid": "8747ae89-9d85-4159-9cdc-3e2739cce85d",
           "control-id": "ism-1000",
           "by-components": [
             {
@@ -1658,7 +2409,7 @@
           ]
         },
         {
-          "uuid": "251a0800-7def-4cf9-bc92-1aa8507f1a82",
+          "uuid": "09046501-fe5c-4ba5-b8e4-0a19b5649b86",
           "control-id": "ism-0634",
           "by-components": [
             {
@@ -1672,7 +2423,7 @@
           ]
         },
         {
-          "uuid": "8f6e75cb-7d6b-4abf-aff3-fe7d5f602a90",
+          "uuid": "84a54f0b-084c-460b-b3b2-7f6ff2a7571a",
           "control-id": "ism-1774",
           "by-components": [
             {
@@ -1686,7 +2437,7 @@
           ]
         },
         {
-          "uuid": "e5f19c1a-c851-4684-b5ff-41e985b06505",
+          "uuid": "1a90a507-c6dc-4be1-ae96-0e946639ee55",
           "control-id": "ism-0705",
           "by-components": [
             {
@@ -1700,7 +2451,7 @@
           ]
         },
         {
-          "uuid": "1291e91e-0976-4184-a120-798ffd931b22",
+          "uuid": "2fa09020-f45a-48fe-b1dd-f18a4394ed5a",
           "control-id": "ism-0622",
           "by-components": [
             {
@@ -1714,7 +2465,7 @@
           ]
         },
         {
-          "uuid": "fadfe2a6-b597-4c47-9573-74e10e43a684",
+          "uuid": "9a2454a6-13b0-4f4b-8f01-1296d548c225",
           "control-id": "ism-1417",
           "by-components": [
             {
@@ -1744,7 +2495,7 @@
           ]
         },
         {
-          "uuid": "f7c8a7b3-3d97-461d-943f-6e43b1ea8690",
+          "uuid": "8f120569-0769-4791-ac51-38f02661dc61",
           "control-id": "ism-1416",
           "by-components": [
             {
@@ -1766,7 +2517,7 @@
           ]
         },
         {
-          "uuid": "f65abc8a-7736-4246-a5e1-0c13e183e703",
+          "uuid": "2b6483dd-7b11-4044-8db4-0551e7c07a3f",
           "control-id": "ism-1341",
           "by-components": [
             {
@@ -1780,7 +2531,7 @@
           ]
         },
         {
-          "uuid": "dcec468e-ee9a-4af8-8d63-2d6c72f9ce54",
+          "uuid": "ab5fac93-e855-40e9-8fb4-7ce835b66055",
           "control-id": "ism-1492",
           "by-components": [
             {
@@ -1794,7 +2545,7 @@
           ]
         },
         {
-          "uuid": "5141df0e-5dcf-42c5-8bbf-7f590d46eadc",
+          "uuid": "2705fa2e-1ae7-48ef-b731-ff9f1e1b02a8",
           "control-id": "ism-1696",
           "by-components": [
             {
@@ -1816,7 +2567,7 @@
           ]
         },
         {
-          "uuid": "770a0787-8e68-4f2d-a80d-9ae7a26cdf87",
+          "uuid": "f14ab063-7eb2-442a-8f8a-9ddcbe1cc73d",
           "control-id": "ism-1693",
           "by-components": [
             {
@@ -1838,7 +2589,7 @@
           ]
         },
         {
-          "uuid": "b015a52d-c135-4841-94aa-d08011403868",
+          "uuid": "6553d288-fab3-4f83-b176-8e26a088d75b",
           "control-id": "ism-1702",
           "by-components": [
             {
@@ -1868,7 +2619,7 @@
           ]
         },
         {
-          "uuid": "da0b2505-bb2e-420e-a814-dd6eb9125321",
+          "uuid": "9338389b-9a1e-42c6-a813-c034d609e492",
           "control-id": "ism-1699",
           "by-components": [
             {
@@ -1890,7 +2641,7 @@
           ]
         },
         {
-          "uuid": "db731888-46e5-478c-a14b-abb463b68b3e",
+          "uuid": "828a23d3-4b00-4bdd-9133-36f8d3903fcf",
           "control-id": "ism-1704",
           "by-components": [
             {
@@ -1904,7 +2655,7 @@
           ]
         },
         {
-          "uuid": "d7d024f5-8ee4-4dfb-9716-42ab4fe5b05d",
+          "uuid": "4e313423-a225-4ac6-a70a-916653079849",
           "control-id": "ism-0445",
           "by-components": [
             {
@@ -1926,7 +2677,7 @@
           ]
         },
         {
-          "uuid": "a3d894b8-74cb-47ff-b7fe-062ea5420452",
+          "uuid": "e886031c-9240-47f4-ad73-afe0ecc58be7",
           "control-id": "ism-1507",
           "by-components": [
             {
@@ -1940,7 +2691,7 @@
           ]
         },
         {
-          "uuid": "82690b4e-1327-4aa9-8ad5-27a8431dfbb3",
+          "uuid": "73692857-6390-4a97-bbe1-2da40c8d2cae",
           "control-id": "ism-1508",
           "by-components": [
             {
@@ -1962,7 +2713,7 @@
           ]
         },
         {
-          "uuid": "a7ac3dac-d2a1-454b-8b98-1e622a99795c",
+          "uuid": "b882ea6f-1d26-4bba-853f-cda69ce9d3fa",
           "control-id": "ism-1173",
           "by-components": [
             {
@@ -1976,7 +2727,7 @@
           ]
         },
         {
-          "uuid": "314f521c-5b23-4657-a574-667e4372ac91",
+          "uuid": "5d71447a-f7c7-47cd-847e-460d77012308",
           "control-id": "ism-0974",
           "by-components": [
             {
@@ -1990,7 +2741,7 @@
           ]
         },
         {
-          "uuid": "aa6f56eb-66b9-4f42-8476-a47f0ce1dccb",
+          "uuid": "0ce99184-3b5d-46e5-81be-2c1d5eaec902",
           "control-id": "ism-1405",
           "by-components": [
             {
@@ -2020,7 +2771,7 @@
           ]
         },
         {
-          "uuid": "3c8f862a-5145-45a0-b167-b4587fe10dca",
+          "uuid": "f50a1f8d-565c-4e55-b2de-b2d4fc3f85b0",
           "control-id": "ism-0585",
           "by-components": [
             {
@@ -2050,7 +2801,7 @@
           ]
         },
         {
-          "uuid": "e32227c7-faa4-4bce-b73b-da6cd8619d6e",
+          "uuid": "3ca4f660-14d7-4acd-a4f8-ee6e8ca0e60a",
           "control-id": "ism-1509",
           "by-components": [
             {
@@ -2080,7 +2831,7 @@
           ]
         },
         {
-          "uuid": "6a078ae5-e68c-4167-929c-31a82603fa08",
+          "uuid": "a7b7fbf4-9e5b-46bd-8802-f951448c4562",
           "control-id": "ism-1566",
           "by-components": [
             {
@@ -2102,7 +2853,7 @@
           ]
         },
         {
-          "uuid": "1ad8648c-3736-4a57-aeaf-5824513e5c7d",
+          "uuid": "b0e5c6a2-af03-4b01-9387-934e68f9bb0f",
           "control-id": "ism-1683",
           "by-components": [
             {
@@ -2116,7 +2867,7 @@
           ]
         },
         {
-          "uuid": "cec3fe16-70fa-440d-85aa-7405c4709a99",
+          "uuid": "160b86f0-87f0-43c0-9280-2f69a9b071c7",
           "control-id": "ism-1118",
           "by-components": [
             {
