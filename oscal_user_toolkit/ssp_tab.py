@@ -22,6 +22,7 @@ Injected callbacks:
     set_status(msg) Updates the main window's status bar
 """
 
+import csv         # Reading CSV files for bulk import
 import json        # Reading and writing JSON files
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -477,22 +478,24 @@ class SSPTab(tk.Frame):
             ).pack(side="left")
 
         # ── Local helper: table section (Treeview + Add/Remove buttons) ───────
-        def list_section(title, hint, columns, add_cmd, list_key):
+        def list_section(title, hint, columns, add_cmd, list_key, hint_wrap=0):
             """
             Build a complete table section: heading, hint text, Add/Remove
             buttons, and a Treeview table.
 
             Parameters:
-                title    - Section heading text
-                hint     - Small italic hint shown below the heading
-                columns  - List of (col_id, heading_text, width, stretch) tuples
-                add_cmd  - Method to call when user clicks Add
-                list_key - The key in self._ssp that holds this table's data list
+                title     - Section heading text
+                hint      - Small italic hint shown below the heading
+                columns   - List of (col_id, heading_text, width, stretch) tuples
+                add_cmd   - Method to call when user clicks Add
+                list_key  - The key in self._ssp that holds this table's data list
+                hint_wrap - If non-zero, wrap the hint label at this pixel width
             """
             section(title)
             tk.Label(
                 parent, text=f"  {hint}",
                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+                wraplength=hint_wrap, justify="left",
             ).pack(anchor="w", **P)
 
             # Outer frame for the table and its buttons
@@ -669,7 +672,19 @@ class SSPTab(tk.Frame):
         # can insert/read rows.
         self._it_tree = list_section(
             title    = "5 ·  Information Types",
-            hint     = "At least one information type is required by the OSCAL schema.",
+            hint     = (
+                "At least one information type is required by the OSCAL schema.\n"
+                "\n"
+                "An information type describes a category of information the system processes, stores, or transmits, "
+                "together with the confidentiality, integrity, and availability (CIA) impact levels that apply to it. "
+                "OSCAL expects each type to carry a title, an optional identifier drawn from a recognised taxonomy "
+                "(such as NIST SP 800-60 Vol. II — e.g. C.2.8.12 for 'General Information'), and separate base, "
+                "selected, and effective impact ratings of Low, Moderate, or High for each CIA dimension.\n"
+                "\n"
+                "Example — a system that processes personnel records might add an information type titled "
+                "'Human Resources / Personnel Records' mapped to SP 800-60 identifier C.2.4.1, with "
+                "Confidentiality: High, Integrity: Moderate, Availability: Low."
+            ),
             columns  = [
                 ("title",      "Information Type Title", 220, True),
                 ("c_impact",   "Confidentiality",        110, False),
@@ -677,8 +692,9 @@ class SSPTab(tk.Frame):
                 ("a_impact",   "Availability",           110, False),
                 ("components", "Components",             160, False),
             ],
-            add_cmd  = self._add_info_type,
-            list_key = "information_types",
+            add_cmd   = self._add_info_type,
+            list_key  = "information_types",
+            hint_wrap = 820,
         )
         # Add Edit button to the info types toolbar (it_tree's parent toolbar)
         # and bind double-click for editing.
@@ -2482,6 +2498,9 @@ class SSPTab(tk.Frame):
         tk.Button(usr_btn, text="✕  Remove", command=self._remove_ssp_user,
                   bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
+        tk.Button(usr_btn, text="📥  Import CSV", command=self._import_ssp_users_csv,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
 
         usr_frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -2594,6 +2613,61 @@ class SSPTab(tk.Frame):
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
+
+    def _import_ssp_users_csv(self):
+        """
+        Import system users from a CSV file.
+
+        Expected columns (header row required):
+            title, short_name, role_ids, description, remarks
+
+        role_ids may contain multiple roles separated by commas inside
+        the cell (the CSV parser handles the quoting automatically).
+        Any column not present in the file is silently treated as empty.
+        Rows where title is blank are skipped.
+        """
+        path = filedialog.askopenfilename(
+            title="Import System Users CSV",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+
+        imported = 0
+        skipped  = 0
+        try:
+            with open(path, newline="", encoding="utf-8-sig") as fh:
+                reader = csv.DictReader(fh)
+                for row in reader:
+                    title = row.get("title", "").strip()
+                    if not title:
+                        skipped += 1
+                        continue
+
+                    # role_ids cell may be "role-a, role-b" — split on commas
+                    raw_roles = row.get("role_ids", "")
+                    roles = [r.strip() for r in raw_roles.split(",") if r.strip()]
+
+                    u = {
+                        "uuid":        new_uuid(),
+                        "title":       title,
+                        "short_name":  row.get("short_name", "").strip(),
+                        "description": row.get("description", "").strip(),
+                        "role_ids":    roles,
+                        "remarks":     row.get("remarks", "").strip(),
+                    }
+                    self._ssp_users.append(u)
+                    self._usr_tree.insert("", "end", values=self._usr_row_values(u))
+                    imported += 1
+
+        except Exception as exc:
+            messagebox.showerror("Import failed", f"Could not read CSV:\n{exc}")
+            return
+
+        msg = f"Imported {imported} user{'' if imported == 1 else 's'}."
+        if skipped:
+            msg += f"\n{skipped} row{'' if skipped == 1 else 's'} skipped (blank title)."
+        messagebox.showinfo("Import complete", msg)
 
     def _add_ssp_user(self):
         u = self._ssp_user_dialog()
