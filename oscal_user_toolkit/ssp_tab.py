@@ -2982,6 +2982,9 @@ class SSPTab(tk.Frame):
         tk.Button(inv_btn, text="✕  Remove", command=self._remove_inv_item,
                   bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
+        tk.Button(inv_btn, text="📥  Import CSV", command=self._import_inv_items_csv,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
 
         inv_frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -3191,6 +3194,105 @@ class SSPTab(tk.Frame):
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
+
+    def _import_inv_items_csv(self):
+        """
+        Import inventory items from a CSV file — typically exported from an
+        external asset management system.
+
+        Expected columns (header row required):
+            description, asset_tag, serial_number, hostname, ip_address,
+            mac_address, physical_location, components, remarks
+
+        Only "description" is required — every other column may be blank.
+        asset_tag/serial_number/hostname/ip_address/mac_address/
+        physical_location become OSCAL props (only non-blank ones are added).
+        "components" is matched against Section 8's current component
+        titles (case-insensitive, exact match; multiple components can be
+        given separated by semicolons) — most asset-management exports have
+        no way to know this mapping, so it is expected to be blank for most
+        rows and is only linked when a title matches exactly.
+        """
+        path = filedialog.askopenfilename(
+            title="Import Inventory Items CSV",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+
+        # Case-insensitive lookup of Section 8 component titles -> uuid,
+        # used to link the "components" column when it matches exactly.
+        title_to_uuid = {
+            c.get("title", "").strip().lower(): c["uuid"]
+            for c in self._ssp_components if c.get("title")
+        }
+
+        PROP_COLUMNS = [
+            ("asset_tag",        "asset-tag"),
+            ("serial_number",    "serial-number"),
+            ("hostname",         "hostname"),
+            ("ip_address",       "ip-address"),
+            ("mac_address",      "mac-address"),
+            ("physical_location", "physical-location"),
+        ]
+
+        imported       = 0
+        skipped        = 0
+        linked_comps   = 0
+        unmatched_comps = set()
+
+        try:
+            with open(path, newline="", encoding="utf-8-sig") as fh:
+                reader = csv.DictReader(fh)
+                for row in reader:
+                    description = row.get("description", "").strip()
+                    if not description:
+                        skipped += 1
+                        continue
+
+                    props = []
+                    for col, prop_name in PROP_COLUMNS:
+                        value = row.get(col, "").strip()
+                        if value:
+                            props.append({"name": prop_name, "value": value})
+
+                    implemented_components = []
+                    for name in row.get("components", "").split(";"):
+                        name = name.strip()
+                        if not name:
+                            continue
+                        uid = title_to_uuid.get(name.lower())
+                        if uid:
+                            implemented_components.append(uid)
+                            linked_comps += 1
+                        else:
+                            unmatched_comps.add(name)
+
+                    ii = {
+                        "uuid":                   new_uuid(),
+                        "description":            description,
+                        "props":                  props,
+                        "implemented_components": implemented_components,
+                        "remarks":                row.get("remarks", "").strip(),
+                    }
+                    self._ssp_inv_items.append(ii)
+                    self._inv_tree.insert("", "end", values=self._inv_row_values(ii))
+                    imported += 1
+
+        except Exception as exc:
+            messagebox.showerror("Import failed", f"Could not read CSV:\n{exc}")
+            return
+
+        msg = f"Imported {imported} inventory item{'' if imported == 1 else 's'}."
+        if linked_comps:
+            msg += f"\nLinked {linked_comps} component reference{'' if linked_comps == 1 else 's'}."
+        if unmatched_comps:
+            msg += (f"\n{len(unmatched_comps)} component name(s) in the CSV did not match any "
+                    f"Section 8 component title and were left unlinked: "
+                    f"{', '.join(sorted(unmatched_comps))}")
+        if skipped:
+            msg += f"\n{skipped} row{'' if skipped == 1 else 's'} skipped (blank description)."
+        messagebox.showinfo("Import complete", msg)
 
     def _add_inv_item(self):
         ii = self._inv_item_dialog()

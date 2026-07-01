@@ -1,0 +1,30 @@
+description,asset_tag,serial_number,hostname,ip_address,mac_address,physical_location,components,remarks
+SonicWall TZ670 firewall — main office VPN hub,AST-0001,S1J-670-88221,HQ-FW-HUB-01,10.10.0.1,44:D4:37:12:AB:01,Main office — comms room,VPN Hub (Main Office),Primary VPN termination point for all remote offices.
+SonicWall TZ270 firewall — Sydney branch,AST-0002,S1J-270-40912,SYD-VPN-01,10.20.1.1,44:D4:37:12:AB:02,Sydney remote office — comms cabinet,VPN Client (Remote Office),Spoke tunnel back to HQ-FW-HUB-01.
+SonicWall TZ270 firewall — Melbourne branch,AST-0003,S1J-270-40913,MEL-VPN-01,10.20.2.1,44:D4:37:12:AB:03,Melbourne remote office — comms cabinet,VPN Client (Remote Office),Spoke tunnel back to HQ-FW-HUB-01.
+SonicWall TZ270 firewall — Brisbane branch,AST-0004,S1J-270-40914,BNE-VPN-01,10.20.3.1,44:D4:37:12:AB:04,Brisbane remote office — comms cabinet,VPN Client (Remote Office),Spoke tunnel back to HQ-FW-HUB-01.
+Dell PowerEdge R750 — domain controller / AD server,AST-0010,DL-R750-99012,HQ-DC-01,10.10.1.10,,Main office — server room,,Runs Active Directory Domain Services. No component yet models AD.
+Dell PowerEdge R750 — file and print server,AST-0011,DL-R750-99013,HQ-FS-01,10.10.1.11,,Main office — server room,Microsoft Windows Server 2022,
+Dell PowerEdge R650 — Linux application server,AST-0012,DL-R650-99021,HQ-APP-01,10.10.1.20,,Main office — server room,Red Hat Enterprise Linux (RHEL) Server,Hosts internal line-of-business application.
+HPE ProLiant DL380 — VMware ESXi host 1,AST-0013,HPE-DL380-88101,HQ-ESXI-01,10.10.1.30,,Main office — server room,VMware ESXi Hypervisor,Two-node vSphere cluster with HQ-ESXI-02.
+HPE ProLiant DL380 — VMware ESXi host 2,AST-0014,HPE-DL380-88102,HQ-ESXI-02,10.10.1.31,,Main office — server room,VMware ESXi Hypervisor,Two-node vSphere cluster with HQ-ESXI-01.
+Synology RS3621RPxs NAS — primary storage array,AST-0015,SYN-RS3621-77201,HQ-NAS-01,10.10.1.40,,Main office — server room,Network Attached Storage (NAS),Hosts VM datastores and department file shares.
+Cisco Catalyst 9300 core switch,AST-0016,CS9300-66301,HQ-SW-CORE-01,10.10.0.10,,Main office — comms room,Managed Network Switch,
+Cisco Catalyst 9200 access switch — level 1,AST-0017,CS9200-66302,HQ-SW-L1-01,10.10.0.11,,Main office — level 1 comms cabinet,Managed Network Switch,
+Cisco Catalyst 9200 access switch — level 2,AST-0018,CS9200-66303,HQ-SW-L2-01,10.10.0.12,,Main office — level 2 comms cabinet,Managed Network Switch,
+APC Smart-UPS 3000VA — server room,AST-0019,APC-SU3000-55401,HQ-UPS-01,,,Main office — server room,Uninterruptible Power Supply (UPS),Provides 20 minutes runtime for server room rack.
+APC Smart-UPS 1500VA — comms room,AST-0020,APC-SU1500-55402,HQ-UPS-02,,,Main office — comms room,Uninterruptible Power Supply (UPS),
+Cisco Meraki MR46 wireless access point — level 1,AST-0021,MR46-44501,HQ-AP-L1-01,,B4:5D:50:AA:01:01,Main office — level 1 ceiling,Wireless Access Point (Enterprise WiFi),
+Cisco Meraki MR46 wireless access point — level 2,AST-0022,MR46-44502,HQ-AP-L2-01,,B4:5D:50:AA:01:02,Main office — level 2 ceiling,Wireless Access Point (Enterprise WiFi),
+Dell Latitude 5540 laptop — Finance team,AST-0030,DL-LAT5540-33001,HQ-WKS-FIN-01,,,Main office — desk allocation,Microsoft Windows 11 (Workstation),
+Dell Latitude 5540 laptop — HR team,AST-0031,DL-LAT5540-33002,HQ-WKS-HR-01,,,Main office — desk allocation,Microsoft Windows 11 (Workstation),
+Dell Latitude 5540 laptop — spare pool unit 1,AST-0032,DL-LAT5540-33003,,,,Main office — IT storage,,"Unallocated spare, not currently issued."
+Dell OptiPlex 7010 desktop — reception,AST-0033,DL-OPT7010-33010,HQ-WKS-RECEP-01,,,Main office — reception desk,Microsoft Windows 11 (Workstation),
+Fibre patch panel — server room rack A,AST-0040,,,,,Main office — server room rack A,Cabling Infrastrucutre,Terminates all server room fibre runs.
+Fibre patch panel — comms room rack B,AST-0041,,,,,Main office — comms room rack B,Cabling Infrastrucutre,
+Thales network encryptor — inter-site link,AST-0042,THL-ENC-22101,HQ-ENC-01,10.10.0.5,,Main office — comms room,network encryptor ABC,Encrypts the dedicated inter-site WAN link (not the SonicWall VPN path).
+HP LaserJet Enterprise M612 — level 1 print room,AST-0050,HP-M612-11201,HQ-PRT-L1-01,10.10.5.10,,Main office — level 1 print room,,Multifunction printer; not yet modelled as a component.
+HP LaserJet Enterprise M612 — level 2 print room,AST-0051,HP-M612-11202,HQ-PRT-L2-01,10.10.5.11,,Main office — level 2 print room,,
+Poly CCX 500 desk phone — reception,AST-0060,PLY-CCX500-09901,,10.10.6.10,,Main office — reception desk,,VoIP handset; telephone system not yet modelled as a component.
+Poly CCX 500 desk phone — boardroom,AST-0061,PLY-CCX500-09902,,10.10.6.11,,Main office — boardroom,,
+Portable label printer — IT storeroom,AST-0070,,,,,Main office — IT storeroom,,Loose asset; not networked and not linked to any component.
