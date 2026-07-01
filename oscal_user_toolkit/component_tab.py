@@ -294,6 +294,32 @@ class ComponentTab(tk.Frame):
         # Show whichever layer is appropriate right now
         self.on_catalog_or_profile_changed()
 
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes, without
+        losing self._components or the currently selected item's in-progress
+        edits.
+
+        Unlike ssp_tab/ap_tab/ar_tab/poam_tab, this tab edits the selected
+        component inline (in the right-hand detail form) rather than through
+        modal dialogs, so any in-progress edit must be collected into
+        self._components BEFORE the form widgets holding it are destroyed.
+        The selection itself is then cleared — the freshly rebuilt detail
+        form has no widgets bound to the old selection, so showing the
+        placeholder is the only safe option; self._components (the data)
+        is unaffected and the list repopulates from it via _refresh_list().
+        """
+        if self._selected_index is not None:
+            self._collect_into(self._selected_index)
+        self._selected_index = None
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
+        self._build()
+        self._refresh_list()
+        if hasattr(self, "_show_form_placeholder"):
+            self._show_form_placeholder()
+
     # =========================================================================
     # TOOLBAR
     # =========================================================================

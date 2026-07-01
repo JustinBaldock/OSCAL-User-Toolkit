@@ -110,11 +110,31 @@ class WorkspaceTab(tk.Frame):
     other tab in this app is decoupled from its siblings.
     """
 
-    def __init__(self, parent, colors, open_workspace=None, save_workspace=None, **kwargs):
+    def __init__(self, parent, colors, open_workspace=None, save_workspace=None,
+                 get_theme=None, set_theme=None, **kwargs):
         super().__init__(parent, bg=colors["BG"], **kwargs)
         self._colors         = colors
         self._open_workspace = open_workspace or (lambda: None)
         self._save_workspace = save_workspace or (lambda: None)
+        # Theme toggle callbacks — get_theme() returns "dark"/"light",
+        # set_theme(name) asks the main app to switch the whole application's
+        # colour palette. Both are owned by OSCALApp (see app.py's
+        # set_theme()) since only it has references to every tab at once.
+        self._get_theme = get_theme or (lambda: "dark")
+        self._set_theme = set_theme or (lambda name: None)
+        self._build()
+
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes.
+
+        This tab has no document data of its own to preserve — it's purely
+        static reference content plus the two Open/Save Workspace buttons —
+        so a full destroy-and-rebuild is all that's needed.
+        """
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
         self._build()
 
     # =========================================================================
@@ -127,11 +147,29 @@ class WorkspaceTab(tk.Frame):
         # ── Header ───────────────────────────────────────────────────────────
         header = tk.Frame(self, bg=C["HEADER_BG"])
         header.pack(fill="x", side="top")
+
+        title_row = tk.Frame(header, bg=C["HEADER_BG"])
+        title_row.pack(fill="x", padx=20, pady=(14, 2))
         tk.Label(
-            header, text="🗂  Workspace",
+            title_row, text="🗂  Workspace",
             bg=C["HEADER_BG"], fg=C["ACCENT"],
             font=("Helvetica", 16, "bold"),
-        ).pack(anchor="w", padx=20, pady=(14, 2))
+        ).pack(side="left")
+
+        # ── Dark/Light theme toggle ──────────────────────────────────────────
+        # A single button that alternates label and action based on the
+        # CURRENT theme (read via get_theme()) — the same toggle-button
+        # pattern used elsewhere in this app (e.g. the Component Editor's
+        # sort-order toggle) rather than a custom slider widget.
+        current = self._get_theme()
+        toggle_text = "☀️  Switch to Light Mode" if current == "dark" else "🌙  Switch to Dark Mode"
+        tk.Button(
+            title_row, text=toggle_text,
+            command=lambda: self._set_theme("light" if current == "dark" else "dark"),
+            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="right")
+
         tk.Label(
             header,
             text="A quick tour of each tab, and what you need loaded before using it.",

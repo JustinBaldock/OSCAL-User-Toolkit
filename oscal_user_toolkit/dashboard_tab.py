@@ -29,9 +29,25 @@ class DashboardTab(tk.Frame):
         self._get_ar_tab   = get_ar_tab   or (lambda: None)
         self._get_poam_tab = get_poam_tab or (lambda: None)
 
+        self._build()
+
+    def _build(self):
         self._build_toolbar()
         self._build_scroll_area()
         self._build_cards()
+
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes, then
+        repopulate them by calling the existing refresh() — this tab is
+        read-only and always derives its display from the other tabs'
+        current state, so there's no local data of its own to preserve.
+        """
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
+        self._build()
+        self.refresh()
 
     # =========================================================================
     # LAYOUT

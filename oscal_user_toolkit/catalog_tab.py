@@ -142,6 +142,29 @@ class CatalogTab(tk.Frame):
         self._build_filter_toolbar()
         self._build_body()
 
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes.
+
+        _selected_class, _selected_guideline, and _search_var are created in
+        __init__ (not _build()), so they — and therefore the user's current
+        filter selections — survive the rebuild untouched. _all_controls and
+        _profile_ids are plain instance attributes _build() never touches,
+        so they also survive. Only the combobox widgets' dropdown VALUE
+        LISTS need repopulating (that's a widget property, not tied to the
+        StringVar), and the tree needs redrawing against the preserved data.
+        """
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
+        self._build()
+        if self._all_controls:
+            classes    = sorted({c["class"]     for c in self._all_controls if c["class"]})
+            guidelines = sorted({c["guideline"] for c in self._all_controls if c.get("guideline")})
+            self._class_combo["values"]     = ["All"] + classes
+            self._guideline_combo["values"] = ["All"] + guidelines
+        self._apply_filters()
+
     def _build_filter_toolbar(self):
         """
         Create the filter toolbar at the top of the Catalog Viewer tab.

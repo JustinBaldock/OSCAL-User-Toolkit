@@ -86,6 +86,20 @@ class APTab(tk.Frame):
         self._build_toolbar()
         self._build_canvas()
 
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes, without
+        losing any in-progress edits or loaded document data. _collect()
+        flushes current widget values into self._ap first; _populate()
+        rebuilds every widget's content from self._ap afterward.
+        """
+        self._collect()
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
+        self._build()
+        self._populate()
+
     def _build_toolbar(self):
         C  = self._colors
         tb = tk.Frame(self, bg=C["CARD_BG"], height=52)

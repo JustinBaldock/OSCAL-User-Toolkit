@@ -46,10 +46,17 @@ from .dashboard_tab import DashboardTab
 from .workspace_tab import WorkspaceTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
-# All colours are defined once here as a dictionary and passed to each tab,
-# so changing a colour here updates the whole application.
-# Colours are hex strings: "#RRGGBB" (red, green, blue in hexadecimal).
-COLORS = {
+# All colours are defined once here as a dictionary and passed to each tab
+# (colors=COLORS), so changing a colour here updates the whole application.
+# Every tab stores this SAME dict object as self._colors — dicts are passed
+# by reference in Python, so mutating COLORS's contents in place (see
+# set_theme() below) is visible to every tab immediately, without needing to
+# hand a new dict to each one. Colours are hex strings: "#RRGGBB".
+#
+# Two named palettes with IDENTICAL keys support the dark/light toggle on the
+# Workspace tab. COLORS itself starts as a copy of DARK_COLORS and is mutated
+# in place when the theme changes — see OSCALApp.set_theme().
+DARK_COLORS = {
     "BG":         "#1e1e2e",   # Main background (very dark navy)
     "SIDEBAR_BG": "#181825",   # Slightly darker background for the list pane
     "HEADER_BG":  "#313244",   # Section headers and toolbar
@@ -65,6 +72,25 @@ COLORS = {
     "TEAL":       "#94e2d5",   # Principle controls in the catalog list
     "ORANGE":     "#fab387",   # Reserved for future use
 }
+
+LIGHT_COLORS = {
+    "BG":         "#f4f4f8",   # Main background (soft off-white)
+    "SIDEBAR_BG": "#e9e9f2",   # Slightly darker background for the list pane
+    "HEADER_BG":  "#dcdce8",   # Section headers and toolbar
+    "INFO_BG":    "#eceef5",   # Info panel background
+    "CARD_BG":    "#ffffff",   # Card/form field backgrounds
+    "ACCENT":     "#7c4fd1",   # Purple — used for headings and highlights
+    "TEXT":       "#1e1e2e",   # Main text colour (near-black)
+    "SUBTEXT":    "#5c5c70",   # Secondary/hint text
+    "GREEN":      "#1f8a4c",   # Success / positive indicators
+    "YELLOW":     "#a8790a",   # Warnings and profile info (darkened for contrast on light bg)
+    "RED":        "#c53f5c",   # Errors and alerts
+    "BLUE":       "#2864c9",   # Information and links
+    "TEAL":       "#128a76",   # Principle controls in the catalog list
+    "ORANGE":     "#c4622a",   # Reserved for future use
+}
+
+COLORS = dict(DARK_COLORS)
 
 
 class OSCALApp(tk.Tk):
@@ -99,6 +125,9 @@ class OSCALApp(tk.Tk):
         # Path of the last workspace manifest opened or saved. Used so
         # "Save Workspace" can default to overwriting the same file.
         self._workspace_path = None
+        # Current colour theme — "dark" or "light". Toggled from the
+        # Workspace tab via set_theme(). See DARK_COLORS/LIGHT_COLORS above.
+        self._theme = "dark"
         # Note: the class filter, search box and control count all live inside
         # CatalogTab now — they are only relevant to the catalog viewer.
 
@@ -218,10 +247,88 @@ class OSCALApp(tk.Tk):
               foreground=[("selected", C["ACCENT"])])
 
     # =========================================================================
+    # THEME (DARK / LIGHT)
+    # =========================================================================
+
+    def set_theme(self, theme_name):
+        """
+        Switch the whole application between the "dark" and "light" palettes.
+
+        WHY THIS WORKS WITHOUT RECREATING EVERY TAB
+        ---------------------------------------------
+        Every tab was constructed with colors=COLORS — the SAME dict object,
+        not a copy. Mutating COLORS's contents in place (COLORS.clear() then
+        COLORS.update(...)) is therefore visible to every tab's self._colors
+        immediately, with no need to hand out a new dict.
+
+        That alone does nothing to widgets that already exist, though —
+        plain tk widgets read a colour once at creation time and never look
+        at the dict again. So after swapping the palette, this method:
+
+          1. Re-runs _style_ttk() so ttk widgets (Treeview, Notebook,
+             Combobox, Scrollbar) re-read the new colours from their style,
+             which they DO support live.
+          2. Destroys and rebuilds this app's own toolbar, info panel, and
+             status bar frames (plain tk widgets), restoring their dynamic
+             content (status text, loaded catalog/profile info) from state
+             already held on self — nothing here is destroyed except widgets.
+          3. Calls theme_refresh() on every tab. Each tab's theme_refresh()
+             destroys only that tab's OWN CHILD WIDGETS (not the tab object
+             itself, and not the Notebook that owns it), rebuilds them via
+             its existing _build() method, then repopulates them from the
+             SAME internal data dicts it already held (self._ssp,
+             self._components, etc.) — those were never touched, so no
+             document data is lost by toggling the theme.
+
+        The ttk.Notebook widget itself is never destroyed — only its style
+        changes and the child tab frames inside it get their own contents
+        rebuilt in place.
+        """
+        if theme_name == self._theme:
+            return   # Already in this theme — nothing to do
+
+        new_palette = DARK_COLORS if theme_name == "dark" else LIGHT_COLORS
+        COLORS.clear()
+        COLORS.update(new_palette)
+        self._theme = theme_name
+
+        self.configure(bg=COLORS["BG"])
+        self._style_ttk()
+
+        # ── Rebuild this app's own chrome, preserving its dynamic content ──────
+        saved_status_text = self._status_lbl.cget("text")
+
+        self._toolbar_frame.destroy()
+        self._info_panel_frame.destroy()
+        self._statusbar_frame.destroy()
+
+        # before=self._notebook is required here (but not at initial startup,
+        # when the Notebook doesn't exist yet) — see _build_toolbar()'s
+        # docstring for why plain pack(side="top") would stack these below
+        # the Notebook instead of above it once it already exists.
+        self._build_toolbar(before=self._notebook)
+        self._build_info_panel(before=self._notebook)
+        self._build_statusbar()
+
+        self._status_lbl.config(text=saved_status_text)
+        if self._catalog:
+            self._apply_catalog_info_labels(self._catalog)
+        if self._profile:
+            self._apply_profile_info_labels(self._profile)
+            self._clear_profile_btn.config(state="normal")
+
+        # ── Rebuild every tab's own widgets in place ────────────────────────────
+        # Order doesn't matter — each tab only touches its own children.
+        for tab in (self._workspace_tab, self._dashboard_tab, self._catalog_tab,
+                    self._component_tab, self._capability_tab, self._ssp_tab,
+                    self._ap_tab, self._ar_tab, self._poam_tab):
+            tab.theme_refresh()
+
+    # =========================================================================
     # TOOLBAR
     # =========================================================================
 
-    def _build_toolbar(self):
+    def _build_toolbar(self, before=None):
         """
         Create the top toolbar with:
           - Open Catalog button (purple)
@@ -232,10 +339,19 @@ class OSCALApp(tk.Tk):
         The class filter dropdown, search box, and control count have moved
         into the Catalog Viewer tab (catalog_tab.py) where they belong —
         they are only relevant when browsing the catalog.
+
+        Parameters:
+            before - Optional widget to pack this frame immediately above.
+                     Used by set_theme() when rebuilding the toolbar after
+                     the Notebook already exists — plain pack(side="top")
+                     would otherwise stack the new frame BELOW the Notebook
+                     rather than above it, since the Notebook was packed
+                     first and pack() stacks same-side widgets in call order.
         """
         C  = COLORS
         tb = tk.Frame(self, bg=C["HEADER_BG"], height=54)
-        tb.pack(fill="x", side="top")
+        self._toolbar_frame = tb   # Stored so set_theme() can destroy+rebuild it
+        tb.pack(fill="x", side="top", **({"before": before} if before else {}))
         tb.pack_propagate(False)
 
         # ── OSCAL version selector ────────────────────────────────────────────
@@ -292,7 +408,7 @@ class OSCALApp(tk.Tk):
     # INFO PANEL
     # =========================================================================
 
-    def _build_info_panel(self):
+    def _build_info_panel(self, before=None):
         """
         Create the info panel — two side-by-side cards showing metadata
         about the currently loaded catalog (left) and profile (right).
@@ -300,10 +416,16 @@ class OSCALApp(tk.Tk):
         Each card has:
           - A coloured header bar with an icon and the document title
           - A row of labelled fields (Version, OSCAL Version, etc.)
+
+        Parameters:
+            before - Optional widget to pack this frame immediately above.
+                     See _build_toolbar() for why this is needed during a
+                     theme rebuild.
         """
         C     = COLORS
         panel = tk.Frame(self, bg=C["INFO_BG"])
-        panel.pack(fill="x", side="top")
+        self._info_panel_frame = panel   # Stored so set_theme() can destroy+rebuild it
+        panel.pack(fill="x", side="top", **({"before": before} if before else {}))
 
         # ── Helper: create one card ────────────────────────────────────────────
         def card(icon, label_text, fg, side_padx):
@@ -542,6 +664,8 @@ class OSCALApp(tk.Tk):
             colors         = COLORS,
             open_workspace = self._open_workspace,
             save_workspace = self._save_workspace,
+            get_theme      = lambda: self._theme,
+            set_theme      = self.set_theme,
         )
         nb.insert(0, self._workspace_tab, text="🗂  Workspace")
         nb.select(0)
@@ -560,6 +684,7 @@ class OSCALApp(tk.Tk):
         """
         C  = COLORS
         sb = tk.Frame(self, bg=C["HEADER_BG"], height=26)
+        self._statusbar_frame = sb   # Stored so set_theme() can destroy+rebuild it
         sb.pack(fill="x", side="bottom")
         sb.pack_propagate(False)
 
@@ -625,6 +750,37 @@ class OSCALApp(tk.Tk):
                     self._prof_controls_lbl):
             lbl.config(text="—")
 
+    def _apply_catalog_info_labels(self, catalog):
+        """
+        Push a loaded catalog's metadata into the catalog info card labels.
+
+        Factored out so both _open_catalog() and the theme-rebuild path in
+        set_theme() (which recreates the info panel widgets from scratch)
+        can populate them the same way.
+        """
+        C = COLORS
+        self._cat_title_lbl.config(text=catalog["title"], fg=C["TEXT"])
+        self._cat_version_lbl.config(text=catalog["version"])
+        self._cat_oscal_lbl.config(text=catalog["oscal_version"])
+        self._cat_published_lbl.config(text=catalog["published"])
+        self._cat_modified_lbl.config(text=catalog["last_modified"])
+        self._cat_controls_lbl.config(text=str(len(catalog["controls"])))
+
+    def _apply_profile_info_labels(self, profile):
+        """
+        Push a loaded profile's metadata into the profile info card labels.
+
+        Factored out so both _open_profile() and the theme-rebuild path in
+        set_theme() can populate them the same way.
+        """
+        C = COLORS
+        self._prof_title_lbl.config(text=profile["title"], fg=C["YELLOW"])
+        self._prof_version_lbl.config(text=profile["version"])
+        self._prof_oscal_lbl.config(text=profile["oscal_version"])
+        self._prof_published_lbl.config(text=profile["published"])
+        self._prof_modified_lbl.config(text=profile["last_modified"])
+        self._prof_controls_lbl.config(text=str(len(profile["ids"])))
+
     def _open_catalog(self, path=None):
         """
         Load an OSCAL catalog JSON file and update the catalog card and
@@ -686,12 +842,7 @@ class OSCALApp(tk.Tk):
         self._profile = None   # Loading a new catalog clears the profile
 
         # ── Update the catalog info card ──────────────────────────────────────
-        self._cat_title_lbl.config(text=catalog["title"], fg=C["TEXT"])
-        self._cat_version_lbl.config(text=catalog["version"])
-        self._cat_oscal_lbl.config(text=catalog["oscal_version"])
-        self._cat_published_lbl.config(text=catalog["published"])
-        self._cat_modified_lbl.config(text=catalog["last_modified"])
-        self._cat_controls_lbl.config(text=str(len(catalog["controls"])))
+        self._apply_catalog_info_labels(catalog)
 
         # ── Reset the profile info card (profile was cleared above) ───────────
         self._reset_profile_card()
@@ -750,13 +901,7 @@ class OSCALApp(tk.Tk):
         self._clear_profile_btn.config(state="normal")
 
         # ── Update the profile info card ──────────────────────────────────────
-        self._prof_title_lbl.config(text=profile["title"], fg=C["YELLOW"])
-        self._prof_version_lbl.config(text=profile["version"])
-        self._prof_oscal_lbl.config(text=profile["oscal_version"])
-        self._prof_published_lbl.config(text=profile["published"])
-        self._prof_modified_lbl.config(text=profile["last_modified"])
-        # Show how many controls this profile selects
-        self._prof_controls_lbl.config(text=str(len(profile["ids"])))
+        self._apply_profile_info_labels(profile)
 
         self._ssp_tab.refresh_profile_box()
         self._component_tab.on_catalog_or_profile_changed()

@@ -219,6 +219,30 @@ class CapabilityTab(tk.Frame):
         # Show the correct panel right away
         self.on_state_changed()
 
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes, without
+        losing self._capabilities or the currently selected item's
+        in-progress edits.
+
+        Same rationale as ComponentTab.theme_refresh() — capabilities are
+        edited inline in the right-hand detail form, so any in-progress edit
+        must be collected into self._capabilities before its widgets are
+        destroyed. The selection is then cleared, since the freshly rebuilt
+        detail form has no widgets bound to the old selection; self._capabilities
+        (the data) is unaffected and the list repopulates from it via
+        _refresh_list().
+        """
+        if self._sel_index is not None:
+            self._collect_into(self._sel_index)
+        self._sel_index = None
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
+        self._build()
+        self._refresh_list()
+        self._show_placeholder()
+
     # =========================================================================
     # TOOLBAR
     # =========================================================================

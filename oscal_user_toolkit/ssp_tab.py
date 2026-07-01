@@ -209,6 +209,26 @@ class SSPTab(tk.Frame):
         self._build_toolbar()
         self._build_form_canvas()
 
+    def theme_refresh(self):
+        """
+        Rebuild this tab's widgets after the colour theme changes, without
+        losing any in-progress edits or loaded document data.
+
+        _collect() flushes whatever is currently in the (about-to-be-
+        destroyed) widgets into self._ssp first. Section 8/9/11/12 items are
+        added/edited via modal dialogs rather than inline form fields, so
+        there is no "currently selected but not yet saved" sub-item state to
+        worry about beyond what _collect() already handles. _populate()
+        then rebuilds every widget's content from self._ssp, exactly as it
+        does when opening a saved file.
+        """
+        self._collect()
+        self.configure(bg=self._colors["BG"])   # This tab's own Frame background
+        for w in list(self.winfo_children()):
+            w.destroy()
+        self._build()
+        self._populate()
+
     def _build_toolbar(self):
         """
         Create the SSP tab's own toolbar with Save, Open, New buttons
