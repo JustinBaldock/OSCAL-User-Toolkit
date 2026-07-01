@@ -192,9 +192,8 @@ class WorkspaceTab(tk.Frame):
         ).pack(side="left")
         tk.Button(
             btn_row, text="💾  Save Workspace", command=lambda: self._save_workspace(),
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            highlightthickness=1, highlightbackground=C["ACCENT"],
         ).pack(side="left", padx=(8, 0))
         tk.Label(
             btn_row,
