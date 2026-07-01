@@ -56,38 +56,75 @@ from .workspace_tab import WorkspaceTab
 # Two named palettes with IDENTICAL keys support the dark/light toggle on the
 # Workspace tab. COLORS itself starts as a copy of DARK_COLORS and is mutated
 # in place when the theme changes — see OSCALApp.set_theme().
+# WHY TWO VARIANTS OF EACH ACCENT COLOUR (e.g. BLUE and BLUE_BG)
+# -----------------------------------------------------------------
+# ACCENT/BLUE/GREEN/YELLOW/RED/TEAL serve two different jobs that need
+# different lightness in light mode:
+#   1. As TEXT/heading colour sitting directly on a plain BG/HEADER_BG/
+#      CARD_BG background — needs to be dark & saturated in light mode
+#      (mirroring how TEXT itself flips dark<->light) so it reads clearly
+#      against a light page.
+#   2. As the BACKGROUND FILL of a button or badge, paired with fixed
+#      BUTTON_TEXT (near-black) on top — needs to stay light/pastel in
+#      BOTH modes, since black text on a dark, saturated fill would be
+#      unreadable (that combination was the actual bug reported).
+# The plain keys (BLUE, GREEN, ...) serve job 1. The _BG keys (BLUE_BG,
+# GREEN_BG, ...) serve job 2. In dark mode both jobs happen to want the
+# same light pastel colour, so the _BG keys just duplicate the plain ones.
 DARK_COLORS = {
-    "BG":         "#1e1e2e",   # Main background (very dark navy)
-    "SIDEBAR_BG": "#181825",   # Slightly darker background for the list pane
-    "HEADER_BG":  "#313244",   # Section headers and toolbar
-    "INFO_BG":    "#252535",   # Info panel background
-    "CARD_BG":    "#2a2a3d",   # Card/form field backgrounds
-    "ACCENT":     "#cba6f7",   # Lavender — used for headings and highlights
-    "TEXT":       "#cdd6f4",   # Main text colour (light blue-white)
-    "SUBTEXT":    "#a6adc8",   # Secondary/hint text (slightly dimmer)
-    "GREEN":      "#a6e3a1",   # Success / positive indicators
-    "YELLOW":     "#f9e2af",   # Warnings and profile info
-    "RED":        "#f38ba8",   # Errors and alerts
-    "BLUE":       "#89b4fa",   # Information and links
-    "TEAL":       "#94e2d5",   # Principle controls in the catalog list
-    "ORANGE":     "#fab387",   # Reserved for future use
+    "BG":          "#1e1e2e",   # Main background (very dark navy)
+    "SIDEBAR_BG":  "#181825",   # Slightly darker background for the list pane
+    "HEADER_BG":   "#313244",   # Section headers and toolbar
+    "INFO_BG":     "#252535",   # Info panel background
+    "CARD_BG":     "#2a2a3d",   # Card/form field backgrounds
+    "ACCENT":      "#cba6f7",   # Lavender — used for headings and highlights
+    "TEXT":        "#cdd6f4",   # Main text colour (light blue-white)
+    "SUBTEXT":     "#a6adc8",   # Secondary/hint text (slightly dimmer)
+    "GREEN":       "#a6e3a1",   # Success / positive indicators
+    "YELLOW":      "#f9e2af",   # Warnings and profile info
+    "RED":         "#f38ba8",   # Errors and alerts
+    "BLUE":        "#89b4fa",   # Information and links
+    "TEAL":        "#94e2d5",   # Principle controls in the catalog list
+    "ORANGE":      "#fab387",   # Reserved for future use
+    # Button/badge fill variants — see module-level note above.
+    # Same values as the plain keys: dark mode's pastels already work for
+    # both text-on-page and fill-under-black-text uses.
+    "ACCENT_BG":   "#cba6f7",
+    "GREEN_BG":    "#a6e3a1",
+    "YELLOW_BG":   "#f9e2af",
+    "RED_BG":      "#f38ba8",
+    "BLUE_BG":     "#89b4fa",
+    "TEAL_BG":     "#94e2d5",
+    # Text colour used on top of the _BG fills above. Fixed (not
+    # theme-swapped) because every _BG colour is light/pastel in BOTH
+    # palettes by design.
+    "BUTTON_TEXT": "#1a1a1a",
 }
 
 LIGHT_COLORS = {
-    "BG":         "#f4f4f8",   # Main background (soft off-white)
-    "SIDEBAR_BG": "#e9e9f2",   # Slightly darker background for the list pane
-    "HEADER_BG":  "#dcdce8",   # Section headers and toolbar
-    "INFO_BG":    "#eceef5",   # Info panel background
-    "CARD_BG":    "#ffffff",   # Card/form field backgrounds
-    "ACCENT":     "#7c4fd1",   # Purple — used for headings and highlights
-    "TEXT":       "#1e1e2e",   # Main text colour (near-black)
-    "SUBTEXT":    "#5c5c70",   # Secondary/hint text
-    "GREEN":      "#1f8a4c",   # Success / positive indicators
-    "YELLOW":     "#a8790a",   # Warnings and profile info (darkened for contrast on light bg)
-    "RED":        "#c53f5c",   # Errors and alerts
-    "BLUE":       "#2864c9",   # Information and links
-    "TEAL":       "#128a76",   # Principle controls in the catalog list
-    "ORANGE":     "#c4622a",   # Reserved for future use
+    "BG":          "#f4f4f8",   # Main background (soft off-white)
+    "SIDEBAR_BG":  "#e9e9f2",   # Slightly darker background for the list pane
+    "HEADER_BG":   "#dcdce8",   # Section headers and toolbar
+    "INFO_BG":     "#eceef5",   # Info panel background
+    "CARD_BG":     "#ffffff",   # Card/form field backgrounds
+    "ACCENT":      "#6a3fc4",   # Purple — used for headings and highlights (text use)
+    "TEXT":        "#1e1e2e",   # Main text colour (near-black)
+    "SUBTEXT":     "#5c5c70",   # Secondary/hint text
+    "GREEN":       "#1f8a4c",   # Success / positive indicators (text use)
+    "YELLOW":      "#7a5606",   # Warnings and profile info (text use)
+    "RED":         "#c53f5c",   # Errors and alerts (text use)
+    "BLUE":        "#2864c9",   # Information and links (text use)
+    "TEAL":        "#128a76",   # Principle controls in the catalog list (text use)
+    "ORANGE":      "#c4622a",   # Reserved for future use
+    # Button/badge fill variants — pastel, NOT the darker text-use shades
+    # above, and paired with fixed BUTTON_TEXT. See module-level note.
+    "ACCENT_BG":   "#ab95e3",
+    "GREEN_BG":    "#a5d6a7",
+    "YELLOW_BG":   "#ffe082",
+    "RED_BG":      "#ef9a9a",
+    "BLUE_BG":     "#90caf9",
+    "TEAL_BG":     "#80cbc4",
+    "BUTTON_TEXT": "#1a1a1a",   # Same fixed near-black as DARK_COLORS
 }
 
 COLORS = dict(DARK_COLORS)
@@ -374,16 +411,16 @@ class OSCALApp(tk.Tk):
         # ── Left-side buttons ─────────────────────────────────────────────────
         tk.Button(
             tb, text="📂  Open Catalog", command=self._open_catalog,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 12, "bold"),
+            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
             relief="flat", padx=14, pady=6, cursor="hand2",
-            activebackground="#b4befe", activeforeground=C["BG"],
+            activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=14, pady=10)
 
         tk.Button(
             tb, text="🔖  Open Profile", command=self._open_profile,
-            bg=C["YELLOW"], fg=C["BG"], font=("Helvetica", 12, "bold"),
+            bg=C["YELLOW_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
             relief="flat", padx=14, pady=6, cursor="hand2",
-            activebackground="#f5c842", activeforeground=C["BG"],
+            activebackground="#f5c842", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=10)
 
         # Clear Profile button — stored as an instance variable so we can

@@ -335,27 +335,27 @@ class ComponentTab(tk.Frame):
 
         tk.Button(
             tb, text="💾  Save Component", command=self._save_file,
-            bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#8cd39a", activeforeground=C["BG"],
+            activebackground="#8cd39a", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=12, pady=8)
 
         # "Open File(s)" lets the user pick one or more files at once.
         # Components are APPENDED to the list, not replacing it.
         tk.Button(
             tb, text="📂  Open File(s)", command=self._open_files,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 6), pady=8)
 
         # "Open Folder" loads every component JSON file in a chosen folder.
         # Also appends to the list.
         tk.Button(
             tb, text="📁  Open Folder", command=self._open_folder,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
@@ -553,9 +553,9 @@ class ComponentTab(tk.Frame):
         self._sort_btn = tk.Button(
             type_row, text="⊞ By type",
             command=self._toggle_sort,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 9),
+            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
             relief="flat", padx=6, pady=1, cursor="hand2",
-            activebackground="#b4befe", activeforeground=C["BG"],
+            activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
         )
         self._sort_btn.pack(side="right")
 
@@ -564,9 +564,9 @@ class ComponentTab(tk.Frame):
         btn_row.pack(fill="x", padx=8, pady=(2, 4))
         tk.Button(btn_row, text="＋  Add Component",
                   command=self._add_component,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
-                  activebackground="#b4befe", activeforeground=C["BG"],
+                  activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
                   ).pack(side="left")
         tk.Button(btn_row, text="⧉ Duplicate",
                   command=self._duplicate_component,
@@ -798,7 +798,7 @@ class ComponentTab(tk.Frame):
         prop_btn.pack(fill="x", padx=8, pady=6)
         tk.Button(prop_btn, text="＋  Add Property",
                   command=self._add_property,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Button(prop_btn, text="✕  Remove Selected",
@@ -835,7 +835,7 @@ class ComponentTab(tk.Frame):
         role_btn = tk.Frame(role_frame, bg=C["CARD_BG"])
         role_btn.pack(fill="x", padx=8, pady=6)
         tk.Button(role_btn, text="＋  Add Role", command=self._add_role,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Button(role_btn, text="✕  Remove Selected",
@@ -871,7 +871,7 @@ class ComponentTab(tk.Frame):
         proto_btn.pack(fill="x", padx=8, pady=6)
         tk.Button(proto_btn, text="＋  Add Protocol",
                   command=self._add_protocol,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Button(proto_btn, text="✕  Remove Selected",
@@ -912,7 +912,7 @@ class ComponentTab(tk.Frame):
         link_btn.pack(fill="x", padx=8, pady=6)
         tk.Button(link_btn, text="＋  Add Link",
                   command=self._add_link,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Button(link_btn, text="✕  Remove Selected",
@@ -1139,9 +1139,9 @@ class ComponentTab(tk.Frame):
             apply_row,
             text="✔  Apply Component Changes",
             command=self._apply_component,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=14, pady=6, cursor="hand2",
-            activebackground="#b4befe", activeforeground=C["BG"],
+            activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left")
         tk.Label(
             apply_row,
@@ -1886,7 +1886,7 @@ class ComponentTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2005,7 +2005,7 @@ class ComponentTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2074,7 +2074,7 @@ class ComponentTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2272,7 +2272,7 @@ class ComponentTab(tk.Frame):
             v_start.set(""); v_end.set(""); v_pr_remarks.set("")
 
         tk.Button(add_row, text="＋ Add", command=_add_pr,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, cursor="hand2").pack(side="left")
 
         def _remove_pr():
@@ -2302,7 +2302,7 @@ class ComponentTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2451,7 +2451,7 @@ class ComponentTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=14)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),

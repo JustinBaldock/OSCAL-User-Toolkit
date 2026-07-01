@@ -166,7 +166,7 @@ class WorkspaceTab(tk.Frame):
         tk.Button(
             title_row, text=toggle_text,
             command=lambda: self._set_theme("light" if current == "dark" else "dark"),
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="right")
 
@@ -187,12 +187,12 @@ class WorkspaceTab(tk.Frame):
         btn_row.pack(anchor="w", padx=20, pady=(0, 14))
         tk.Button(
             btn_row, text="📂  Open Workspace", command=lambda: self._open_workspace(),
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left")
         tk.Button(
             btn_row, text="💾  Save Workspace", command=lambda: self._save_workspace(),
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(8, 0))
         tk.Label(

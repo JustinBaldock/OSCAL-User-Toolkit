@@ -503,10 +503,10 @@ class CatalogTab(tk.Frame):
         header = tk.Frame(self._detail, bg=C["HEADER_BG"])
         header.pack(fill="x", **pad, pady=(18, 4))
 
-        badge_fg = C["TEAL"] if ctrl["class"] == "ISM-principle" else C["BLUE"]
+        badge_fg = C["TEAL_BG"] if ctrl["class"] == "ISM-principle" else C["BLUE_BG"]
         tk.Label(
             header, text=f"  {ctrl['label']}  ",
-            bg=badge_fg, fg=C["BG"],
+            bg=badge_fg, fg=C["BUTTON_TEXT"],
             font=("Helvetica", 12, "bold"), relief="flat",
         ).pack(side="left", padx=10, pady=8)
 
@@ -537,7 +537,7 @@ class CatalogTab(tk.Frame):
             for ap in ctrl["applicability"]:
                 tk.Label(
                     cf, text=f" {ap} ",
-                    bg=C["GREEN"], fg=C["BG"],
+                    bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"],
                     font=("Helvetica", 10, "bold"), relief="flat",
                 ).pack(side="left", padx=3)
 

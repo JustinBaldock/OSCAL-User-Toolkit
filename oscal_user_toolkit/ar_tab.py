@@ -131,15 +131,15 @@ class ARTab(tk.Frame):
         def btn(text, cmd, bg, abg, fg=None):
             tk.Button(
                 tb, text=text, command=cmd,
-                bg=bg, fg=fg or C["BG"],
+                bg=bg, fg=fg or C["BUTTON_TEXT"],
                 font=("Helvetica", 11, "bold"),
                 relief="flat", padx=12, pady=4, cursor="hand2",
-                activebackground=abg, activeforeground=fg or C["BG"],
+                activebackground=abg, activeforeground=fg or C["BUTTON_TEXT"],
             ).pack(side="left", padx=(12, 0), pady=8)
 
-        btn("💾  Save Results",  self._save,              C["GREEN"], "#8cd39a")
-        btn("📂  Open Results",  self._open,              C["BLUE"],  "#6a9fd8")
-        btn("🆕  New Results",   self._new,               C["BLUE"],  "#6a9fd8")
+        btn("💾  Save Results",  self._save,              C["GREEN_BG"], "#8cd39a")
+        btn("📂  Open Results",  self._open,              C["BLUE_BG"],  "#6a9fd8")
+        btn("🆕  New Results",   self._new,               C["BLUE_BG"],  "#6a9fd8")
 
         tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
             side="left", fill="y", padx=8, pady=6
@@ -149,10 +149,10 @@ class ARTab(tk.Frame):
             tb,
             text="📋  Generate POA&M from Findings",
             command=self._generate_poam,
-            bg=C["ACCENT"], fg=C["BG"],
+            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"],
             font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=4, cursor="hand2",
-            activebackground="#b4befe", activeforeground=C["BG"],
+            activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 0), pady=8)
         tk.Label(
             tb,
@@ -239,15 +239,15 @@ class ARTab(tk.Frame):
             btn_row = tk.Frame(frame, bg=C["CARD_BG"])
             btn_row.pack(fill="x", padx=8, pady=6)
             for text, cmd, bg in [
-                ("＋  Add",    add_cmd,    C["BLUE"]),
+                ("＋  Add",    add_cmd,    C["BLUE_BG"]),
                 ("✎  Edit",   edit_cmd,   C["HEADER_BG"]),
                 ("✕  Remove", remove_cmd, C["HEADER_BG"]),
             ]:
                 tk.Button(btn_row, text=text, command=cmd,
                           bg=bg,
-                          fg=C["TEXT"] if bg == C["HEADER_BG"] else C["BG"],
+                          fg=C["TEXT"] if bg == C["HEADER_BG"] else C["BUTTON_TEXT"],
                           font=("Helvetica", 10,
-                                "bold" if bg == C["BLUE"] else "normal"),
+                                "bold" if bg == C["BLUE_BG"] else "normal"),
                           relief="flat", padx=10, pady=3, cursor="hand2",
                           ).pack(side="left", padx=(0, 6))
             tree = ttk.Treeview(frame,
@@ -497,7 +497,7 @@ class ARTab(tk.Frame):
                 _refresh_ev()
 
         tk.Button(ev_btn_row, text="＋ Add", command=_add_ev,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(ev_btn_row, text="✕ Remove", command=_remove_ev,
@@ -678,7 +678,7 @@ class ARTab(tk.Frame):
                 _refresh_rem()
 
         tk.Button(rem_btn_row, text="＋ Add", command=_add_rem,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(rem_btn_row, text="✕ Remove", command=_remove_rem,
@@ -1177,7 +1177,7 @@ class ARTab(tk.Frame):
         brow = tk.Frame(dlg, bg=C["BG"])
         brow.pack(fill="x", pady=(4, 12), padx=12)
         tk.Button(brow, text="OK", command=ok_cmd,
-                  bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=16, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(brow, text="Cancel", command=dlg.destroy,

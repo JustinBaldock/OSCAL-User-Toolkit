@@ -135,20 +135,20 @@ class POAMTab(tk.Frame):
             """Local helper — create and pack one toolbar button."""
             tk.Button(
                 tb, text=text, command=cmd,
-                bg=bg, fg=C["BG"], font=("Helvetica", 11, "bold"),
+                bg=bg, fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                 relief="flat", padx=12, pady=4, cursor="hand2",
-                activebackground=abg, activeforeground=C["BG"],
+                activebackground=abg, activeforeground=C["BUTTON_TEXT"],
             ).pack(side="left", padx=(12, 0), pady=8)
 
-        btn("💾  Save POA&M", self._save,   C["GREEN"], "#8cd39a")
-        btn("📂  Open POA&M", self._open,   C["BLUE"],  "#6a9fd8")
-        btn("🆕  New POA&M",  self._new,    C["BLUE"],  "#6a9fd8")
+        btn("💾  Save POA&M", self._save,   C["GREEN_BG"], "#8cd39a")
+        btn("📂  Open POA&M", self._open,   C["BLUE_BG"],  "#6a9fd8")
+        btn("🆕  New POA&M",  self._new,    C["BLUE_BG"],  "#6a9fd8")
 
         tk.Frame(tb, bg=C["HEADER_BG"], width=2).pack(
             side="left", fill="y", padx=8, pady=6
         )
 
-        btn("📥  Import from AR", self._import_from_ar, C["BLUE"], "#6a9fd8")
+        btn("📥  Import from AR", self._import_from_ar, C["BLUE_BG"], "#6a9fd8")
 
         self._status_lbl = tk.Label(
             tb, text="POA&M not saved",
@@ -272,10 +272,10 @@ class POAMTab(tk.Frame):
                 ("✕  Remove", remove_cmd),
             ]:
                 tk.Button(btn_row, text=text, command=cmd,
-                          bg=C["BLUE"], fg=C["BG"],
+                          bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"],
                           font=("Helvetica", 10, "bold"),
                           relief="flat", padx=10, pady=3, cursor="hand2",
-                          activebackground="#6a9fd8", activeforeground=C["BG"],
+                          activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
                           ).pack(side="left", padx=(0, 6))
 
             if extra_buttons:
@@ -284,10 +284,10 @@ class POAMTab(tk.Frame):
                 )
                 for text, cmd in extra_buttons:
                     tk.Button(btn_row, text=text, command=cmd,
-                              bg=C["BLUE"], fg=C["BG"],
+                              bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"],
                               font=("Helvetica", 10, "bold"),
                               relief="flat", padx=10, pady=3, cursor="hand2",
-                              activebackground="#6a9fd8", activeforeground=C["BG"],
+                              activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
                               ).pack(side="left", padx=(0, 6))
 
             tree = ttk.Treeview(frame,
@@ -482,7 +482,7 @@ class POAMTab(tk.Frame):
         brow = tk.Frame(dlg, bg=C["BG"])
         brow.pack(fill="x", pady=(4, 12), padx=12)
         tk.Button(brow, text="OK", command=ok_cmd,
-                  bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=16, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(brow, text="Cancel", command=dlg.destroy,
@@ -635,7 +635,7 @@ class POAMTab(tk.Frame):
                 _refresh_ev()
 
         tk.Button(ev_btn_row, text="＋ Add", command=_add_ev,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(ev_btn_row, text="✕ Remove", command=_remove_ev,
@@ -855,7 +855,7 @@ class POAMTab(tk.Frame):
                 _refresh_rem()
 
         tk.Button(rem_btn_row, text="＋ Add", command=_add_rem,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(rem_btn_row, text="✕ Remove", command=_remove_rem,

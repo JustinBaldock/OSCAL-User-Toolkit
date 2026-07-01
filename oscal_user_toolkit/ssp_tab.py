@@ -242,30 +242,30 @@ class SSPTab(tk.Frame):
         # ── Action buttons ────────────────────────────────────────────────────
         tk.Button(
             tb, text="💾  Save SSP", command=self._save,
-            bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#8cd39a", activeforeground=C["BG"],
+            activebackground="#8cd39a", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=12, pady=8)
 
         tk.Button(
             tb, text="📂  Open SSP", command=self._open,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
             tb, text="🆕  New SSP", command=self._new,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
             tb, text="📄  Export DOCX", command=self._export_docx,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         # NOTE: the draw.io export button used to live here. It has moved to
@@ -523,7 +523,7 @@ class SSPTab(tk.Frame):
             tk.Button(
                 btn_row, text="＋  Add",
                 command=add_cmd,
-                bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                 relief="flat", padx=10, pady=3, cursor="hand2",
             ).pack(side="left")
 
@@ -648,7 +648,7 @@ class SSPTab(tk.Frame):
         tk.Button(
             diag_btn_row, text="＋  Add Diagram",
             command=self._add_diagram,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
@@ -807,13 +807,13 @@ class SSPTab(tk.Frame):
         tk.Button(
             btn_row, text="＋  Add",
             command=self._add_responsible_party,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
             btn_row, text="✕  Remove",
             command=self._remove_responsible_party,
-            bg=C["RED"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["RED_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=(6, 0))
 
@@ -880,7 +880,7 @@ class SSPTab(tk.Frame):
         cap8_btn.pack(fill="x", padx=28, pady=4)
         tk.Button(
             cap8_btn, text="＋  Add Capability", command=self._add_ssp_capability,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
@@ -898,7 +898,7 @@ class SSPTab(tk.Frame):
         tk.Button(
             cap8_btn, text="📐  Export Capability and Component Map",
             command=self._export_drawio,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=(0, 6))
 
@@ -931,7 +931,7 @@ class SSPTab(tk.Frame):
         comp8_btn.pack(fill="x", padx=28, pady=4)
         tk.Button(
             comp8_btn, text="＋  Add Component", command=self._add_ssp_component,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
@@ -1048,7 +1048,7 @@ class SSPTab(tk.Frame):
         tk.Button(
             sp_btn_row, text="＋  Add Parameter Override",
             command=self._add_set_param,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
@@ -1188,7 +1188,7 @@ class SSPTab(tk.Frame):
         bycomp_btn.pack(fill="x", padx=8, pady=(4, 4))
         tk.Button(
             bycomp_btn, text="＋  Add Entry", command=self._add_bycomp_entry,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
@@ -1405,7 +1405,7 @@ class SSPTab(tk.Frame):
         btn.pack(pady=12)
         tk.Button(
             btn, text="  OK  ", command=_ok,
-            bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=10,
         ).pack(side="left", padx=8)
         tk.Button(
@@ -1521,7 +1521,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  Add  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -1980,7 +1980,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2291,7 +2291,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2359,7 +2359,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2584,7 +2584,7 @@ class SSPTab(tk.Frame):
         tk.Button(
             flow_btn_row, text="＋  Add",
             command=_add_flow,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
@@ -2620,7 +2620,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2718,7 +2718,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -2774,7 +2774,7 @@ class SSPTab(tk.Frame):
         usr_btn = tk.Frame(parent, bg=C["BG"])
         usr_btn.pack(fill="x", padx=28, pady=4)
         tk.Button(usr_btn, text="＋  Add User", command=self._add_ssp_user,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left")
         tk.Button(usr_btn, text="✏  Edit Selected", command=self._edit_ssp_user,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
@@ -2890,7 +2890,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -3002,7 +3002,7 @@ class SSPTab(tk.Frame):
         inv_btn = tk.Frame(parent, bg=C["BG"])
         inv_btn.pack(fill="x", padx=28, pady=4)
         tk.Button(inv_btn, text="＋  Add Item", command=self._add_inv_item,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left")
         tk.Button(inv_btn, text="✏  Edit Selected", command=self._edit_inv_item,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
@@ -3109,7 +3109,7 @@ class SSPTab(tk.Frame):
             prop_tree.delete(sel[0])
 
         tk.Button(prop_btn_row, text="＋  Add", command=_add_prop,
-                  bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left")
         tk.Button(prop_btn_row, text="✕  Remove", command=_remove_prop,
                   bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
@@ -3174,7 +3174,7 @@ class SSPTab(tk.Frame):
 
             tk.Button(impl_btn_row, text="＋  Link Component",
                       command=_add_impl_comp,
-                      bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+                      bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                       relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left")
             tk.Button(impl_btn_row, text="✕  Unlink", command=_remove_impl_comp,
                       bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
@@ -3215,7 +3215,7 @@ class SSPTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
-                  bg=C["ACCENT"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
@@ -3426,8 +3426,8 @@ class SSPTab(tk.Frame):
 
         btn_row = tk.Frame(dlg, bg=C["BG"])
         btn_row.grid(row=3, column=0, columnspan=2, pady=12)
-        tk.Button(btn_row, text="OK",     command=_ok,          bg=C["GREEN"],
-                  fg=C["BG"], font=("Helvetica", 10, "bold"), relief="flat",
+        tk.Button(btn_row, text="OK",     command=_ok,          bg=C["GREEN_BG"],
+                  fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"), relief="flat",
                   padx=12, pady=4, cursor="hand2").pack(side="left", padx=6)
         tk.Button(btn_row, text="Cancel", command=dlg.destroy,  bg=C["HEADER_BG"],
                   fg=C["TEXT"], font=("Helvetica", 10), relief="flat",

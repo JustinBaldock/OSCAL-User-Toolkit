@@ -259,25 +259,25 @@ class CapabilityTab(tk.Frame):
         # Open one or more capability JSON files
         tk.Button(
             tb, text="📂  Open File(s)", command=self._open_files,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=12, pady=8)
 
         # Open a folder and load every capability JSON inside it
         tk.Button(
             tb, text="📁  Open Folder", command=self._open_folder,
-            bg=C["BLUE"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 4), pady=8)
 
         # Save the selected capability (bundles member components in same file)
         tk.Button(
             tb, text="💾  Save Capability", command=self._save_capability,
-            bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#8cd39a", activeforeground=C["BG"],
+            activebackground="#8cd39a", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(8, 4), pady=8)
 
         # Clear all capabilities and start fresh
@@ -437,9 +437,9 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             btn_row, text="＋  Add Capability",
             command=self._add_capability,
-            bg=C["TEAL"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=8, pady=3, cursor="hand2",
-            activebackground="#7ad5c6", activeforeground=C["BG"],
+            activebackground="#7ad5c6", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left")
 
         tk.Button(
@@ -666,9 +666,9 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             mem_btn, text="＋  Add Member Component",
             command=self._add_member,
-            bg=C["TEAL"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=8, pady=3, cursor="hand2",
-            activebackground="#7ad5c6", activeforeground=C["BG"],
+            activebackground="#7ad5c6", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left")
 
         tk.Button(
@@ -873,9 +873,9 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             save_row, text="✔  Save Response",
             command=self._save_ctrl_response,
-            bg=C["GREEN"], fg=C["BG"], font=("Helvetica", 10, "bold"),
+            bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=4, cursor="hand2",
-            activebackground="#8cd39a", activeforeground=C["BG"],
+            activebackground="#8cd39a", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left")
         tk.Label(
             save_row,
@@ -889,9 +889,9 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             apply_row, text="✔  Apply Capability Changes",
             command=self._apply_capability,
-            bg=C["TEAL"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=14, pady=6, cursor="hand2",
-            activebackground="#7ad5c6", activeforeground=C["BG"],
+            activebackground="#7ad5c6", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left")
         tk.Label(
             apply_row,
@@ -1341,7 +1341,7 @@ class CapabilityTab(tk.Frame):
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
         tk.Button(btn, text="  Add  ", command=_ok,
-                  bg=C["TEAL"], fg=C["BG"], font=("Helvetica", 11, "bold"),
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),

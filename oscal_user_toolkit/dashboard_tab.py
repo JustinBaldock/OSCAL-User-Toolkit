@@ -62,10 +62,10 @@ class DashboardTab(tk.Frame):
         tk.Button(
             tb, text="🔄  Refresh Dashboard",
             command=self.refresh,
-            bg=C["BLUE"], fg=C["BG"],
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"],
             font=("Helvetica", 11, "bold"),
             relief="flat", padx=14, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BG"],
+            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=12, pady=8)
 
         tk.Label(
