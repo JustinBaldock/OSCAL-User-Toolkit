@@ -833,7 +833,15 @@ class OSCALApp(tk.Tk):
         def _exists(p):
             return p and Path(p).is_file()
 
-        # ── Catalog first — profile cannot be applied without one ──────────────
+        # ── Load order matters ──────────────────────────────────────────────────
+        # Catalog before profile — a profile cannot be applied without one.
+        # Components and capabilities before the SSP — the SSP Editor's
+        # Section 8 "Capabilities Used" table resolves each capability's
+        # member components from the Capability/Component Editor's LIVE
+        # lists at the moment the SSP is populated (see _refresh_cap8_tree()
+        # in ssp_tab.py). If the SSP loaded first, those lists would still be
+        # empty and every capability row would wrongly show "capability not
+        # currently loaded in Capability Editor" even though it's about to be.
         if ws["catalog"]:
             if _exists(ws["catalog"]):
                 if self._open_catalog(path=ws["catalog"]):
@@ -847,13 +855,6 @@ class OSCALApp(tk.Tk):
                     loaded.append(f"Profile: {Path(ws['profile']).name}")
             else:
                 missing.append(f"Profile: {ws['profile']}")
-
-        if ws["ssp"]:
-            if _exists(ws["ssp"]):
-                if self._ssp_tab._open(path=ws["ssp"]):
-                    loaded.append(f"SSP: {Path(ws['ssp']).name}")
-            else:
-                missing.append(f"SSP: {ws['ssp']}")
 
         if ws["components"]:
             existing = [p for p in ws["components"] if _exists(p)]
@@ -870,6 +871,13 @@ class OSCALApp(tk.Tk):
                 added, _skipped = self._capability_tab.load_from_paths(existing)
                 if added:
                     loaded.append(f"Capabilities: {added} loaded")
+
+        if ws["ssp"]:
+            if _exists(ws["ssp"]):
+                if self._ssp_tab._open(path=ws["ssp"]):
+                    loaded.append(f"SSP: {Path(ws['ssp']).name}")
+            else:
+                missing.append(f"SSP: {ws['ssp']}")
 
         if ws["assessment_plan"]:
             if _exists(ws["assessment_plan"]):
@@ -891,6 +899,11 @@ class OSCALApp(tk.Tk):
                     loaded.append(f"POA&M: {Path(ws['poam']).name}")
             else:
                 missing.append(f"POA&M: {ws['poam']}")
+
+        # Defensive re-sync: re-run the Capabilities Used lookup now that
+        # every tab has finished loading, regardless of the order above.
+        # Cheap no-op if the SSP has no capabilities_used entries.
+        self._ssp_tab._refresh_cap8_tree()
 
         self._workspace_path = path
 
