@@ -686,11 +686,12 @@ class SSPTab(tk.Frame):
                 "Confidentiality: High, Integrity: Moderate, Availability: Low."
             ),
             columns  = [
-                ("title",      "Information Type Title", 220, True),
-                ("c_impact",   "Confidentiality",        110, False),
-                ("i_impact",   "Integrity",              110, False),
-                ("a_impact",   "Availability",           110, False),
-                ("components", "Components",             160, False),
+                ("title",       "Information Type Title", 160, False),
+                ("description", "Description",            260, True),
+                ("c_impact",    "Confidentiality",         90, False),
+                ("i_impact",    "Integrity",               90, False),
+                ("a_impact",    "Availability",            90, False),
+                ("components",  "Components",             130, False),
             ],
             add_cmd   = self._add_info_type,
             list_key  = "information_types",
@@ -2113,10 +2114,11 @@ class SSPTab(tk.Frame):
 
     @staticmethod
     def _it_row_values(it):
-        """Return the 5-element values tuple for inserting into self._it_tree."""
+        """Return the 6-element values tuple for inserting into self._it_tree."""
         comps = ", ".join(f["component_title"] for f in it.get("component_flows", []))
         return (
             it["title"],
+            it.get("description", ""),
             it.get("c_impact", ""),
             it.get("i_impact", ""),
             it.get("a_impact", ""),
@@ -2138,7 +2140,7 @@ class SSPTab(tk.Frame):
         e   = existing or {}
         dlg = self._make_dialog(
             "Edit Information Type" if existing else "Add Information Type",
-            width=520,
+            width=600,
         )
 
         impacts = ["fips-199-low", "fips-199-moderate", "fips-199-high"]
@@ -2160,8 +2162,19 @@ class SSPTab(tk.Frame):
         v_title = tk.StringVar(value=e.get("title", ""))
         eentry(lrow(dlg, "Title *"), v_title)
 
-        v_desc = tk.StringVar(value=e.get("description", ""))
-        eentry(lrow(dlg, "Description *"), v_desc)
+        # Description — multi-line text widget so longer descriptions are easy to read and edit
+        tk.Label(dlg, text="Description *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(6, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=5, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
 
         tk.Label(
             dlg,
@@ -2315,7 +2328,7 @@ class SSPTab(tk.Frame):
 
         def _ok():
             title = v_title.get().strip()
-            desc  = v_desc.get().strip()
+            desc  = t_desc.get("1.0", "end-1c").strip()
             if not title:
                 messagebox.showwarning("Required", "Title is required.", parent=dlg)
                 return
