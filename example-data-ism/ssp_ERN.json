@@ -201,7 +201,7 @@
         },
         {
           "uuid": "33093ed5-9d58-40d4-891c-dabe9eacc9f5",
-          "title": "Privileged User — Security Operations",
+          "title": "Privileged User \u2014 Security Operations",
           "short-name": "soc-analyst",
           "description": "Reviews security alerts in the SIEM, performs event triage and investigation, and escalates confirmed incidents to the incident response team. Has read access to all system event logs and write access to SIEM detection rules and watchlists.",
           "role-ids": [
@@ -212,7 +212,7 @@
         },
         {
           "uuid": "09dedb80-8672-4cdc-954a-38ae18f72d84",
-          "title": "Privileged User — Database Administrator",
+          "title": "Privileged User \u2014 Database Administrator",
           "short-name": "dba",
           "description": "Manages database engines, schemas, user accounts, backup jobs, and performance tuning for all production database servers. Has elevated access to production database hosts and backup repositories. Cannot approve their own access changes.",
           "role-ids": [
@@ -222,7 +222,7 @@
         },
         {
           "uuid": "555a5bb4-93a8-4e98-99e3-312366ca82cf",
-          "title": "Privileged User — Network Engineer",
+          "title": "Privileged User \u2014 Network Engineer",
           "short-name": "net-eng",
           "description": "Configures and maintains firewalls, managed switches, routers, wireless infrastructure, and VPN concentrators. Has privileged access to all network devices via a dedicated jump server. Change requests must be approved before implementation.",
           "role-ids": [
@@ -233,7 +233,7 @@
         },
         {
           "uuid": "b5a558af-08d3-4b81-87d4-7b82346f7748",
-          "title": "Privileged User — IAM Administrator",
+          "title": "Privileged User \u2014 IAM Administrator",
           "short-name": "iam-admin",
           "description": "Manages Active Directory, Entra ID, group policy objects, and role assignments. Can create, modify, disable, and delete accounts across all systems. Role assignment changes require secondary approval from the system owner.",
           "role-ids": [
@@ -243,7 +243,7 @@
         },
         {
           "uuid": "e8950e1f-bfe4-4aca-b8ca-5084f641136f",
-          "title": "Privileged User — Backup and Recovery Operator",
+          "title": "Privileged User \u2014 Backup and Recovery Operator",
           "short-name": "backup-op",
           "description": "Operates the Veeam backup platform and offsite cloud backup repositories. Has access to restore data from production backups and to configure backup schedules and retention policies. Cannot initiate a restore to production without system owner approval.",
           "role-ids": [
@@ -253,7 +253,7 @@
         },
         {
           "uuid": "75332a12-2e28-4422-a6bd-7523e0e1ac43",
-          "title": "General Staff — Standard User",
+          "title": "General Staff \u2014 Standard User",
           "short-name": "staff",
           "description": "Standard business user with access to email, shared document management, and approved line-of-business applications. Access is scoped to the minimum required for the individual's role in accordance with least privilege.",
           "role-ids": [
@@ -284,7 +284,7 @@
         },
         {
           "uuid": "41b2f02a-285c-418a-b068-fbadd76405ac",
-          "title": "Developer — Development Environment",
+          "title": "Developer \u2014 Development Environment",
           "short-name": "developer",
           "description": "Software developer with access to the designated development and testing environments only. Has no access to production systems or production data. Deployment to production is performed exclusively through the approved CI/CD pipeline.",
           "role-ids": [
@@ -294,7 +294,7 @@
         },
         {
           "uuid": "7e835987-87d3-4bdb-b851-9b7de6de0e51",
-          "title": "Auditor — Read Only",
+          "title": "Auditor \u2014 Read Only",
           "short-name": "auditor",
           "description": "Internal or external auditor with read-only access to system logs, configuration outputs, security documentation, and evidence artefacts required for audit purposes. Cannot modify any system configuration or data. Access is time-limited to the duration of the audit engagement.",
           "role-ids": [
@@ -336,7 +336,7 @@
             {
               "uuid": "cdaa5d8a-b612-4828-8caf-ac96e28ef482",
               "name": "dns",
-              "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
+              "title": "DNS \u2014 Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
                 {
                   "start": 53,
@@ -353,7 +353,7 @@
             {
               "uuid": "72b62d2f-0bcf-41a7-8d0d-785c986bb6f2",
               "name": "kerberos",
-              "title": "Kerberos — Primary authentication protocol for the AD domain",
+              "title": "Kerberos \u2014 Primary authentication protocol for the AD domain",
               "port-ranges": [
                 {
                   "start": 88,
@@ -370,7 +370,7 @@
             {
               "uuid": "c2434c80-db76-455c-99df-2359e64677ad",
               "name": "rpc-epmap",
-              "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
+              "title": "RPC Endpoint Mapper \u2014 Required for AD replication and RPC-based AD operations",
               "port-ranges": [
                 {
                   "start": 135,
@@ -382,7 +382,7 @@
             {
               "uuid": "e72f88dd-aab0-4bf9-81a6-3950d908d1bb",
               "name": "ldap",
-              "title": "LDAP — Active Directory directory queries, user and computer object lookups",
+              "title": "LDAP \u2014 Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
                 {
                   "start": 389,
@@ -399,7 +399,7 @@
             {
               "uuid": "a83957fd-1ea6-46ba-b925-19cfff67fec2",
               "name": "ldaps",
-              "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
+              "title": "LDAPS \u2014 LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
                 {
                   "start": 636,
@@ -411,7 +411,7 @@
             {
               "uuid": "41d2d578-a256-4626-bd02-8e3d7d5de225",
               "name": "smb",
-              "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
+              "title": "SMB \u2014 SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
                 {
                   "start": 445,
@@ -423,7 +423,7 @@
             {
               "uuid": "5cfa3a5c-f3c1-4413-a2a0-455cba0486dd",
               "name": "ntp",
-              "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
+              "title": "NTP \u2014 Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
                 {
                   "start": 123,
@@ -435,7 +435,7 @@
             {
               "uuid": "25b0299a-252f-47de-98dc-a1f7a4b7329a",
               "name": "ad-gc",
-              "title": "Active Directory Global Catalog — Forest-wide directory lookups",
+              "title": "Active Directory Global Catalog \u2014 Forest-wide directory lookups",
               "port-ranges": [
                 {
                   "start": 3268,
@@ -453,52 +453,52 @@
             {
               "uuid": "7d2f8a47-b704-47db-88ae-47a4d3832edd",
               "name": "ad-replication",
-              "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
+              "title": "AD Replication \u2014 RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
                 {
                   "start": 49152,
                   "end": 65535,
                   "transport": "TCP",
-                  "remarks": "Dynamic RPC high ports — restrict to DC-to-DC traffic only"
+                  "remarks": "Dynamic RPC high ports \u2014 restrict to DC-to-DC traffic only"
                 }
               ]
             },
             {
               "uuid": "88dd008f-17e9-46cb-a350-304dadbb92de",
               "name": "netbios-ns",
-              "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
+              "title": "NetBIOS Name Service \u2014 Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
                 {
                   "start": 137,
                   "end": 137,
                   "transport": "UDP",
-                  "remarks": "Legacy — disable on all subnets where LLMNR/NetBIOS suppression is enforced"
+                  "remarks": "Legacy \u2014 disable on all subnets where LLMNR/NetBIOS suppression is enforced"
                 }
               ]
             },
             {
               "uuid": "1dd1b1cd-bbc6-4ffb-a82d-628acf3b2ce4",
               "name": "netbios-dgm",
-              "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
+              "title": "NetBIOS Datagram \u2014 Legacy NetBIOS datagram service",
               "port-ranges": [
                 {
                   "start": 138,
                   "end": 138,
                   "transport": "UDP",
-                  "remarks": "Legacy — disable on all subnets where LLMNR/NetBIOS suppression is enforced"
+                  "remarks": "Legacy \u2014 disable on all subnets where LLMNR/NetBIOS suppression is enforced"
                 }
               ]
             },
             {
               "uuid": "0941589f-6a6c-4449-87d1-d678c258ad63",
               "name": "netbios-ssn",
-              "title": "NetBIOS Session — Legacy NetBIOS session service",
+              "title": "NetBIOS Session \u2014 Legacy NetBIOS session service",
               "port-ranges": [
                 {
                   "start": 139,
                   "end": 139,
                   "transport": "TCP",
-                  "remarks": "Legacy — disable where SMB over TCP/445 is used exclusively"
+                  "remarks": "Legacy \u2014 disable where SMB over TCP/445 is used exclusively"
                 }
               ]
             }
@@ -545,7 +545,7 @@
             {
               "uuid": "1e81c6cf-6fa5-4dfe-a9e2-6f3a7cfce781",
               "name": "https",
-              "title": "HTTPS — Web-based management console",
+              "title": "HTTPS \u2014 Web-based management console",
               "port-ranges": [
                 {
                   "start": 443,
@@ -557,7 +557,7 @@
             {
               "uuid": "15c0c9dd-15d8-482c-964c-b66090d8e97a",
               "name": "ssh",
-              "title": "SSH — Secure CLI management",
+              "title": "SSH \u2014 Secure CLI management",
               "port-ranges": [
                 {
                   "start": 22,
@@ -569,7 +569,7 @@
             {
               "uuid": "141ffc28-8d72-4558-89a3-e4cec0653810",
               "name": "snmp",
-              "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
+              "title": "SNMP \u2014 Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
                 {
                   "start": 161,
@@ -587,7 +587,7 @@
             {
               "uuid": "aa0d115b-250e-4af4-952c-4c4da34b8737",
               "name": "syslog",
-              "title": "Syslog — Security event forwarding to SIEM",
+              "title": "Syslog \u2014 Security event forwarding to SIEM",
               "port-ranges": [
                 {
                   "start": 514,
@@ -599,7 +599,7 @@
             {
               "uuid": "75cca0ea-bd54-4453-8702-5a4abe3d60a0",
               "name": "ntp",
-              "title": "NTP — Time synchronisation",
+              "title": "NTP \u2014 Time synchronisation",
               "port-ranges": [
                 {
                   "start": 123,
@@ -671,7 +671,7 @@
             {
               "uuid": "f017dc4f-07af-4c45-9c9c-a473c361f62d",
               "name": "https",
-              "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
+              "title": "HTTPS \u2014 Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
                 {
                   "start": 443,
@@ -683,20 +683,20 @@
             {
               "uuid": "9321499a-d1d0-45e1-a9c6-8361d61c8c71",
               "name": "airlock-agent",
-              "title": "Airlock Digital agent communication — Agent check-in and policy download",
+              "title": "Airlock Digital agent communication \u2014 Agent check-in and policy download",
               "port-ranges": [
                 {
                   "start": 4433,
                   "end": 4433,
                   "transport": "TCP",
-                  "remarks": "Default Airlock Digital agent port — confirm with vendor deployment guide; may use 443"
+                  "remarks": "Default Airlock Digital agent port \u2014 confirm with vendor deployment guide; may use 443"
                 }
               ]
             },
             {
               "uuid": "08a0c219-8b45-4632-bd4e-383235469d1a",
               "name": "syslog",
-              "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
+              "title": "Syslog \u2014 Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
                 {
                   "start": 514,
@@ -708,7 +708,7 @@
             {
               "uuid": "7c6ebea6-3812-4e8e-9401-0bc367f898ab",
               "name": "ldaps",
-              "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
+              "title": "LDAPS \u2014 Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
                 {
                   "start": 636,
@@ -720,7 +720,7 @@
             {
               "uuid": "5e3c48e5-7150-49b9-8d05-dd4ada19bb90",
               "name": "ntp",
-              "title": "NTP — Time synchronisation for audit log timestamps",
+              "title": "NTP \u2014 Time synchronisation for audit log timestamps",
               "port-ranges": [
                 {
                   "start": 123,
@@ -1246,6 +1246,68 @@
               "href": "ISM_NON_CLASSIFIED-baseline_profile.json"
             }
           ]
+        }
+      ]
+    }
+  },
+  "system-characteristics": {
+    "system-information": {
+      "information-types": [
+        {
+          "uuid": "00360638-0de5-4ac5-9871-14918931dca0",
+          "title": "Research Data",
+          "description": "Scientific research datasets, experimental results, and raw data collected by the research network for analysis and publication.",
+          "confidentiality-impact": {
+            "base": "fips-199-moderate"
+          },
+          "integrity-impact": {
+            "base": "fips-199-high"
+          },
+          "availability-impact": {
+            "base": "fips-199-moderate"
+          }
+        },
+        {
+          "uuid": "e1e23815-0376-4c91-8d68-bab04c8e1403",
+          "title": "Personnel and HR Records",
+          "description": "Employee personal information, employment records, performance reviews, and payroll data held in support of human resources management.",
+          "confidentiality-impact": {
+            "base": "fips-199-high"
+          },
+          "integrity-impact": {
+            "base": "fips-199-moderate"
+          },
+          "availability-impact": {
+            "base": "fips-199-low"
+          }
+        },
+        {
+          "uuid": "016a11b6-a8b1-48c5-a292-a554704f7d5b",
+          "title": "Network Operations and Configuration Data",
+          "description": "Network topology diagrams, device configurations, IP addressing schemes, and operational logs used to manage and maintain the research network infrastructure.",
+          "confidentiality-impact": {
+            "base": "fips-199-moderate"
+          },
+          "integrity-impact": {
+            "base": "fips-199-high"
+          },
+          "availability-impact": {
+            "base": "fips-199-moderate"
+          }
+        },
+        {
+          "uuid": "77b94ac8-ad8a-4e1b-9414-e70ddd53923c",
+          "title": "System Security Information",
+          "description": "Security plans, vulnerability reports, audit logs, incident records, and access control lists used to protect and monitor the system.",
+          "confidentiality-impact": {
+            "base": "fips-199-high"
+          },
+          "integrity-impact": {
+            "base": "fips-199-high"
+          },
+          "availability-impact": {
+            "base": "fips-199-moderate"
+          }
         }
       ]
     }

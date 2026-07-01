@@ -1657,7 +1657,7 @@ def build_ssp_docx(ssp, catalog=None):
     labelled("Version",         ssp.get("version", ""))
     labelled("Date",            ssp.get("date_authorized", ""))
     labelled("Status",          ssp.get("status", ""))
-    labelled("System ID",       ssp.get("uuid", ""))
+    labelled("System Name",     ssp.get("system_name", ""))
     labelled("Security Level",  ssp.get("security_sensitivity_level", ""))
 
     doc.add_page_break()
@@ -1667,7 +1667,7 @@ def build_ssp_docx(ssp, catalog=None):
     # ────────────────────────────────────────────────────────────────────────
     doc.add_heading("1.  System Characteristics", level=1)
     labelled("System Name",        ssp.get("system_name", ""))
-    labelled("System ID",          ssp.get("uuid", ""))
+    labelled("Short Name",         ssp.get("system_name_short", ""))
     labelled("Version",            ssp.get("version", ""))
     labelled("Date",               ssp.get("date_authorized", ""))
     labelled("Operational Status", ssp.get("status", ""))
