@@ -1713,7 +1713,7 @@ def build_component_oscal_entry(comp, source_href):
 # so the document has a navigable structure and can be used as a formal report.
 # =============================================================================
 
-def build_ssp_docx(ssp, catalog=None):
+def build_ssp_docx(ssp, catalog=None, capabilities=None):
     """
     Build and return a python-docx Document object from an internal SSP dict.
 
@@ -1724,11 +1724,22 @@ def build_ssp_docx(ssp, catalog=None):
     Returns None if python-docx is not installed (caller should warn the user).
 
     Parameters:
-        ssp     - internal SSP dict (from empty_ssp / parse_ssp_file)
-        catalog - internal catalog dict (from load_catalog), or None.
-                  When provided, Section 8 control implementations are sorted
-                  and grouped by catalog guideline heading in catalog order.
-                  When None, controls are listed in the order they were added.
+        ssp          - internal SSP dict (from empty_ssp / parse_ssp_file)
+        catalog      - internal catalog dict (from load_catalog), or None.
+                       When provided, Section 8 control implementations are
+                       sorted and grouped by catalog guideline heading in
+                       catalog order. When None, controls are listed in the
+                       order they were added.
+        capabilities - The Capability Editor's live list of capability dicts
+                        (each with "uuid", "name", "member_uuids"), or None.
+                        OSCAL's SSP schema has no native "capabilities" field
+                        — ssp["capabilities_used"] only stores {uuid, name}
+                        (see empty_ssp()) — so the member component list for
+                        each capability has to be resolved from this live
+                        list at export time, not from the SSP dict itself.
+                        When None, or when a used capability's uuid is no
+                        longer in this list, that capability's row shows a
+                        placeholder instead of a member list.
 
     The document structure mirrors the SSP Editor sections:
         Cover — system name, version, date, status
@@ -1738,7 +1749,10 @@ def build_ssp_docx(ssp, catalog=None):
         4. Information Types (table)
         5. Roles (table)
         6. Parties / People & Organisations (table)
-        7. System Components (table)
+        7. System Users (table)
+        7a. Capabilities Used (table)
+        7b. System Components (table)
+        7c. Inventory Items (table)
         8. Control Implementations (grouped by guideline when catalog provided)
     """
     if not _DOCX_AVAILABLE:
@@ -1905,6 +1919,39 @@ def build_ssp_docx(ssp, catalog=None):
             row.cells[3].text = u.get("description", "")
     else:
         doc.add_paragraph("(No system users defined)")
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SECTION 7a — CAPABILITIES USED
+    # ────────────────────────────────────────────────────────────────────────
+    # ssp["capabilities_used"] only stores {uuid, name} (OSCAL's SSP schema
+    # has no native capabilities field — see empty_ssp()), so the member
+    # component list for each row has to be resolved from the live
+    # capabilities list passed in, keyed by uuid, then cross-referenced
+    # against ssp["components"] to get each member's title.
+    capabilities_used = ssp.get("capabilities_used", [])
+    doc.add_heading("7a.  Capabilities Used", level=1)
+    if capabilities_used:
+        caps_by_uuid  = {c.get("uuid", ""): c for c in (capabilities or [])}
+        comps_by_uuid = {c.get("uuid", ""): c for c in ssp.get("components", [])}
+
+        t = styled_table(2)
+        add_header_row(t, ["Capability", "Components"])
+        for used in capabilities_used:
+            live_cap = caps_by_uuid.get(used.get("uuid", ""))
+            if live_cap:
+                titles = [
+                    comps_by_uuid[u]["title"]
+                    for u in live_cap.get("member_uuids", [])
+                    if u in comps_by_uuid
+                ]
+                members_text = ", ".join(titles) if titles else "(no members currently loaded)"
+            else:
+                members_text = "(capability not currently loaded in Capability Editor)"
+            row = t.add_row()
+            row.cells[0].text = used.get("name", "")
+            row.cells[1].text = members_text
+    else:
+        doc.add_paragraph("(No capabilities used)")
 
     # ────────────────────────────────────────────────────────────────────────
     # SECTION 7b — SYSTEM COMPONENTS

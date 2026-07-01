@@ -3663,7 +3663,8 @@ class SSPTab(tk.Frame):
         if not path:
             return   # User cancelled
 
-        doc = build_ssp_docx(self._ssp, catalog=self._get_catalog())
+        doc = build_ssp_docx(self._ssp, catalog=self._get_catalog(),
+                            capabilities=self._get_capabilities())
         if doc is None:
             # python-docx was not available when the module was imported
             messagebox.showerror(
