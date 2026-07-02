@@ -427,7 +427,7 @@ class OSCALApp(tk.Tk):
         # enable/disable it when a profile is loaded/cleared.
         self._clear_profile_btn = tk.Button(
             tb, text="✕  Clear Profile", command=self._clear_profile,
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
             relief="flat", padx=10, pady=6, cursor="hand2",
             state="disabled",              # Greyed out until a profile is loaded
             disabledforeground="#555570",

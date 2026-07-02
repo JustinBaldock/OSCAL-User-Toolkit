@@ -360,7 +360,7 @@ class ComponentTab(tk.Frame):
 
         tk.Button(
             tb, text="🗑  Clear All", command=self._new_file,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 12), pady=8)
 
@@ -570,12 +570,12 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(btn_row, text="⧉ Duplicate",
                   command=self._duplicate_component,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(4, 0))
         tk.Button(btn_row, text="✕ Delete",
                   command=self._delete_component,
-                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="right")
 
@@ -803,7 +803,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(prop_btn, text="✕  Remove Selected",
                   command=self._remove_property,
-                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -840,7 +840,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(role_btn, text="✕  Remove Selected",
                   command=self._remove_role,
-                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -876,7 +876,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(proto_btn, text="✕  Remove Selected",
                   command=self._remove_protocol,
-                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -917,7 +917,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(link_btn, text="✕  Remove Selected",
                   command=self._remove_link,
-                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -1889,7 +1889,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2008,7 +2008,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2077,7 +2077,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2285,7 +2285,7 @@ class ComponentTab(tk.Frame):
             pr_tree.delete(sel[0])
 
         tk.Button(dlg, text="✕  Remove Selected Port Range", command=_remove_pr,
-                  bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(anchor="w", padx=20, pady=(4, 2))
 
@@ -2305,7 +2305,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2454,7 +2454,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None

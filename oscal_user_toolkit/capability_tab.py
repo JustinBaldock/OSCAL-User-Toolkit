@@ -283,7 +283,7 @@ class CapabilityTab(tk.Frame):
         # Clear all capabilities and start fresh
         tk.Button(
             tb, text="🗑  Clear All", command=self._clear_all,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 12), pady=8)
 
@@ -445,7 +445,7 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             btn_row, text="✕  Delete",
             command=self._delete_capability,
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
         ).pack(side="right")
 
@@ -674,7 +674,7 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             mem_btn, text="✕  Remove Selected",
             command=self._remove_member,
-            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
 
@@ -1344,7 +1344,7 @@ class CapabilityTab(tk.Frame):
                   bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
 
         dlg.wait_window()
