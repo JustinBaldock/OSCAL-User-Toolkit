@@ -44,6 +44,7 @@ from .ap_tab import APTab
 from .ar_tab import ARTab
 from .dashboard_tab import DashboardTab
 from .workspace_tab import WorkspaceTab
+from .data_sources_tab import DataSourcesTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab
@@ -356,9 +357,9 @@ class OSCALApp(tk.Tk):
 
         # ── Rebuild every tab's own widgets in place ────────────────────────────
         # Order doesn't matter — each tab only touches its own children.
-        for tab in (self._workspace_tab, self._dashboard_tab, self._catalog_tab,
-                    self._component_tab, self._capability_tab, self._ssp_tab,
-                    self._ap_tab, self._ar_tab, self._poam_tab):
+        for tab in (self._workspace_tab, self._data_sources_tab, self._dashboard_tab,
+                    self._catalog_tab, self._component_tab, self._capability_tab,
+                    self._ssp_tab, self._ap_tab, self._ar_tab, self._poam_tab):
             tab.theme_refresh()
 
     # =========================================================================
@@ -681,8 +682,8 @@ class OSCALApp(tk.Tk):
         nb.add(self._poam_tab, text="📋  POA&M Editor")
 
         # ── Authorization Dashboard tab ───────────────────────────────────────
-        # Constructed last so all tab lambdas resolve, then inserted at index 0
-        # so it appears as the first tab in the notebook.
+        # Constructed last so all tab lambdas resolve, then added at the end
+        # so it appears as the FAR RIGHT tab, after POA&M Editor.
         self._dashboard_tab = DashboardTab(
             parent       = nb,
             colors       = COLORS,
@@ -691,7 +692,14 @@ class OSCALApp(tk.Tk):
             get_ar_tab   = lambda: self._ar_tab,
             get_poam_tab = lambda: self._poam_tab,
         )
-        nb.insert(0, self._dashboard_tab, text="📊  Dashboard")
+        nb.add(self._dashboard_tab, text="📊  Dashboard")
+
+        # ── Data Sources tab (placeholder) ────────────────────────────────────
+        # Inserted at index 0 (before the Workspace insert below pushes it to
+        # index 1), so it lands between Workspace and Catalog Viewer. No
+        # real functionality yet — see data_sources_tab.py.
+        self._data_sources_tab = DataSourcesTab(parent=nb, colors=COLORS)
+        nb.insert(0, self._data_sources_tab, text="📚  Data Sources")
 
         # ── Workspace tab ──────────────────────────────────────────────────────
         # Inserted at index 0 so it appears first and is the tab shown when
