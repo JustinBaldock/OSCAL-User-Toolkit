@@ -430,8 +430,7 @@ def empty_ssp():
         "roles":            [],
         # Each party is:  {"uuid": str, "type": str, "name": str, "email": str}
         "parties":          [],
-        # Each info type: {"uuid", "title", "description", "c_impact", "i_impact", "a_impact",
-        #                   "component_flows": [{"component_uuid", "component_title", "direction"}]}
+        # Each info type: {"uuid", "title", "description", "c_impact", "i_impact", "a_impact"}
         "information_types": [],
         # Section 7b: responsible-parties — maps each role to the party UUID
         # who fills it.  Each entry: {"role_id": str, "party_uuid": str,
@@ -564,12 +563,6 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
     # CIA = Confidentiality, Integrity, Availability — the three security pillars
     info_types = []
     for it in ssp.get("information_types", []):
-        # Build component-flow props (stored as OSCAL props with class="data-flow")
-        flow_props = []
-        for flow in it.get("component_flows", []):
-            flow_props.append({"name": "component-uuid",  "value": flow["component_uuid"],  "class": "data-flow"})
-            flow_props.append({"name": "flow-direction",   "value": flow["direction"],       "class": "data-flow"})
-            flow_props.append({"name": "component-title",  "value": flow["component_title"], "class": "data-flow"})
         info_types.append({
             "uuid":        it["uuid"],
             "title":       it["title"],
@@ -578,7 +571,6 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
             "confidentiality-impact": {"base": it.get("c_impact", "fips-199-moderate")},
             "integrity-impact":       {"base": it.get("i_impact", "fips-199-moderate")},
             "availability-impact":    {"base": it.get("a_impact", "fips-199-moderate")},
-            **({"props": flow_props} if flow_props else {}),
         })
 
     # ── Build the import-profile reference and back-matter resource ───────────
@@ -968,20 +960,6 @@ def parse_ssp_file(data):
     # ── Information types ─────────────────────────────────────────────────────
     info_types = []
     for it in sc.get("system-information", {}).get("information-types", []):
-        # Parse component_flows back from props (groups of 3 with class="data-flow")
-        component_flows = []
-        props = [p for p in it.get("props", []) if p.get("class") == "data-flow"]
-        i = 0
-        while i + 2 < len(props):
-            if props[i].get("name") == "component-uuid":
-                component_flows.append({
-                    "component_uuid":  props[i]["value"],
-                    "direction":       props[i+1]["value"] if i+1 < len(props) else "internal",
-                    "component_title": props[i+2]["value"] if i+2 < len(props) else "",
-                })
-                i += 3
-            else:
-                i += 1
         info_types.append({
             "uuid":        it.get("uuid", new_uuid()),
             "title":       it.get("title", ""),
@@ -990,7 +968,6 @@ def parse_ssp_file(data):
             "c_impact": it.get("confidentiality-impact", {}).get("base", "fips-199-moderate"),
             "i_impact": it.get("integrity-impact",       {}).get("base", "fips-199-moderate"),
             "a_impact": it.get("availability-impact",    {}).get("base", "fips-199-moderate"),
-            "component_flows": component_flows,
         })
 
     # ── System components (Section 8) ─────────────────────────────────────────

@@ -279,6 +279,32 @@ Once multi-catalog support is implemented, create an example overlay profile in 
 
 ---
 
+## 4. Data Flow Mapping & Diagram Feature
+
+### Background
+
+The SSP schema's `system-characteristics.data-flow` object only carries a free-text `description` plus a `diagrams[]` array of externally-linked diagram files (`uuid`, `caption`, `link`, `description`) — see `oscal_ssp_schema.json`. OSCAL has no schema object anywhere that models a structured graph of "component A sends information type X to component B." An earlier iteration of the SSP Editor bolted a `component_flows` concept onto each Information Type (Section 5) — encoded as generic `props` triplets tagged `class="data-flow"` — and used it to auto-generate a draw.io export. This was removed (see commit removing `_export_data_flow_drawio` and `component_flows` from `models.py`/`ssp_tab.py`) because Information Types is not the OSCAL-correct home for flow/topology data, and smuggling structured data through generic `props` made the encoding fragile and non-obvious to round-trip.
+
+### Purpose
+
+Reintroduce data-flow mapping as its own dedicated feature — not attached to Information Types — that helps users author the narrative `data-flow.description` field and produce a real network/data-flow diagram, without inventing non-standard OSCAL fields.
+
+### Rough Shape (not yet designed)
+
+- A dedicated flow-mapping UI (its own tab or a rich sub-section under SSP Section 4 — Network Architecture & Data Flow) where the user defines edges between the SSP's own components (Section 8) — source, destination, direction, and a label/description of what's flowing.
+- This edge data is **toolkit-local working state**, not written into the OSCAL SSP as structured JSON (since no such field exists); it should live either in a sidecar file alongside the workspace, or purely in-memory for the current editing session, to avoid re-creating the non-conformant-props problem.
+- From that edge data, offer:
+  - An auto-generated narrative paragraph to populate/seed `data-flow.description` (the actual OSCAL field), so the document stays useful to any OSCAL consumer even without the toolkit.
+  - A draw.io (`.drawio`) export of the topology, linked into `data-flow.diagrams[]` the same way manually-added diagrams already are (see `_build_diagram_section` in `ssp_tab.py`).
+- Consider extending the same edge-mapping UI to help with Network Architecture (Section 4) topology, which has the identical "no structured schema, diagrams + description only" shape.
+
+### Open Questions
+
+- Where does the edge data persist between sessions if it's not part of the OSCAL SSP JSON? (Sidecar `.flows.json` next to the SSP file? Embedded as a single opaque `remarks`/custom prop blob with a clear "toolkit-internal, do not hand-edit" marker?)
+- Should this be scoped to data flow only, or generalized into one diagram-authoring tool that serves Authorization Boundary, Network Architecture, and Data Flow alike?
+
+---
+
 ## Implementation Priority
 
 | Feature | Priority | Effort | Notes |
@@ -287,3 +313,4 @@ Once multi-catalog support is implemented, create an example overlay profile in 
 | Profile Editor | High | High | Most impactful missing editor; every SSP needs a profile |
 | Component Definition Editor | Medium | Medium | High value for multi-system organisations |
 | Multi-Catalog Support | Medium | Medium | OSCAL schema already supports it; app needs CatalogResolver + UI update |
+| Data Flow Mapping & Diagram Feature | Medium | Medium | Needs a persistence approach that doesn't misuse OSCAL `props`; see section 4 |
