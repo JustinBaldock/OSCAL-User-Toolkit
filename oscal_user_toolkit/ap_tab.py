@@ -209,8 +209,10 @@ class APTab(tk.Frame):
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", ipady=3)
         tk.Button(ssp_row, text="📂 Browse…", command=self._browse_ssp,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["ACCENT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
+                  highlightthickness=1, highlightbackground=C["ACCENT"],
+                  activebackground=C["HEADER_BG"], activeforeground=C["ACCENT"],
                   ).pack(side="left", padx=(6, 0))
 
         # ── Section 3: Reviewed Controls ──────────────────────────────────────
@@ -265,8 +267,10 @@ class APTab(tk.Frame):
         load_row.pack(fill="x", padx=12, pady=(0, 8))
         tk.Button(load_row, text="📋  Load IDs from profile",
                   command=self._load_ids_from_profile,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["ACCENT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=3, cursor="hand2",
+                  highlightthickness=1, highlightbackground=C["ACCENT"],
+                  activebackground=C["HEADER_BG"], activeforeground=C["ACCENT"],
                   ).pack(side="left")
         tk.Label(load_row,
                  text="  Requires a profile to be loaded in the toolbar.",
@@ -298,11 +302,14 @@ class APTab(tk.Frame):
             ("✎  Edit",   self._edit_task,   C["HEADER_BG"]),
             ("✕  Remove", self._remove_task, C["HEADER_BG"]),
         ]:
+            is_secondary = bg == C["HEADER_BG"]
             tk.Button(btn_row, text=text, command=cmd,
-                      bg=bg, fg=C["TEXT"] if bg == C["HEADER_BG"] else C["BUTTON_TEXT"],
-                      font=("Helvetica", 10,
-                            "bold" if bg == C["BLUE_BG"] else "normal"),
+                      bg=bg, fg=C["ACCENT"] if is_secondary else C["BUTTON_TEXT"],
+                      font=("Helvetica", 10, "bold"),
                       relief="flat", padx=10, pady=3, cursor="hand2",
+                      **({"highlightthickness": 1, "highlightbackground": C["ACCENT"],
+                          "activebackground": bg, "activeforeground": C["ACCENT"]}
+                         if is_secondary else {}),
                       ).pack(side="left", padx=(0, 6))
 
         self._task_tree = ttk.Treeview(
