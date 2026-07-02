@@ -26,6 +26,10 @@ from .models import (
     # DEFAULT_OSCAL_VERSION is the version string used when no toolbar value is
     # available. Centralised in models.py so updating it there updates all tabs. (M1)
     DEFAULT_OSCAL_VERSION,
+    # parse_ssp_file lets Section 2 read the referenced SSP's components and
+    # control implementations, so the assessor can see what the system under
+    # assessment actually is without opening a second tab/file.
+    parse_ssp_file,
 )
 
 TASK_TYPES    = ["milestone", "action"]
@@ -217,6 +221,59 @@ class APTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(6, 0))
+
+        # ── Section 2a: SSP Components ────────────────────────────────────────
+        # Shows every component defined in the referenced SSP, and which
+        # controls each one implements (drawn from the SSP's Section 9
+        # control-implementations by-component entries), so the assessor can
+        # see what the system under assessment is built from without having
+        # to separately open the SSP file.
+        tk.Label(parent,
+                 text="  Components in the referenced SSP",
+                 bg=C["BG"], fg=C["ACCENT"],
+                 font=("Helvetica", 10, "bold"),
+                 ).pack(anchor="w", **P, pady=(10, 0))
+
+        ssp_comp_btn_row = tk.Frame(parent, bg=C["BG"])
+        ssp_comp_btn_row.pack(fill="x", **P, pady=(2, 2))
+        tk.Button(ssp_comp_btn_row, text="🔄  Refresh from SSP",
+                  command=self._refresh_ssp_components,
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+        self._ssp_comp_status = tk.Label(
+            ssp_comp_btn_row, text="No SSP referenced yet.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        )
+        self._ssp_comp_status.pack(side="left", padx=(8, 0))
+
+        ssp_comp_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        ssp_comp_frame.pack(fill="x", **P, pady=(0, 6))
+
+        self._ssp_comp_tree = ttk.Treeview(
+            ssp_comp_frame,
+            columns=("component", "controls"),
+            show="headings", height=6, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("component", "Component",           220, False),
+            ("controls",  "Controls Implemented", 420, True),
+        ]:
+            self._ssp_comp_tree.heading(col, text=heading, anchor="w")
+            self._ssp_comp_tree.column(col, width=w, anchor="w", stretch=stretch)
+        ssp_comp_scroll = ttk.Scrollbar(
+            ssp_comp_frame, orient="vertical", command=self._ssp_comp_tree.yview,
+        )
+        self._ssp_comp_tree.configure(yscrollcommand=ssp_comp_scroll.set)
+        ssp_comp_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._ssp_comp_tree.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=8)
+
+        # Refresh automatically whenever the SSP path changes (typed or
+        # browsed to), not just when the user clicks the refresh button.
+        ssp_v.trace_add("write", lambda *_a: self._refresh_ssp_components())
 
         # ── Section 3: Reviewed Controls ──────────────────────────────────────
         section("3 ·  Reviewed Controls")
@@ -579,6 +636,80 @@ class APTab(tk.Frame):
         if path:
             self._vars["import_ssp"].set(path)
             self._dirty = True
+            # Setting the StringVar already triggers _refresh_ssp_components()
+            # via its trace_add(), so no explicit call is needed here.
+
+    def _refresh_ssp_components(self):
+        """
+        Parse the referenced SSP file and populate the SSP Components tree
+        with each component's title and the control IDs it implements.
+
+        Reads directly from disk rather than relying on any other tab being
+        open — the Assessment Plan may be edited on its own, without the SSP
+        Editor tab ever having loaded this particular file. Any problem
+        (missing file, invalid JSON, wrong document type) is shown as a
+        quiet inline status message rather than a popup, since this runs
+        automatically on every keystroke in the SSP path field.
+        """
+        if not hasattr(self, "_ssp_comp_tree"):
+            return   # Called before the form is built yet — nothing to do
+
+        self._ssp_comp_tree.delete(*self._ssp_comp_tree.get_children())
+
+        raw_path = self._vars["import_ssp"].get().strip()
+        if not raw_path:
+            self._ssp_comp_status.config(text="No SSP referenced yet.")
+            return
+
+        # A path saved into an AP file is a relative href (relative to the AP
+        # file's own directory, per OSCAL's import-ssp.href semantics — see
+        # _collect()), so it won't resolve against the process's current
+        # working directory. Try it as-is first (covers absolute paths from
+        # Browse…), then relative to this AP's own file location.
+        path = Path(raw_path)
+        if not path.is_file() and not path.is_absolute() and self._current_path:
+            candidate = Path(self._current_path).resolve().parent / raw_path
+            if candidate.is_file():
+                path = candidate
+        if not path.is_file():
+            self._ssp_comp_status.config(text=f"SSP file not found: {raw_path}")
+            return
+
+        try:
+            with open(path, encoding="utf-8") as f:
+                raw = json.load(f)
+            if "system-security-plan" not in raw:
+                self._ssp_comp_status.config(
+                    text="Not a valid OSCAL SSP file (missing 'system-security-plan')."
+                )
+                return
+            ssp, _bm_info = parse_ssp_file(raw)
+        except (json.JSONDecodeError, OSError) as exc:
+            self._ssp_comp_status.config(text=f"Could not read SSP: {exc}")
+            return
+
+        # Build component-uuid -> [control_id, ...] from the SSP's
+        # control-implementations by-component entries (Section 9).
+        controls_by_component = {}
+        for ci in ssp.get("ctrl_implementations", []):
+            ctrl_id = ci.get("control_id", "")
+            for bc in ci.get("by_components", []):
+                controls_by_component.setdefault(
+                    bc.get("component_uuid", ""), []
+                ).append(ctrl_id)
+
+        components = ssp.get("components", [])
+        for comp in components:
+            ctrl_ids = sorted(controls_by_component.get(comp.get("uuid", ""), []))
+            ctrl_text = ", ".join(ctrl_ids) if ctrl_ids else "(no controls recorded)"
+            self._ssp_comp_tree.insert(
+                "", "end", values=(comp.get("title", "").strip() or "(untitled)", ctrl_text)
+            )
+
+        n = len(components)
+        self._ssp_comp_status.config(
+            text=f"{n} component{'s' if n != 1 else ''} loaded from {Path(path).name}."
+        )
 
     # =========================================================================
     # COLLECT / POPULATE / RESET
@@ -705,8 +836,11 @@ class APTab(tk.Frame):
             messagebox.showerror("Parse error", str(exc))
             return
 
-        self._populate()
+        # Set before _populate() — populating the import_ssp StringVar
+        # triggers _refresh_ssp_components(), which needs _current_path
+        # already set to resolve a relative SSP href correctly.
         self._current_path = path
+        self._populate()
         name = Path(path).name
         self._status_lbl.config(text=f"Opened: {name}",
                                 fg=self._colors["TEXT"])
