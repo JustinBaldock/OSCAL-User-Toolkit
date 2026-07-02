@@ -646,14 +646,22 @@ class CapabilityTab(tk.Frame):
         # SECTION 2 — MEMBER COMPONENTS
         # =====================================================================
         section("2 ·  Member Components")
+        mem_hint_row = tk.Frame(parent, bg=C["BG"])
+        mem_hint_row.pack(fill="x", padx=20)
         tk.Label(
-            parent,
+            mem_hint_row,
             text="  Select the components that together deliver this capability.\n"
                  "  Components must already be open in the Component Editor.\n"
                  "  The schema requires each component UUID to appear at most once\n"
                  "  within a single capability.",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=20)
+            justify="left",
+        ).pack(side="left", anchor="w")
+        self._mem_count_lbl = tk.Label(
+            mem_hint_row, text="0 components",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        )
+        self._mem_count_lbl.pack(side="right", anchor="n", padx=(8, 0))
 
         mem_frame = tk.Frame(parent, bg=C["CARD_BG"],
                              highlightthickness=1, highlightbackground=C["HEADER_BG"])
@@ -680,8 +688,11 @@ class CapabilityTab(tk.Frame):
 
         # Table showing member components
         # Columns: component title, type, and its role in this capability
+        mem_tree_frame = tk.Frame(mem_frame, bg=C["CARD_BG"])
+        mem_tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
         self._mem_tree = ttk.Treeview(
-            mem_frame,
+            mem_tree_frame,
             columns=("title", "type", "role"),
             show="headings", height=4, selectmode="browse",
         )
@@ -691,7 +702,13 @@ class CapabilityTab(tk.Frame):
         self._mem_tree.column("title", width=180, anchor="w")
         self._mem_tree.column("type",  width=100, anchor="w")
         self._mem_tree.column("role",  width=280, anchor="w", stretch=True)
-        self._mem_tree.pack(fill="x", padx=8, pady=(0, 8))
+
+        mem_scroll = ttk.Scrollbar(
+            mem_tree_frame, orient="vertical", command=self._mem_tree.yview,
+        )
+        self._mem_tree.configure(yscrollcommand=mem_scroll.set)
+        mem_scroll.pack(side="right", fill="y")
+        self._mem_tree.pack(side="left", fill="both", expand=True)
 
         # =====================================================================
         # SECTION 3 — CONTROL IMPLEMENTATIONS (CAPABILITY-LEVEL)
@@ -1018,6 +1035,15 @@ class CapabilityTab(tk.Frame):
     # FORM POPULATE AND COLLECT
     # =========================================================================
 
+    def _update_member_count(self):
+        """
+        Refresh the "N components" label next to the Section 2 hint text.
+        Reads directly off the Treeview's current rows, so it stays correct
+        regardless of which method last changed the table.
+        """
+        n = len(self._mem_tree.get_children())
+        self._mem_count_lbl.config(text=f"{n} component{'s' if n != 1 else ''}")
+
     def _populate_from(self, index):
         """
         Load self._capabilities[index] into all form widgets.
@@ -1047,6 +1073,7 @@ class CapabilityTab(tk.Frame):
                     comp.get("type", ""),
                     mem_descs.get(comp_uuid, ""),
                 ))
+        self._update_member_count()
 
         # Control responses
         self._ctrl_responses = dict(cap.get("ctrl_responses", {}))
@@ -1217,6 +1244,7 @@ class CapabilityTab(tk.Frame):
                 comp.get("type", ""),
                 role_desc,
             ))
+        self._update_member_count()
 
         # Pull control responses from the new member into inherited list
         self._resync_inherited_for_cap(cap)
@@ -1239,6 +1267,7 @@ class CapabilityTab(tk.Frame):
             cap.get("member_descriptions", {}).pop(comp_uuid, None)
 
         self._mem_tree.delete(comp_uuid)
+        self._update_member_count()
         if self._sel_index is not None:
             self._resync_inherited_for_cap(self._capabilities[self._sel_index])
         self._refresh_ctrl_list()
