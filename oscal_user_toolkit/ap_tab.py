@@ -209,7 +209,12 @@ class APTab(tk.Frame):
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", ipady=3)
         tk.Button(ssp_row, text="📂 Browse…", command=self._browse_ssp,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  # Fixed dark text (not theme-flipping TEXT) — on macOS, plain
+                  # tk.Button widgets often ignore bg= and always render a
+                  # native light-grey face, so light TEXT (correct for dark
+                  # mode's intended HEADER_BG fill) becomes unreadable against
+                  # that native face. BUTTON_TEXT is safe either way.
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(6, 0))
 
@@ -265,7 +270,7 @@ class APTab(tk.Frame):
         load_row.pack(fill="x", padx=12, pady=(0, 8))
         tk.Button(load_row, text="📋  Load IDs from profile",
                   command=self._load_ids_from_profile,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Label(load_row,
@@ -293,10 +298,16 @@ class APTab(tk.Frame):
 
         btn_row = tk.Frame(task_frame, bg=C["CARD_BG"])
         btn_row.pack(fill="x", padx=8, pady=6)
+        # fg is fixed BUTTON_TEXT (not theme-flipping TEXT/SUBTEXT) for the
+        # same reason as the Browse/Load IDs buttons above — on macOS,
+        # tk.Button often ignores bg= and always shows a native light-grey
+        # face, so light text meant for a dark HEADER_BG fill becomes
+        # unreadable. Fixed dark text is safe regardless of what actually
+        # renders.
         for text, cmd, bg, fg in [
             ("＋  Add",    self._add_task,    C["BLUE_BG"],   C["BUTTON_TEXT"]),
-            ("✎  Edit",   self._edit_task,   C["HEADER_BG"], C["TEXT"]),
-            ("✕  Remove", self._remove_task, C["HEADER_BG"], C["SUBTEXT"]),
+            ("✎  Edit",   self._edit_task,   C["HEADER_BG"], C["BUTTON_TEXT"]),
+            ("✕  Remove", self._remove_task, C["HEADER_BG"], C["BUTTON_TEXT"]),
         ]:
             tk.Button(btn_row, text=text, command=cmd,
                       bg=bg, fg=fg,
