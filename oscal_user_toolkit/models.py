@@ -532,16 +532,31 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
     # OSCAL responsible-parties groups all party UUIDs for the same role into
     # a single entry with a party-uuids list.  Our internal format stores one
     # row per (role, party) pair, so we aggregate here.
-    # OSCAL format: [{"role-id": "isso", "party-uuids": ["uuid-1", ...]}, ...]
+    # OSCAL format: [{"role-id": "isso", "party-uuids": ["uuid-1", ...],
+    #                  "remarks": "..."}, ...]
+    # remarks is per (role, party) pair internally, but OSCAL only allows one
+    # remarks string per role-id entry — if more than one party under the
+    # same role has a distinct remark, they are joined with "; " rather than
+    # silently dropped.
     rp_by_role = {}
     for rp in ssp.get("responsible_parties", []):
         role_id    = rp.get("role_id", "").strip()
         party_uuid = rp.get("party_uuid", "").strip()
+        remarks    = rp.get("remarks", "").strip()
         if role_id and party_uuid:
-            rp_by_role.setdefault(role_id, {"role-id": role_id, "party-uuids": []})
-            if party_uuid not in rp_by_role[role_id]["party-uuids"]:
-                rp_by_role[role_id]["party-uuids"].append(party_uuid)
-    responsible_parties = list(rp_by_role.values())
+            entry = rp_by_role.setdefault(
+                role_id, {"role-id": role_id, "party-uuids": [], "_remarks": []}
+            )
+            if party_uuid not in entry["party-uuids"]:
+                entry["party-uuids"].append(party_uuid)
+            if remarks and remarks not in entry["_remarks"]:
+                entry["_remarks"].append(remarks)
+    responsible_parties = []
+    for entry in rp_by_role.values():
+        out = {"role-id": entry["role-id"], "party-uuids": entry["party-uuids"]}
+        if entry["_remarks"]:
+            out["remarks"] = "; ".join(entry["_remarks"])
+        responsible_parties.append(out)
 
     # ── Convert information types to OSCAL format ─────────────────────────────
     # CIA = Confidentiality, Integrity, Availability — the three security pillars

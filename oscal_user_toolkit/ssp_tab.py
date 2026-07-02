@@ -846,6 +846,12 @@ class SSPTab(tk.Frame):
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
+            btn_row, text="✏  Edit Selected",
+            command=self._edit_responsible_party,
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=(6, 0))
+        tk.Button(
             btn_row, text="✕  Remove",
             command=self._remove_responsible_party,
             bg=C["RED_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
@@ -854,16 +860,19 @@ class SSPTab(tk.Frame):
 
         self._rp_tree = ttk.Treeview(
             frame,
-            columns=("role_id", "party_name"),
+            columns=("role_id", "party_name", "remarks"),
             show="headings",
             height=4,
             selectmode="browse",
         )
         self._rp_tree.heading("role_id",     text="Role ID",    anchor="w")
         self._rp_tree.heading("party_name",  text="Party Name", anchor="w")
-        self._rp_tree.column("role_id",     width=220, anchor="w", stretch=False)
-        self._rp_tree.column("party_name",  width=400, anchor="w", stretch=True)
+        self._rp_tree.heading("remarks",     text="Remarks",    anchor="w")
+        self._rp_tree.column("role_id",     width=180, anchor="w", stretch=False)
+        self._rp_tree.column("party_name",  width=240, anchor="w", stretch=False)
+        self._rp_tree.column("remarks",     width=260, anchor="w", stretch=True)
         self._rp_tree.pack(fill="x", padx=8, pady=(0, 8))
+        self._rp_tree.bind("<Double-1>", lambda _e: self._edit_responsible_party())
 
     # =========================================================================
     # SECTION 8 — SYSTEM COMPONENTS
@@ -3418,12 +3427,18 @@ class SSPTab(tk.Frame):
         self._ssp_inv_items.pop(idx)
         self._inv_tree.delete(sel[0])
 
-    def _add_responsible_party(self):
+    def _responsible_party_dialog(self, existing=None):
         """
-        Show a dialog to add a responsible-party mapping (role → party).
+        Shared modal dialog for adding or editing a responsible-party
+        mapping (role -> party). Returns the result dict, or None if
+        cancelled.
 
         The role dropdown is populated from the roles defined in Section 6.
         The party dropdown is populated from the parties defined in Section 7.
+
+        Parameters:
+            existing - An existing responsible-party dict to prefill, or
+                       None for Add.
         """
         roles   = [r["role_id"] for r in self._ssp.get("roles",   []) if r.get("role_id")]
         parties = self._ssp.get("parties", [])
@@ -3432,23 +3447,25 @@ class SSPTab(tk.Frame):
                 "No roles defined",
                 "Add at least one role in Section 6 before assigning responsible parties."
             )
-            return
+            return None
         if not parties:
             messagebox.showinfo(
                 "No parties defined",
                 "Add at least one party in Section 7 before assigning responsible parties."
             )
-            return
+            return None
 
         # Build a label → uuid mapping so the dropdown shows names, not UUIDs
         party_labels = [f"{p['name']}  ({p['type']})" for p in parties]
         party_by_label = {
             f"{p['name']}  ({p['type']})": p["uuid"] for p in parties
         }
+        label_by_uuid = {v: k for k, v in party_by_label.items()}
 
+        e = existing or {}
         C = self._colors
         dlg = tk.Toplevel(self)
-        dlg.title("Add Responsible Party")
+        dlg.title("Edit Responsible Party" if existing else "Add Responsible Party")
         dlg.configure(bg=C["BG"])
         dlg.transient(self)
         dlg.grab_set()
@@ -3461,9 +3478,12 @@ class SSPTab(tk.Frame):
         tk.Label(dlg, text="Remarks",      bg=C["BG"], fg=C["TEXT"],
                  font=("Helvetica", 10)).grid(row=2, column=0, sticky="w", padx=16, pady=(0, 4))
 
-        v_role    = tk.StringVar(value=roles[0])
-        v_party   = tk.StringVar(value=party_labels[0])
-        v_remarks = tk.StringVar()
+        default_role  = e.get("role_id") if e.get("role_id") in roles else (roles[0] if roles else "")
+        default_party = label_by_uuid.get(e.get("party_uuid"), party_labels[0] if party_labels else "")
+
+        v_role    = tk.StringVar(value=default_role)
+        v_party   = tk.StringVar(value=default_party)
+        v_remarks = tk.StringVar(value=e.get("remarks", ""))
 
         ttk.Combobox(dlg, textvariable=v_role,  values=roles,        state="readonly",
                      width=30).grid(row=0, column=1, padx=16, pady=(16, 4))
@@ -3500,14 +3520,39 @@ class SSPTab(tk.Frame):
                   padx=12, pady=4, cursor="hand2").pack(side="left", padx=6)
 
         self.wait_window(dlg)
+        return result if result else None
+
+    def _add_responsible_party(self):
+        """Show a dialog to add a responsible-party mapping (role → party)."""
+        result = self._responsible_party_dialog()
         if not result:
             return
-
-        # Store internally and add to treeview
         rp_list = self._ssp.setdefault("responsible_parties", [])
         rp_list.append(result)
-        self._rp_tree.insert("", "end",
-                             values=(result["role_id"], result["party_name"]))
+        self._rp_tree.insert("", "end", values=(
+            result["role_id"], result["party_name"], result.get("remarks", "")
+        ))
+        self._dirty = True
+
+    def _edit_responsible_party(self):
+        """Show a dialog to edit the selected responsible-party mapping."""
+        sel = self._rp_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection",
+                                "Select a responsible party row to edit.")
+            return
+        idx = self._rp_tree.index(sel[0])
+        rp_list  = self._ssp.setdefault("responsible_parties", [])
+        existing = rp_list[idx]
+
+        result = self._responsible_party_dialog(existing=existing)
+        if not result:
+            return
+        rp_list[idx] = result
+        self._rp_tree.delete(sel[0])
+        self._rp_tree.insert("", idx, values=(
+            result["role_id"], result["party_name"], result.get("remarks", "")
+        ))
         self._dirty = True
 
     def _remove_responsible_party(self):
@@ -3631,8 +3676,9 @@ class SSPTab(tk.Frame):
         if changed and hasattr(self, "_rp_tree"):
             self._rp_tree.delete(*self._rp_tree.get_children())
             for rp in rp_list:
-                self._rp_tree.insert("", "end",
-                                     values=(rp["role_id"], rp["party_name"]))
+                self._rp_tree.insert("", "end", values=(
+                    rp["role_id"], rp["party_name"], rp.get("remarks", "")
+                ))
 
         self._dirty = True
 
@@ -3732,8 +3778,11 @@ class SSPTab(tk.Frame):
         # Rebuild the responsible parties table (Section 7b)
         self._rp_tree.delete(*self._rp_tree.get_children())
         for rp in ssp.get("responsible_parties", []):
-            self._rp_tree.insert("", "end",
-                values=(rp.get("role_id", ""), rp.get("party_name", rp.get("party_uuid", ""))))
+            self._rp_tree.insert("", "end", values=(
+                rp.get("role_id", ""),
+                rp.get("party_name", rp.get("party_uuid", "")),
+                rp.get("remarks", ""),
+            ))
 
         # ── Sections 8, 9, 11, 12: load working lists and rebuild widgets ────────
         # list(...) makes shallow copies so editing the form does not mutate the
