@@ -244,8 +244,11 @@ class ARTab(tk.Frame):
                 ("✕  Remove", remove_cmd, C["HEADER_BG"]),
             ]:
                 tk.Button(btn_row, text=text, command=cmd,
-                          bg=bg,
-                          fg=C["TEXT"] if bg == C["HEADER_BG"] else C["BUTTON_TEXT"],
+                          # Fixed BUTTON_TEXT regardless of bg — on macOS,
+                          # tk.Button often ignores bg= and always shows a
+                          # native light-grey face, so theme-flipping TEXT
+                          # (light in dark mode) becomes unreadable against it.
+                          bg=bg, fg=C["BUTTON_TEXT"],
                           font=("Helvetica", 10,
                                 "bold" if bg == C["BLUE_BG"] else "normal"),
                           relief="flat", padx=10, pady=3, cursor="hand2",
@@ -291,7 +294,7 @@ class ARTab(tk.Frame):
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", ipady=3)
         tk.Button(ap_row, text="📂 Browse…", command=self._browse_ap,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(6, 0))
 
@@ -501,7 +504,7 @@ class ARTab(tk.Frame):
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(ev_btn_row, text="✕ Remove", command=_remove_ev,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left", padx=6)
         ev_tree.pack(fill="x", padx=6, pady=(0, 6))
@@ -682,7 +685,7 @@ class ARTab(tk.Frame):
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(rem_btn_row, text="✕ Remove", command=_remove_rem,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left", padx=6)
         rem_tree.pack(fill="x", padx=6, pady=(0, 6))
@@ -1181,7 +1184,7 @@ class ARTab(tk.Frame):
                   relief="flat", padx=16, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(brow, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=12, pady=4, cursor="hand2",
                   ).pack(side="left", padx=8)
 
