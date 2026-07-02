@@ -589,6 +589,7 @@ class OSCALApp(tk.Tk):
             get_catalog= lambda: self._catalog,
             get_profile= lambda: self._profile,
             set_status = lambda msg: self._status_lbl.config(text=msg),
+            get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
         )
         nb.add(self._component_tab, text="⚙  Component Editor")
 

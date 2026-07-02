@@ -129,23 +129,29 @@ class ComponentTab(tk.Frame):
                 RIGHT  — Scrollable component editing form (8 sections)
     """
 
-    def __init__(self, parent, colors, get_catalog, get_profile, set_status):
+    def __init__(self, parent, colors, get_catalog, get_profile, set_status,
+                 get_oscal_version=None):
         """
         Initialise the ComponentTab.
 
         Parameters:
-            parent      - The ttk.Notebook this tab lives inside
-            colors      - Shared colour dictionary from app.py
-            get_catalog - Callback: returns the loaded catalog dict or None
-            get_profile - Callback: returns the loaded profile dict or None
-            set_status  - Callback: updates the main window status bar text
+            parent            - The ttk.Notebook this tab lives inside
+            colors            - Shared colour dictionary from app.py
+            get_catalog       - Callback: returns the loaded catalog dict or None
+            get_profile       - Callback: returns the loaded profile dict or None
+            set_status        - Callback: updates the main window status bar text
+            get_oscal_version - Optional callback returning the OSCAL version
+                                string selected in the toolbar (e.g. "1.2.2").
+                                Defaults to a lambda returning "1.1.2" so the
+                                tab still works if constructed standalone.
         """
         super().__init__(parent, bg=colors["BG"])
 
-        self._colors      = colors
-        self._get_catalog = get_catalog
-        self._get_profile = get_profile
-        self._set_status  = set_status
+        self._colors            = colors
+        self._get_catalog       = get_catalog
+        self._get_profile       = get_profile
+        self._set_status        = set_status
+        self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
 
         # ── File-level state ──────────────────────────────────────────────────
         self._file_uuid    = new_uuid()          # UUID for the whole file

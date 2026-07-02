@@ -1676,15 +1676,21 @@ def build_component_oscal_entry(comp, source_href):
     if links:
         c["links"] = links
 
-    # Control implementations — only include controls with a non-empty response
+    # Control implementations — only include controls with a non-empty response.
+    # NOTE: "implementation-status" is NOT included here — the OSCAL 1.2.2
+    # component-definition schema's implemented-requirement object does not
+    # allow it (additionalProperties: false; only uuid, control-id,
+    # description, props, links, set-parameters, responsible-roles,
+    # statements, remarks are permitted). implementation-status is only
+    # valid on an SSP's by-components structure (see build_oscal_ssp), since
+    # "implemented / partial / planned" describes how a specific system
+    # deploys a component — not a property of the reusable component
+    # definition itself.
     implemented = [
         {
             "uuid":        new_uuid(),
             "control-id":  ctrl_id,
             "description": desc.strip(),
-            "implementation-status": {
-                "state": comp.get("ctrl_impl_status", {}).get(ctrl_id, "implemented")
-            },
         }
         for ctrl_id, desc in comp.get("ctrl_responses", {}).items()
         if desc.strip()
