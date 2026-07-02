@@ -1803,8 +1803,10 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
     The document structure mirrors the SSP Editor sections:
         Cover — system name, version, date, status
         1. System Characteristics
-        2. Authorization Boundary
-        3. Network Architecture & Data Flow
+        2. Authorization Boundary (+ Diagrams reference list, if any)
+        3. Network Architecture & Data Flow (+ Diagrams reference list per
+           sub-section, if any — these are references only: a caption and
+           the linked path/URL, not the diagram image itself)
         4. Information Types (table)
         5. Roles (table)
         6. Parties / People & Organisations (table)
@@ -1853,6 +1855,29 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
         p.add_run(label + ": ").bold = True
         p.add_run(value)
 
+    def diagram_refs(diagrams, level=2):
+        """
+        Add a "Diagrams" sub-heading and one bullet line per diagram
+        reference (caption + link/path). Only a reference is included —
+        the diagram file itself is not embedded, since "link" is just a
+        path or URL string, not image data.
+
+        Parameters:
+            level - Heading level for "Diagrams", so it nests correctly
+                    under whatever heading precedes it (e.g. level=3 to
+                    nest under a level=2 "Network Architecture" heading).
+        """
+        if not diagrams:
+            return
+        doc.add_heading("Diagrams", level=level)
+        for d in diagrams:
+            caption = d.get("caption", "").strip() or "(untitled diagram)"
+            link    = d.get("link", "").strip()
+            doc.add_paragraph(
+                f"{caption} — {link}" if link else caption,
+                style="List Bullet",
+            )
+
     # ────────────────────────────────────────────────────────────────────────
     # COVER
     # ────────────────────────────────────────────────────────────────────────
@@ -1898,20 +1923,27 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
     doc.add_heading("2.  Authorization Boundary", level=1)
     boundary = ssp.get("auth_boundary_description", "")
     doc.add_paragraph(boundary if boundary else "(Not specified)")
+    diagram_refs(ssp.get("auth_boundary_diagrams", []))
 
     # ────────────────────────────────────────────────────────────────────────
     # SECTION 3 — NETWORK ARCHITECTURE & DATA FLOW
     # ────────────────────────────────────────────────────────────────────────
-    network = ssp.get("network_architecture", "")
+    network  = ssp.get("network_architecture", "")
+    network_diagrams = ssp.get("network_arch_diagrams", [])
     dataflow = ssp.get("data_flow", "")
-    if network or dataflow:
+    dataflow_diagrams = ssp.get("data_flow_diagrams", [])
+    if network or network_diagrams or dataflow or dataflow_diagrams:
         doc.add_heading("3.  Network Architecture & Data Flow", level=1)
-        if network:
+        if network or network_diagrams:
             doc.add_heading("Network Architecture", level=2)
-            doc.add_paragraph(network)
-        if dataflow:
+            if network:
+                doc.add_paragraph(network)
+            diagram_refs(network_diagrams, level=3)
+        if dataflow or dataflow_diagrams:
             doc.add_heading("Data Flow", level=2)
-            doc.add_paragraph(dataflow)
+            if dataflow:
+                doc.add_paragraph(dataflow)
+            diagram_refs(dataflow_diagrams, level=3)
 
     # ────────────────────────────────────────────────────────────────────────
     # SECTION 4 — INFORMATION TYPES
