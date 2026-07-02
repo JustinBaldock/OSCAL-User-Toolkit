@@ -652,6 +652,12 @@ class SSPTab(tk.Frame):
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
+            diag_btn_row, text="✏  Edit Selected",
+            command=self._edit_diagram,
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+        tk.Button(
             diag_btn_row, text="✕  Remove",
             command=self._remove_diagram,
             bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
@@ -677,6 +683,7 @@ class SSPTab(tk.Frame):
         self._diagram_tree.configure(yscrollcommand=diag_scroll.set)
         diag_scroll.pack(side="right", fill="y")
         self._diagram_tree.pack(side="left", fill="x", expand=True)
+        self._diagram_tree.bind("<Double-1>", lambda _e: self._edit_diagram())
 
         # ── 5. Information Types ──────────────────────────────────────────────
         # Stores the Treeview widget so _add_info_type/_collect/_populate
@@ -736,6 +743,20 @@ class SSPTab(tk.Frame):
             add_cmd  = self._add_role,
             list_key = "roles",
         )
+        # Add Edit button to the roles toolbar (same pattern used for
+        # Information Types and Parties) and bind double-click for editing.
+        role_card = self._role_tree.master
+        for child in role_card.winfo_children():
+            if isinstance(child, tk.Frame):
+                # This is the btn_row — add the Edit button here
+                tk.Button(
+                    child, text="✏  Edit Selected",
+                    command=self._edit_role,
+                    bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                    relief="flat", padx=10, pady=3, cursor="hand2",
+                ).pack(side="left", padx=8)
+                break
+        self._role_tree.bind("<Double-1>", lambda _e: self._edit_role())
 
         # ── 7. Parties ────────────────────────────────────────────────────────
         self._party_tree = list_section(
@@ -2321,10 +2342,19 @@ class SSPTab(tk.Frame):
     # DIAGRAM METHODS (Section 4)
     # =========================================================================
 
-    def _add_diagram(self):
-        """Show a dialog to add a data flow diagram reference."""
+    def _diagram_dialog(self, existing=None):
+        """
+        Shared modal dialog for adding or editing a data flow diagram
+        reference. Returns the result dict, or None if cancelled.
+
+        Parameters:
+            existing - An existing diagram dict to prefill, or None for Add.
+        """
         C   = self._colors
-        dlg = self._make_dialog("Add Diagram", width=500)
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Diagram" if existing else "Add Diagram", width=500
+        )
 
         def lrow(text, width=18):
             row = tk.Frame(dlg, bg=C["BG"])
@@ -2333,19 +2363,19 @@ class SSPTab(tk.Frame):
                      font=("Helvetica", 11), width=width, anchor="w").pack(side="left")
             return row
 
-        v_caption = tk.StringVar()
+        v_caption = tk.StringVar(value=e.get("caption", ""))
         tk.Entry(lrow("Caption *"), textvariable=v_caption, width=42,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
                  highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
 
-        v_link = tk.StringVar()
+        v_link = tk.StringVar(value=e.get("link", ""))
         tk.Entry(lrow("Link/Path *"), textvariable=v_link, width=42,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
                  highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
 
-        v_desc = tk.StringVar()
+        v_desc = tk.StringVar(value=e.get("description", ""))
         tk.Entry(lrow("Description"), textvariable=v_desc, width=42,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
@@ -2363,7 +2393,7 @@ class SSPTab(tk.Frame):
                 messagebox.showwarning("Required", "Link/Path is required.", parent=dlg)
                 return
             result.update({
-                "uuid":        new_uuid(),
+                "uuid":        e.get("uuid") or new_uuid(),
                 "caption":     caption,
                 "link":        link,
                 "description": v_desc.get().strip(),
@@ -2379,10 +2409,31 @@ class SSPTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
+        return result if result else None
 
+    def _add_diagram(self):
+        """Show a dialog to add a data flow diagram reference."""
+        result = self._diagram_dialog()
         if result:
             self._ssp["data_flow_diagrams"].append(result)
             self._diagram_tree.insert("", "end", values=(result["caption"], result["link"]))
+            self._dirty = True
+
+    def _edit_diagram(self):
+        """Show a dialog to edit the selected data flow diagram reference."""
+        sel = self._diagram_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a diagram to edit.")
+            return
+        idx = self._diagram_tree.index(sel[0])
+        existing = self._ssp["data_flow_diagrams"][idx]
+        result = self._diagram_dialog(existing=existing)
+        if not result:
+            return
+        self._ssp["data_flow_diagrams"][idx] = result
+        self._diagram_tree.delete(sel[0])
+        self._diagram_tree.insert("", idx, values=(result["caption"], result["link"]))
+        self._dirty = True
 
     def _remove_diagram(self):
         """Remove the selected diagram row."""
@@ -2392,6 +2443,7 @@ class SSPTab(tk.Frame):
         idx = self._diagram_tree.index(sel[0])
         self._ssp["data_flow_diagrams"].pop(idx)
         self._diagram_tree.delete(sel[0])
+        self._dirty = True
 
     # =========================================================================
     # INFORMATION TYPE METHODS (Section 5)
@@ -3486,6 +3538,35 @@ class SSPTab(tk.Frame):
             return
         self._ssp["roles"].append(res)
         self._role_tree.insert("", "end", values=(res["role_id"], res["title"]))
+        self._dirty = True
+
+    def _edit_role(self):
+        """
+        Show a dialog to edit the selected role, prefilled with its current
+        role ID and title.
+        """
+        sel = self._role_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a role to edit.")
+            return
+        idx = self._role_tree.index(sel[0])
+        existing = self._ssp["roles"][idx]
+
+        common_roles = [
+            "system-owner", "isso", "authorizing-official",
+            "system-poc-management", "system-poc-technical",
+            "system-poc-other", "privacy-officer", "security-operations",
+        ]
+        res = self._dialog("Edit Role", [
+            ("Role ID *",    "role_id", existing.get("role_id", ""), common_roles),
+            ("Role Title *", "title",   existing.get("title", ""),   None),
+        ])
+        if not res or not res.get("role_id"):
+            return
+
+        self._ssp["roles"][idx] = res
+        self._role_tree.delete(sel[0])
+        self._role_tree.insert("", idx, values=(res["role_id"], res["title"]))
         self._dirty = True
 
     def _add_party(self):
