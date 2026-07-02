@@ -1204,6 +1204,19 @@ class SSPTab(tk.Frame):
             lambda _e: (self._ctrl9_search_var.set(""), self._refresh_ctrl9_list()),
         )
 
+        # Refresh button — re-scans every SSP component against the Component
+        # Editor's currently-loaded components and pulls in any control
+        # response not yet reflected here. Purely additive (never overwrites
+        # or removes an existing by-component entry), so it's safe to click
+        # any time — e.g. after editing a component's control responses in
+        # the Component Editor, or adding a new control response there.
+        tk.Button(
+            ctrl9_left, text="🔄  Refresh from Components",
+            command=self._refresh_applied_controls_from_components,
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+            relief="flat", padx=8, pady=3, cursor="hand2",
+        ).pack(fill="x", padx=6, pady=(2, 0))
+
         # Progress counter — MUST exist before any _refresh_ctrl9_list call.
         self._ctrl9_progress_lbl = tk.Label(
             ctrl9_left, text="", bg=C["SIDEBAR_BG"], fg=C["SUBTEXT"],
@@ -3830,6 +3843,46 @@ class SSPTab(tk.Frame):
         self._refresh_bycomp_tree()
         # Population from a saved file is not a user edit — reset dirty flag
         self._dirty = False
+
+    def _refresh_applied_controls_from_components(self):
+        """
+        Manually re-sync Section 9's by-component control responses against
+        the Component Editor's currently-loaded components.
+
+        This is the button version of the same sync that runs automatically
+        when opening an SSP with components but no stored control
+        implementations (_rebuild_ctrl_impls_from_component_editor). Exposing
+        it as a button lets the user re-run it at any time — e.g. after
+        adding a new control response to a component in the Component
+        Editor, so it shows up here without having to close and reopen the
+        SSP.
+
+        Purely additive: an existing by-component entry for a given
+        (control, component) pair is never touched, so this never
+        overwrites a response that was hand-edited here in the SSP editor.
+        """
+        before = sum(
+            len(e.get("by_components", [])) for e in self._ssp_ctrl_impls
+        )
+        self._rebuild_ctrl_impls_from_component_editor()
+        after = sum(
+            len(e.get("by_components", [])) for e in self._ssp_ctrl_impls
+        )
+        added = after - before
+
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+        self._refresh_bycomp_tree()
+        if added:
+            self._dirty = True
+
+        messagebox.showinfo(
+            "Refresh Complete",
+            f"Added {added} new control response{'s' if added != 1 else ''} "
+            f"from the Component Editor's currently-loaded components."
+            if added else
+            "No new control responses found — Section 9 is already up to "
+            "date with the Component Editor's currently-loaded components."
+        )
 
     def _rebuild_ctrl_impls_from_component_editor(self):
         """
