@@ -1,9 +1,9 @@
 {
   "component-definition": {
-    "uuid": "88a4d4d0-fa7d-495f-b946-2f7ee4b04553",
+    "uuid": "3b0dc87d-d100-4b62-aa24-78d3238c551c",
     "metadata": {
       "title": "Capability: Cyber Security Principles",
-      "last-modified": "2026-07-02T03:47:00Z",
+      "last-modified": "2026-07-02T04:11:13Z",
       "version": "1.0",
       "oscal-version": "1.2.2"
     },
@@ -22,14 +22,158 @@
         ],
         "control-implementations": [
           {
-            "uuid": "7cee0417-9849-4458-b1b2-a6d7766cdc40",
+            "uuid": "d7630c15-192e-4149-9abb-2780f856cbcc",
             "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
             "description": "Control implementations for Cyber Security Principles Govern.",
             "implemented-requirements": [
               {
-                "uuid": "9df600cf-ed13-4d9a-ac51-bd9fd65aea6d",
+                "uuid": "e1a12eb0-2318-4fb5-9df8-3449c65534b9",
                 "control-id": "ism-principle-gov-01",
                 "description": "The organisation has a executive committee accountable for cyber security."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "0ac058f0-6a32-41f3-937f-a7b871dcb624",
+        "type": "policy",
+        "title": "Cyber Security Principles Identify",
+        "description": "Identify assets and associated security risks.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "cda210fb-78bd-4e90-aa06-92609156c8c8",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Identify.",
+            "implemented-requirements": [
+              {
+                "uuid": "3d6cbf74-dede-4d57-bfba-1d62790e8f9e",
+                "control-id": "ism-principle-ide-01",
+                "description": "All components and devices on this system are identified and documented."
+              },
+              {
+                "uuid": "e3d7dcb5-c8d2-4a14-8819-d25242b800ac",
+                "control-id": "ism-principle-ide-02",
+                "description": "Business critical systems have a Business Impact Level (BIL) are documented and used as part of the business risk management process."
+              },
+              {
+                "uuid": "a7a5f741-e95e-4602-9e95-a3f583669c8d",
+                "control-id": "ism-principle-ide-04",
+                "description": "The organisation performs regular security risk accessments. The system will have cyber security risk assessments performed on a regular basis."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "62161acb-53d3-4a0c-bfe4-76b5fe317873",
+        "type": "policy",
+        "title": "Cyber Security Principles Protect",
+        "description": "Implement and maintain controls to manage security risks.",
+        "purpose": "Implement and maintain controls to manage security risks.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "277ec6f8-528d-441d-a3ab-f905f167b726",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Protect.",
+            "implemented-requirements": [
+              {
+                "uuid": "c431bac5-95ba-4fc8-a5f7-0dee47e98b61",
+                "control-id": "ism-principle-pro-01",
+                "description": "This system is maintained and developed trying to implement Secure by Design and Secure by Default principles and practices."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "1de8f102-4145-47c1-a4ef-6739bc743c8a",
+        "type": "policy",
+        "title": "Cyber Security Principles Detect",
+        "description": "Detect and analyse cyber security events to identify cyber security incidents.",
+        "purpose": "Detect and analyse cyber security events to identify cyber security incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "cbc0d853-d151-48da-b600-a127984f57af",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Detect.",
+            "implemented-requirements": [
+              {
+                "uuid": "78e107d7-aa7d-4a1d-8972-5f349f3973f4",
+                "control-id": "ism-principle-det-01",
+                "description": "Security relevent events logs are centrally collected using the logging capability.\n\nConfiguration changes for systems are centrally collected by the service desk and change management capability."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "7d3a9a1e-7fa1-492a-b569-5389ffa8ebfb",
+        "type": "policy",
+        "title": "Cyber Security Principles Respond",
+        "description": "Respond to cyber security incidents.",
+        "purpose": "Respond to cyber security incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "2c37bc9b-bffe-47b9-85f5-b9709284c055",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Respond.",
+            "implemented-requirements": [
+              {
+                "uuid": "0a5338fa-0e01-4e98-8c92-295d7657465d",
+                "control-id": "ism-principle-res-01",
+                "description": "The system has incident response, business continuity and disaster recovery plans. However, the nature of this system does not require continued business operations during cyber security incidents. The resumption of normal business operations can follow successful handling of cyber security incidents."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "c9dda83f-5601-4f72-92c3-56bde4040bab",
+        "type": "policy",
+        "title": "Cyber Security Principles Recover",
+        "description": "Resume normal business operations following cyber security incidents.",
+        "purpose": "Resume normal business operations following cyber security incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "18e0d9d6-4675-4691-b132-afe2521c2e18",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Recover.",
+            "implemented-requirements": [
+              {
+                "uuid": "01ea1c12-61f1-470b-96c8-e380446fb399",
+                "control-id": "ism-principle-rec-01",
+                "description": "The various responce and recovery plans will include processes to report on residual security risks for systems to the cyber security executive committee."
               }
             ]
           }
@@ -45,22 +189,119 @@
           {
             "component-uuid": "0c0b54fe-eb2b-4bef-aed0-04d907baa4ad",
             "description": "Develop and maintain a strong and resilient cyber security culture."
+          },
+          {
+            "component-uuid": "0ac058f0-6a32-41f3-937f-a7b871dcb624",
+            "description": "Identify assets and associated security risks."
+          },
+          {
+            "component-uuid": "62161acb-53d3-4a0c-bfe4-76b5fe317873",
+            "description": "Implement and maintain controls to manage security risks."
+          },
+          {
+            "component-uuid": "1de8f102-4145-47c1-a4ef-6739bc743c8a",
+            "description": "Detect and analyse cyber security events to identify cyber security incidents."
+          },
+          {
+            "component-uuid": "7d3a9a1e-7fa1-492a-b569-5389ffa8ebfb",
+            "description": "Respond to cyber security incidents."
+          },
+          {
+            "component-uuid": "c9dda83f-5601-4f72-92c3-56bde4040bab",
+            "description": "Resume normal business operations following cyber security incidents."
           }
         ],
         "control-implementations": [
           {
-            "uuid": "2722c90d-9d84-4a0a-b27f-1961caa2b89f",
+            "uuid": "d8257b17-135e-486c-99e9-5f2a81333f6a",
             "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
             "description": "Control implementations for capability: Cyber Security Principles. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
             "implemented-requirements": [
               {
-                "uuid": "0109578b-7849-470a-b690-e6dbde835d50",
+                "uuid": "ee1072c4-4854-4a98-be55-b388c0f7cc3c",
                 "control-id": "ism-principle-gov-01",
                 "description": "The organisation has a executive committee accountable for cyber security.",
                 "props": [
                   {
                     "name": "source-component-uuid",
                     "value": "0c0b54fe-eb2b-4bef-aed0-04d907baa4ad"
+                  }
+                ]
+              },
+              {
+                "uuid": "de12f873-c110-41ee-9492-215ad380b6bd",
+                "control-id": "ism-principle-ide-01",
+                "description": "All components and devices on this system are identified and documented.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0ac058f0-6a32-41f3-937f-a7b871dcb624"
+                  }
+                ]
+              },
+              {
+                "uuid": "da05f853-b100-4c91-bafd-3a148da683fd",
+                "control-id": "ism-principle-ide-02",
+                "description": "Business critical systems have a Business Impact Level (BIL) are documented and used as part of the business risk management process.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0ac058f0-6a32-41f3-937f-a7b871dcb624"
+                  }
+                ]
+              },
+              {
+                "uuid": "94574dfd-9340-4c1e-a6b6-7fe94335b28f",
+                "control-id": "ism-principle-ide-04",
+                "description": "The organisation performs regular security risk accessments. The system will have cyber security risk assessments performed on a regular basis.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0ac058f0-6a32-41f3-937f-a7b871dcb624"
+                  }
+                ]
+              },
+              {
+                "uuid": "f27b7912-05a9-4a49-8563-83cd0a22b173",
+                "control-id": "ism-principle-pro-01",
+                "description": "This system is maintained and developed trying to implement Secure by Design and Secure by Default principles and practices.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "62161acb-53d3-4a0c-bfe4-76b5fe317873"
+                  }
+                ]
+              },
+              {
+                "uuid": "6404032b-c564-401b-bd0d-c74630440c6d",
+                "control-id": "ism-principle-det-01",
+                "description": "Security relevent events logs are centrally collected using the logging capability.\n\nConfiguration changes for systems are centrally collected by the service desk and change management capability.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1de8f102-4145-47c1-a4ef-6739bc743c8a"
+                  }
+                ]
+              },
+              {
+                "uuid": "42263b3a-03c7-4af8-a42a-c21494401bc5",
+                "control-id": "ism-principle-res-01",
+                "description": "The system has incident response, business continuity and disaster recovery plans. However, the nature of this system does not require continued business operations during cyber security incidents. The resumption of normal business operations can follow successful handling of cyber security incidents.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "7d3a9a1e-7fa1-492a-b569-5389ffa8ebfb"
+                  }
+                ]
+              },
+              {
+                "uuid": "2fbaf5fa-7268-43ea-9f64-61011bdf3598",
+                "control-id": "ism-principle-rec-01",
+                "description": "The various responce and recovery plans will include processes to report on residual security risks for systems to the cyber security executive committee.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "c9dda83f-5601-4f72-92c3-56bde4040bab"
                   }
                 ]
               }

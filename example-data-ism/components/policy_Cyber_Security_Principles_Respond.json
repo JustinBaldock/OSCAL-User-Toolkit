@@ -1,0 +1,40 @@
+{
+  "component-definition": {
+    "uuid": "e8e4d16b-481b-4f83-8b03-1ac13a5bb2ea",
+    "metadata": {
+      "title": "policy - Cyber Security Principles Respond",
+      "last-modified": "2026-07-02T04:07:33Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "7d3a9a1e-7fa1-492a-b569-5389ffa8ebfb",
+        "type": "policy",
+        "title": "Cyber Security Principles Respond",
+        "description": "Respond to cyber security incidents.",
+        "purpose": "Respond to cyber security incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "63a5e884-8bd5-4c6c-947c-f257a02a2e53",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Respond.",
+            "implemented-requirements": [
+              {
+                "uuid": "6fbc9844-08e5-44a6-bbbe-c55b59b90cd4",
+                "control-id": "ism-principle-res-01",
+                "description": "The system has incident response, business continuity and disaster recovery plans. However, the nature of this system does not require continued business operations during cyber security incidents. The resumption of normal business operations can follow successful handling of cyber security incidents."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

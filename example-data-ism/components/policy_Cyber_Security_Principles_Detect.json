@@ -1,0 +1,40 @@
+{
+  "component-definition": {
+    "uuid": "e8e4d16b-481b-4f83-8b03-1ac13a5bb2ea",
+    "metadata": {
+      "title": "policy - Cyber Security Principles Detect",
+      "last-modified": "2026-07-02T04:04:56Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "1de8f102-4145-47c1-a4ef-6739bc743c8a",
+        "type": "policy",
+        "title": "Cyber Security Principles Detect",
+        "description": "Detect and analyse cyber security events to identify cyber security incidents.",
+        "purpose": "Detect and analyse cyber security events to identify cyber security incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "024df65e-d49d-4530-b7dd-4a36ccb092da",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Detect.",
+            "implemented-requirements": [
+              {
+                "uuid": "2cf06d48-d7d6-40f6-8634-28be6fe9789e",
+                "control-id": "ism-principle-det-01",
+                "description": "Security relevent events logs are centrally collected using the logging capability.\n\nConfiguration changes for systems are centrally collected by the service desk and change management capability."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

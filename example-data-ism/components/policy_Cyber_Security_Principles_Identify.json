@@ -1,0 +1,49 @@
+{
+  "component-definition": {
+    "uuid": "e8e4d16b-481b-4f83-8b03-1ac13a5bb2ea",
+    "metadata": {
+      "title": "policy - Cyber Security Principles Identify",
+      "last-modified": "2026-07-02T03:54:18Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "0ac058f0-6a32-41f3-937f-a7b871dcb624",
+        "type": "policy",
+        "title": "Cyber Security Principles Identify",
+        "description": "Identify assets and associated security risks.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "27a92e69-d91d-44ab-b593-2d586c11bbc6",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Identify.",
+            "implemented-requirements": [
+              {
+                "uuid": "7920a48a-b0c6-4e0f-ac1b-43e25ad6213a",
+                "control-id": "ism-principle-ide-01",
+                "description": "All components and devices on this system are identified and documented."
+              },
+              {
+                "uuid": "0f4b84d1-0cdb-4572-857c-b91cdb6494ce",
+                "control-id": "ism-principle-ide-02",
+                "description": "Business critical systems have a Business Impact Level (BIL) are documented and used as part of the business risk management process."
+              },
+              {
+                "uuid": "ffbe2239-1420-4afc-bb66-8f8dcb4ce5da",
+                "control-id": "ism-principle-ide-04",
+                "description": "The organisation performs regular security risk accessments. The system will have cyber security risk assessments performed on a regular basis."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
