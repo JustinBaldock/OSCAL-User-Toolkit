@@ -1,0 +1,40 @@
+{
+  "component-definition": {
+    "uuid": "e8e4d16b-481b-4f83-8b03-1ac13a5bb2ea",
+    "metadata": {
+      "title": "policy - Cyber Security Principles Govern",
+      "last-modified": "2026-07-02T03:45:32Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "0c0b54fe-eb2b-4bef-aed0-04d907baa4ad",
+        "type": "policy",
+        "title": "Cyber Security Principles Govern",
+        "description": "Develop and maintain a strong and resilient cyber security culture.",
+        "purpose": "The ISM provides 6 cyber security principles.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6a90f87d-b8f6-438f-bd41-9df2f7cbfc45",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Govern.",
+            "implemented-requirements": [
+              {
+                "uuid": "cb5cacd0-93a0-412f-b10d-7b0022695865",
+                "control-id": "ism-principle-gov-01",
+                "description": "The organisation has a executive committee accountable for cyber security."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

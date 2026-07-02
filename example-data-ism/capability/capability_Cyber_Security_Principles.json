@@ -1,0 +1,73 @@
+{
+  "component-definition": {
+    "uuid": "88a4d4d0-fa7d-495f-b946-2f7ee4b04553",
+    "metadata": {
+      "title": "Capability: Cyber Security Principles",
+      "last-modified": "2026-07-02T03:47:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "0c0b54fe-eb2b-4bef-aed0-04d907baa4ad",
+        "type": "policy",
+        "title": "Cyber Security Principles Govern",
+        "description": "Develop and maintain a strong and resilient cyber security culture.",
+        "purpose": "The ISM provides 6 cyber security principles.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "7cee0417-9849-4458-b1b2-a6d7766cdc40",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Govern.",
+            "implemented-requirements": [
+              {
+                "uuid": "9df600cf-ed13-4d9a-ac51-bd9fd65aea6d",
+                "control-id": "ism-principle-gov-01",
+                "description": "The organisation has a executive committee accountable for cyber security."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "ae49a41b-5dec-461d-a3c1-2a62e7da3fff",
+        "name": "Cyber Security Principles",
+        "description": "The purpose of the cyber security principles is to provide strategic guidance on how an organisation can protect their information technology and operational technology systems from cyber threats.",
+        "incorporates-components": [
+          {
+            "component-uuid": "0c0b54fe-eb2b-4bef-aed0-04d907baa4ad",
+            "description": "Develop and maintain a strong and resilient cyber security culture."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "2722c90d-9d84-4a0a-b27f-1961caa2b89f",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for capability: Cyber Security Principles. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "0109578b-7849-470a-b690-e6dbde835d50",
+                "control-id": "ism-principle-gov-01",
+                "description": "The organisation has a executive committee accountable for cyber security.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0c0b54fe-eb2b-4bef-aed0-04d907baa4ad"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
