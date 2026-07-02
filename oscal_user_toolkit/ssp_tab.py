@@ -691,6 +691,18 @@ class SSPTab(tk.Frame):
                     bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                     relief="flat", padx=10, pady=3, cursor="hand2",
                 ).pack(side="left", padx=8)
+                # Data flow auto-diagram — generated from the component_flows
+                # already captured on each information type above, so no new
+                # data entry is needed beyond what Section 5 already collects.
+                tk.Frame(child, bg=C["HEADER_BG"], width=2).pack(
+                    side="left", fill="y", padx=8, pady=2
+                )
+                tk.Button(
+                    child, text="📊  Export Data Flow Diagram",
+                    command=self._export_data_flow_drawio,
+                    bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+                    relief="flat", padx=10, pady=3, cursor="hand2",
+                ).pack(side="left", padx=(0, 6))
                 break
         self._it_tree.bind("<Double-1>", lambda _e: self._edit_info_type())
 
@@ -4418,6 +4430,219 @@ class SSPTab(tk.Frame):
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(xml_string)
             self._set_status(f"draw.io diagram exported → {save_path}")
+        except OSError as exc:
+            messagebox.showerror("Export Failed", str(exc))
+
+    def _export_data_flow_drawio(self):
+        """
+        Export a draw.io diagram auto-generated from Section 5's
+        Information Types and their component_flows — no new data entry
+        is required beyond what Section 5 already collects.
+
+        WHAT THE DIAGRAM SHOWS
+        -----------------------
+        A bipartite graph: Information Types on the left, the Components
+        that process/store/transmit them on the right. There is no single
+        "root" node (unlike the System -> Capability -> Component map) —
+        this is a direct visualisation of the flows already recorded.
+
+        INTERPRETING "direction"
+        --------------------------
+        Each component_flow entry records a direction relative to that
+        component:
+          - "inbound"       — the information type flows INTO the component.
+                              Drawn as InfoType -> Component.
+          - "outbound"      — the information type flows OUT of the component.
+                              Drawn as Component -> InfoType.
+          - "bidirectional" — flows both ways. Drawn with arrowheads on
+                              both ends.
+          - "internal"      — processed within the component only, no
+                              external transit. Drawn as a plain line with
+                              no arrowheads, since there's no "flow"
+                              direction to show.
+
+        Component boxes use the same colour-by-type scheme as
+        _export_drawio() (policy=amber, software=blue, hardware=green,
+        service=purple) for visual consistency between the two diagrams.
+        """
+        from tkinter import filedialog
+        import xml.etree.ElementTree as ET
+
+        self._collect()
+        system_name = self._ssp.get("system_name") or self._ssp.get("title") or "System"
+        info_types  = self._ssp.get("information_types", [])
+
+        if not info_types:
+            messagebox.showinfo(
+                "No Information Types",
+                "Add at least one information type in Section 5, with "
+                "component flows mapped, before exporting a data flow diagram."
+            )
+            return
+
+        # Only worth exporting if at least one info type has a component
+        # flow mapped — otherwise there is nothing to draw a line between.
+        if not any(it.get("component_flows") for it in info_types):
+            messagebox.showinfo(
+                "No Component Flows Mapped",
+                "None of the information types in Section 5 have any "
+                "component flows mapped yet. Edit an information type and "
+                "add a component flow to describe which components "
+                "process, store, or transmit it."
+            )
+            return
+
+        # Component type -> title/description lookup, for colouring boxes
+        # and falling back gracefully if a flow references a component
+        # that's since been removed from Section 8.
+        components_by_uuid = {
+            c["uuid"]: c for c in self._ssp.get("components", []) if c.get("uuid")
+        }
+
+        # ── Draw.io XML scaffolding (same structure as _export_drawio) ─────────
+        root_el = ET.Element("mxGraphModel",
+                             dx="1422", dy="762", grid="1", gridSize="10",
+                             guides="1", tooltips="1", connect="1", arrows="1",
+                             fold="1", page="1", pageScale="1",
+                             pageWidth="1169", pageHeight="827",
+                             math="0", shadow="0")
+        root_node = ET.SubElement(root_el, "root")
+        ET.SubElement(root_node, "mxCell", id="0")
+        ET.SubElement(root_node, "mxCell", id="1", parent="0")
+
+        _id_counter = [2]
+
+        def next_id():
+            _id_counter[0] += 1
+            return str(_id_counter[0])
+
+        def add_node(label, x, y, width, height, style):
+            cid = next_id()
+            cell = ET.SubElement(root_node, "mxCell",
+                                 id=cid, value=label, style=style,
+                                 vertex="1", parent="1")
+            ET.SubElement(cell, "mxGeometry",
+                          x=str(x), y=str(y),
+                          width=str(width), height=str(height),
+                          **{"as": "geometry"})
+            return cid
+
+        def add_flow_edge(source_id, target_id, direction):
+            """
+            Add an edge between an information type and a component,
+            with arrowheads chosen from the direction (see docstring above).
+            """
+            if direction == "inbound":
+                start_arrow, end_arrow = "none", "block"
+            elif direction == "outbound":
+                start_arrow, end_arrow = "block", "none"
+            elif direction == "bidirectional":
+                start_arrow, end_arrow = "block", "block"
+            else:  # "internal" or unrecognised — plain undirected line
+                start_arrow, end_arrow = "none", "none"
+
+            eid = next_id()
+            edge_style = (
+                "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;"
+                "jettySize=auto;html=1;"
+                f"startArrow={start_arrow};endArrow={end_arrow};"
+            )
+            cell = ET.SubElement(root_node, "mxCell",
+                                 id=eid, value=direction, style=edge_style,
+                                 edge="1", source=source_id, target=target_id,
+                                 parent="1")
+            ET.SubElement(cell, "mxGeometry", relative="1", **{"as": "geometry"})
+
+        # ── Colour map — matches _export_drawio()'s component type colours ─────
+        TYPE_STYLES = {
+            "policy":    "fillColor=#FFE6CC;strokeColor=#d6b656;fontColor=#333333;",
+            "software":  "fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;",
+            "hardware":  "fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;",
+            "service":   "fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;",
+            "process":   "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+            "procedure": "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+            "plan":      "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+        }
+        DEFAULT_COMP_STYLE = "fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;"
+        # Information types get their own distinct colour, clearly different
+        # from every component type colour above.
+        INFO_TYPE_STYLE = "fillColor=#B0E3E6;strokeColor=#0B8299;fontColor=#333333;"
+
+        def comp_style(comp_type):
+            base = TYPE_STYLES.get(comp_type, DEFAULT_COMP_STYLE)
+            return f"{base}rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;"
+
+        info_style = f"{INFO_TYPE_STYLE}rounded=1;whiteSpace=wrap;html=1;arcSize=20;fontSize=10;fontStyle=1;"
+
+        # ── Layout ───────────────────────────────────────────────────────────
+        INFO_W,  INFO_H  = 220, 60
+        COMP_W,  COMP_H  = 200, 50
+        PAGE_MARGIN = 60
+        ROW_GAP     = 20
+        COLUMN_GAP  = 200
+
+        info_x = PAGE_MARGIN
+        comp_x = info_x + INFO_W + COLUMN_GAP
+
+        # Place every information type in the left column, tracking each
+        # one's cell ID so flows can reference it as an edge endpoint.
+        info_ids = {}
+        y = PAGE_MARGIN
+        for it in info_types:
+            title = it.get("title", "").strip() or "(untitled)"
+            info_ids[it.get("uuid", title)] = add_node(title, info_x, y, INFO_W, INFO_H, info_style)
+            y += INFO_H + ROW_GAP
+
+        # Place every DISTINCT component referenced by at least one flow in
+        # the right column (deduplicated by UUID — a component used by
+        # multiple information types only gets one box).
+        comp_ids   = {}
+        seen_uuids = set()
+        y = PAGE_MARGIN
+        for it in info_types:
+            for flow in it.get("component_flows", []):
+                comp_uuid = flow.get("component_uuid", "")
+                if not comp_uuid or comp_uuid in seen_uuids:
+                    continue
+                seen_uuids.add(comp_uuid)
+                comp = components_by_uuid.get(comp_uuid)
+                title = flow.get("component_title") or (comp.get("title") if comp else comp_uuid)
+                comp_type = comp.get("type", "") if comp else ""
+                comp_ids[comp_uuid] = add_node(title, comp_x, y, COMP_W, COMP_H, comp_style(comp_type))
+                y += COMP_H + ROW_GAP
+
+        # ── Draw the flows ───────────────────────────────────────────────────
+        for it in info_types:
+            title = it.get("title", "").strip() or "(untitled)"
+            info_cell = info_ids[it.get("uuid", title)]
+            for flow in it.get("component_flows", []):
+                comp_uuid = flow.get("component_uuid", "")
+                comp_cell = comp_ids.get(comp_uuid)
+                if not comp_cell:
+                    continue
+                add_flow_edge(info_cell, comp_cell, flow.get("direction", "internal"))
+
+        # ── Serialise and save ───────────────────────────────────────────────
+        try:
+            ET.indent(root_el, space="  ")
+        except AttributeError:
+            pass
+
+        xml_string = ET.tostring(root_el, encoding="unicode", xml_declaration=False)
+
+        save_path = filedialog.asksaveasfilename(
+            title="Export Data Flow Diagram",
+            defaultextension=".drawio",
+            filetypes=[("draw.io diagram", "*.drawio"), ("XML file", "*.xml"), ("All files", "*.*")],
+            initialfile=f"{system_name.replace(' ', '_')}_data_flow_diagram.drawio",
+        )
+        if not save_path:
+            return
+
+        try:
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write(xml_string)
+            self._set_status(f"Data flow diagram exported → {save_path}")
         except OSError as exc:
             messagebox.showerror("Export Failed", str(exc))
 
