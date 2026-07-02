@@ -1,6 +1,6 @@
 {
   "workspace": {
-    "title": "workspace",
+    "title": "workspace_ERN",
     "catalog": "ISM_catalog_2026_06.json",
     "profile": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
     "ssp": "ssp_ERN.json",
@@ -73,7 +73,8 @@
       "capability/capability_Patch_Management.json",
       "capability/capability_Privileged_Access_Management.json",
       "capability/capability_Remote_office.json",
-      "capability/capability_Security_Monitoring_and_Logging.json"
+      "capability/capability_Security_Monitoring_and_Logging.json",
+      "capability/capability_Cyber_Security_Principles.json"
     ]
   }
 }
