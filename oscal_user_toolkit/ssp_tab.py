@@ -620,70 +620,32 @@ class SSPTab(tk.Frame):
         self._status_remarks = textbox("Status Remarks", height=2)
 
         # ── 3. Authorization Boundary ─────────────────────────────────────────
+        # OSCAL 1.2.2 allows an independent diagrams[] array on the
+        # authorization-boundary object, using the same diagram shape
+        # (uuid, caption, link, description) as data-flow's diagrams — see
+        # _build_diagram_section() below, which builds this table for all
+        # three sections that support it.
         section("3 ·  Authorization Boundary")
         self._auth_boundary = textbox("Boundary Description *", height=12)
+        self._auth_boundary_diagram_tree = self._build_diagram_section(
+            parent, "auth_boundary_diagrams",
+            "Authorization Boundary Diagrams  (optional — link to external diagram files)",
+        )
 
         # ── 4. Network Architecture & Data Flow (optional) ────────────────────
+        # network-architecture and data-flow each also get their own
+        # independent diagrams[] array per the OSCAL 1.2.2 schema.
         section("4 ·  Network Architecture & Data Flow  (optional)")
-        self._network  = textbox("Network Architecture", height=10)
-        self._dataflow = textbox("Data Flow",            height=10)
-
-        # ── 4b. Data Flow Diagrams sub-table (optional) ───────────────────────
-        tk.Label(
-            parent,
-            text="Data Flow Diagrams  (optional — link to external diagram files)",
-            bg=C["BG"], fg=C["SUBTEXT"],
-            font=("Helvetica", 11),
-        ).pack(anchor="w", **P, pady=(8, 2))
-
-        diag_frame = tk.Frame(
-            parent, bg=C["CARD_BG"],
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        self._network = textbox("Network Architecture", height=10)
+        self._network_arch_diagram_tree = self._build_diagram_section(
+            parent, "network_arch_diagrams",
+            "Network Architecture Diagrams  (optional — link to external diagram files)",
         )
-        diag_frame.pack(fill="x", padx=28, pady=4)
-
-        diag_btn_row = tk.Frame(diag_frame, bg=C["CARD_BG"])
-        diag_btn_row.pack(fill="x", padx=8, pady=6)
-
-        tk.Button(
-            diag_btn_row, text="＋  Add Diagram",
-            command=self._add_diagram,
-            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
-            relief="flat", padx=10, pady=3, cursor="hand2",
-        ).pack(side="left")
-        tk.Button(
-            diag_btn_row, text="✏  Edit Selected",
-            command=self._edit_diagram,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
-            relief="flat", padx=10, pady=3, cursor="hand2",
-        ).pack(side="left", padx=8)
-        tk.Button(
-            diag_btn_row, text="✕  Remove",
-            command=self._remove_diagram,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
-            relief="flat", padx=10, pady=3, cursor="hand2",
-        ).pack(side="left", padx=8)
-
-        diag_tree_frame = tk.Frame(diag_frame, bg=C["CARD_BG"])
-        diag_tree_frame.pack(fill="x", padx=8, pady=(0, 8))
-
-        self._diagram_tree = ttk.Treeview(
-            diag_tree_frame,
-            columns=("caption", "link"),
-            show="headings", height=3, selectmode="browse",
+        self._dataflow = textbox("Data Flow", height=10)
+        self._diagram_tree = self._build_diagram_section(
+            parent, "data_flow_diagrams",
+            "Data Flow Diagrams  (optional — link to external diagram files)",
         )
-        self._diagram_tree.heading("caption", text="Caption",    anchor="w")
-        self._diagram_tree.heading("link",    text="Link/Path",  anchor="w")
-        self._diagram_tree.column("caption", width=200, anchor="w", stretch=False)
-        self._diagram_tree.column("link",    width=340, anchor="w", stretch=True)
-
-        diag_scroll = ttk.Scrollbar(
-            diag_tree_frame, orient="vertical", command=self._diagram_tree.yview,
-        )
-        self._diagram_tree.configure(yscrollcommand=diag_scroll.set)
-        diag_scroll.pack(side="right", fill="y")
-        self._diagram_tree.pack(side="left", fill="x", expand=True)
-        self._diagram_tree.bind("<Double-1>", lambda _e: self._edit_diagram())
 
         # ── 5. Information Types ──────────────────────────────────────────────
         # Stores the Treeview widget so _add_info_type/_collect/_populate
@@ -2433,38 +2395,114 @@ class SSPTab(tk.Frame):
         dlg.wait_window()
         return result if result else None
 
-    def _add_diagram(self):
-        """Show a dialog to add a data flow diagram reference."""
+    def _build_diagram_section(self, parent, list_key, heading_text):
+        """
+        Build a self-contained diagrams table — Add/Edit/Remove buttons plus
+        a Caption/Link Treeview — bound to self._ssp[list_key].
+
+        OSCAL 1.2.2 allows an independent diagrams[] array on each of
+        Authorization Boundary, Network Architecture, and Data Flow, all
+        using the same diagram object shape (uuid, caption, link href,
+        description). This one method builds the UI for any of the three;
+        the caller decides which list_key it's bound to and where it's
+        placed in the form.
+
+        Parameters:
+            parent       - The scrollable form frame to build into
+            list_key     - The key in self._ssp holding this table's diagram
+                           list (e.g. "auth_boundary_diagrams")
+            heading_text - Label shown above the table
+
+        Returns:
+            The Treeview widget, so the caller can store it as an instance
+            attribute for _populate()/_reset() to repopulate/clear later.
+        """
+        C = self._colors
+        tk.Label(
+            parent, text=heading_text,
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
+        ).pack(anchor="w", padx=28, pady=(8, 2))
+
+        frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        frame.pack(fill="x", padx=28, pady=4)
+
+        btn_row = tk.Frame(frame, bg=C["CARD_BG"])
+        btn_row.pack(fill="x", padx=8, pady=6)
+
+        tree_frame = tk.Frame(frame, bg=C["CARD_BG"])
+        tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
+        tree = ttk.Treeview(
+            tree_frame, columns=("caption", "link"),
+            show="headings", height=3, selectmode="browse",
+        )
+        tree.heading("caption", text="Caption",   anchor="w")
+        tree.heading("link",    text="Link/Path", anchor="w")
+        tree.column("caption", width=200, anchor="w", stretch=False)
+        tree.column("link",    width=340, anchor="w", stretch=True)
+        scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        tree.pack(side="left", fill="x", expand=True)
+        tree.bind("<Double-1>", lambda _e: self._edit_diagram(list_key, tree))
+
+        tk.Button(
+            btn_row, text="＋  Add Diagram",
+            command=lambda: self._add_diagram(list_key, tree),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            btn_row, text="✏  Edit Selected",
+            command=lambda: self._edit_diagram(list_key, tree),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+        tk.Button(
+            btn_row, text="✕  Remove",
+            command=lambda: self._remove_diagram(list_key, tree),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+
+        return tree
+
+    def _add_diagram(self, list_key, tree):
+        """Show a dialog to add a diagram to self._ssp[list_key]."""
         result = self._diagram_dialog()
         if result:
-            self._ssp["data_flow_diagrams"].append(result)
-            self._diagram_tree.insert("", "end", values=(result["caption"], result["link"]))
+            self._ssp.setdefault(list_key, []).append(result)
+            tree.insert("", "end", values=(result["caption"], result["link"]))
             self._dirty = True
 
-    def _edit_diagram(self):
-        """Show a dialog to edit the selected data flow diagram reference."""
-        sel = self._diagram_tree.selection()
+    def _edit_diagram(self, list_key, tree):
+        """Show a dialog to edit the selected diagram in self._ssp[list_key]."""
+        sel = tree.selection()
         if not sel:
             messagebox.showinfo("No selection", "Select a diagram to edit.")
             return
-        idx = self._diagram_tree.index(sel[0])
-        existing = self._ssp["data_flow_diagrams"][idx]
-        result = self._diagram_dialog(existing=existing)
+        idx      = tree.index(sel[0])
+        diagrams = self._ssp.setdefault(list_key, [])
+        existing = diagrams[idx]
+        result   = self._diagram_dialog(existing=existing)
         if not result:
             return
-        self._ssp["data_flow_diagrams"][idx] = result
-        self._diagram_tree.delete(sel[0])
-        self._diagram_tree.insert("", idx, values=(result["caption"], result["link"]))
+        diagrams[idx] = result
+        tree.delete(sel[0])
+        tree.insert("", idx, values=(result["caption"], result["link"]))
         self._dirty = True
 
-    def _remove_diagram(self):
-        """Remove the selected diagram row."""
-        sel = self._diagram_tree.selection()
+    def _remove_diagram(self, list_key, tree):
+        """Remove the selected diagram from self._ssp[list_key]."""
+        sel = tree.selection()
         if not sel:
             return
-        idx = self._diagram_tree.index(sel[0])
-        self._ssp["data_flow_diagrams"].pop(idx)
-        self._diagram_tree.delete(sel[0])
+        idx = tree.index(sel[0])
+        self._ssp.setdefault(list_key, []).pop(idx)
+        tree.delete(sel[0])
         self._dirty = True
 
     # =========================================================================
@@ -3767,10 +3805,15 @@ class SSPTab(tk.Frame):
             if val:
                 widget.insert("1.0", val)  # Insert at the very beginning
 
-        # Rebuild the diagram tree (Section 4)
-        self._diagram_tree.delete(*self._diagram_tree.get_children())
-        for d in ssp.get("data_flow_diagrams", []):
-            self._diagram_tree.insert("", "end", values=(d.get("caption", ""), d.get("link", "")))
+        # Rebuild the three diagram tables (Sections 3 and 4)
+        for tree, key in (
+            (self._auth_boundary_diagram_tree, "auth_boundary_diagrams"),
+            (self._network_arch_diagram_tree,  "network_arch_diagrams"),
+            (self._diagram_tree,               "data_flow_diagrams"),
+        ):
+            tree.delete(*tree.get_children())
+            for d in ssp.get(key, []):
+                tree.insert("", "end", values=(d.get("caption", ""), d.get("link", "")))
 
         # Rebuild the information types table
         self._it_tree.delete(*self._it_tree.get_children())
@@ -3992,9 +4035,12 @@ class SSPTab(tk.Frame):
             w.delete("1.0", "end")
 
         # Clear all tables
-        for tree in (self._diagram_tree, self._it_tree, self._role_tree, self._party_tree):
+        for tree in (self._auth_boundary_diagram_tree, self._network_arch_diagram_tree,
+                     self._diagram_tree, self._it_tree, self._role_tree, self._party_tree):
             tree.delete(*tree.get_children())
-        self._ssp["data_flow_diagrams"] = []
+        self._ssp["auth_boundary_diagrams"] = []
+        self._ssp["network_arch_diagrams"]  = []
+        self._ssp["data_flow_diagrams"]     = []
 
         # ── Reset Sections 8, 9, 11, 12 working state and widgets ────────────
         self._ssp_components = []

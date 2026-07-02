@@ -417,11 +417,13 @@ def empty_ssp():
 
         # ── Section 3: Authorization boundary ────────────────────────────
         "auth_boundary_description":  "",
+        "auth_boundary_diagrams":     [],   # list of {uuid, caption, link, description}
 
         # ── Section 4: Network architecture & data flow (optional) ───────
-        "network_architecture": "",
-        "data_flow":            "",
-        "data_flow_diagrams":   [],   # list of {uuid, caption, link, description}
+        "network_architecture":  "",
+        "network_arch_diagrams": [],   # list of {uuid, caption, link, description}
+        "data_flow":             "",
+        "data_flow_diagrams":    [],   # list of {uuid, caption, link, description}
 
         # ── Sections 5-7: Lists — start empty, user adds entries ─────────
         # Each role is: {"role_id": str, "title": str}
@@ -786,12 +788,38 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                     **({"remarks": ssp["status_remarks"]}
                        if ssp.get("status_remarks") else {}),
                 },
+                # authorization-boundary, network-architecture, and data-flow
+                # each support an independent diagrams[] array in OSCAL 1.2.2
+                # (all three use the identical diagram object shape), so the
+                # same list-comprehension is reused for each below.
                 "authorization-boundary": {
                     "description": ssp.get("auth_boundary_description", ""),
+                    **({"diagrams": [
+                        {
+                            "uuid": d["uuid"],
+                            **({"description": d["description"]} if d.get("description") else {}),
+                            "caption": d["caption"],
+                            "links": [{"href": d["link"], "rel": "diagram"}],
+                        }
+                        for d in ssp.get("auth_boundary_diagrams", [])
+                    ]} if ssp.get("auth_boundary_diagrams") else {}),
                 },
-                # Network architecture and data flow are optional
-                **({"network-architecture": {"description": ssp["network_architecture"]}}
-                   if ssp.get("network_architecture") else {}),
+                # Network architecture and data flow are optional — included
+                # if there's a description OR at least one diagram, since
+                # OSCAL requires "description" whenever the object is present
+                # at all (it defaults to "" here rather than being omitted).
+                **({"network-architecture": {
+                    "description": ssp.get("network_architecture", ""),
+                    **({"diagrams": [
+                        {
+                            "uuid": d["uuid"],
+                            **({"description": d["description"]} if d.get("description") else {}),
+                            "caption": d["caption"],
+                            "links": [{"href": d["link"], "rel": "diagram"}],
+                        }
+                        for d in ssp.get("network_arch_diagrams", [])
+                    ]} if ssp.get("network_arch_diagrams") else {}),
+                }} if (ssp.get("network_architecture") or ssp.get("network_arch_diagrams")) else {}),
                 **({"data-flow": {
                     "description": ssp["data_flow"],
                     **({"diagrams": [
@@ -1075,20 +1103,28 @@ def parse_ssp_file(data):
             seen_ctrl_ids[ctrl_id] = entry
             ctrl_implementations.append(entry)
 
-    # ── Data flow diagrams ────────────────────────────────────────────────────
-    data_flow_diagrams = []
-    for d in df.get("diagrams", []):
-        link = ""
-        for lnk in d.get("links", []):
-            if lnk.get("rel") == "diagram":
-                link = lnk.get("href", "")
-                break
-        data_flow_diagrams.append({
-            "uuid":        d.get("uuid", new_uuid()),
-            "caption":     d.get("caption", ""),
-            "link":        link,
-            "description": d.get("description", ""),
-        })
+    # ── Diagrams (Authorization Boundary, Network Architecture, Data Flow) ────
+    # All three OSCAL objects use the identical diagram shape, so one helper
+    # parses whichever "diagrams" array is passed to it.
+    def _parse_diagrams(container):
+        result = []
+        for d in container.get("diagrams", []):
+            link = ""
+            for lnk in d.get("links", []):
+                if lnk.get("rel") == "diagram":
+                    link = lnk.get("href", "")
+                    break
+            result.append({
+                "uuid":        d.get("uuid", new_uuid()),
+                "caption":     d.get("caption", ""),
+                "link":        link,
+                "description": d.get("description", ""),
+            })
+        return result
+
+    auth_boundary_diagrams = _parse_diagrams(ab)
+    network_arch_diagrams  = _parse_diagrams(na)
+    data_flow_diagrams     = _parse_diagrams(df)
 
     # ── Resolve import-profile reference ──────────────────────────────────────
     import_href = root.get("import-profile", {}).get("href", "")
@@ -1156,7 +1192,9 @@ def parse_ssp_file(data):
         "status":          status.get("state", "under-development"),
         "status_remarks":  status.get("remarks", ""),
         "auth_boundary_description": ab.get("description", ""),
-        "network_architecture": na.get("description", ""),
+        "auth_boundary_diagrams":    auth_boundary_diagrams,
+        "network_architecture":  na.get("description", ""),
+        "network_arch_diagrams": network_arch_diagrams,
         "data_flow":            df.get("description", ""),
         "data_flow_diagrams":   data_flow_diagrams,
         "roles":                roles,
