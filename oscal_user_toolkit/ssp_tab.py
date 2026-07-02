@@ -749,6 +749,20 @@ class SSPTab(tk.Frame):
             add_cmd  = self._add_party,
             list_key = "parties",
         )
+        # Add Edit button to the parties toolbar (same pattern used for
+        # Information Types above) and bind double-click for editing.
+        party_card = self._party_tree.master
+        for child in party_card.winfo_children():
+            if isinstance(child, tk.Frame):
+                # This is the btn_row — add the Edit button here
+                tk.Button(
+                    child, text="✏  Edit Selected",
+                    command=self._edit_party,
+                    bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                    relief="flat", padx=10, pady=3, cursor="hand2",
+                ).pack(side="left", padx=8)
+                break
+        self._party_tree.bind("<Double-1>", lambda _e: self._edit_party())
 
         # ── 7b. Responsible Parties ───────────────────────────────────────────
         # Maps each defined role to the party (person/org) who fills that role.
@@ -3489,6 +3503,56 @@ class SSPTab(tk.Frame):
             "", "end",
             values=(res["type"], res["name"], res.get("email", ""))
         )
+        self._dirty = True
+
+    def _edit_party(self):
+        """
+        Show a dialog to edit the selected person or organisation, prefilled
+        with its current values.
+
+        The party's UUID is preserved (not regenerated) so that any
+        Section 7b Responsible Party entries pointing at it stay valid. If
+        the name changes, those entries' cached party_name is also updated
+        so the Responsible Parties table doesn't show a stale name.
+        """
+        sel = self._party_tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a party to edit.")
+            return
+        idx = self._party_tree.index(sel[0])
+        existing = self._ssp["parties"][idx]
+
+        res = self._dialog("Edit Party", [
+            ("Type *", "type",  existing.get("type", "person"), ["person", "organization"]),
+            ("Name *", "name",  existing.get("name", ""),       None),
+            ("Email",  "email", existing.get("email", ""),      None),
+        ])
+        if not res or not res.get("name"):
+            return
+
+        party_uuid   = existing.get("uuid") or new_uuid()
+        res["uuid"]  = party_uuid
+        self._ssp["parties"][idx] = res
+
+        self._party_tree.delete(sel[0])
+        self._party_tree.insert(
+            "", idx,
+            values=(res["type"], res["name"], res.get("email", ""))
+        )
+
+        # Keep Section 7b's cached party_name in sync with the new name.
+        rp_list = self._ssp.get("responsible_parties", [])
+        changed = False
+        for rp in rp_list:
+            if rp.get("party_uuid") == party_uuid and rp.get("party_name") != res["name"]:
+                rp["party_name"] = res["name"]
+                changed = True
+        if changed and hasattr(self, "_rp_tree"):
+            self._rp_tree.delete(*self._rp_tree.get_children())
+            for rp in rp_list:
+                self._rp_tree.insert("", "end",
+                                     values=(rp["role_id"], rp["party_name"]))
+
         self._dirty = True
 
     # =========================================================================
