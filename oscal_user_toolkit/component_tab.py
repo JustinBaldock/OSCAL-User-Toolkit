@@ -864,10 +864,17 @@ class ComponentTab(tk.Frame):
         # SECTION 6 — PROTOCOLS
         # =====================================================================
         section("6 ·  Protocols  (optional)")
-        tk.Label(parent,
+        proto_hint_row = tk.Frame(parent, bg=C["BG"])
+        proto_hint_row.pack(fill="x", padx=20)
+        tk.Label(proto_hint_row,
                  text="  Network protocols and port ranges this component exposes or uses.",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-                 ).pack(anchor="w", padx=20)
+                 ).pack(side="left", anchor="w")
+        self._proto_count_lbl = tk.Label(
+            proto_hint_row, text="0 protocols",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        )
+        self._proto_count_lbl.pack(side="right", anchor="n", padx=(8, 0))
 
         proto_frame = tk.Frame(parent, bg=C["CARD_BG"],
                                highlightthickness=1,
@@ -886,8 +893,11 @@ class ComponentTab(tk.Frame):
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
+        proto_tree_frame = tk.Frame(proto_frame, bg=C["CARD_BG"])
+        proto_tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
         self._proto_tree = ttk.Treeview(
-            proto_frame, columns=("name", "title", "ports"),
+            proto_tree_frame, columns=("name", "title", "ports"),
             show="headings", height=4, selectmode="browse",
         )
         for col, heading, w, stretch in [
@@ -897,7 +907,13 @@ class ComponentTab(tk.Frame):
         ]:
             self._proto_tree.heading(col, text=heading, anchor="w")
             self._proto_tree.column(col, width=w, anchor="w", stretch=stretch)
-        self._proto_tree.pack(fill="x", padx=8, pady=(0, 8))
+
+        proto_scroll = ttk.Scrollbar(
+            proto_tree_frame, orient="vertical", command=self._proto_tree.yview,
+        )
+        self._proto_tree.configure(yscrollcommand=proto_scroll.set)
+        proto_scroll.pack(side="right", fill="y")
+        self._proto_tree.pack(side="left", fill="both", expand=True)
 
         # =====================================================================
         # SECTION 7 — LINKS
@@ -1542,6 +1558,7 @@ class ComponentTab(tk.Frame):
                 proto.get("title", ""),
                 self._format_port_ranges(proto.get("port_ranges", [])),
             ))
+        self._update_proto_count()
 
         # ── Links table ───────────────────────────────────────────────────────
         self._link_tree.delete(*self._link_tree.get_children())
@@ -2111,10 +2128,16 @@ class ComponentTab(tk.Frame):
             parts.append(f"{transport}:{port}")
         return "  ".join(parts) if parts else "—"
 
+    def _update_proto_count(self):
+        """Refresh the "N protocols" label next to the Section 6 hint text."""
+        n = len(self._proto_tree.get_children())
+        self._proto_count_lbl.config(text=f"{n} protocol{'s' if n != 1 else ''}")
+
     def _refresh_proto_tree(self):
         """Clear and repopulate the protocol tree from the current component."""
         self._proto_tree.delete(*self._proto_tree.get_children())
         if self._selected_index is None:
+            self._update_proto_count()
             return
         comp = self._components[self._selected_index]
         for proto in comp.get("protocols", []):
@@ -2123,6 +2146,7 @@ class ComponentTab(tk.Frame):
                 proto.get("title", ""),
                 self._format_port_ranges(proto.get("port_ranges", [])),
             ))
+        self._update_proto_count()
 
     def _add_protocol(self):
         """Show the protocol dialog and add the result to the table."""
