@@ -644,6 +644,7 @@ class SSPTab(tk.Frame):
         # independent diagrams[] array per the OSCAL 1.2.2 schema.
         section("4 ·  Network Architecture & Data Flow  (optional)")
         self._network = textbox("Network Architecture", height=10)
+        self._vlan_tree = self._build_vlans_section(parent)
         self._network_arch_diagram_tree = self._build_diagram_section(
             parent, "network_arch_diagrams",
             "Network Architecture Diagrams  (optional — link to external diagram files)",
@@ -2748,6 +2749,198 @@ class SSPTab(tk.Frame):
         self._dirty = True
 
     # =========================================================================
+    # VLANS (Section 4) — recorded against network-architecture
+    # =========================================================================
+    #
+    # network-architecture has the identical schema shape as data-flow (only
+    # description/props/links/diagrams/remarks — no structured field for a
+    # VLAN table), so VLANs use the same grouped-props approach as data flow
+    # links: see models._build_vlan_props().
+
+    @staticmethod
+    def _vlan_row_values(vlan):
+        """Return the 3-element values tuple for inserting into the VLAN tree."""
+        return (
+            vlan.get("vlan_id", ""),
+            vlan.get("name", ""),
+            vlan.get("description", ""),
+        )
+
+    def _build_vlans_section(self, parent):
+        """
+        Build the VLANs table — Add/Edit/Remove buttons plus a
+        VLAN ID/Name/Description Treeview, bound to self._ssp["vlans"].
+        Placed under the Network Architecture description textbox and above
+        the Network Architecture Diagrams table in Section 4.
+        """
+        C = self._colors
+        tk.Label(
+            parent,
+            text="VLANs  (optional — record the VLANs that make up the network)",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
+        ).pack(anchor="w", padx=28, pady=(8, 2))
+
+        frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        frame.pack(fill="x", padx=28, pady=4)
+
+        btn_row = tk.Frame(frame, bg=C["CARD_BG"])
+        btn_row.pack(fill="x", padx=8, pady=6)
+
+        tree_frame = tk.Frame(frame, bg=C["CARD_BG"])
+        tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
+        tree = ttk.Treeview(
+            tree_frame, columns=("vlan_id", "name", "description"),
+            show="headings", height=4, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("vlan_id",     "VLAN ID",     80,  False),
+            ("name",        "Name",        160, False),
+            ("description", "Description", 300, True),
+        ]:
+            tree.heading(col, text=heading, anchor="w")
+            tree.column(col, width=w, anchor="w", stretch=stretch)
+        scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        tree.pack(side="left", fill="x", expand=True)
+        tree.bind("<Double-1>", lambda _e: self._edit_vlan(tree))
+
+        tk.Button(
+            btn_row, text="＋  Add VLAN",
+            command=lambda: self._add_vlan(tree),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            btn_row, text="✏  Edit Selected",
+            command=lambda: self._edit_vlan(tree),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+        tk.Button(
+            btn_row, text="✕  Remove",
+            command=lambda: self._remove_vlan(tree),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+
+        return tree
+
+    def _vlan_dialog(self, existing=None):
+        """
+        Modal dialog for adding or editing a VLAN.
+
+        Returns a dict {uuid, vlan_id, name, description} or None if
+        cancelled.
+        """
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit VLAN" if existing else "Add VLAN",
+            width=440,
+        )
+
+        def lrow(text, width=16):
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=width, anchor="w").pack(side="left")
+            return row
+
+        v_id = tk.StringVar(value=e.get("vlan_id", ""))
+        tk.Entry(lrow("VLAN ID *"), textvariable=v_id, width=10,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        v_name = tk.StringVar(value=e.get("name", ""))
+        tk.Entry(lrow("Name *"), textvariable=v_name, width=32,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        tk.Label(dlg, text="Description", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(8, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=3, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
+
+        result = {}
+
+        def _ok():
+            vlan_id = v_id.get().strip()
+            name    = v_name.get().strip()
+            if not vlan_id:
+                messagebox.showwarning("Required", "VLAN ID is required.", parent=dlg)
+                return
+            if not name:
+                messagebox.showwarning("Required", "Name is required.", parent=dlg)
+                return
+            result.update({
+                "uuid":        e.get("uuid") or new_uuid(),
+                "vlan_id":     vlan_id,
+                "name":        name,
+                "description": t_desc.get("1.0", "end-1c").strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_vlan(self, tree):
+        """Show a dialog to add a VLAN to self._ssp['vlans']."""
+        result = self._vlan_dialog()
+        if result:
+            self._ssp.setdefault("vlans", []).append(result)
+            tree.insert("", "end", values=self._vlan_row_values(result))
+            self._dirty = True
+
+    def _edit_vlan(self, tree):
+        """Edit the selected VLAN in place."""
+        sel = tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a VLAN to edit.")
+            return
+        idx   = tree.index(sel[0])
+        vlans = self._ssp.setdefault("vlans", [])
+        result = self._vlan_dialog(existing=vlans[idx])
+        if not result:
+            return
+        vlans[idx] = result
+        tree.delete(sel[0])
+        tree.insert("", idx, values=self._vlan_row_values(result))
+        self._dirty = True
+
+    def _remove_vlan(self, tree):
+        """Remove the selected VLAN from self._ssp['vlans']."""
+        sel = tree.selection()
+        if not sel:
+            return
+        idx = tree.index(sel[0])
+        self._ssp.setdefault("vlans", []).pop(idx)
+        tree.delete(sel[0])
+        self._dirty = True
+
+    # =========================================================================
     # INFORMATION TYPE METHODS (Section 5)
     # =========================================================================
 
@@ -3930,6 +4123,11 @@ class SSPTab(tk.Frame):
         for flow in ssp.get("data_flow_links", []):
             self._flow_link_tree.insert("", "end", values=self._flow_link_row_values(flow))
 
+        # Rebuild the VLANs table
+        self._vlan_tree.delete(*self._vlan_tree.get_children())
+        for vlan in ssp.get("vlans", []):
+            self._vlan_tree.insert("", "end", values=self._vlan_row_values(vlan))
+
         # Rebuild the information types table
         self._it_tree.delete(*self._it_tree.get_children())
         for it in ssp.get("information_types", []):
@@ -4151,13 +4349,14 @@ class SSPTab(tk.Frame):
 
         # Clear all tables
         for tree in (self._auth_boundary_diagram_tree, self._network_arch_diagram_tree,
-                     self._diagram_tree, self._flow_link_tree, self._it_tree,
-                     self._role_tree, self._party_tree):
+                     self._diagram_tree, self._flow_link_tree, self._vlan_tree,
+                     self._it_tree, self._role_tree, self._party_tree):
             tree.delete(*tree.get_children())
         self._ssp["auth_boundary_diagrams"] = []
         self._ssp["network_arch_diagrams"]  = []
         self._ssp["data_flow_diagrams"]     = []
         self._ssp["data_flow_links"]        = []
+        self._ssp["vlans"]                  = []
 
         # ── Reset Sections 8, 9, 11, 12 working state and widgets ────────────
         self._ssp_components = []

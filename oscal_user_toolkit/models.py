@@ -421,6 +421,10 @@ def empty_ssp():
 
         # ── Section 4: Network architecture & data flow (optional) ───────
         "network_architecture":  "",
+        # Each vlan is: {"uuid", "vlan_id", "name", "description"}
+        # Stored in OSCAL as grouped props on network-architecture — see
+        # build_oscal_ssp() and the data-flow-link pattern it's modelled on.
+        "vlans":                 [],
         "network_arch_diagrams": [],   # list of {uuid, caption, link, description}
         "data_flow":             "",
         "data_flow_diagrams":    [],   # list of {uuid, caption, link, description}
@@ -605,6 +609,58 @@ def _data_flow_links_narrative(flows):
             line += f": {flow['description']}"
         lines.append(line)
     return "\n".join(lines)
+
+
+# Namespace used to tag VLAN props on network-architecture, following the
+# same grouped-props pattern as DATA_FLOW_LINK_NS above.
+VLAN_NS = "https://oscal-user-toolkit/ns/vlan"
+
+
+def _build_vlan_props(vlans):
+    """
+    Convert a list of internal VLAN dicts into OSCAL props on
+    network-architecture, using the same grouped-props approach as
+    data flow links: one prop per field, all sharing the VLAN's uuid as
+    their `group`, tagged with a fixed `ns` so they round-trip cleanly
+    and don't collide with any other tool's custom props.
+    """
+    props = []
+    for vlan in vlans:
+        group = vlan.get("uuid") or new_uuid()
+        fields = [
+            ("vlan-id",          vlan.get("vlan_id", "")),
+            ("vlan-name",        vlan.get("name", "")),
+            ("vlan-description", vlan.get("description", "")),
+        ]
+        for name, value in fields:
+            if value:
+                props.append({
+                    "name": name, "value": str(value),
+                    "group": group, "ns": VLAN_NS,
+                })
+    return props
+
+
+def _parse_vlan_props(props):
+    """Reassemble VLAN props (see _build_vlan_props) back into a list of dicts."""
+    by_group = {}
+    for p in props:
+        if p.get("ns") != VLAN_NS:
+            continue
+        group = p.get("group")
+        if not group:
+            continue
+        by_group.setdefault(group, {})[p.get("name", "")] = p.get("value", "")
+
+    vlans = []
+    for group, fields in by_group.items():
+        vlans.append({
+            "uuid":        group,
+            "vlan_id":     fields.get("vlan-id", ""),
+            "name":        fields.get("vlan-name", ""),
+            "description": fields.get("vlan-description", ""),
+        })
+    return vlans
 
 
 def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
@@ -938,7 +994,9 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                         }
                         for d in ssp.get("network_arch_diagrams", [])
                     ]} if ssp.get("network_arch_diagrams") else {}),
-                }} if (ssp.get("network_architecture") or ssp.get("network_arch_diagrams")) else {}),
+                    **({"props": _build_vlan_props(ssp["vlans"])} if ssp.get("vlans") else {}),
+                }} if (ssp.get("network_architecture") or ssp.get("network_arch_diagrams")
+                       or ssp.get("vlans")) else {}),
                 **({"data-flow": {
                     "description": ssp.get("data_flow") or _data_flow_links_narrative(
                         ssp.get("data_flow_links", [])
@@ -1303,6 +1361,7 @@ def parse_ssp_file(data):
         "auth_boundary_description": ab.get("description", ""),
         "auth_boundary_diagrams":    auth_boundary_diagrams,
         "network_architecture":  na.get("description", ""),
+        "vlans":                 _parse_vlan_props(na.get("props", [])),
         "network_arch_diagrams": network_arch_diagrams,
         "data_flow":            df.get("description", ""),
         "data_flow_diagrams":   data_flow_diagrams,

@@ -252,6 +252,7 @@ The SSP is stored as a plain Python dictionary throughout editing. It is only co
     "status_remarks":             str,
     "auth_boundary_description":  str,
     "network_architecture":       str,
+    "vlans":             list,  # [{"uuid", "vlan_id", "name", "description"}]
     "data_flow":                  str,
     "data_flow_links":  list,  # [{"uuid","source_component_uuid","source_component_title",
                                 #   "target_component_uuid","target_component_title",
@@ -262,7 +263,7 @@ The SSP is stored as a plain Python dictionary throughout editing. It is only co
 }
 ```
 
-`data_flow_links` (Section 4) records how data moves between the SSP's own components — source, target, protocol, port, transport, and direction — so that a Data Flow diagram can eventually be generated from it. See §10.12 for how this is serialised into OSCAL, since `data-flow` has no native field for it.
+`data_flow_links` (Section 4) records how data moves between the SSP's own components — source, target, protocol, port, transport, and direction — so that a Data Flow diagram can eventually be generated from it. `vlans` (also Section 4) records the network's VLANs — ID, name, and description. Both are serialised into OSCAL using the same grouped-props approach; see §10.12.
 
 ---
 
@@ -866,6 +867,8 @@ The dedicated `system-characteristics.data-flow` object is the correct home for 
 
 Because `data-flow.description` is the field any plain OSCAL consumer will actually read, `build_oscal_ssp()` auto-drafts a narrative summary from the flow links (`_data_flow_links_narrative()`) whenever the user hasn't written their own Data Flow description text, so the document stays meaningful outside this toolkit even when the structured detail lives in custom props. Component titles cached on each flow link are also re-resolved against the current components list on load (`_refresh_flow_link_titles()`), in case a component was renamed since the flow was recorded — the same cached-title-refresh pattern used for responsible-parties party names (§10.11-adjacent, `parse_ssp_file`).
 
+**VLANs (Section 4) reuse the same pattern on `network-architecture`**, which has the identical sparse schema shape (`description`/`props`/`links`/`diagrams`/`remarks`, `additionalProperties: false`). Each VLAN is a set of `network-architecture.props[]` entries (`vlan-id`, `vlan-name`, `vlan-description`) sharing the VLAN's UUID as `group`, tagged with `ns: https://oscal-user-toolkit/ns/vlan` (`_build_vlan_props` / `_parse_vlan_props` in `models.py`). No narrative auto-draft is generated for VLANs — unlike data flow, a list of VLAN IDs/names doesn't reduce to a natural sentence the way a source→target edge does, so `network-architecture.description` is left to the user as free text.
+
 ---
 
 ## 11. Example Component Library
@@ -912,13 +915,15 @@ The components span a realistic medium-to-large Australian government environmen
 
 **New features:**
 - **SSP Editor — Section 4: Data Flow Links**: new table under the Data Flow description textbox for recording how data moves between the SSP's own components (Section 8) — source, target, protocol, port, transport, and direction; Add/Edit/Remove dialog with component dropdowns and a shared protocol name list (`COMMON_PROTOCOLS`, imported from `component_tab.py`)
+- **SSP Editor — Section 4: VLANs**: new table under the Network Architecture description textbox (above the Network Architecture Diagrams table) for recording VLAN ID, name, and description; Add/Edit/Remove dialog
 
 **Removed:**
 - **Information Types — component data flows**: removed the `component_flows` concept and its "Export Data Flow Diagram" button from SSP Section 5. Checking `oscal_ssp_schema.json` directly confirmed Information Types has no native field for this and the encoding (fixed-order `props` triplets) was fragile. See §10.12 for the replacement design.
 
 **Data model additions:**
-- `"data_flow_links"` key added to the internal SSP dict format (§4.6)
+- `"data_flow_links"` and `"vlans"` keys added to the internal SSP dict format (§4.6)
 - `models._build_data_flow_link_props()` / `_parse_data_flow_link_props()` — serialise/deserialise flow links as grouped `data-flow.props[]` entries (§10.12)
+- `models._build_vlan_props()` / `_parse_vlan_props()` — same grouped-props approach applied to `network-architecture.props[]` for VLANs (§10.12)
 - `models._data_flow_links_narrative()` — auto-drafts `data-flow.description` from flow links when the user hasn't written their own
 - `models._refresh_flow_link_titles()` — re-resolves cached component titles on load
 
