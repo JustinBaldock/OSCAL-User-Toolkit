@@ -2103,13 +2103,23 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
     network_diagrams = ssp.get("network_arch_diagrams", [])
     dataflow = ssp.get("data_flow", "")
     dataflow_diagrams = ssp.get("data_flow_diagrams", [])
-    if network or network_diagrams or dataflow or dataflow_diagrams:
+    if network or network_diagrams or ssp.get("vlans") or dataflow or dataflow_diagrams:
         doc.add_heading("3.  Network Architecture & Data Flow", level=1)
-        if network or network_diagrams:
+        vlans = ssp.get("vlans", [])
+        if network or network_diagrams or vlans:
             doc.add_heading("Network Architecture", level=2)
             if network:
                 doc.add_paragraph(network)
             diagram_refs(network_diagrams, level=3)
+            if vlans:
+                doc.add_heading("VLANs", level=3)
+                t = styled_table(3)
+                add_header_row(t, ["VLAN ID", "Name", "Description"])
+                for v in vlans:
+                    row = t.add_row()
+                    row.cells[0].text = v.get("vlan_id", "")
+                    row.cells[1].text = v.get("name", "")
+                    row.cells[2].text = v.get("description", "")
         if dataflow or dataflow_diagrams:
             doc.add_heading("Data Flow", level=2)
             if dataflow:
