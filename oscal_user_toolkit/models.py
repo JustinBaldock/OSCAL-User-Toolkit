@@ -1995,10 +1995,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
 
     # ── Helper: apply a consistent style to every table ──────────────────────
     # "Table Grid" is a built-in Word style that draws borders on all cells.
-    # Each table starts on its own new page (landscape-per-table was tried
-    # and reverted — portrait throughout reads better).
     def styled_table(cols):
-        doc.add_page_break()
         t = doc.add_table(rows=0, cols=cols)
         t.style = "Table Grid"
         return t
