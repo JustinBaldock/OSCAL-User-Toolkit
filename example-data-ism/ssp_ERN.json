@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Research Network SSP",
-      "last-modified": "2026-07-02T04:47:55Z",
+      "last-modified": "2026-07-03T07:39:42Z",
       "version": "0.1",
       "oscal-version": "1.2.2",
       "roles": [
@@ -145,39 +145,7 @@
             },
             "availability-impact": {
               "base": "fips-199-moderate"
-            },
-            "props": [
-              {
-                "name": "component-uuid",
-                "value": "d1c0fb4d-24e5-4d5c-ad4c-68ac05b252a7",
-                "class": "data-flow"
-              },
-              {
-                "name": "flow-direction",
-                "value": "internal",
-                "class": "data-flow"
-              },
-              {
-                "name": "component-title",
-                "value": "Windows Fileshare Network I:",
-                "class": "data-flow"
-              },
-              {
-                "name": "component-uuid",
-                "value": "82722e6a-b942-4c39-b6ef-e1184642c62d",
-                "class": "data-flow"
-              },
-              {
-                "name": "flow-direction",
-                "value": "bidirectional",
-                "class": "data-flow"
-              },
-              {
-                "name": "component-title",
-                "value": "network encryptor ABC",
-                "class": "data-flow"
-              }
-            ]
+            }
           },
           {
             "uuid": "e7d7b5ee-b2b8-415a-be35-a88b38344110",
@@ -191,39 +159,7 @@
             },
             "availability-impact": {
               "base": "fips-199-moderate"
-            },
-            "props": [
-              {
-                "name": "component-uuid",
-                "value": "d1c0fb4d-24e5-4d5c-ad4c-68ac05b252a7",
-                "class": "data-flow"
-              },
-              {
-                "name": "flow-direction",
-                "value": "internal",
-                "class": "data-flow"
-              },
-              {
-                "name": "component-title",
-                "value": "Windows Fileshare Network I:",
-                "class": "data-flow"
-              },
-              {
-                "name": "component-uuid",
-                "value": "82722e6a-b942-4c39-b6ef-e1184642c62d",
-                "class": "data-flow"
-              },
-              {
-                "name": "flow-direction",
-                "value": "bidirectional",
-                "class": "data-flow"
-              },
-              {
-                "name": "component-title",
-                "value": "network encryptor ABC",
-                "class": "data-flow"
-              }
-            ]
+            }
           },
           {
             "uuid": "9cfe2f24-3326-4928-9ace-fee2fad83ef1",
@@ -249,7 +185,99 @@
         "description": "The authorisation boundary encompasses all IT infrastructure owned and operated by the organisation at the head office (Canberra) and the three remote offices (Sydney, Melbourne, and Brisbane), together with the site-to-site VPN connections between them. It does not extend to the internal infrastructure of any external vendor or cloud service provider — for each vendor-hosted service used by the system, only the organisation's own configuration and the data sent to or from it are in scope, not the vendor's backend.\n\nIn scope — head office:\n- The perimeter firewall (Firewall central) and the SonicWall TZ670 VPN Hub (Main Office), both at the network edge\n- Core and access network switches, wireless access points, and all structured cabling (Cabling Infrastrucutre)\n- The hardware network encryptor (network encryptor ABC) securing the dedicated inter-site WAN link\n- Two Active Directory domain controllers, a Windows file and print server, a Linux application server, a two-node VMware ESXi cluster, and the NAS storage array\n- All Windows 11 workstations and laptops, and the agents installed on them (Microsoft Defender for Endpoint, Airlock Digital, Windows Defender Firewall, Windows Advanced Audit Policy)\n- The Veeam Backup and Replication server and its local backup repository\n- The Tenable Nessus vulnerability scanner\n\nIn scope — each remote office:\n- The SonicWall TZ270 VPN Client (Remote Office) device\n- The local managed switch and Windows 11 workstations\n\nExplicitly out of scope — vendor-hosted backend systems:\n- The Microsoft 365 / Entra ID cloud tenant backend (Multi-Factor Authentication — Microsoft Entra ID) — only the organisation's tenant configuration and the client-side authentication flow are in scope, not Microsoft's underlying infrastructure\n- The Microsoft Sentinel cloud workspace backend (SIEM — Microsoft Sentinel) — only the log sources forwarding into it and the organisation's workspace configuration are in scope\n- The Amazon Web Services S3 backend (Offsite Backup Storage — AWS S3) — only the organisation's bucket, its encryption configuration, and the data sent to it are in scope\n- Any other vendor cloud management console, update service, or threat-intelligence backend not listed above (e.g. the Microsoft Defender cloud portal, Tenable's cloud console)\n\nA boundary diagram showing these components graphically is maintained in the Data Flow Diagrams register (Section 3a)."
       },
       "network-architecture": {
-        "description": "The head office network is segmented into four zones, with all inter-zone traffic routed and inspected by the perimeter firewall (Firewall central):\n\n- DMZ — hosts the SonicWall TZ670 VPN Hub (Main Office), which terminates every remote office's site-to-site IPsec tunnel, and the network encryptor ABC hardware encryptor for the dedicated inter-site WAN link. Traffic arriving from a remote office lands in the DMZ first and is inspected by the perimeter firewall before being permitted onward to any internal VLAN — no remote office device can reach an internal VLAN directly.\n- Administration VLAN — the two Active Directory domain controllers, the Windows file and print server, and the Veeam Backup and Replication server. Access is restricted to IT and privileged administrative accounts, enforced by Active Directory — Privileged Access group membership and Multi-Factor Authentication — Microsoft Entra ID.\n- Backend-data VLAN — the Linux application server, the two-node VMware ESXi cluster, and the NAS storage array. Devices on the Client VLAN reach published application services on this VLAN only through specific firewall-permitted ports; direct access from the DMZ or from any remote office is denied.\n- Client VLAN — all head office Windows 11 workstations and laptops, plus the wireless access points they connect through. Client VLAN devices have no unrestricted internet access; outbound traffic is limited to the approved destinations described in the System Description (Microsoft 365/Entra ID, Microsoft Sentinel, Tenable Nessus, and AWS S3) via the perimeter firewall.\n\nEach remote office is a single flat network behind its own SonicWall TZ270 VPN Client (Remote Office) device — there is no local VLAN segmentation, as each site hosts only a small number of workstations and no servers. All remote office traffic, including internet-bound traffic, is routed over the site's IPsec tunnel into the head office DMZ and out through the head office perimeter firewall; no remote office has its own internet breakout.\n\nInter-VLAN routing is performed exclusively by the perimeter firewall according to an explicit allow-list of permitted flows. There is no direct routing between the Client, Backend-data, and Administration VLANs, or between the DMZ and any internal VLAN, other than the specific flows described in the Data Flow section below."
+        "description": "The head office network is segmented into four zones, with all inter-zone traffic routed and inspected by the perimeter firewall (Firewall central):\n\n- DMZ — hosts the SonicWall TZ670 VPN Hub (Main Office), which terminates every remote office's site-to-site IPsec tunnel, and the network encryptor ABC hardware encryptor for the dedicated inter-site WAN link. Traffic arriving from a remote office lands in the DMZ first and is inspected by the perimeter firewall before being permitted onward to any internal VLAN — no remote office device can reach an internal VLAN directly.\n- Administration VLAN — the two Active Directory domain controllers, the Windows file and print server, and the Veeam Backup and Replication server. Access is restricted to IT and privileged administrative accounts, enforced by Active Directory — Privileged Access group membership and Multi-Factor Authentication — Microsoft Entra ID.\n- Backend-data VLAN — the Linux application server, the two-node VMware ESXi cluster, and the NAS storage array. Devices on the Client VLAN reach published application services on this VLAN only through specific firewall-permitted ports; direct access from the DMZ or from any remote office is denied.\n- Client VLAN — all head office Windows 11 workstations and laptops, plus the wireless access points they connect through. Client VLAN devices have no unrestricted internet access; outbound traffic is limited to the approved destinations described in the System Description (Microsoft 365/Entra ID, Microsoft Sentinel, Tenable Nessus, and AWS S3) via the perimeter firewall.\n\nEach remote office is a single flat network behind its own SonicWall TZ270 VPN Client (Remote Office) device — there is no local VLAN segmentation, as each site hosts only a small number of workstations and no servers. All remote office traffic, including internet-bound traffic, is routed over the site's IPsec tunnel into the head office DMZ and out through the head office perimeter firewall; no remote office has its own internet breakout.\n\nInter-VLAN routing is performed exclusively by the perimeter firewall according to an explicit allow-list of permitted flows. There is no direct routing between the Client, Backend-data, and Administration VLANs, or between the DMZ and any internal VLAN, other than the specific flows described in the Data Flow section below.",
+        "props": [
+          {
+            "name": "vlan-id",
+            "value": "911",
+            "group": "fc7cff2d-c566-4042-a8d0-f43da95f0060",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-name",
+            "value": "VoIP",
+            "group": "fc7cff2d-c566-4042-a8d0-f43da95f0060",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-description",
+            "value": "Voice over IP, used by the VoIP phones and VTC capability",
+            "group": "fc7cff2d-c566-4042-a8d0-f43da95f0060",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-id",
+            "value": "100",
+            "group": "b2447021-8d65-459f-b4c0-cdbc89d463c1",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-name",
+            "value": "Client",
+            "group": "b2447021-8d65-459f-b4c0-cdbc89d463c1",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-description",
+            "value": "This vlan is main network for client workstations and servers/services which can be accessed by client endpoints.",
+            "group": "b2447021-8d65-459f-b4c0-cdbc89d463c1",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-id",
+            "value": "4000",
+            "group": "f6d522af-71d4-4bd9-9f87-ec476539de8b",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-name",
+            "value": "OOB",
+            "group": "f6d522af-71d4-4bd9-9f87-ec476539de8b",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-description",
+            "value": "Out-Of-Band management. All of the Lights out Management / Out of Band management ports run on this vlan.",
+            "group": "f6d522af-71d4-4bd9-9f87-ec476539de8b",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-id",
+            "value": "666",
+            "group": "472f4c61-0ae5-4809-9da9-27235c92fa27",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-name",
+            "value": "Backup",
+            "group": "472f4c61-0ae5-4809-9da9-27235c92fa27",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-description",
+            "value": "All backups server backups happen on this vlan.",
+            "group": "472f4c61-0ae5-4809-9da9-27235c92fa27",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-id",
+            "value": "120",
+            "group": "4d8a55ad-c32f-4ca0-b501-ef6c2ff83dad",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-name",
+            "value": "Storage",
+            "group": "4d8a55ad-c32f-4ca0-b501-ef6c2ff83dad",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          },
+          {
+            "name": "vlan-description",
+            "value": "iSCSI storage / data vlan.",
+            "group": "4d8a55ad-c32f-4ca0-b501-ef6c2ff83dad",
+            "ns": "https://oscal-user-toolkit/ns/vlan"
+          }
+        ]
       },
       "data-flow": {
         "description": "1. Remote office authentication — A workstation at a remote office authenticates against Active Directory. Kerberos/LDAP traffic travels from the workstation through the SonicWall TZ270 VPN Client (Remote Office), across the site's encrypted IPsec tunnel, into the SonicWall TZ670 VPN Hub (Main Office) in the DMZ, through Firewall central, to the domain controllers on the Administration VLAN. Privileged or remote sessions are additionally protected by Multi-Factor Authentication — Microsoft Entra ID.\n\n2. File access — An authenticated workstation, whether at the head office or a remote office, requests a file from Windows Fileshare Network I:. The request is routed from the Client VLAN (or, for a remote office, from the DMZ) through Firewall central to the file server on the Administration VLAN, subject to the firewall's inter-VLAN allow-list.\n\n3. Application access — Research staff access the internal research data-collection application on the Linux application server. Requests flow from the Client VLAN through Firewall central to the Backend-data VLAN, where the application server and the VMware ESXi cluster reside.\n\n4. Redundant inter-site link — A dedicated leased-line WAN circuit between the head office and the Sydney office, protected end-to-end by the network encryptor ABC hardware encryptor, provides an out-of-band management path independent of the SonicWall IPsec VPN, used only if the primary VPN path is unavailable.\n\n5. Endpoint protection telemetry — Every Windows 11 workstation runs Microsoft Defender for Endpoint, Airlock Digital, and Windows Defender Firewall. These agents send telemetry outbound from the Client VLAN, through Firewall central, to their respective vendor cloud backends, and separately forward security events to SIEM — Microsoft Sentinel via Windows Advanced Audit Policy log forwarding.\n\n6. Patch and vulnerability management — Windows 11 — Patch Management retrieves updates outbound through Firewall central. Vulnerability Scanner — Tenable Nessus performs authenticated scans of in-scope hosts across the Administration, Backend-data, and Client VLANs from its position on the Administration VLAN; scan traffic does not cross the DMZ, so remote office hosts are not actively scanned.\n\n7. Security monitoring — Security events from the domain controllers, file server, workstations, Firewall central, and both SonicWall VPN devices are forwarded to SIEM — Microsoft Sentinel over an encrypted channel from the Administration VLAN, through Firewall central, to Sentinel's cloud ingestion endpoint.\n\n8. Backup and offsite replication — Veeam Backup and Replication takes nightly backups of the VMware ESXi cluster's virtual machines and the NAS file shares over the Backend-data VLAN, retains them locally, and replicates a copy to Offsite Backup Storage — AWS S3 over an encrypted channel from the Administration VLAN, through Firewall central, to the internet.\n\n9. Privileged administrative access — IT administrators authenticate to Active Directory — Privileged Access using a separate privileged account, protected by Multi-Factor Authentication — Microsoft Entra ID, before performing any administrative action against the domain controllers, Firewall central, or either SonicWall VPN device."
@@ -414,7 +442,7 @@
           },
           "protocols": [
             {
-              "uuid": "2c9ac282-e02c-4f5d-a623-03abc73e212d",
+              "uuid": "8ee0faa8-9944-43ff-b46b-8f99419a6925",
               "name": "dns",
               "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
@@ -431,7 +459,7 @@
               ]
             },
             {
-              "uuid": "f198b1ed-3f1d-4270-aff0-8f8aae1882ce",
+              "uuid": "1cb74158-29bc-4344-99c3-8f8d288084a4",
               "name": "kerberos",
               "title": "Kerberos — Primary authentication protocol for the AD domain",
               "port-ranges": [
@@ -448,7 +476,7 @@
               ]
             },
             {
-              "uuid": "a53c4165-0eb3-4f0d-9b50-e3b704788954",
+              "uuid": "86b072ac-374e-4565-b3a8-b78cb3e1bf71",
               "name": "rpc-epmap",
               "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
               "port-ranges": [
@@ -460,7 +488,7 @@
               ]
             },
             {
-              "uuid": "b0297e53-2656-44d9-8f20-eb3ffdcb478e",
+              "uuid": "d4ed3d9e-93b8-4f7f-83e9-af10eb983a8c",
               "name": "ldap",
               "title": "LDAP — Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
@@ -477,7 +505,7 @@
               ]
             },
             {
-              "uuid": "6b5e5f3d-dc8d-4d44-b3b2-b563f0206a2f",
+              "uuid": "3243eed4-6c86-42c2-9e1b-c043a02cef72",
               "name": "ldaps",
               "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
@@ -489,7 +517,7 @@
               ]
             },
             {
-              "uuid": "e0e0ab9d-4eaf-4c73-b263-fb87aba614ff",
+              "uuid": "7e4223e4-82c6-4520-81fb-ec64a369b38c",
               "name": "smb",
               "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
@@ -501,7 +529,7 @@
               ]
             },
             {
-              "uuid": "6644f97a-7402-427f-84c8-ff2ce8f9047c",
+              "uuid": "d3f9080b-9ec4-4ec5-9537-a5785f5a48d9",
               "name": "ntp",
               "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
@@ -513,7 +541,7 @@
               ]
             },
             {
-              "uuid": "d66a266e-3519-4490-b95d-b5f732819a57",
+              "uuid": "6a16976f-7c20-40a8-82f8-8f790ee1a66d",
               "name": "ad-gc",
               "title": "Active Directory Global Catalog — Forest-wide directory lookups",
               "port-ranges": [
@@ -531,7 +559,7 @@
               ]
             },
             {
-              "uuid": "ed8e14db-54e8-48c0-9e8a-01e014d8fd33",
+              "uuid": "8c25d434-c00a-48b4-89e3-50a4dd20eb9b",
               "name": "ad-replication",
               "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
@@ -544,7 +572,7 @@
               ]
             },
             {
-              "uuid": "309524a2-f01f-48b0-ab60-7caba562be4d",
+              "uuid": "5850f8ed-5c14-40bd-b588-17707d0c1125",
               "name": "netbios-ns",
               "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
@@ -557,7 +585,7 @@
               ]
             },
             {
-              "uuid": "0e66b50b-33ca-457f-9420-99b0a6a42649",
+              "uuid": "9668e86b-d6b9-43a7-a78b-3b5a13e6fbf8",
               "name": "netbios-dgm",
               "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
               "port-ranges": [
@@ -570,7 +598,7 @@
               ]
             },
             {
-              "uuid": "153c0246-eefd-4aa6-9d47-9868f1538894",
+              "uuid": "dd6d4871-fa5a-40f5-b132-5b442707bafe",
               "name": "netbios-ssn",
               "title": "NetBIOS Session — Legacy NetBIOS session service",
               "port-ranges": [
@@ -623,7 +651,7 @@
           },
           "protocols": [
             {
-              "uuid": "e8a7a72c-2c24-4d27-b357-de44aeb510eb",
+              "uuid": "3a5baee0-9b99-4b74-af6a-563ea4a60363",
               "name": "https",
               "title": "HTTPS — Web-based management console",
               "port-ranges": [
@@ -635,7 +663,7 @@
               ]
             },
             {
-              "uuid": "0cf16940-9dbe-44dc-9ad8-383ec6e22b59",
+              "uuid": "1f285048-a985-48db-9505-cea5eb9589c8",
               "name": "ssh",
               "title": "SSH — Secure CLI management",
               "port-ranges": [
@@ -647,7 +675,7 @@
               ]
             },
             {
-              "uuid": "12473711-5fa9-4045-bc6c-92c85629a112",
+              "uuid": "14d000a9-3be8-41ed-a36e-c62925bbb6a9",
               "name": "snmp",
               "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
@@ -665,7 +693,7 @@
               ]
             },
             {
-              "uuid": "45163e25-2a65-4676-abe9-60d21db30140",
+              "uuid": "cc6c5946-52dc-4459-af57-13e34e061dd1",
               "name": "syslog",
               "title": "Syslog — Security event forwarding to SIEM",
               "port-ranges": [
@@ -677,7 +705,7 @@
               ]
             },
             {
-              "uuid": "b38aaf58-9574-4893-9b3e-f01e01e7f111",
+              "uuid": "3b7bf41a-5a31-41a6-b1b7-be20be6b37c3",
               "name": "ntp",
               "title": "NTP — Time synchronisation",
               "port-ranges": [
@@ -701,7 +729,7 @@
           },
           "protocols": [
             {
-              "uuid": "0c90994f-056d-4a83-bb10-788617d62563",
+              "uuid": "b441e0ac-f787-4fe2-857a-a85335ff12e1",
               "name": "https",
               "title": "Secure local management",
               "port-ranges": [
@@ -713,7 +741,7 @@
               ]
             },
             {
-              "uuid": "6cf40dd1-520a-4d13-bb2b-a471db9eb7a0",
+              "uuid": "c72fd6b2-0a5e-4ccc-ba8f-caf672380c3e",
               "name": "IKE",
               "title": "Encrypted data transport",
               "port-ranges": [
@@ -725,7 +753,7 @@
               ]
             },
             {
-              "uuid": "35082325-ec01-4baa-8242-97f65ce4ce89",
+              "uuid": "9093387f-b498-469c-b742-c856997b7008",
               "name": "NAT-T",
               "title": "NAT Traversal",
               "port-ranges": [
@@ -749,7 +777,7 @@
           },
           "protocols": [
             {
-              "uuid": "5491b527-31dd-4e1a-91dc-330cf5faa084",
+              "uuid": "346b13d2-f79f-4abf-809e-c2d71fa9e16c",
               "name": "https",
               "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
@@ -761,7 +789,7 @@
               ]
             },
             {
-              "uuid": "429513ca-3f2c-41ea-a14d-1ae5b462980a",
+              "uuid": "1587a195-c330-4f00-92de-f78fbed1d5ac",
               "name": "airlock-agent",
               "title": "Airlock Digital agent communication — Agent check-in and policy download",
               "port-ranges": [
@@ -774,7 +802,7 @@
               ]
             },
             {
-              "uuid": "0f0a4f5f-7189-4a0a-ae0c-7dbf530bf5a6",
+              "uuid": "32c28f51-1915-4f5c-8862-fd79e431756f",
               "name": "syslog",
               "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
@@ -786,7 +814,7 @@
               ]
             },
             {
-              "uuid": "64c4b486-2bed-422b-ae46-125ef5878209",
+              "uuid": "60b4d9da-46fa-4344-9543-40bccbf0d9e9",
               "name": "ldaps",
               "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
@@ -798,7 +826,7 @@
               ]
             },
             {
-              "uuid": "352f6a01-5bc0-43e2-b942-d9706762e173",
+              "uuid": "480f9b5d-49a8-482e-be96-5574c10de7f8",
               "name": "ntp",
               "title": "NTP — Time synchronisation for audit log timestamps",
               "port-ranges": [
@@ -836,7 +864,7 @@
           },
           "protocols": [
             {
-              "uuid": "55ad1d1d-ad06-466b-b3a2-2aded23da51d",
+              "uuid": "75c0a215-39ef-44a6-bf68-8b3922f2bc93",
               "name": "smb",
               "title": "Server Message Block",
               "port-ranges": [
@@ -1850,7 +1878,7 @@
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "d2dd91c4-54de-4fdf-a057-20571fc94427",
+          "uuid": "8e82fbb1-1d26-49fe-bfaa-bd45557c5d0b",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -1864,7 +1892,7 @@
           ]
         },
         {
-          "uuid": "3b86df97-32ed-4b3c-b297-33130ee3a17e",
+          "uuid": "d8c7a8ba-4629-4b35-b4e9-3d569b26a3ac",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -1878,7 +1906,7 @@
           ]
         },
         {
-          "uuid": "65e3aa59-3bbc-456f-b858-08890ddab0a3",
+          "uuid": "5e5793df-73be-40d6-b7c9-2e7a5fc5e399",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -1892,7 +1920,7 @@
           ]
         },
         {
-          "uuid": "f44ee5c1-064a-45a1-b0d0-ce45ecd316f3",
+          "uuid": "02ba6b4c-7b53-4b79-88e3-b1a7ad4b2adc",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -1906,7 +1934,7 @@
           ]
         },
         {
-          "uuid": "32b828b8-123c-4646-a562-44d6c7214ef4",
+          "uuid": "074ecd7a-652a-4542-983d-42a961a52a9e",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -1920,7 +1948,7 @@
           ]
         },
         {
-          "uuid": "0c128747-02a0-4a7c-9c98-71a56b495155",
+          "uuid": "9c1a6f5a-6bc3-4a7a-900f-d283ba619d26",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -1958,7 +1986,7 @@
           ]
         },
         {
-          "uuid": "9cc4ad12-223f-4e15-a465-7407a2d07867",
+          "uuid": "e84978c5-9f10-46a2-bb6a-518e8d568022",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -1972,7 +2000,7 @@
           ]
         },
         {
-          "uuid": "fb5cdf1b-2d76-437d-bf33-a5d6f41ebd46",
+          "uuid": "cb5ba2ce-f84d-4026-9f54-f37edf62c1de",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -1986,7 +2014,7 @@
           ]
         },
         {
-          "uuid": "c2125d14-15c9-419a-b7ac-f2a9cc3835fb",
+          "uuid": "66ba6bbd-97b4-445c-8ccc-9bca07669b59",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -2000,7 +2028,7 @@
           ]
         },
         {
-          "uuid": "073cfc76-ea2b-445e-9afb-0558331cbb74",
+          "uuid": "32e51599-1245-4750-95c3-6fa768d4e609",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -2014,7 +2042,7 @@
           ]
         },
         {
-          "uuid": "965b18a7-419d-469a-afab-7ab42e7ce289",
+          "uuid": "3e11f153-4071-42d9-8dfc-a3f60d5b6d19",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -2044,7 +2072,7 @@
           ]
         },
         {
-          "uuid": "d4782ecd-3960-4b7b-8f8a-e3d67ceeb60e",
+          "uuid": "1b19be4b-2f30-48c4-8223-dc5231429309",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -2058,7 +2086,7 @@
           ]
         },
         {
-          "uuid": "6877e903-c108-4ebf-bcda-8270493f64e8",
+          "uuid": "34467a39-e98b-4884-9083-34d6dec9aca4",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -2072,7 +2100,7 @@
           ]
         },
         {
-          "uuid": "05351a5f-1b8f-4d04-9fb1-f38f825b43b6",
+          "uuid": "2110addf-7081-4abc-a65c-bdc0adaaf99f",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -2086,7 +2114,7 @@
           ]
         },
         {
-          "uuid": "6e76be10-348c-4996-b126-36e8119f0696",
+          "uuid": "577f4515-2f33-4ec6-bb67-44491b8f918b",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -2100,7 +2128,7 @@
           ]
         },
         {
-          "uuid": "4e1dff99-e8fe-4b6e-9aef-ba1893fc1c5a",
+          "uuid": "a2088c7d-c2c9-4f79-9f76-90397d0532f6",
           "control-id": "ism-2012",
           "by-components": [
             {
@@ -2122,7 +2150,7 @@
           ]
         },
         {
-          "uuid": "e1362c88-a889-48c3-97c6-1a6560689b3b",
+          "uuid": "3ebe6275-4b66-45d9-8ea4-ade6636d0b65",
           "control-id": "ism-1175",
           "by-components": [
             {
@@ -2152,7 +2180,7 @@
           ]
         },
         {
-          "uuid": "d3c033ba-ec5a-498c-b511-5274b4271b8b",
+          "uuid": "7cef83e4-a518-4c2a-b301-4973460b7248",
           "control-id": "ism-0874",
           "by-components": [
             {
@@ -2166,7 +2194,7 @@
           ]
         },
         {
-          "uuid": "5aaee034-5a43-4f4f-8bf8-20713e07d282",
+          "uuid": "ce376efa-9af4-40ba-8ad8-85c1cf1d1864",
           "control-id": "ism-1490",
           "by-components": [
             {
@@ -2180,7 +2208,7 @@
           ]
         },
         {
-          "uuid": "7641dff4-58f0-4b9e-92e0-0ee5d9d927cf",
+          "uuid": "4bdcd446-3b5d-4ae4-ac04-a2bc6adcb9a4",
           "control-id": "ism-1486",
           "by-components": [
             {
@@ -2194,7 +2222,7 @@
           ]
         },
         {
-          "uuid": "515b45a9-9f03-4f16-bfaf-cf240fe94946",
+          "uuid": "4c7f16c5-ea22-4a20-b572-b40dcf494a6f",
           "control-id": "ism-1485",
           "by-components": [
             {
@@ -2208,7 +2236,7 @@
           ]
         },
         {
-          "uuid": "869d642d-356d-4e13-9d5a-f347b1b2b77d",
+          "uuid": "2bb3432b-e9ad-4a7b-8870-113f713badc8",
           "control-id": "ism-1483",
           "by-components": [
             {
@@ -2222,7 +2250,7 @@
           ]
         },
         {
-          "uuid": "f398cad0-232c-4e3f-8cb7-2c51b467ac0d",
+          "uuid": "c06c9f60-a4c6-4623-8ce5-e896a7f894fd",
           "control-id": "ism-1978",
           "by-components": [
             {
@@ -2236,7 +2264,7 @@
           ]
         },
         {
-          "uuid": "99ddcb99-7ef2-4e6a-af73-63d7caf0c154",
+          "uuid": "4ab1f5cb-75c7-406a-8a4a-bf1bd87dfbee",
           "control-id": "ism-1877",
           "by-components": [
             {
@@ -2250,7 +2278,7 @@
           ]
         },
         {
-          "uuid": "72a96f6a-18d4-4c43-8d47-8c1768d78497",
+          "uuid": "332f3332-eba2-4a3f-acd2-e0e297724633",
           "control-id": "ism-1753",
           "by-components": [
             {
@@ -2264,7 +2292,7 @@
           ]
         },
         {
-          "uuid": "14994c04-89f7-47e5-80bc-c1c1d3f63d8b",
+          "uuid": "c3964497-d068-40f7-adda-07c8512c6da5",
           "control-id": "ism-1906",
           "by-components": [
             {
@@ -2278,7 +2306,7 @@
           ]
         },
         {
-          "uuid": "ff8a88cb-fb9c-4662-b5dc-d148b9f5f83f",
+          "uuid": "d37771d0-9b6f-4df4-a632-03a0d7b0b828",
           "control-id": "ism-1960",
           "by-components": [
             {
@@ -2316,7 +2344,7 @@
           ]
         },
         {
-          "uuid": "965c95c5-ba34-4cdf-b9bc-b8df2b1b7674",
+          "uuid": "66ddfa5a-2b68-4e21-9f14-b59794f501c6",
           "control-id": "ism-1701",
           "by-components": [
             {
@@ -2330,7 +2358,7 @@
           ]
         },
         {
-          "uuid": "27462548-58e9-431b-8f73-3dda9204f55f",
+          "uuid": "a61191a4-6f6e-4027-b5f4-73c0e47a72a7",
           "control-id": "ism-1818",
           "by-components": [
             {
@@ -2344,7 +2372,7 @@
           ]
         },
         {
-          "uuid": "e7f022cd-d9d4-49d5-a679-47d83b2f404e",
+          "uuid": "50e2de8b-6963-4932-82c9-f754f1270ea8",
           "control-id": "ism-0628",
           "by-components": [
             {
@@ -2358,7 +2386,7 @@
           ]
         },
         {
-          "uuid": "c0d5eafd-dfee-4575-8aaa-0fb321da7b90",
+          "uuid": "7815d3c2-b8cd-4f7e-8d5a-d377c8e11fe0",
           "control-id": "ism-0631",
           "by-components": [
             {
@@ -2372,7 +2400,7 @@
           ]
         },
         {
-          "uuid": "e2eb932d-1599-4f0b-9731-ee1ffcc04297",
+          "uuid": "31eb1f08-beb2-49c9-a2aa-42478581d1f4",
           "control-id": "ism-1192",
           "by-components": [
             {
@@ -2386,7 +2414,7 @@
           ]
         },
         {
-          "uuid": "2552266b-8b9a-4000-8aa9-5775bd3f7b66",
+          "uuid": "472702ab-0604-480f-bb78-0e182c5b3232",
           "control-id": "ism-0494",
           "by-components": [
             {
@@ -2408,7 +2436,7 @@
           ]
         },
         {
-          "uuid": "a9e4937f-5704-4428-a64f-a7efaa1143e0",
+          "uuid": "caf30cee-2206-4615-86dc-68661e4df92d",
           "control-id": "ism-0496",
           "by-components": [
             {
@@ -2430,7 +2458,7 @@
           ]
         },
         {
-          "uuid": "ff6a426b-26de-4a2b-a562-c7b1a8f7a358",
+          "uuid": "7ebde87a-c609-4b58-a7b5-c31541c47718",
           "control-id": "ism-1233",
           "by-components": [
             {
@@ -2452,7 +2480,7 @@
           ]
         },
         {
-          "uuid": "bc52c069-00cd-478d-855f-702dd06c1432",
+          "uuid": "cddb7ce3-dcf5-4f94-a600-c8ce3bd7a847",
           "control-id": "ism-1771",
           "by-components": [
             {
@@ -2474,7 +2502,7 @@
           ]
         },
         {
-          "uuid": "3c90886f-70d5-4f1b-bad4-4faeb1029f3a",
+          "uuid": "52df00fc-87ff-4237-baa5-fd6d167289dc",
           "control-id": "ism-1000",
           "by-components": [
             {
@@ -2496,7 +2524,7 @@
           ]
         },
         {
-          "uuid": "24384f3b-aeb2-4ed6-8f8a-1d7eaeb76a18",
+          "uuid": "a360e3aa-4481-4dd7-b532-9a4ac848346b",
           "control-id": "ism-0634",
           "by-components": [
             {
@@ -2510,7 +2538,7 @@
           ]
         },
         {
-          "uuid": "9230caf4-248d-483a-a67e-a0fee000ea4c",
+          "uuid": "b6b195f4-e993-4c5f-b866-c789cd771a12",
           "control-id": "ism-1774",
           "by-components": [
             {
@@ -2524,7 +2552,7 @@
           ]
         },
         {
-          "uuid": "a0ae9c12-11e5-43e3-8f4c-f18c0745c2d9",
+          "uuid": "a40e14b2-b46b-466d-b9bb-b3ddfc74351a",
           "control-id": "ism-0705",
           "by-components": [
             {
@@ -2538,7 +2566,7 @@
           ]
         },
         {
-          "uuid": "c1df458b-6076-4d71-8cf3-0ffc23666f65",
+          "uuid": "1513510d-d78a-46b4-b019-6c40a6f7a738",
           "control-id": "ism-0622",
           "by-components": [
             {
@@ -2552,7 +2580,7 @@
           ]
         },
         {
-          "uuid": "a7970d5a-409d-43ab-ac0b-d97c7ae1eccd",
+          "uuid": "2d9f0454-bf56-4862-98fa-35c0d9c15d54",
           "control-id": "ism-1417",
           "by-components": [
             {
@@ -2582,7 +2610,7 @@
           ]
         },
         {
-          "uuid": "32584d0e-c5d5-4948-92ee-3b47cf1fbec4",
+          "uuid": "1fb54b6b-feab-4bb5-a68e-ff1ededeaecf",
           "control-id": "ism-1416",
           "by-components": [
             {
@@ -2604,7 +2632,7 @@
           ]
         },
         {
-          "uuid": "7ee9e50e-2014-4b9f-89f9-2b4d074e4877",
+          "uuid": "92ac3b3a-22e7-47a6-aad4-fa7811c1e54f",
           "control-id": "ism-1341",
           "by-components": [
             {
@@ -2618,7 +2646,7 @@
           ]
         },
         {
-          "uuid": "eaf72246-8211-4086-ad54-4e7db9ab9ec5",
+          "uuid": "49e5c224-9e9c-4b80-a57f-3a3a5ac62668",
           "control-id": "ism-1492",
           "by-components": [
             {
@@ -2632,7 +2660,7 @@
           ]
         },
         {
-          "uuid": "60877638-d287-420f-8c7f-c0950ab9a434",
+          "uuid": "5ee0fdd8-b786-47d0-8cdc-975b6daa92e9",
           "control-id": "ism-1696",
           "by-components": [
             {
@@ -2654,7 +2682,7 @@
           ]
         },
         {
-          "uuid": "ef259245-bd5c-41d8-99f4-e6148426fde4",
+          "uuid": "a2f295b8-2edb-4409-8337-d37432b1f30e",
           "control-id": "ism-1693",
           "by-components": [
             {
@@ -2676,7 +2704,7 @@
           ]
         },
         {
-          "uuid": "5a1d1d9b-0173-4842-92e3-eb1a648df9d3",
+          "uuid": "626486c4-92d2-427d-81ea-2e019fb64b6e",
           "control-id": "ism-1702",
           "by-components": [
             {
@@ -2706,7 +2734,7 @@
           ]
         },
         {
-          "uuid": "8e1d89bc-ca1b-4e6c-8a12-4391e01f090b",
+          "uuid": "e31af81a-7571-4860-b56d-c893854cfc33",
           "control-id": "ism-1699",
           "by-components": [
             {
@@ -2728,7 +2756,7 @@
           ]
         },
         {
-          "uuid": "d4a8f9c4-a038-4d0d-a266-7688dd65a264",
+          "uuid": "d2d6c1c4-dbdc-4c07-96f6-0a3a3a6b1a38",
           "control-id": "ism-1704",
           "by-components": [
             {
@@ -2742,7 +2770,7 @@
           ]
         },
         {
-          "uuid": "7806195c-e47f-4378-8034-13464b8c02e8",
+          "uuid": "9226dee0-72f8-4b5c-be69-f1b1686a099b",
           "control-id": "ism-0445",
           "by-components": [
             {
@@ -2764,7 +2792,7 @@
           ]
         },
         {
-          "uuid": "c869c82e-7ada-46f0-89c2-a837c2d3e34c",
+          "uuid": "cec675ee-c303-448d-9d59-4813f1e6cbfb",
           "control-id": "ism-1507",
           "by-components": [
             {
@@ -2778,7 +2806,7 @@
           ]
         },
         {
-          "uuid": "76c36c15-a8c5-4d20-b9af-6587e2ad363f",
+          "uuid": "f7a34aea-43d2-4bfd-ab57-8354ef478e78",
           "control-id": "ism-1508",
           "by-components": [
             {
@@ -2800,7 +2828,7 @@
           ]
         },
         {
-          "uuid": "ea137dd2-9599-4bd0-8d0b-0a84e5ed95e9",
+          "uuid": "7aa21c2a-3a49-45da-a511-ae69bccb6e78",
           "control-id": "ism-1173",
           "by-components": [
             {
@@ -2814,7 +2842,7 @@
           ]
         },
         {
-          "uuid": "bc4d2bbc-ba4c-4e38-ad39-82de17c15dd1",
+          "uuid": "ecf11b5a-243e-4330-82c3-62e44ffa39f3",
           "control-id": "ism-0974",
           "by-components": [
             {
@@ -2828,7 +2856,7 @@
           ]
         },
         {
-          "uuid": "90a2e7f3-4e1a-445a-a8b3-7226db231062",
+          "uuid": "2d55ba1a-8848-4ac9-9959-b12ce70e2458",
           "control-id": "ism-1405",
           "by-components": [
             {
@@ -2858,7 +2886,7 @@
           ]
         },
         {
-          "uuid": "0b79e71f-9162-4539-b558-7d035cde491a",
+          "uuid": "56968958-8b9e-4ab0-9188-b64e6139ebbc",
           "control-id": "ism-0585",
           "by-components": [
             {
@@ -2888,7 +2916,7 @@
           ]
         },
         {
-          "uuid": "23764f91-a0b2-4e35-a0bc-907ca22f0777",
+          "uuid": "91c89555-f06c-4567-8f1f-49429834e316",
           "control-id": "ism-1509",
           "by-components": [
             {
@@ -2918,7 +2946,7 @@
           ]
         },
         {
-          "uuid": "09dcc9cf-17b7-4c80-b495-06315caa8338",
+          "uuid": "ffffbe49-ac7d-422d-906c-e7d6fa0a6f0a",
           "control-id": "ism-1566",
           "by-components": [
             {
@@ -2940,7 +2968,7 @@
           ]
         },
         {
-          "uuid": "288b7c8b-4250-44c6-84eb-effdd2962be7",
+          "uuid": "7d40f45a-aef6-4842-9cbb-acc7036afc7f",
           "control-id": "ism-1683",
           "by-components": [
             {
@@ -2954,7 +2982,7 @@
           ]
         },
         {
-          "uuid": "b4d7b6f5-1761-4aa3-9c11-bfed888c57ef",
+          "uuid": "e0ad29a5-31f4-41b7-8985-5449aa723fe8",
           "control-id": "ism-1118",
           "by-components": [
             {
@@ -2976,7 +3004,7 @@
           ]
         },
         {
-          "uuid": "b540c2df-7edb-4d70-b2a1-d6b2147f6066",
+          "uuid": "5b5dc795-a67e-4604-8f57-a369830d977c",
           "control-id": "ism-principle-gov-01",
           "by-components": [
             {
@@ -2990,7 +3018,7 @@
           ]
         },
         {
-          "uuid": "81287d9a-718e-4c80-87d5-35145f9ecbaf",
+          "uuid": "304d7e66-3cee-4521-a5d6-d2d4d9e1cdb7",
           "control-id": "ism-principle-ide-01",
           "by-components": [
             {
@@ -3004,7 +3032,7 @@
           ]
         },
         {
-          "uuid": "cf7b52ba-54c5-46af-8ad1-5571c0dd6a0d",
+          "uuid": "6c0d24ae-61a6-4546-b547-3210d3adeb6d",
           "control-id": "ism-principle-ide-02",
           "by-components": [
             {
@@ -3018,7 +3046,7 @@
           ]
         },
         {
-          "uuid": "31f0d8ac-9025-4e01-abdc-7d78b6c1dfe3",
+          "uuid": "5b1444d6-01ac-4464-b2f6-533c250f4d9b",
           "control-id": "ism-principle-ide-04",
           "by-components": [
             {
@@ -3032,7 +3060,7 @@
           ]
         },
         {
-          "uuid": "3a8d066f-bd70-425c-80f8-f96cc6ddb430",
+          "uuid": "48351be7-23da-47cd-bd4b-fcd8a3947494",
           "control-id": "ism-principle-pro-01",
           "by-components": [
             {
@@ -3046,7 +3074,7 @@
           ]
         },
         {
-          "uuid": "e9e0aacc-54a9-430a-a1d2-9764af7f48db",
+          "uuid": "25b239cb-3982-45f6-9d84-13862a7dc946",
           "control-id": "ism-principle-det-01",
           "by-components": [
             {
@@ -3060,7 +3088,7 @@
           ]
         },
         {
-          "uuid": "e62efdd1-ca19-4a85-a8c7-779ca47de6a2",
+          "uuid": "c2c073fe-ff31-4fa1-81a9-14a9c00ec754",
           "control-id": "ism-principle-res-01",
           "by-components": [
             {
@@ -3074,7 +3102,7 @@
           ]
         },
         {
-          "uuid": "d852f2ab-3694-4ebb-9568-7d822c2655fe",
+          "uuid": "49e574f4-6880-4b69-94e3-03320e1bd115",
           "control-id": "ism-principle-rec-01",
           "by-components": [
             {
