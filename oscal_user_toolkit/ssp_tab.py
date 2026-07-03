@@ -2851,11 +2851,14 @@ class SSPTab(tk.Frame):
                      font=("Helvetica", 11), width=width, anchor="w").pack(side="left")
             return row
 
+        id_row = lrow("VLAN ID *")
         v_id = tk.StringVar(value=e.get("vlan_id", ""))
-        tk.Entry(lrow("VLAN ID *"), textvariable=v_id, width=10,
+        tk.Entry(id_row, textvariable=v_id, width=10,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
                  highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+        tk.Label(id_row, text="(valid range: 1–4094)", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(side="left", padx=(8, 0))
 
         v_name = tk.StringVar(value=e.get("name", ""))
         tk.Entry(lrow("Name *"), textvariable=v_name, width=32,
@@ -2883,6 +2886,13 @@ class SSPTab(tk.Frame):
             name    = v_name.get().strip()
             if not vlan_id:
                 messagebox.showwarning("Required", "VLAN ID is required.", parent=dlg)
+                return
+            if not vlan_id.isdigit() or not (1 <= int(vlan_id) <= 4094):
+                messagebox.showwarning(
+                    "Invalid VLAN ID",
+                    "VLAN ID must be a whole number between 1 and 4094.",
+                    parent=dlg,
+                )
                 return
             if not name:
                 messagebox.showwarning("Required", "Name is required.", parent=dlg)
