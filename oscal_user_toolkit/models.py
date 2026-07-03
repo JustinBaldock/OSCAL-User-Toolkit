@@ -42,6 +42,7 @@ try:
     from docx import Document
     from docx.shared import Pt, RGBColor, Inches
     from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.enum.section import WD_ORIENT, WD_SECTION
     _DOCX_AVAILABLE = True
 except ImportError:
     _DOCX_AVAILABLE = False
@@ -1993,12 +1994,46 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
 
     doc = Document()
 
+    # ── Helper: give every table its own landscape page ──────────────────────
+    # Word ties page orientation to a section, not an individual table, so a
+    # "landscape only where there's a table" layout means opening a new
+    # landscape section (which also starts a fresh page — satisfying "tables
+    # start on a new page" for free) immediately before the table, then a
+    # new portrait section immediately after it to resume normal flow.
+    _portrait_width  = doc.sections[0].page_width
+    _portrait_height = doc.sections[0].page_height
+
+    def start_landscape_page():
+        sec = doc.add_section(WD_SECTION.NEW_PAGE)
+        sec.orientation = WD_ORIENT.LANDSCAPE
+        sec.page_width  = _portrait_height
+        sec.page_height = _portrait_width
+        return sec
+
+    def end_landscape_page():
+        sec = doc.add_section(WD_SECTION.NEW_PAGE)
+        sec.orientation = WD_ORIENT.PORTRAIT
+        sec.page_width  = _portrait_width
+        sec.page_height = _portrait_height
+        return sec
+
     # ── Helper: apply a consistent style to every table ──────────────────────
     # "Table Grid" is a built-in Word style that draws borders on all cells.
     def styled_table(cols):
+        start_landscape_page()
         t = doc.add_table(rows=0, cols=cols)
         t.style = "Table Grid"
         return t
+
+    # ── Helper: 9pt font on every table cell, then close its landscape page ──
+    # Call once a table's rows are fully populated.
+    def finalize_table(table):
+        for row in table.rows:
+            for cell in row.cells:
+                for para in cell.paragraphs:
+                    for run in para.runs:
+                        run.font.size = Pt(9)
+        end_landscape_page()
 
     # ── Helper: add a header row to a table with bold, shaded cells ──────────
     def add_header_row(table, headings):
@@ -2120,6 +2155,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
                     row.cells[0].text = v.get("vlan_id", "")
                     row.cells[1].text = v.get("name", "")
                     row.cells[2].text = v.get("description", "")
+                finalize_table(t)
         if dataflow or dataflow_diagrams:
             doc.add_heading("Data Flow", level=2)
             if dataflow:
@@ -2141,6 +2177,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row.cells[2].text = it.get("c_impact", "")
             row.cells[3].text = it.get("i_impact", "")
             row.cells[4].text = it.get("a_impact", "")
+        finalize_table(t)
     else:
         doc.add_paragraph("(No information types defined)")
 
@@ -2156,6 +2193,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row = t.add_row()
             row.cells[0].text = r.get("role_id", "")
             row.cells[1].text = r.get("title", "")
+        finalize_table(t)
     else:
         doc.add_paragraph("(No roles defined)")
 
@@ -2173,6 +2211,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row.cells[1].text = p.get("name", "")
             row.cells[2].text = p.get("email", "")
             row.cells[3].text = p.get("phone", "")
+        finalize_table(t)
     else:
         doc.add_paragraph("(No parties defined)")
 
@@ -2190,6 +2229,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row.cells[1].text = u.get("short_name", "")
             row.cells[2].text = ", ".join(u.get("role_ids", []))
             row.cells[3].text = u.get("description", "")
+        finalize_table(t)
     else:
         doc.add_paragraph("(No system users defined)")
 
@@ -2223,6 +2263,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row = t.add_row()
             row.cells[0].text = used.get("name", "")
             row.cells[1].text = members_text
+        finalize_table(t)
     else:
         doc.add_paragraph("(No capabilities used)")
 
@@ -2240,6 +2281,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row.cells[1].text = comp.get("type", "")
             row.cells[2].text = comp.get("status", "")
             row.cells[3].text = comp.get("description", "")
+        finalize_table(t)
         # Add purpose/remarks as sub-paragraphs for components that have them
         for comp in components:
             if comp.get("purpose") or comp.get("remarks"):
@@ -2275,6 +2317,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
             row.cells[0].text = sp.get("param_id", "")
             row.cells[1].text = ", ".join(sp.get("values", []))
             row.cells[2].text = sp.get("remarks", "")
+        finalize_table(t)
 
     if ctrl_impls:
         # Lookup: component UUID → display title
@@ -2304,6 +2347,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
                     if bc.get("remarks"):
                         p = row.cells[2].add_paragraph(bc["remarks"])
                         p.runs[0].italic = True
+                finalize_table(t)
             else:
                 doc.add_paragraph("(No component responses recorded)")
 
@@ -2371,6 +2415,7 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
                 for c_uuid in ii.get("implemented_components", [])
             )
             row.cells[2].text = comp_names
+        finalize_table(t)
     else:
         doc.add_paragraph("(No inventory items defined)")
 
