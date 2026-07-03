@@ -41,6 +41,7 @@ from .models import (
     # Centralised OSCAL version constant — avoids hard-coded "1.1.2" (M1 fix)
     DEFAULT_OSCAL_VERSION,
 )
+from .component_tab import COMMON_PROTOCOLS  # Shared protocol name list (Section 4 data flow links)
 
 
 # =============================================================================
@@ -68,6 +69,12 @@ IMPL_STATUS_VALUES = [
 SSP_COMPONENT_STATUS = [
     "under-development", "operational", "disposition", "other",
 ]
+
+# Direction options for a Section 4 data flow link between two components.
+DATA_FLOW_DIRECTIONS = ["outbound", "inbound", "bidirectional"]
+
+# Transport options for a Section 4 data flow link's port.
+DATA_FLOW_TRANSPORTS = ["TCP", "UDP"]
 
 
 class SSPTab(tk.Frame):
@@ -642,6 +649,7 @@ class SSPTab(tk.Frame):
             "Network Architecture Diagrams  (optional — link to external diagram files)",
         )
         self._dataflow = textbox("Data Flow", height=10)
+        self._flow_link_tree = self._build_flow_links_section(parent)
         self._diagram_tree = self._build_diagram_section(
             parent, "data_flow_diagrams",
             "Data Flow Diagrams  (optional — link to external diagram files)",
@@ -2505,6 +2513,241 @@ class SSPTab(tk.Frame):
         self._dirty = True
 
     # =========================================================================
+    # DATA FLOW LINKS (Section 4) — maps how data moves between SSP components
+    # =========================================================================
+    #
+    # OSCAL's data-flow object has no structured field for "component A talks
+    # to component B on port X" — only a free-text description and diagrams[].
+    # These links are stored as OSCAL props on data-flow, one flow's fields
+    # sharing a common `group` value (the property object's documented
+    # mechanism for relating a set of properties) — see
+    # models.build_oscal_ssp's _build_data_flow_link_props().
+
+    @staticmethod
+    def _flow_link_row_values(flow):
+        """Return the 6-element values tuple for inserting into the flow-link tree."""
+        port = flow.get("port", "")
+        transport = flow.get("transport", "")
+        port_display = f"{port}/{transport}" if port and transport else (port or transport)
+        return (
+            flow.get("source_component_title", ""),
+            flow.get("target_component_title", ""),
+            flow.get("protocol", ""),
+            port_display,
+            flow.get("direction", ""),
+            flow.get("description", ""),
+        )
+
+    def _build_flow_links_section(self, parent):
+        """
+        Build the Data Flow Links table — Add/Edit/Remove buttons plus a
+        Source/Target/Protocol/Port/Direction/Description Treeview, bound
+        to self._ssp["data_flow_links"]. Placed under the Data Flow
+        description textbox in Section 4.
+        """
+        C = self._colors
+        tk.Label(
+            parent,
+            text="Data Flow Links  (optional — map how data moves between "
+                 "components, e.g. database → web application, with protocol "
+                 "and port)",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
+        ).pack(anchor="w", padx=28, pady=(8, 2))
+
+        frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        frame.pack(fill="x", padx=28, pady=4)
+
+        btn_row = tk.Frame(frame, bg=C["CARD_BG"])
+        btn_row.pack(fill="x", padx=8, pady=6)
+
+        tree_frame = tk.Frame(frame, bg=C["CARD_BG"])
+        tree_frame.pack(fill="x", padx=8, pady=(0, 8))
+
+        tree = ttk.Treeview(
+            tree_frame,
+            columns=("source", "target", "protocol", "port", "direction", "description"),
+            show="headings", height=4, selectmode="browse",
+        )
+        for col, heading, w, stretch in [
+            ("source",      "Source",      140, False),
+            ("target",      "Target",      140, False),
+            ("protocol",    "Protocol",     90, False),
+            ("port",        "Port",         90, False),
+            ("direction",   "Direction",   100, False),
+            ("description", "Description", 200, True),
+        ]:
+            tree.heading(col, text=heading, anchor="w")
+            tree.column(col, width=w, anchor="w", stretch=stretch)
+        scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        tree.pack(side="left", fill="x", expand=True)
+        tree.bind("<Double-1>", lambda _e: self._edit_flow_link(tree))
+
+        tk.Button(
+            btn_row, text="＋  Add Flow Link",
+            command=lambda: self._add_flow_link(tree),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+        tk.Button(
+            btn_row, text="✏  Edit Selected",
+            command=lambda: self._edit_flow_link(tree),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+        tk.Button(
+            btn_row, text="✕  Remove",
+            command=lambda: self._remove_flow_link(tree),
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=8)
+
+        return tree
+
+    def _flow_link_dialog(self, existing=None):
+        """
+        Modal dialog for adding or editing a data flow link between two
+        of the SSP's own components (Section 8).
+
+        Returns a dict {uuid, source_component_uuid, source_component_title,
+        target_component_uuid, target_component_title, protocol, port,
+        transport, direction, description} or None if cancelled.
+        """
+        if not self._ssp_components or len(self._ssp_components) < 1:
+            messagebox.showinfo(
+                "No components",
+                "Add components in Section 8 before mapping data flow links.",
+            )
+            return None
+
+        C   = self._colors
+        e   = existing or {}
+        dlg = self._make_dialog(
+            "Edit Data Flow Link" if existing else "Add Data Flow Link",
+            width=480,
+        )
+
+        choices = [c.get("title", "(untitled)") for c in self._ssp_components]
+        uuid_by_label = {c.get("title", "(untitled)"): c["uuid"] for c in self._ssp_components}
+
+        def lrow(text, width=16):
+            row = tk.Frame(dlg, bg=C["BG"])
+            row.pack(fill="x", padx=20, pady=4)
+            tk.Label(row, text=text, bg=C["BG"], fg=C["SUBTEXT"],
+                     font=("Helvetica", 11), width=width, anchor="w").pack(side="left")
+            return row
+
+        v_source = tk.StringVar(value=e.get("source_component_title") or choices[0])
+        ttk.Combobox(lrow("Source *"), textvariable=v_source,
+                     values=choices, state="readonly", width=30).pack(side="left")
+
+        v_target = tk.StringVar(value=e.get("target_component_title") or choices[0])
+        ttk.Combobox(lrow("Target *"), textvariable=v_target,
+                     values=choices, state="readonly", width=30).pack(side="left")
+
+        v_protocol = tk.StringVar(value=e.get("protocol", ""))
+        ttk.Combobox(lrow("Protocol"), textvariable=v_protocol,
+                     values=COMMON_PROTOCOLS, state="normal", width=30).pack(side="left")
+
+        port_row = lrow("Port")
+        v_port = tk.StringVar(value=e.get("port", ""))
+        tk.Entry(port_row, textvariable=v_port, width=10,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+        v_transport = tk.StringVar(value=e.get("transport", "TCP"))
+        ttk.Combobox(port_row, textvariable=v_transport, values=DATA_FLOW_TRANSPORTS,
+                     state="readonly", width=6).pack(side="left", padx=(8, 0))
+
+        v_direction = tk.StringVar(value=e.get("direction", "outbound"))
+        ttk.Combobox(lrow("Direction"), textvariable=v_direction,
+                     values=DATA_FLOW_DIRECTIONS, state="readonly", width=30).pack(side="left")
+
+        tk.Label(dlg, text="Description", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11)).pack(anchor="w", padx=20, pady=(8, 2))
+        desc_border = tk.Frame(dlg, bg=C["HEADER_BG"], highlightthickness=1,
+                               highlightbackground=C["HEADER_BG"])
+        desc_border.pack(fill="x", padx=20)
+        t_desc = tk.Text(desc_border, bg=C["CARD_BG"], fg=C["TEXT"],
+                         insertbackground=C["TEXT"], relief="flat",
+                         font=("Helvetica", 11), height=3, wrap="word",
+                         padx=8, pady=6)
+        t_desc.pack(fill="both")
+        if e.get("description"):
+            t_desc.insert("1.0", e["description"])
+
+        result = {}
+
+        def _ok():
+            src_lbl = v_source.get()
+            dst_lbl = v_target.get()
+            if not src_lbl or not dst_lbl:
+                messagebox.showwarning("Required", "Select a source and target component.", parent=dlg)
+                return
+            result.update({
+                "uuid":                    e.get("uuid") or new_uuid(),
+                "source_component_uuid":   uuid_by_label[src_lbl],
+                "source_component_title":  src_lbl,
+                "target_component_uuid":   uuid_by_label[dst_lbl],
+                "target_component_title":  dst_lbl,
+                "protocol":                v_protocol.get().strip(),
+                "port":                    v_port.get().strip(),
+                "transport":               v_transport.get(),
+                "direction":               v_direction.get(),
+                "description":             t_desc.get("1.0", "end-1c").strip(),
+            })
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  OK  ", command=_ok,
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.wait_window()
+        return result if result else None
+
+    def _add_flow_link(self, tree):
+        """Show a dialog to add a data flow link to self._ssp['data_flow_links']."""
+        result = self._flow_link_dialog()
+        if result:
+            self._ssp.setdefault("data_flow_links", []).append(result)
+            tree.insert("", "end", values=self._flow_link_row_values(result))
+            self._dirty = True
+
+    def _edit_flow_link(self, tree):
+        """Edit the selected data flow link in place."""
+        sel = tree.selection()
+        if not sel:
+            messagebox.showinfo("No selection", "Select a data flow link to edit.")
+            return
+        idx   = tree.index(sel[0])
+        flows = self._ssp.setdefault("data_flow_links", [])
+        result = self._flow_link_dialog(existing=flows[idx])
+        if not result:
+            return
+        flows[idx] = result
+        tree.delete(sel[0])
+        tree.insert("", idx, values=self._flow_link_row_values(result))
+        self._dirty = True
+
+    def _remove_flow_link(self, tree):
+        """Remove the selected data flow link from self._ssp['data_flow_links']."""
+        sel = tree.selection()
+        if not sel:
+            return
+        idx = tree.index(sel[0])
+        self._ssp.setdefault("data_flow_links", []).pop(idx)
+        tree.delete(sel[0])
+        self._dirty = True
+
+    # =========================================================================
     # INFORMATION TYPE METHODS (Section 5)
     # =========================================================================
 
@@ -3682,6 +3925,11 @@ class SSPTab(tk.Frame):
             for d in ssp.get(key, []):
                 tree.insert("", "end", values=(d.get("caption", ""), d.get("link", "")))
 
+        # Rebuild the data flow links table
+        self._flow_link_tree.delete(*self._flow_link_tree.get_children())
+        for flow in ssp.get("data_flow_links", []):
+            self._flow_link_tree.insert("", "end", values=self._flow_link_row_values(flow))
+
         # Rebuild the information types table
         self._it_tree.delete(*self._it_tree.get_children())
         for it in ssp.get("information_types", []):
@@ -3903,11 +4151,13 @@ class SSPTab(tk.Frame):
 
         # Clear all tables
         for tree in (self._auth_boundary_diagram_tree, self._network_arch_diagram_tree,
-                     self._diagram_tree, self._it_tree, self._role_tree, self._party_tree):
+                     self._diagram_tree, self._flow_link_tree, self._it_tree,
+                     self._role_tree, self._party_tree):
             tree.delete(*tree.get_children())
         self._ssp["auth_boundary_diagrams"] = []
         self._ssp["network_arch_diagrams"]  = []
         self._ssp["data_flow_diagrams"]     = []
+        self._ssp["data_flow_links"]        = []
 
         # ── Reset Sections 8, 9, 11, 12 working state and widgets ────────────
         self._ssp_components = []

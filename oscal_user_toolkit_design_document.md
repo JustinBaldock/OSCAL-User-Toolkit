@@ -1,7 +1,7 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.0  
-**Date:** June 2026  
+**Version:** 3.1  
+**Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
 
@@ -253,11 +253,16 @@ The SSP is stored as a plain Python dictionary throughout editing. It is only co
     "auth_boundary_description":  str,
     "network_architecture":       str,
     "data_flow":                  str,
+    "data_flow_links":  list,  # [{"uuid","source_component_uuid","source_component_title",
+                                #   "target_component_uuid","target_component_title",
+                                #   "protocol","port","transport","direction","description"}]
     "roles":     list,   # [{"role_id": str, "title": str}]
     "parties":   list,   # [{"uuid", "type", "name", "email"}]
     "information_types": list,  # [{"uuid","title","description","c_impact","i_impact","a_impact"}]
 }
 ```
+
+`data_flow_links` (Section 4) records how data moves between the SSP's own components — source, target, protocol, port, transport, and direction — so that a Data Flow diagram can eventually be generated from it. See §10.12 for how this is serialised into OSCAL, since `data-flow` has no native field for it.
 
 ---
 
@@ -851,6 +856,16 @@ When a search term or type filter is active in the Component Editor, only a subs
 
 Components support an OSCAL `links` array for attaching external references. Nine `rel` relationship types are predefined in the editor (`reference`, `vendor-documentation`, `security-advisory`, `configuration-baseline`, `policy`, `homepage`, `related`, `dependency`, `required-by`). These are serialised directly to the OSCAL `links` array on save and parsed back on load, making them a clean roundtrip.
 
+### 10.12 Data flow links stored as grouped props, not on Information Types
+
+An earlier iteration attached structured "which component sends this information type where" data to each Information Type (SSP Section 5), encoded as `props` with `class: "data-flow"` in fixed-order triplets. This was removed after checking `oscal_ssp_schema.json` directly: the `information-type` object (`additionalProperties: false`) has no field for component-to-component flow data at all — it was the wrong OSCAL object, and the fixed-order triplet encoding had no correlation key, so it silently broke if props were ever reordered.
+
+The dedicated `system-characteristics.data-flow` object is the correct home for this concept, but its schema is equally sparse: only `description` (free text), `props`, `links`, `diagrams[]`, and `remarks` — no structured field for an edge list either. OSCAL's `property` object does have a `group` field, though, documented as "an identifier for relating distinct sets of properties" — the sanctioned mechanism for exactly this problem.
+
+**Decision:** each data flow link (Section 4) is stored as a set of `data-flow.props[]` entries — one prop per field (`data-flow-source`, `data-flow-target`, `data-flow-protocol`, `data-flow-port`, `data-flow-transport`, `data-flow-direction`, `data-flow-description`, plus cached `-name` props for the two component titles) — all sharing the flow's UUID as their `group` value, and all tagged with a fixed `ns` (`https://oscal-user-toolkit/ns/data-flow-link`) so they can't collide with another tool's props and so `parse_ssp_file()` knows which grouped props to reassemble (`_build_data_flow_link_props` / `_parse_data_flow_link_props` in `models.py`). This is order-independent (unlike the removed triplet encoding) and keeps the data inspectable as ordinary name/value props to any OSCAL-conformant tool that doesn't recognise the vocabulary, rather than hiding it in an opaque base64 blob.
+
+Because `data-flow.description` is the field any plain OSCAL consumer will actually read, `build_oscal_ssp()` auto-drafts a narrative summary from the flow links (`_data_flow_links_narrative()`) whenever the user hasn't written their own Data Flow description text, so the document stays meaningful outside this toolkit even when the structured detail lives in custom props. Component titles cached on each flow link are also re-resolved against the current components list on load (`_refresh_flow_link_titles()`), in case a component was renamed since the flow was recorded — the same cached-title-refresh pattern used for responsible-parties party names (§10.11-adjacent, `parse_ssp_file`).
+
 ---
 
 ## 11. Example Component Library
@@ -892,6 +907,23 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.1 (July 2026)
+
+**New features:**
+- **SSP Editor — Section 4: Data Flow Links**: new table under the Data Flow description textbox for recording how data moves between the SSP's own components (Section 8) — source, target, protocol, port, transport, and direction; Add/Edit/Remove dialog with component dropdowns and a shared protocol name list (`COMMON_PROTOCOLS`, imported from `component_tab.py`)
+
+**Removed:**
+- **Information Types — component data flows**: removed the `component_flows` concept and its "Export Data Flow Diagram" button from SSP Section 5. Checking `oscal_ssp_schema.json` directly confirmed Information Types has no native field for this and the encoding (fixed-order `props` triplets) was fragile. See §10.12 for the replacement design.
+
+**Data model additions:**
+- `"data_flow_links"` key added to the internal SSP dict format (§4.6)
+- `models._build_data_flow_link_props()` / `_parse_data_flow_link_props()` — serialise/deserialise flow links as grouped `data-flow.props[]` entries (§10.12)
+- `models._data_flow_links_narrative()` — auto-drafts `data-flow.description` from flow links when the user hasn't written their own
+- `models._refresh_flow_link_titles()` — re-resolves cached component titles on load
+
+**Not yet implemented (see `todo.md` §4 for further ideas):**
+- Auto-generating a data-flow `.drawio` diagram from the new flow links table (the removed feature did this from the old, wrong-location data; a replacement built on the new storage is future work)
 
 ### Version 3.0 (June 2026)
 

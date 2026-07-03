@@ -424,6 +424,11 @@ def empty_ssp():
         "network_arch_diagrams": [],   # list of {uuid, caption, link, description}
         "data_flow":             "",
         "data_flow_diagrams":    [],   # list of {uuid, caption, link, description}
+        # Each flow link is: {"uuid", "source_component_uuid", "source_component_title",
+        #                      "target_component_uuid", "target_component_title",
+        #                      "protocol", "port", "transport", "direction", "description"}
+        # Stored in OSCAL as grouped props on data-flow — see build_oscal_ssp().
+        "data_flow_links":       [],
 
         # ── Sections 5-7: Lists — start empty, user adds entries ─────────
         # Each role is: {"role_id": str, "title": str}
@@ -478,6 +483,128 @@ def empty_ssp():
         #              "remarks": str}
         "inventory_items": [],
     }
+
+
+# Namespace used to tag data-flow-link props so they can be told apart from
+# any other tool's custom props sharing the same data-flow object, and so
+# parse_ssp_file() knows which grouped props to reassemble into flow links.
+DATA_FLOW_LINK_NS = "https://oscal-user-toolkit/ns/data-flow-link"
+
+
+def _build_data_flow_link_props(flows):
+    """
+    Convert a list of internal data-flow-link dicts into OSCAL props.
+
+    OSCAL's data-flow object has no native field for "component A talks to
+    component B on port X" — only a free-text description and diagrams[].
+    Its `property` object does have a `group` field, though, whose stated
+    purpose is "relating distinct sets of properties" — exactly what's
+    needed here. Each flow gets one prop per field, all sharing the flow's
+    uuid as their `group`, so they can be split back into records by
+    parse_ssp_file() regardless of prop ordering.
+    """
+    props = []
+    for flow in flows:
+        group = flow.get("uuid") or new_uuid()
+        fields = [
+            ("data-flow-source",      flow.get("source_component_uuid", "")),
+            ("data-flow-source-name", flow.get("source_component_title", "")),
+            ("data-flow-target",      flow.get("target_component_uuid", "")),
+            ("data-flow-target-name", flow.get("target_component_title", "")),
+            ("data-flow-protocol",    flow.get("protocol", "")),
+            ("data-flow-port",        flow.get("port", "")),
+            ("data-flow-transport",   flow.get("transport", "")),
+            ("data-flow-direction",   flow.get("direction", "")),
+            ("data-flow-description", flow.get("description", "")),
+        ]
+        for name, value in fields:
+            if value:
+                props.append({
+                    "name": name, "value": str(value),
+                    "group": group, "ns": DATA_FLOW_LINK_NS,
+                })
+    return props
+
+
+def _parse_data_flow_link_props(props):
+    """
+    Reassemble data-flow-link props (see _build_data_flow_link_props) back
+    into a list of internal flow-link dicts, grouped by their shared
+    `group` value.
+    """
+    by_group = {}
+    for p in props:
+        if p.get("ns") != DATA_FLOW_LINK_NS:
+            continue
+        group = p.get("group")
+        if not group:
+            continue
+        by_group.setdefault(group, {})[p.get("name", "")] = p.get("value", "")
+
+    flows = []
+    for group, fields in by_group.items():
+        flows.append({
+            "uuid":                   group,
+            "source_component_uuid":  fields.get("data-flow-source", ""),
+            "source_component_title": fields.get("data-flow-source-name", ""),
+            "target_component_uuid":  fields.get("data-flow-target", ""),
+            "target_component_title": fields.get("data-flow-target-name", ""),
+            "protocol":               fields.get("data-flow-protocol", ""),
+            "port":                   fields.get("data-flow-port", ""),
+            "transport":              fields.get("data-flow-transport", ""),
+            "direction":              fields.get("data-flow-direction", ""),
+            "description":            fields.get("data-flow-description", ""),
+        })
+    return flows
+
+
+def _refresh_flow_link_titles(flows, components):
+    """
+    Re-resolve each flow link's cached source/target component titles
+    against the current components list, in case a component was renamed
+    since the flow link was saved (mirrors the same cached-title refresh
+    pattern used for responsible-parties party names).
+    """
+    title_by_uuid = {c["uuid"]: c.get("title", "") for c in components}
+    for flow in flows:
+        src = flow.get("source_component_uuid")
+        if src in title_by_uuid:
+            flow["source_component_title"] = title_by_uuid[src]
+        dst = flow.get("target_component_uuid")
+        if dst in title_by_uuid:
+            flow["target_component_title"] = title_by_uuid[dst]
+    return flows
+
+
+def _data_flow_links_narrative(flows):
+    """
+    Auto-draft a plain-English data-flow description from structured flow
+    links, used as a fallback when the user hasn't written their own
+    Data Flow description text — so data-flow.description (the field any
+    OSCAL-conformant tool will actually read) isn't left blank just because
+    the structured detail lives in custom props that tool won't understand.
+    """
+    if not flows:
+        return ""
+    lines = []
+    for flow in flows:
+        src  = flow.get("source_component_title") or "an unnamed component"
+        dst  = flow.get("target_component_title") or "an unnamed component"
+        via  = flow.get("protocol", "")
+        port = flow.get("port", "")
+        direction = flow.get("direction", "")
+        bits = [f"{src} → {dst}"]
+        if via:
+            bits.append(f"via {via}")
+        if port:
+            bits.append(f"port {port}")
+        if direction:
+            bits.append(f"({direction})")
+        line = " ".join(bits)
+        if flow.get("description"):
+            line += f": {flow['description']}"
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
@@ -813,7 +940,9 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                     ]} if ssp.get("network_arch_diagrams") else {}),
                 }} if (ssp.get("network_architecture") or ssp.get("network_arch_diagrams")) else {}),
                 **({"data-flow": {
-                    "description": ssp["data_flow"],
+                    "description": ssp.get("data_flow") or _data_flow_links_narrative(
+                        ssp.get("data_flow_links", [])
+                    ),
                     **({"diagrams": [
                         {
                             "uuid": d["uuid"],
@@ -823,7 +952,10 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                         }
                         for d in ssp.get("data_flow_diagrams", [])
                     ]} if ssp.get("data_flow_diagrams") else {}),
-                }} if (ssp.get("data_flow") or ssp.get("data_flow_diagrams")) else {}),
+                    **({"props": _build_data_flow_link_props(ssp["data_flow_links"])}
+                       if ssp.get("data_flow_links") else {}),
+                }} if (ssp.get("data_flow") or ssp.get("data_flow_diagrams")
+                       or ssp.get("data_flow_links")) else {}),
             },
 
             # System implementation — the components that make up the system.
@@ -1174,6 +1306,9 @@ def parse_ssp_file(data):
         "network_arch_diagrams": network_arch_diagrams,
         "data_flow":            df.get("description", ""),
         "data_flow_diagrams":   data_flow_diagrams,
+        "data_flow_links":      _refresh_flow_link_titles(
+            _parse_data_flow_link_props(df.get("props", [])), components
+        ),
         "roles":                roles,
         "parties":              parties,
         "responsible_parties":  responsible_parties,

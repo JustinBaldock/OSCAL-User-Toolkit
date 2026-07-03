@@ -289,19 +289,14 @@ The SSP schema's `system-characteristics.data-flow` object only carries a free-t
 
 Reintroduce data-flow mapping as its own dedicated feature — not attached to Information Types — that helps users author the narrative `data-flow.description` field and produce a real network/data-flow diagram, without inventing non-standard OSCAL fields.
 
-### Rough Shape (not yet designed)
+### Status: Input UX done, diagram export still to do
 
-- A dedicated flow-mapping UI (its own tab or a rich sub-section under SSP Section 4 — Network Architecture & Data Flow) where the user defines edges between the SSP's own components (Section 8) — source, destination, direction, and a label/description of what's flowing.
-- This edge data is **toolkit-local working state**, not written into the OSCAL SSP as structured JSON (since no such field exists); it should live either in a sidecar file alongside the workspace, or purely in-memory for the current editing session, to avoid re-creating the non-conformant-props problem.
-- From that edge data, offer:
-  - An auto-generated narrative paragraph to populate/seed `data-flow.description` (the actual OSCAL field), so the document stays useful to any OSCAL consumer even without the toolkit.
-  - A draw.io (`.drawio`) export of the topology, linked into `data-flow.diagrams[]` the same way manually-added diagrams already are (see `_build_diagram_section` in `ssp_tab.py`).
-- Consider extending the same edge-mapping UI to help with Network Architecture (Section 4) topology, which has the identical "no structured schema, diagrams + description only" shape.
+**Done (see design doc §10.12 for the storage decision):** SSP Section 4 now has a "Data Flow Links" table directly under the Data Flow description textbox — Add/Edit/Remove a link between two of the SSP's own components (Section 8), each with a protocol (shared `COMMON_PROTOCOLS` list from `component_tab.py`), port, transport (TCP/UDP), and direction (outbound/inbound/bidirectional). Stored as OSCAL `data-flow.props[]`, grouped by a shared `group` UUID per flow and namespaced (`ns: https://oscal-user-toolkit/ns/data-flow-link`) — a schema-valid, order-independent encoding using the `property` object's documented `group` field, unlike the removed Information-Types encoding. `data-flow.description` is auto-drafted from the flow links when the user leaves it blank, so the document stays meaningful to any plain OSCAL consumer.
 
-### Open Questions
-
-- Where does the edge data persist between sessions if it's not part of the OSCAL SSP JSON? (Sidecar `.flows.json` next to the SSP file? Embedded as a single opaque `remarks`/custom prop blob with a clear "toolkit-internal, do not hand-edit" marker?)
-- Should this be scoped to data flow only, or generalized into one diagram-authoring tool that serves Authorization Boundary, Network Architecture, and Data Flow alike?
+**Still to do — the diagram export:**
+- A "📊 Export Data Flow Diagram" action (draw.io `.drawio`) generated from the new `data_flow_links` table — reuse the bipartite/graph-building helpers from the removed `_export_data_flow_drawio` (component boxes, `TYPE_STYLES` colours, arrow direction per flow direction), but sourced from `ssp["data_flow_links"]` instead of Information Types' `component_flows`.
+- Link the generated `.drawio` file into `data-flow.diagrams[]` automatically (the same way manually-added diagrams already work via `_build_diagram_section`), so the exported diagram shows up in the existing Data Flow Diagrams list rather than being a one-off file the user has to separately attach.
+- Consider extending the same flow-link concept to Network Architecture (Section 4), which has the identical "no structured schema, diagrams + description only" shape — could reuse the same table/dialog pattern with a topology-flavoured field set (e.g. adding a "link type" instead of protocol/port).
 
 ---
 
