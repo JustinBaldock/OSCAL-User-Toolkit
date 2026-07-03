@@ -42,7 +42,6 @@ try:
     from docx import Document
     from docx.shared import Pt, RGBColor, Inches
     from docx.enum.text import WD_ALIGN_PARAGRAPH
-    from docx.enum.section import WD_ORIENT, WD_SECTION
     _DOCX_AVAILABLE = True
 except ImportError:
     _DOCX_AVAILABLE = False
@@ -1994,38 +1993,17 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
 
     doc = Document()
 
-    # ── Helper: give every table its own landscape page ──────────────────────
-    # Word ties page orientation to a section, not an individual table, so a
-    # "landscape only where there's a table" layout means opening a new
-    # landscape section (which also starts a fresh page — satisfying "tables
-    # start on a new page" for free) immediately before the table, then a
-    # new portrait section immediately after it to resume normal flow.
-    _portrait_width  = doc.sections[0].page_width
-    _portrait_height = doc.sections[0].page_height
-
-    def start_landscape_page():
-        sec = doc.add_section(WD_SECTION.NEW_PAGE)
-        sec.orientation = WD_ORIENT.LANDSCAPE
-        sec.page_width  = _portrait_height
-        sec.page_height = _portrait_width
-        return sec
-
-    def end_landscape_page():
-        sec = doc.add_section(WD_SECTION.NEW_PAGE)
-        sec.orientation = WD_ORIENT.PORTRAIT
-        sec.page_width  = _portrait_width
-        sec.page_height = _portrait_height
-        return sec
-
     # ── Helper: apply a consistent style to every table ──────────────────────
     # "Table Grid" is a built-in Word style that draws borders on all cells.
+    # Each table starts on its own new page (landscape-per-table was tried
+    # and reverted — portrait throughout reads better).
     def styled_table(cols):
-        start_landscape_page()
+        doc.add_page_break()
         t = doc.add_table(rows=0, cols=cols)
         t.style = "Table Grid"
         return t
 
-    # ── Helper: 9pt font on every table cell, then close its landscape page ──
+    # ── Helper: 9pt font on every table cell ──────────────────────────────────
     # Call once a table's rows are fully populated.
     def finalize_table(table):
         for row in table.rows:
@@ -2033,7 +2011,6 @@ def build_ssp_docx(ssp, catalog=None, capabilities=None):
                 for para in cell.paragraphs:
                     for run in para.runs:
                         run.font.size = Pt(9)
-        end_landscape_page()
 
     # ── Helper: add a header row to a table with bold, shaded cells ──────────
     def add_header_row(table, headings):
