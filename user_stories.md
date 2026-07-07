@@ -23,6 +23,10 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - **System Auditor** — reviews a system's SSP and plans/conducts its
   assessment; needs the SSP's documentation and full coverage of its
   components, capabilities, and selected controls before assessing.
+- **Organisation User** — works within a large organisation that maintains
+  shared component/capability libraries at a parent-org or parent-network
+  level; builds SSPs for smaller systems that inherit from that shared
+  library rather than defining everything from scratch each time.
 
 ---
 
@@ -53,6 +57,23 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - Can create a new component, or edit an existing one, with type, description, purpose, protocols, and control implementations.
 - Can group components into a capability and have it inherit member components' control responses.
 - Components and capabilities can be saved/loaded independently of any one SSP.
+
+---
+
+## Component & Capability Inheritance (Large Organisations)
+
+### US-12: Build an SSP for a small network by inheriting components/capabilities from the parent organisation
+
+**As an** Organisation User,
+**I want to** import components and capabilities maintained at the parent-organisation or parent-network level into my system's SSP, then edit and save my own copy scoped to my system,
+**so that** I don't have to redefine shared infrastructure (e.g. a common firewall, identity provider, or logging service) from scratch for every small system, while still being able to tailor the imported copy to what's actually true for my system.
+
+**Acceptance criteria:**
+- Can import one or more components from an existing component-definition file (or a folder of them) directly into the SSP's own component list.
+- Can import a capability (and its member components) into the SSP.
+- Once imported, the component/capability becomes an independent, editable copy scoped to this SSP — editing it does not alter the parent-organisation source file, and re-importing the same source doesn't silently overwrite local edits.
+- The SSP's control implementations (Section 9) are automatically populated from each imported component's control responses, so inherited coverage shows up immediately without manual re-entry.
+- **Status: partially implemented.** `ssp_tab.py` already supports importing components from file(s)/folder directly into Section 8 (`_import_components_from_files` / `_import_components_from_folder` / `_import_component_file`) as independent copies, with by-component control entries auto-populated. Capability import also exists (`_add_ssp_capability` / `_import_capability_into_ssp`), but only from whichever capabilities are currently loaded live in the Capability Editor tab (via the `get_capabilities` callback) — there's no direct "import capability from file" into the SSP tab the way there is for components, so a capability must already be open elsewhere in the app before it can be inherited into an SSP.
 
 ---
 
