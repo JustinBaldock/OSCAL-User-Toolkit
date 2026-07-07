@@ -26,22 +26,30 @@ import tkinter as tk
 from tkinter import ttk
 
 
-# Each entry describes one tab in the Notebook, in the same left-to-right
-# order they appear. "requires" is shown as a small badge so users know
-# up front why a tab might look empty or locked.
+# Each entry describes one tab, grouped the same way the Notebook groups
+# them (see app.py._build_notebook() — Data / System Overview / Audit are
+# each a group of sub-tabs; Dashboard and All Systems stay top-level).
+# "group" is None for a top-level tab, or the group's name to render a
+# section heading before it. "requires" is shown as a small badge so users
+# know up front why a tab might look empty or locked — reflects an actual
+# hard gate (each tab's _ready()/_build_gate_panel()), not just "useful to
+# have loaded", so tabs that only use a profile for an optional convenience
+# button (e.g. Assessment Plan's "Load IDs from profile") show no badge.
 TAB_INFO = [
     {
-        "icon":     "📊",
-        "name":     "Dashboard",
+        "icon":     "📚",
+        "name":     "Data Sources",
+        "group":    "Data",
         "requires": None,
-        "desc":     "Read-only summary of the currently open SSP, Assessment "
-                    "Plan, Assessment Results, and POA&M documents — system "
-                    "identity, assessment currency, compliance posture, and "
-                    "risk status at a glance.",
+        "desc":     "Browse and load catalogs/profiles from the configured "
+                    "Library folder, or browse elsewhere for anything "
+                    "outside it. This is the only place to open or clear "
+                    "the active catalog/profile.",
     },
     {
         "icon":     "📋",
         "name":     "Catalog Viewer",
+        "group":    "Data",
         "requires": "catalog",
         "desc":     "Browse every control in the loaded OSCAL catalog, with "
                     "profile filtering to show only the controls relevant to "
@@ -50,39 +58,53 @@ TAB_INFO = [
     {
         "icon":     "⚙",
         "name":     "Component Editor",
+        "group":    "System Overview",
         "requires": "catalog",
         "desc":     "Create OSCAL Component Definition files describing how "
                     "policies, software, hardware, and services implement "
-                    "specific controls from the loaded catalog.",
+                    "specific controls from the loaded catalog. "
+                    "'📚 Import from Library' pulls in a shared component "
+                    "as an editable copy for the current system.",
     },
     {
         "icon":     "🔗",
         "name":     "Capability Editor",
+        "group":    "System Overview",
         "requires": "catalog + components",
         "desc":     "Bundle related components (e.g. a policy, an operating "
                     "system, and a monitoring tool) into a named capability "
-                    "that satisfies a group of controls together.",
+                    "that satisfies a group of controls together. Also has "
+                    "'📚 Import from Library'.",
     },
     {
         "icon":     "🛡",
         "name":     "SSP Editor",
+        "group":    "System Overview",
         "requires": "catalog + profile",
         "desc":     "Build a System Security Plan: system characteristics, "
+                    "authorisation boundary, network architecture (including "
+                    "VLANs), data flow (including Data Flow Links), "
                     "information types, roles, components, control "
-                    "implementations, system users, and inventory. Exports to "
-                    "OSCAL JSON, Word, and draw.io diagrams.",
+                    "implementations, system users, and inventory. "
+                    "'🔄 Sync from System Folder' pulls in everything "
+                    "imported for this system. Exports to OSCAL JSON, Word, "
+                    "and draw.io diagrams.",
     },
     {
         "icon":     "📝",
         "name":     "Assessment Plan",
-        "requires": "profile",
+        "group":    "Audit",
+        "requires": None,
         "desc":     "Define the scope, objectives, methods, and schedule for "
                     "assessing a system's controls ahead of a formal "
-                    "assessment.",
+                    "assessment. Shows the referenced SSP's components and "
+                    "capabilities read-only; can optionally load control IDs "
+                    "from a loaded profile.",
     },
     {
         "icon":     "🔍",
         "name":     "Assessment Results",
+        "group":    "Audit",
         "requires": None,
         "desc":     "Record observations, findings, and risks discovered "
                     "during an assessment. Findings can be pushed directly "
@@ -91,10 +113,34 @@ TAB_INFO = [
     {
         "icon":     "📋",
         "name":     "POA&M Editor",
+        "group":    "Audit",
         "requires": None,
         "desc":     "Track Plan of Action and Milestones items — "
                     "weaknesses, remediation plans, milestones, and status — "
-                    "for risks that cannot be closed immediately.",
+                    "for risks that cannot be closed immediately. Shows the "
+                    "referenced SSP's components and capabilities read-only.",
+    },
+    {
+        "icon":     "📊",
+        "name":     "Dashboard",
+        "group":    None,
+        "requires": None,
+        "desc":     "Read-only summary of the currently open SSP, Assessment "
+                    "Plan, Assessment Results, and POA&M documents — system "
+                    "identity, assessment currency, compliance posture, and "
+                    "risk status at a glance, for the one system currently "
+                    "open in the editor tabs.",
+    },
+    {
+        "icon":     "🌐",
+        "name":     "All Systems",
+        "group":    None,
+        "requires": None,
+        "desc":     "Organisation-wide rollup across every system in the "
+                    "configured Systems folder — one row per system "
+                    "(compliance, open risks, POA&M health) plus aggregate "
+                    "totals, read directly from disk rather than the live "
+                    "editor tabs.",
     },
 ]
 
@@ -244,10 +290,17 @@ class WorkspaceTab(tk.Frame):
         ).pack(anchor="w", padx=12, pady=(10, 2))
         tk.Label(
             hint_card,
-            text="Click '📂 Open Catalog' in the toolbar above to load an OSCAL "
-                 "catalog first — most tabs are locked behind a gate panel until "
-                 "one is loaded. Loading a '🔖 Profile' afterwards narrows the "
-                 "control list to a specific baseline and is required by some tabs.\n\n"
+            text="Open the '📚 Data Sources' tab and load an OSCAL catalog first — "
+                 "most editor tabs are locked behind a gate panel until one is "
+                 "loaded. Loading a profile afterwards narrows the control list to "
+                 "a specific baseline and is required by the SSP Editor.\n\n"
+                 "Shared components/capabilities/catalogs/profiles live in a "
+                 "'📚 Library' folder (toolbar button above) — import a copy into "
+                 "the current system from the Component/Capability Editor, then use "
+                 "the SSP Editor's '🔄 Sync from System Folder' to pull them into "
+                 "the SSP. A '🗂 Systems' folder (also a toolbar button) holds one "
+                 "subfolder per system, which the '🌐 All Systems' tab rolls up into "
+                 "an organisation-wide summary.\n\n"
                  "If someone has already saved a workspace file for this system, use "
                  "'📂 Open Workspace' above instead — it loads the catalog, profile, "
                  "SSP, components, capabilities, Assessment Plan, Assessment Results, "
@@ -257,8 +310,16 @@ class WorkspaceTab(tk.Frame):
             justify="left", wraplength=760,
         ).pack(anchor="w", padx=12, pady=(0, 10))
 
-        # ── One card per tab ─────────────────────────────────────────────────
+        # ── One card per tab, with a heading whenever the group changes ──────
+        current_group = "__unset__"
         for info in TAB_INFO:
+            if info["group"] != current_group:
+                current_group = info["group"]
+                if current_group:
+                    tk.Label(
+                        body, text=current_group,
+                        bg=C["BG"], fg=C["ACCENT"], font=("Helvetica", 12, "bold"),
+                    ).pack(anchor="w", padx=20, pady=(14, 0))
             self._build_tab_card(body, info)
 
         # Bottom spacer so the last card isn't flush against the edge

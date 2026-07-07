@@ -5,9 +5,12 @@ This file defines OSCALApp — the main application window.
 
 OSCALApp is responsible for:
   - Creating the overall window (title bar, size, background)
-  - Building the shared toolbar (Open Catalog, Open Profile buttons)
+  - Building the shared toolbar (OSCAL version selector, Library/Systems
+    folder buttons) — opening/clearing a catalog or profile is done from
+    the Data Sources tab, not this toolbar
   - Building the info panel (catalog and profile summary cards)
-  - Creating the notebook (tabbed layout) and adding the two tabs
+  - Creating the notebook (tabbed layout, grouped into Data/System
+    Overview/Audit) and adding every tab
   - Building the status bar at the bottom
   - Handling catalog and profile file loading
   - Applying filters and passing results to the CatalogTab
@@ -208,7 +211,7 @@ class OSCALApp(tk.Tk):
         )
 
         self._style_ttk()       # Apply custom colours to ttk widgets
-        self._build_toolbar()   # Top bar with Open Catalog/Profile buttons
+        self._build_toolbar()   # Top bar with version selector, Library/Systems folder buttons
         self._build_info_panel()# Cards showing catalog and profile metadata
         self._build_notebook()  # Tabbed area with CatalogTab and SSPTab
         self._build_statusbar() # Bottom bar with status message
@@ -831,7 +834,7 @@ class OSCALApp(tk.Tk):
 
         self._status_lbl = tk.Label(
             sb,
-            text="No catalog loaded — click '📂 Open Catalog' to begin.",
+            text="No catalog loaded — open one in the '📚 Data Sources' tab to begin.",
             bg=C["HEADER_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 10), anchor="w",
         )

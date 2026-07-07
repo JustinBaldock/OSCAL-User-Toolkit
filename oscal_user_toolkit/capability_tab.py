@@ -382,8 +382,8 @@ class CapabilityTab(tk.Frame):
 
         tk.Label(
             inner,
-            text="Use 📂 Open Catalog and ⚙ Component Editor\n"
-                 "in the tabs above to satisfy these requirements.",
+            text="Load a catalog in the 📚 Data Sources tab, and add at\n"
+                 "least one component in the ⚙ Component Editor.",
             bg=C["BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 10, "italic"), justify="center",
         ).pack(pady=(16, 0))

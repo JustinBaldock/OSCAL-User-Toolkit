@@ -33,8 +33,8 @@ loaded. A profile is optional — if loaded it filters the control list in
 Section 8 to the profile's baseline; without one the full catalog is shown.
   - Without both, the control-implementations section cannot be populated
 
-If either is missing, a clear message is shown and editing is blocked
-until the user loads both files via the main toolbar.
+If no catalog is loaded, a clear message is shown and editing is blocked
+until the user loads one in the 📚 Data Sources tab.
 """
 
 import json
@@ -432,7 +432,8 @@ class ComponentTab(tk.Frame):
         a profile have been loaded.
 
         The panel shows exactly what is missing and directs the user to
-        the Open Catalog / Open Profile buttons in the main toolbar.
+        the Data Sources tab, which is now the only place to open a
+        catalog or profile (see data_sources_tab.py).
         """
         C = self._colors
 
@@ -479,8 +480,8 @@ class ComponentTab(tk.Frame):
 
         tk.Label(
             inner,
-            text="Use the  📂 Open Catalog  and  🔖 Open Profile  buttons\n"
-                 "in the toolbar at the top of the window.",
+            text="Load a catalog (and optionally a profile) in the\n"
+                 "📚 Data Sources tab.",
             bg=C["BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 10, "italic"), justify="center",
         ).pack(pady=(16, 0))

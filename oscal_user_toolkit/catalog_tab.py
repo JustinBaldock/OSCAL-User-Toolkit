@@ -175,8 +175,8 @@ class CatalogTab(tk.Frame):
           - Search icon             — visual hint
           - Count label (right)     — "1150 controls" or "Showing 42 of 1150"
 
-        Everything in this toolbar is owned by this tab — the main toolbar
-        only has Open Catalog, Open Profile, and Clear Profile.
+        Everything in this toolbar is owned by this tab — opening/clearing
+        a catalog or profile is done from the Data Sources tab, not here.
         """
         C  = self._colors
         tb = tk.Frame(self, bg=C["HEADER_BG"], height=40)

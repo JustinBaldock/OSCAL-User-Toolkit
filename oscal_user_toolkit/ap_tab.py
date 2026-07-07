@@ -363,7 +363,7 @@ class APTab(tk.Frame):
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Label(load_row,
-                 text="  Requires a profile to be loaded in the toolbar.",
+                 text="  Requires a profile to be loaded in the Data Sources tab.",
                  bg=C["CARD_BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 9, "italic"),
                  ).pack(side="left", padx=8)
@@ -442,8 +442,8 @@ class APTab(tk.Frame):
         if not profile or not profile.get("ids"):
             messagebox.showinfo(
                 "No profile loaded",
-                "Load a profile in the toolbar first, then click this button "
-                "to populate the control ID list.",
+                "Load a profile in the Data Sources tab first, then click this "
+                "button to populate the control ID list.",
             )
             return
         ids = sorted(profile["ids"])
