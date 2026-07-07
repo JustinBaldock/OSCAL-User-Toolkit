@@ -187,6 +187,13 @@ Examples:
 - SSP Component tab gains an "Import from Component Definition…" button that opens a component-definition file and lets the user select components to pull into the SSP
 - When saving an SSP, offer to also export its components as a component-definition document
 
+### Update — largely superseded by the Library system (see section 5)
+
+Most of what this feature wanted — a reusable, shareable component library separate from any one SSP, with an import path into the SSP — now exists via the Library folder (`settings.py`), Component/Capability Editor's "📚 Import from Library", and the SSP Editor's "🔄 Sync from System Folder" (see section 5 and design document §10.13/§10.15). What's still missing relative to this original proposal:
+- No dedicated "standalone Component Definition" document type/tab distinct from what Component Editor already edits — the Library *is* just Component Editor pointed at `library/components/`, not a separate document format with its own metadata (title/version/remarks at the library level, `import-component-definitions` support, etc.).
+- No "Load all controls from profile" skeleton-generation button.
+- Capabilities-within-a-component-definition-file is already how `capability_tab.py` saves today (bundles member components in the same file) — Section 4 of this proposal is effectively done, just not as a separate optional section.
+
 ### ISM-Specific Considerations
 - ISM assessment methods map to component implementation: EXAMINE (policy/documentation components), TEST (software/hardware components), INTERVIEW (process/people components)
 - Australian Cyber Security Centre (ACSC) publishes hardening guides for common platforms — a pre-populated component library for Windows, Microsoft 365, and network devices aligned to ISM would be high value
@@ -294,12 +301,33 @@ Reintroduce data-flow mapping as its own dedicated feature — not attached to I
 
 ---
 
+## 5. Component & Capability Library — ✅ Done
+
+### What was built
+
+A large organisation's shared, reusable components/capabilities now live in a **Library** folder (`library/{catalogs,profiles,components,capabilities}/`), separate from any one system's own workspace folder — see design document §10.13–§10.16 for the full design history, and `user_stories.md` US-12/US-13 for the driving use case.
+
+- **Library path**: configured once via the "📚 Library Folder" toolbar button, persisted in `settings.json` (inside the `oscal_user_toolkit/` package folder, `.gitignore`d), defaulting to the repo's own `library/` folder if never changed.
+- **Data Sources tab**: browses the Library's `catalogs/`/`profiles/` subfolders and is now the only way to open/clear the active catalog/profile (replaced the old toolbar buttons).
+- **Component/Capability Editor — "📚 Import from Library"**: copies a chosen library file into the current system's folder (the folder containing the active workspace manifest) as an independent, editable copy — never mutates the library source, and never overwrites an already-imported local copy.
+- **SSP Editor — "🔄 Sync from System Folder" (Section 8)**: reads every file in the current system's `components/`/`capabilities/` folders and imports it into the SSP, including auto-populated Section 9 control responses and Capabilities Used entries.
+- **AP/POA&M — read-only Components/Capabilities panes**: sourced from the referenced SSP file, so an auditor can see what's in the system without needing write access to it.
+
+### Known remaining gaps
+
+- Still only one active catalog/profile at a time (see section 3's still-open multi-catalog questions above — the Library made *picking* a catalog/profile easier, it didn't add multi-catalog support).
+- No dedicated standalone Component/Capability Definition document type — see the note at the end of section 2.
+- No UI-level indicator in Component/Capability Editor showing whether the currently-loaded file came from the Library vs. a system folder vs. neither — a user could plausibly edit and re-save a Library master file directly (via plain "Open File(s)"/"Save") without realising it's shared, since nothing currently warns them.
+
+---
+
 ## Implementation Priority
 
 | Feature | Priority | Effort | Notes |
 |---|---|---|---|
 | Authorization Dashboard | ✅ Done | Low | Implemented — reads from open document tabs |
+| Component & Capability Library | ✅ Done | — | Library folder, Import from Library, Sync from System Folder, Data Sources tab; see section 5 |
 | Profile Editor | High | High | Most impactful missing editor; every SSP needs a profile |
-| Component Definition Editor | Medium | Medium | High value for multi-system organisations |
+| Component Definition Editor | Medium | Medium | Largely superseded by the Library system; remaining gap is a standalone document type — see section 2's update note |
 | Multi-Catalog Support | Medium | Medium | OSCAL schema already supports it; app needs CatalogResolver + UI update |
-| Data Flow Mapping & Diagram Feature | Medium | Medium | Needs a persistence approach that doesn't misuse OSCAL `props`; see section 4 |
+| Data Flow Mapping & Diagram Feature | Medium | Medium | Input UX (Data Flow Links table) done; diagram export still to do — see section 4 |

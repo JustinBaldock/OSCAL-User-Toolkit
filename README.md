@@ -24,6 +24,18 @@ The result is a library of audited, reusable building blocks that grows over tim
 
 ## Features
 
+### Data Sources & Library (new in v0.2)
+- **Library folder**: a shared, organisation-level `catalogs/`/`profiles/`/`components/`/`capabilities/` folder, separate from any one system's own workspace — configure it once via the **📚 Library Folder** toolbar button (persisted between launches; defaults to this repo's own `library/` folder)
+- **Data Sources tab**: browse and load the Library's catalogs/profiles, or browse elsewhere for anything outside it — this is the only way to open or clear the active catalog/profile
+- **Import from Library** (Component/Capability Editor): copy a Library component/capability into the current system's own folder as an independent, editable copy — never touches the Library source, never overwrites a copy you've already edited
+- **Sync from System Folder** (SSP Editor, Section 8): pull everything that's been imported for the current system straight into the SSP, with control responses auto-populated
+- Assessment Plan and POA&M both show read-only visibility into whatever components/capabilities the referenced SSP has, without needing write access
+
+### Workspace
+- **Landing tab** with per-tab guidance and **Open/Save Workspace** buttons that load or save an entire system's file set (SSP, components, capabilities, AP, AR, POA&M) in one action via a portable JSON manifest
+- Catalog/profile references in a workspace resolve against the Library automatically, so a workspace manifest stays valid even if the Library folder is configured differently on another machine
+- **Dark/light theme toggle**, applied live across every tab without losing in-progress edits; the chosen theme persists between launches
+
 ### Authorization Dashboard
 - **First tab** — provides a live overview of the entire assessment lifecycle at a glance
 - **System Identity** card: system name, version, and classification from the open SSP
@@ -62,11 +74,14 @@ The result is a library of audited, reusable building blocks that grows over tim
 ### SSP Editor
 - Create and edit OSCAL System Security Plan documents
 - Capture system characteristics, authorisation boundary, network architecture, and data flow descriptions
+- **VLANs** (Section 4): record VLAN ID (validated 1–4094), name, and description
+- **Data Flow Links** (Section 4): record how data moves between the SSP's own components — source, target, protocol, port, transport, direction; the Data Flow description is auto-drafted from these links if left blank
 - Manage roles, parties, and information types with full CIA impact levels
 - **Security Impact Level** (OSCAL 1.2.x): set Confidentiality, Integrity, and Availability objectives independently
 - Define system components and document how each implements individual security controls
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
 - **Capabilities Used** (Section 8): pick a capability from the Capability Editor's loaded list and it is recorded on the SSP (as an OSCAL metadata prop, since OSCAL 1.2.2 has no native "capabilities" field on an SSP) — its member components and their control responses are pulled straight into Section 8/9 automatically, provided the component files are already loaded in the Component Editor
+- **🔄 Sync from System Folder** (Section 8): pulls every component/capability file that's been imported into the current system's folder (via Component/Capability Editor's "📚 Import from Library") straight into the SSP, with control responses auto-populated — safe to re-run any time, never duplicates
 - **System Users → Import CSV** (Section 11): bulk-import system user entries from a CSV exported by another tool. Expected columns: `title, short_name, role_ids, description, remarks` (`role_ids` may list multiple roles separated by commas within the cell) — see `example-data-ism/ssp_system_users.csv` for a template
 - **Inventory Items → Import CSV** (Section 12): bulk-import inventory items from a CSV — typically an export from an external asset management system. Expected columns: `description, asset_tag, serial_number, hostname, ip_address, mac_address, physical_location, components, remarks`. Only `description` is required; the metadata columns become OSCAL props, and `components` (semicolon-separated for multiple) is matched case-insensitively against Section 8's current component titles — an asset management export won't usually know the OSCAL mapping, so most rows are expected to have this column blank and only link where the title matches exactly. See `example-data-ism/inventory_items.csv` for a template
 - **Export to Word** — generate a formatted `.docx` report, including a Capabilities Used table (capability name alongside its member components) and control implementations grouped under catalog guideline headings (requires `python-docx`)
@@ -217,14 +232,19 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 
 ## Recommended Workflow
 
+### 0. Set up your Library and per-system workspace
+
+- Catalogs, profiles, components, and capabilities that are shared across every system live in one **Library** folder — set it once via the **📚 Library Folder** button in the toolbar (defaults to this repo's own `library/` folder if you don't change it).
+- Each individual system gets its own **workspace folder**, holding that system's own workspace manifest, SSP, AP, AR, POA&M, and any components/capabilities imported from the Library for that system specifically.
+- Open/load a catalog or profile from the **📚 Data Sources** tab, which browses the Library's `catalogs/`/`profiles/` subfolders directly (or browse elsewhere for anything outside the Library).
+
 ### 1. Build a component library
 
-1. Open your OSCAL catalog using **Open Catalog** in the toolbar
-2. Optionally open a profile to filter controls to your baseline
-3. Switch to the **Component Editor** tab
-4. Load the ISM example components from `example-data-ism/components/` using **📁 Open Folder** as a starting point
-5. For each component unique to your environment: set its type, add protocols and links, write implementation narratives per control, save as an individual JSON file
-6. Over time, build a library of component files in a dedicated folder
+1. In the **Data Sources** tab, load the catalog (and optionally a profile) you'll be writing components against
+2. Switch to the **Component Editor** tab
+3. Load the ISM example components from `example-data-ism/components/` using **📁 Open Folder** as a starting point
+4. For each component unique to your environment: set its type, add protocols and links, write implementation narratives per control, save as an individual JSON file into your Library's `components/` folder
+5. Once a component is saved to the Library, any system can pull a copy of it in via **📚 Import from Library**
 
 ### 2. Build a capability library
 
@@ -232,15 +252,16 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 2. Create a new capability (e.g. "Perimeter Defence")
 3. Add the relevant components as members — their control responses inherit automatically
 4. Add capability-level narratives for controls that span multiple components
-5. Save the capability — it bundles its member components so it is self-contained
+5. Save the capability into your Library's `capabilities/` folder — it bundles its member components so it is self-contained
 
 ### 3. Produce an SSP
 
-1. Open the catalog and profile for the target network
-2. In the SSP Editor, fill in system characteristics, boundary, information types, and security impact levels
-3. Add system components, referencing your component library
-4. Save the SSP
-5. Use **Export Capability and Component Map** (with capabilities loaded in the Capability Editor) to produce a System → Capability → Component architecture diagram
+1. In the **Data Sources** tab, load the catalog and profile for the target network
+2. In the Component/Capability Editor, use **📚 Import from Library** to pull in whichever components/capabilities this system needs, then edit them to match this system's specifics
+3. In the SSP Editor, fill in system characteristics, boundary, network architecture (including VLANs), data flow (including Data Flow Links), information types, and security impact levels
+4. Use **🔄 Sync from System Folder** (Section 8) to pull every component/capability that's been imported for this system straight into the SSP, with control responses auto-populated
+5. Save the SSP
+6. Use **Export Capability and Component Map** (with capabilities loaded in the Capability Editor) to produce a System → Capability → Component architecture diagram
 
 ### 4. Conduct an assessment
 
@@ -281,11 +302,14 @@ OSCAL-User-Toolkit/
 │   ├── __init__.py
 │   ├── models.py                    # All data logic — parsing, building, validating OSCAL JSON; no GUI code
 │   ├── app.py                       # Main window, toolbar, tab wiring, and shared state
-│   ├── dashboard_tab.py             # Authorization Dashboard tab (first tab)
+│   ├── settings.py                  # Persisted app settings — Library folder path, default theme
+│   ├── workspace_tab.py             # Workspace tab (landing tab; Open/Save Workspace)
+│   ├── data_sources_tab.py          # Data Sources tab — browses the Library's catalogs/profiles
+│   ├── dashboard_tab.py             # Authorization Dashboard tab
 │   ├── catalog_tab.py               # Catalog Viewer tab
-│   ├── component_tab.py             # Component Editor tab
-│   ├── capability_tab.py            # Capability Editor tab
-│   ├── ssp_tab.py                   # SSP Editor tab (includes Capability/Component map and DOCX export, CSV import)
+│   ├── component_tab.py             # Component Editor tab (includes Import from Library)
+│   ├── capability_tab.py            # Capability Editor tab (includes Import from Library)
+│   ├── ssp_tab.py                   # SSP Editor tab (includes Capability/Component map, DOCX export, CSV import, Sync from System Folder)
 │   ├── ap_tab.py                    # Assessment Plan Editor tab
 │   ├── ar_tab.py                    # Assessment Results Editor tab
 │   └── poam_tab.py                  # POA&M Editor tab (includes AR import)
@@ -293,24 +317,24 @@ OSCAL-User-Toolkit/
 │   ├── oscal-1.2.2.zip
 │   ├── oscal-1.2.0.zip
 │   └── oscal-1.1.2.zip
+├── library/                          # Library folder (default location) — shared across every system
+│   ├── catalogs/                    # e.g. ISM_catalog_2026_06.json
+│   ├── profiles/                    # e.g. ISM_NON_CLASSIFIED-baseline_profile_2026-06.json
+│   ├── components/                  # Reusable component-definition files
+│   └── capabilities/                # Reusable capability-definition files
 ├── example-data-ism/                # Example environment — Australian ISM
-│   ├── ISM_catalog.json
-│   ├── ISM_NON_CLASSIFIED-baseline_profile.json
 │   ├── ssp_ERN.json
 │   ├── ap_ERN.json
 │   ├── ar_ERN.json
 │   ├── poam_ERN_POAM.json
-│   ├── components/                  # 38 ISM component files
-│   └── capability/                  # 8 ISM capability files
+│   ├── workspace_ERN.json           # Loads everything above via Open Workspace
+│   ├── components/                  # Copies of the example's own component files
+│   └── capability/                  # Copies of the example's own capability files
 ├── example-data-nist/               # Example environment — NIST SP 800-53 Rev 5
-│   ├── NIST_SP-800-53_rev5_catalog.json
-│   ├── NIST_SP-800-53_rev5_LOW-baseline_profile.json
-│   ├── NIST_SP-800-53_rev5_MODERATE-baseline_profile.json
-│   ├── NIST_SP-800-53_rev5_HIGH-baseline_profile.json
-│   ├── NIST_SP-800-53_rev5_PRIVACY-baseline_profile.json
-│   ├── NIST_SP800-171_rev3_catalog.json
-│   └── components/                  # 20 NIST SP 800-53 component files
+│   └── components/                  # NIST SP 800-53 component files
+├── user_stories.md                  # Role-based user stories driving design decisions
 ├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
+├── oscal_user_toolkit_design_document.md  # Technical design document and changelog
 └── README.md
 ```
 
