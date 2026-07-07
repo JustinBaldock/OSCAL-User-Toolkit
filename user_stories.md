@@ -70,27 +70,18 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ## Application Preferences & Session Continuity
 
-### US-4: Save a workspace and have it reopen automatically
+### US-4: Save and reopen a workspace, including its theme
 
 **As an** Application User,
-**I want to** save a workspace file that records all my currently open files,
-**so that** I can pick up where I left off without manually reopening each catalog, profile, component, capability, or SSP file one at a time.
+**I want to** save a workspace file that records all my currently open files and my light/dark theme choice at the time of saving,
+**so that** opening that workspace file later reopens every file into the correct tabs *and* switches the app to whichever theme I was using when I saved it — without manually reopening each file or reselecting the theme.
 
 **Acceptance criteria:**
-- Can save a workspace manifest capturing every file currently open across all tabs.
+- Saving a workspace captures every file currently open across all tabs, plus the active theme (light/dark).
 - Opening a saved workspace file reopens every one of those files into the correct tabs.
-- **Status: partially implemented.** Save/Open Workspace already exists (`app.py` `_save_workspace()` / `_open_workspace()`, `WorkspaceTab`), but reopening today is a manual "Open Workspace" action, not automatic on launch — whether "automatically reopened" means auto-loading the last workspace on startup, versus just one-click reopen via the existing manifest, is worth clarifying before treating this as done.
-
-### US-5: Remember light/dark mode preference
-
-**As an** Application User,
-**I want to** have my light/dark theme choice remembered between sessions,
-**so that** I don't have to reselect it every time I open the app.
-
-**Acceptance criteria:**
-- Switching theme via the toolbar persists the choice somewhere outside the current process.
-- On next launch, the app starts in the previously selected theme rather than always defaulting to one.
-- **Status: not yet implemented.** `set_theme()` (`app.py`) currently only mutates the in-memory `COLORS` dict for the running session — there's no persisted preference file yet.
+- Opening a saved workspace file also switches the app's theme to whatever was active when that workspace was saved.
+- The theme is workspace-scoped, not a standalone global app preference — a different workspace file can carry a different saved theme.
+- **Status: partially implemented.** Save/Open Workspace already exists (`app.py` `_save_workspace()` / `_open_workspace()`, `WorkspaceTab`, `build_workspace_manifest()` / `load_workspace_manifest()` in `models.py`) and correctly reopens files. The theme is not yet part of the saved manifest, and opening a workspace does not currently change the active theme — `set_theme()` only mutates the in-memory `COLORS` dict for the running session.
 
 ---
 
