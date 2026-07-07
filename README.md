@@ -24,6 +24,12 @@ The result is a library of audited, reusable building blocks that grows over tim
 
 ## Features
 
+The tab bar is grouped: **Workspace** and **Dashboard**/**All Systems** stay top-level, while **Data** (Data Sources, Catalog Viewer), **System Overview** (Component, Capability, and SSP Editors), and **Audit** (Assessment Plan, Assessment Results, POA&M Editor) are each a group of sub-tabs.
+
+### Systems Folder & All Systems (new)
+- **Systems folder**: one subfolder per system — each holding its own workspace manifest, SSP, AP, AR, and POA&M — separate from the shared Library. Configure it via the **🗂 Systems Folder** toolbar button (persisted between launches; defaults to this repo's own `systems/` folder, which is where the bundled examples now live)
+- **🌐 All Systems tab**: scans every subfolder in the Systems folder and shows an organisation-wide rollup — one row per system (compliance %, open risks, overdue POA&M items) plus aggregate totals — without needing to open each system individually. Distinct from the Dashboard tab below, which only ever shows the one system currently open in the live editor tabs
+
 ### Data Sources & Library (new in v0.2)
 - **Library folder**: a shared, organisation-level `catalogs/`/`profiles/`/`components/`/`capabilities/` folder, separate from any one system's own workspace — configure it once via the **📚 Library Folder** toolbar button (persisted between launches; defaults to this repo's own `library/` folder)
 - **Data Sources tab**: browse and load the Library's catalogs/profiles, or browse elsewhere for anything outside it — this is the only way to open or clear the active catalog/profile
@@ -37,7 +43,7 @@ The result is a library of audited, reusable building blocks that grows over tim
 - **Dark/light theme toggle**, applied live across every tab without losing in-progress edits; the chosen theme persists between launches
 
 ### Authorization Dashboard
-- **First tab** — provides a live overview of the entire assessment lifecycle at a glance
+- Provides a live overview of the entire assessment lifecycle for the one system currently open in the editor tabs, at a glance (see "All Systems" above for the organisation-wide equivalent)
 - **System Identity** card: system name, version, and classification from the open SSP
 - **Assessment Currency** card: days since the last assessment completed, colour-coded by age
 - **Compliance Posture** card: count of satisfied vs not-satisfied findings with a breakdown list
@@ -82,8 +88,8 @@ The result is a library of audited, reusable building blocks that grows over tim
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
 - **Capabilities Used** (Section 8): pick a capability from the Capability Editor's loaded list and it is recorded on the SSP (as an OSCAL metadata prop, since OSCAL 1.2.2 has no native "capabilities" field on an SSP) — its member components and their control responses are pulled straight into Section 8/9 automatically, provided the component files are already loaded in the Component Editor
 - **🔄 Sync from System Folder** (Section 8): pulls every component/capability file that's been imported into the current system's folder (via Component/Capability Editor's "📚 Import from Library") straight into the SSP, with control responses auto-populated — safe to re-run any time, never duplicates
-- **System Users → Import CSV** (Section 11): bulk-import system user entries from a CSV exported by another tool. Expected columns: `title, short_name, role_ids, description, remarks` (`role_ids` may list multiple roles separated by commas within the cell) — see `example-data-ism/ssp_system_users.csv` for a template
-- **Inventory Items → Import CSV** (Section 12): bulk-import inventory items from a CSV — typically an export from an external asset management system. Expected columns: `description, asset_tag, serial_number, hostname, ip_address, mac_address, physical_location, components, remarks`. Only `description` is required; the metadata columns become OSCAL props, and `components` (semicolon-separated for multiple) is matched case-insensitively against Section 8's current component titles — an asset management export won't usually know the OSCAL mapping, so most rows are expected to have this column blank and only link where the title matches exactly. See `example-data-ism/inventory_items.csv` for a template
+- **System Users → Import CSV** (Section 11): bulk-import system user entries from a CSV exported by another tool. Expected columns: `title, short_name, role_ids, description, remarks` (`role_ids` may list multiple roles separated by commas within the cell) — see `systems/example-data-ism/ssp_system_users.csv` for a template
+- **Inventory Items → Import CSV** (Section 12): bulk-import inventory items from a CSV — typically an export from an external asset management system. Expected columns: `description, asset_tag, serial_number, hostname, ip_address, mac_address, physical_location, components, remarks`. Only `description` is required; the metadata columns become OSCAL props, and `components` (semicolon-separated for multiple) is matched case-insensitively against Section 8's current component titles — an asset management export won't usually know the OSCAL mapping, so most rows are expected to have this column blank and only link where the title matches exactly. See `systems/example-data-ism/inventory_items.csv` for a template
 - **Export to Word** — generate a formatted `.docx` report, including a Capabilities Used table (capability name alongside its member components) and control implementations grouped under catalog guideline headings (requires `python-docx`)
 - **Export Capability and Component Map** (Section 8): generate a System → Capability → Component hierarchy diagram:
   - Loads capabilities currently open in the Capability Editor
@@ -131,7 +137,7 @@ The result is a library of audited, reusable building blocks that grows over tim
 
 ## Example Data
 
-### ISM Example Data (`example-data-ism/`)
+### ISM Example Data (`systems/example-data-ism/`)
 
 A complete example environment built around the Australian Information Security Manual (ISM), including a sample SSP, AP, AR, and POA&M.
 
@@ -165,7 +171,7 @@ A complete example environment built around the Australian Information Security 
 - `ar_ERN.json` — example Assessment Results with 5 risks, 12 observations, 14 findings, and 9 log entries
 - `poam_ERN_POAM.json` — example POA&M with items imported from the AR
 
-### NIST Example Data (`example-data-nist/`)
+### NIST Example Data (`systems/example-data-nist/`)
 
 A parallel example environment for US federal and contractor use cases, referencing NIST SP 800-53 Rev 5 controls (`ac-2`, `si-2`, `ra-5`, etc.).
 
@@ -242,7 +248,7 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 
 1. In the **Data Sources** tab, load the catalog (and optionally a profile) you'll be writing components against
 2. Switch to the **Component Editor** tab
-3. Load the ISM example components from `example-data-ism/components/` using **📁 Open Folder** as a starting point
+3. Load the ISM example components from `systems/example-data-ism/components/` using **📁 Open Folder** as a starting point
 4. For each component unique to your environment: set its type, add protocols and links, write implementation narratives per control, save as an individual JSON file into your Library's `components/` folder
 5. Once a component is saved to the Library, any system can pull a copy of it in via **📚 Import from Library**
 
@@ -302,10 +308,12 @@ OSCAL-User-Toolkit/
 │   ├── __init__.py
 │   ├── models.py                    # All data logic — parsing, building, validating OSCAL JSON; no GUI code
 │   ├── app.py                       # Main window, toolbar, tab wiring, and shared state
-│   ├── settings.py                  # Persisted app settings — Library folder path, default theme
+│   ├── settings.py                  # Persisted app settings — Library/Systems folder paths, default theme
+│   ├── tab_utils.py                 # Shared helper for the grouped-tab mousewheel guard
 │   ├── workspace_tab.py             # Workspace tab (landing tab; Open/Save Workspace)
 │   ├── data_sources_tab.py          # Data Sources tab — browses the Library's catalogs/profiles
-│   ├── dashboard_tab.py             # Authorization Dashboard tab
+│   ├── dashboard_tab.py             # Authorization Dashboard tab (the one currently-open system)
+│   ├── all_systems_tab.py           # All Systems tab — organisation-wide rollup across the Systems folder
 │   ├── catalog_tab.py               # Catalog Viewer tab
 │   ├── component_tab.py             # Component Editor tab (includes Import from Library)
 │   ├── capability_tab.py            # Capability Editor tab (includes Import from Library)
@@ -322,16 +330,18 @@ OSCAL-User-Toolkit/
 │   ├── profiles/                    # e.g. ISM_NON_CLASSIFIED-baseline_profile_2026-06.json
 │   ├── components/                  # Reusable component-definition files
 │   └── capabilities/                # Reusable capability-definition files
-├── example-data-ism/                # Example environment — Australian ISM
-│   ├── ssp_ERN.json
-│   ├── ap_ERN.json
-│   ├── ar_ERN.json
-│   ├── poam_ERN_POAM.json
-│   ├── workspace_ERN.json           # Loads everything above via Open Workspace
-│   ├── components/                  # Copies of the example's own component files
-│   └── capability/                  # Copies of the example's own capability files
-├── example-data-nist/               # Example environment — NIST SP 800-53 Rev 5
-│   └── components/                  # NIST SP 800-53 component files
+├── systems/                          # Systems folder (default location) — one subfolder per system
+│   ├── example-data-ism/            # Example environment — Australian ISM
+│   │   ├── ssp_ERN.json
+│   │   ├── ap_ERN.json
+│   │   ├── ar_ERN.json
+│   │   ├── poam_ERN_POAM.json
+│   │   ├── workspace_ERN.json       # Loads everything above via Open Workspace
+│   │   ├── components/              # Copies of the example's own component files
+│   │   └── capability/              # Copies of the example's own capability files
+│   ├── example-data-nist/           # Example environment — NIST SP 800-53 Rev 5
+│   │   └── components/              # NIST SP 800-53 component files
+│   └── example-02/                  # Work-in-progress example (catalog/profile/components only, no SSP yet)
 ├── user_stories.md                  # Role-based user stories driving design decisions
 ├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
 ├── oscal_user_toolkit_design_document.md  # Technical design document and changelog

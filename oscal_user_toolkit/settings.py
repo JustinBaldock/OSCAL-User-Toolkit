@@ -26,6 +26,13 @@ LIBRARY_SUBFOLDERS = ["catalogs", "profiles", "components", "capabilities"]
 # the "📚 Library Folder" toolbar button.
 DEFAULT_LIBRARY_PATH = Path(__file__).parent.parent / "library"
 
+# Default systems folder: the repo's own systems/ directory — holds one
+# subfolder per system (each with its own workspace manifest, SSP, AP, AR,
+# POA&M), scanned by the "🌐 All Systems" tab for an organisation-wide
+# rollup. Used until the user picks a different one via the "🗂 Systems
+# Folder" toolbar button.
+DEFAULT_SYSTEMS_PATH = Path(__file__).parent.parent / "systems"
+
 VALID_THEMES  = ("dark", "light")
 DEFAULT_THEME = "dark"
 
@@ -77,6 +84,29 @@ def ensure_library_structure(path):
     path = Path(path)
     for sub in LIBRARY_SUBFOLDERS:
         (path / sub).mkdir(parents=True, exist_ok=True)
+
+
+def get_systems_path():
+    """
+    Return the configured systems folder as a Path.
+
+    Falls back to DEFAULT_SYSTEMS_PATH (the repo's own systems/ folder) if
+    the user hasn't chosen a different one yet. Creates it if missing, the
+    same as the Library folder's default.
+    """
+    path_str = load_settings().get("systems_path")
+    path = Path(path_str) if path_str else DEFAULT_SYSTEMS_PATH
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def set_systems_path(path):
+    """Persist the systems folder path, creating it if it doesn't exist."""
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+    settings = load_settings()
+    settings["systems_path"] = str(path)
+    save_settings(settings)
 
 
 def get_theme():

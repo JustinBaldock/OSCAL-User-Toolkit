@@ -47,6 +47,7 @@ from .ar_tab import ARTab
 from .dashboard_tab import DashboardTab
 from .workspace_tab import WorkspaceTab
 from .data_sources_tab import DataSourcesTab
+from .all_systems_tab import AllSystemsTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
 # All colours are defined once here as a dictionary and passed to each tab
@@ -179,6 +180,11 @@ class OSCALApp(tk.Tk):
         # capabilities shared across systems) — persisted via settings.py,
         # so it survives between app launches. None until first set.
         self._library_path = settings.get_library_path()
+        # Configured Systems folder — one subfolder per system, each with
+        # its own workspace manifest, scanned by the "🌐 All Systems" tab
+        # for an organisation-wide rollup. Same persisted-setting pattern
+        # as the Library folder above.
+        self._systems_path = settings.get_systems_path()
         # Current colour theme — "dark" or "light". Toggled from the
         # Workspace tab via set_theme(). Defaults to whatever was last
         # saved in settings.py, so the app reopens in the same theme.
@@ -381,8 +387,9 @@ class OSCALApp(tk.Tk):
         # ── Rebuild every tab's own widgets in place ────────────────────────────
         # Order doesn't matter — each tab only touches its own children.
         for tab in (self._workspace_tab, self._data_sources_tab, self._dashboard_tab,
-                    self._catalog_tab, self._component_tab, self._capability_tab,
-                    self._ssp_tab, self._ap_tab, self._ar_tab, self._poam_tab):
+                    self._all_systems_tab, self._catalog_tab, self._component_tab,
+                    self._capability_tab, self._ssp_tab, self._ap_tab, self._ar_tab,
+                    self._poam_tab):
             tab.theme_refresh()
 
     # =========================================================================
@@ -452,6 +459,20 @@ class OSCALApp(tk.Tk):
             bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._library_path_lbl.pack(side="left", padx=(0, 8))
+
+        # Systems Folder button — sets/changes the persisted systems path
+        # (settings.py) that the "🌐 All Systems" tab scans.
+        tk.Button(
+            tb, text="🗂  Systems Folder", command=self._set_systems_folder,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
+            relief="flat", padx=14, pady=6, cursor="hand2",
+        ).pack(side="left", padx=(0, 8), pady=10)
+
+        self._systems_path_lbl = tk.Label(
+            tb, text=self._systems_path_display(),
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
+        )
+        self._systems_path_lbl.pack(side="left", padx=(0, 8))
 
         # App title
         tk.Label(
@@ -762,6 +783,18 @@ class OSCALApp(tk.Tk):
             get_poam_tab = lambda: self._poam_tab,
         )
         nb.add(self._dashboard_tab, text="📊  Dashboard")
+
+        # ── All Systems tab (top-level) ─────────────────────────────────────────
+        # Organisation-wide rollup across every system in the Systems folder
+        # (settings.py) — distinct from Dashboard above, which only ever
+        # reads the one currently-open system from the live editor tabs.
+        # See all_systems_tab.py and oscal_user_toolkit_design_document.md §10.19.
+        self._all_systems_tab = AllSystemsTab(
+            parent           = nb,
+            colors           = COLORS,
+            get_systems_path = self.get_systems_path,
+        )
+        nb.add(self._all_systems_tab, text="🌐  All Systems")
 
         # ── Workspace tab (top-level) ────────────────────────────────────────────
         # Inserted at index 0 so it appears first and is the tab shown when
@@ -1115,6 +1148,31 @@ class OSCALApp(tk.Tk):
         a second, separate "system folder" concept to track.
         """
         return Path(self._workspace_path).parent if self._workspace_path else None
+
+    # =========================================================================
+    # SYSTEMS FOLDER — one subfolder per system, scanned by the "🌐 All
+    # Systems" tab for an organisation-wide rollup (see settings.py and
+    # user_stories.md US-13 for the design behind this).
+    # =========================================================================
+
+    def _systems_path_display(self):
+        """Return the label text for the current systems path (or 'not set')."""
+        return f"🗂 {self._systems_path}" if self._systems_path else "🗂 Systems: not set"
+
+    def _set_systems_folder(self):
+        """Ask the user to choose a systems folder and persist it (settings.py)."""
+        folder = filedialog.askdirectory(title="Choose Systems Folder")
+        if not folder:
+            return
+        settings.set_systems_path(folder)
+        self._systems_path = Path(folder)
+        self._systems_path_lbl.config(text=self._systems_path_display())
+        self._status_lbl.config(text=f"Systems folder set: {folder}")
+        self._all_systems_tab.refresh()
+
+    def get_systems_path(self):
+        """Callback passed to the All Systems tab: the configured systems Path."""
+        return self._systems_path
 
     # =========================================================================
     # WORKSPACE — load/save a manifest of every file for one system

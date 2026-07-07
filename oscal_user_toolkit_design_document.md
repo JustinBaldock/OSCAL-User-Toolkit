@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.7  
+**Version:** 3.8  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -938,6 +938,16 @@ The top-level tab bar had grown to ten flat tabs (Workspace, Data Sources, Catal
 
 **`set_theme()`'s per-tab refresh loop needed no changes** — it already iterates leaf tab objects directly (`self._component_tab`, `self._ssp_tab`, etc.), never the Notebook structure itself, so grouping doesn't affect it. The group Notebooks themselves (`data_nb`/`system_nb`/`audit_nb`) are plain `ttk.Notebook` instances styled globally by `_style_ttk()`'s `ttk.Style` configuration, the same as the outer Notebook always was — no per-instance theme handling was needed for them either.
 
+### 10.19 Systems folder + All Systems tab — the multi-network Dashboard, built as a separate read-from-disk tab
+
+`user_stories.md` US-13 wanted a summary across every system an organisation runs, not just the one currently open. The existing `dashboard_tab.py` couldn't be extended to do this in place: it's built entirely around reading the *live* SSP/AP/AR/POA&M editor tabs (`get_ssp_tab()` etc. return the one singleton tab instance each), so "show N systems at once" would mean either opening N systems simultaneously across the same four editor tabs (impossible — each is a singleton) or bolting an entirely different data path onto the same tab. Rather than complicate `dashboard_tab.py` with two mutually-exclusive modes, the multi-system view is a **new, separate tab that reads straight from disk**, independent of whatever the editor tabs currently have open.
+
+**Systems folder** (`settings.py`, `get_systems_path()`/`set_systems_path()`) is the third configured-path setting, alongside the Library (§10.13) and the theme — same pattern: persisted in `settings.json`, defaults to the repo's own `systems/` folder if never configured, changed via a "🗂 Systems Folder" toolbar button. Unlike the Library, there's no fixed subfolder structure to create — a "system" is just any subfolder, expected to contain its own workspace manifest plus whatever SSP/AP/AR/POA&M files that manifest references. The three bundled example environments (`example-data-ism/`, `example-data-nist/`, `example-02/`) moved from the repo root into `systems/` as a result — a plain file move; nothing inside any of them needed to change, since `workspace_ERN.json`'s catalog/profile resolution already has the Library fallback from §10.16, and every other reference inside a workspace manifest is relative to that manifest's own folder, which moved as a unit.
+
+**`AllSystemsTab`** (`all_systems_tab.py`) scans every subfolder of the Systems folder on `refresh()`. For each one, `_find_workspace_manifest()` looks at every top-level `*.json` file and checks for a `"workspace"` key — deliberately not assuming a naming convention, since the bundled examples already disagree (`workspace_ERN.json` vs `workspace.json`). It then loads whatever `load_workspace_manifest()` finds (SSP, Assessment Results, POA&M — components/capabilities aren't needed for a summary) via the existing `parse_ssp_file()`/`parse_ar_file()`/`parse_poam_file()`, computing the same compliance-percentage, open-risk-count, and POA&M-overdue logic `dashboard_tab.py` already uses for its cards (re-derived here rather than shared, since the existing methods are tightly coupled to building that tab's own Tkinter widgets, not to returning plain numbers). A system missing any of these files degrades gracefully — a blank cell and a note ("no SSP", "not yet assessed", "no POA&M"), not an error; `example-02/` in this repo's own bundled data (catalog/profile/components only, no SSP yet) exercises exactly this path.
+
+Every per-file read is wrapped narrowly (`OSError, json.JSONDecodeError, KeyError`) and never propagates — a malformed or half-finished system folder just contributes a mostly-blank row rather than breaking the whole tab, since the point of an organisation-wide rollup is to work even when not every system is equally far along.
+
 ---
 
 ## 11. Example Component Library
@@ -979,6 +989,13 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.8 (July 2026)
+
+**New features:**
+- **Systems folder** (`settings.py`): `get_systems_path()`/`set_systems_path()`, same persisted-setting pattern as the Library folder, defaulting to the repo's own `systems/` folder. New "🗂 Systems Folder" toolbar button.
+- **🌐 All Systems tab** (`all_systems_tab.py`, new): scans every subfolder of the Systems folder and shows an organisation-wide rollup — one row per system (compliance %, open risks, POA&M overdue, last assessed) plus aggregate totals — resolving `user_stories.md` US-13 as a separate, disk-reading tab rather than by extending the existing (live-tab-reading) Dashboard. See §10.19.
+- Bundled example environments moved: `example-data-ism/`, `example-data-nist/`, `example-02/` are now under `systems/` (a plain file move; nothing inside any of them changed).
 
 ### Version 3.7 (July 2026)
 

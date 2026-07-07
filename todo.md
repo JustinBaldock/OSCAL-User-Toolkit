@@ -270,7 +270,7 @@ SP 800-53 uses IDs like `ac-2`, `si-2`; SP 800-171 uses `03.01.01`; ISM uses `is
 
 ### Example Data to Create
 
-Once multi-catalog support is implemented, create an example overlay profile in `example-data-nist/`:
+Once multi-catalog support is implemented, create an example overlay profile in `systems/example-data-nist/`:
 
 - `profile_SP800-53-Moderate-plus-SP800-171-overlay.json` — imports from both NIST catalogs, selects Moderate baseline from SP 800-53 plus the full SP 800-171 control set, demonstrating a dual-framework SSP baseline
 
