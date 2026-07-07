@@ -171,8 +171,15 @@ class OSCALApp(tk.Tk):
         # so it survives between app launches. None until first set.
         self._library_path = settings.get_library_path()
         # Current colour theme — "dark" or "light". Toggled from the
-        # Workspace tab via set_theme(). See DARK_COLORS/LIGHT_COLORS above.
-        self._theme = "dark"
+        # Workspace tab via set_theme(). Defaults to whatever was last
+        # saved in settings.py, so the app reopens in the same theme.
+        self._theme = settings.get_theme()
+        if self._theme != "dark":
+            # COLORS starts as a copy of DARK_COLORS at module load time
+            # (see COLORS = dict(DARK_COLORS) above) — swap it in place to
+            # the saved theme's palette before any widget reads from it.
+            COLORS.clear()
+            COLORS.update(LIGHT_COLORS if self._theme == "light" else DARK_COLORS)
         # Note: the class filter, search box and control count all live inside
         # CatalogTab now — they are only relevant to the catalog viewer.
 
@@ -336,6 +343,7 @@ class OSCALApp(tk.Tk):
         COLORS.clear()
         COLORS.update(new_palette)
         self._theme = theme_name
+        settings.set_theme(theme_name)   # Persist so the app reopens in this theme
 
         self.configure(bg=COLORS["BG"])
         self._style_ttk()

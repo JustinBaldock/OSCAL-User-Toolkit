@@ -1,24 +1,28 @@
 """
 settings.py — Persisted application settings for the OSCAL User Toolkit.
 
-Currently holds just the configured Library folder path (see
-oscal_user_toolkit_design_document.md and todo.md for the Library concept:
-a shared, organisation-level collection of catalogs/profiles/components/
-capabilities, kept separate from any one system's own workspace).
+Holds settings that should survive between launches but aren't OSCAL
+content: the configured Library folder path (see
+oscal_user_toolkit_design_document.md §10.13 and todo.md for the Library
+concept) and the default light/dark theme.
 
-Settings are stored in a small JSON file under the user's home directory,
-independent of any project or workspace file, since the library path is a
-per-installation preference rather than OSCAL content.
+Stored as settings.json inside this package folder, alongside the source
+code — a single-user desktop install, so per-installation storage here is
+simpler than a per-user home-directory file. This file is machine-specific
+(it records a local library folder path), so it should not be committed —
+see .gitignore.
 """
 
 import json
 from pathlib import Path
 
-SETTINGS_DIR  = Path.home() / ".oscal_user_toolkit"
-SETTINGS_PATH = SETTINGS_DIR / "settings.json"
+SETTINGS_PATH = Path(__file__).parent / "settings.json"
 
 # Subfolders created under a configured library path.
 LIBRARY_SUBFOLDERS = ["catalogs", "profiles", "components", "capabilities"]
+
+VALID_THEMES  = ("dark", "light")
+DEFAULT_THEME = "dark"
 
 
 def load_settings():
@@ -31,8 +35,7 @@ def load_settings():
 
 
 def save_settings(settings):
-    """Write the settings dict to the settings file, creating its folder if needed."""
-    SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
+    """Write the settings dict to the settings file."""
     with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=2, ensure_ascii=False)
 
@@ -60,3 +63,18 @@ def ensure_library_structure(path):
     path = Path(path)
     for sub in LIBRARY_SUBFOLDERS:
         (path / sub).mkdir(parents=True, exist_ok=True)
+
+
+def get_theme():
+    """Return the saved default theme ('dark' or 'light'), or DEFAULT_THEME if unset."""
+    theme = load_settings().get("theme")
+    return theme if theme in VALID_THEMES else DEFAULT_THEME
+
+
+def set_theme(theme_name):
+    """Persist the default theme to use on the next launch."""
+    if theme_name not in VALID_THEMES:
+        return
+    settings = load_settings()
+    settings["theme"] = theme_name
+    save_settings(settings)
