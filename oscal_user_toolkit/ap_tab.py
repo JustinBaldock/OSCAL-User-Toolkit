@@ -271,6 +271,38 @@ class APTab(tk.Frame):
         ssp_comp_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
         self._ssp_comp_tree.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=8)
 
+        # ── Section 2b: Capabilities Used in the referenced SSP ────────────────
+        # Read-only visibility of which capabilities the SSP records as used
+        # (ssp["capabilities_used"] — name only; OSCAL's SSP schema has no
+        # native capabilities field, so member components aren't recoverable
+        # from the SSP file alone). Refreshed by the same "Refresh from SSP"
+        # button/trace as the components tree above, from the same parsed SSP.
+        tk.Label(parent,
+                 text="  Capabilities used in the referenced SSP",
+                 bg=C["BG"], fg=C["ACCENT"],
+                 font=("Helvetica", 10, "bold"),
+                 ).pack(anchor="w", **P, pady=(6, 0))
+
+        ssp_cap_frame = tk.Frame(
+            parent, bg=C["CARD_BG"],
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        )
+        ssp_cap_frame.pack(fill="x", **P, pady=(2, 6))
+
+        self._ssp_cap_tree = ttk.Treeview(
+            ssp_cap_frame,
+            columns=("capability",),
+            show="headings", height=3, selectmode="browse",
+        )
+        self._ssp_cap_tree.heading("capability", text="Capability", anchor="w")
+        self._ssp_cap_tree.column("capability", anchor="w", stretch=True)
+        ssp_cap_scroll = ttk.Scrollbar(
+            ssp_cap_frame, orient="vertical", command=self._ssp_cap_tree.yview,
+        )
+        self._ssp_cap_tree.configure(yscrollcommand=ssp_cap_scroll.set)
+        ssp_cap_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
+        self._ssp_cap_tree.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=8)
+
         # Refresh automatically whenever the SSP path changes (typed or
         # browsed to), not just when the user clicks the refresh button.
         ssp_v.trace_add("write", lambda *_a: self._refresh_ssp_components())
@@ -655,6 +687,7 @@ class APTab(tk.Frame):
             return   # Called before the form is built yet — nothing to do
 
         self._ssp_comp_tree.delete(*self._ssp_comp_tree.get_children())
+        self._ssp_cap_tree.delete(*self._ssp_cap_tree.get_children())
 
         raw_path = self._vars["import_ssp"].get().strip()
         if not raw_path:
@@ -710,6 +743,12 @@ class APTab(tk.Frame):
         self._ssp_comp_status.config(
             text=f"{n} component{'s' if n != 1 else ''} loaded from {Path(path).name}."
         )
+
+        # Capabilities Used — name only; the SSP file has no native
+        # capabilities structure, so member components aren't recoverable
+        # here (see the section-2b build comment above).
+        for cap in ssp.get("capabilities_used", []):
+            self._ssp_cap_tree.insert("", "end", values=(cap.get("name", "").strip() or "(untitled)",))
 
     # =========================================================================
     # COLLECT / POPULATE / RESET

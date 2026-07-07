@@ -656,6 +656,9 @@ class OSCALApp(tk.Tk):
             # from the Capability Editor tab. The lambda is evaluated at export time,
             # not at construction time, so it always reflects the current state.
             get_capabilities  = lambda: self._capability_tab._capabilities,
+            # Lets Section 8's "🔄 Sync from System Folder" find the current
+            # system's components/capabilities folders.
+            get_system_folder = self.get_system_folder,
         )
         nb.add(self._ssp_tab, text="🛡  SSP Editor")
 

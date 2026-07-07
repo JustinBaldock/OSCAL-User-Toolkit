@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.3  
+**Version:** 3.4  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -889,6 +889,19 @@ The tab lists every `.json` file directly under the configured library's `catalo
 
 `app._catalog`/`app._profile` remain the single source of truth, exactly as before — `DataSourcesTab` holds no catalog/profile state of its own. It reflects the current selection via `get_catalog()`/`get_profile()` callbacks, and `OSCALApp` now calls `self._data_sources_tab.refresh()` at the end of `_open_catalog()`, `_open_profile()`, and `_clear_profile()` (alongside the existing `on_catalog_or_profile_changed()`/`on_state_changed()` calls to the Component/Capability tabs), so the tab's "currently loaded" labels and Clear Profile button's enabled state stay correct regardless of which tab triggered the change (including Open Workspace, which calls `_open_catalog`/`_open_profile` with an explicit path).
 
+### 10.15 Closing the loop: SSP reads the system folder; AP/POA&M get read-only visibility
+
+§10.13 gave Component/Capability Editor a way to import a library item into the current system's folder. On its own, that import didn't do anything for the SSP itself — the SSP Editor's Section 8/9 still only knew about components/capabilities added through its own older, separate `_import_components_from_files`/`_import_capability_into_ssp` mechanism. This stage connects the two.
+
+**SSP Editor — "🔄 Sync from System Folder" (Section 8):** a new `_sync_from_system_folder()` reads every file in `<system folder>/components/` and `.../capabilities/` and imports them. It deliberately reuses, rather than duplicates, the existing single-file import logic:
+- Component files go through the existing `_import_component_file()` unchanged — it already knows the "one `component-definition` document, N components" shape and already dedups by UUID and auto-populates Section 9 by-component entries.
+- Capability files (saved by `capability_tab.py`'s "💾 Save Capability", which bundles a capability's member components in the *same* document) are handled by a new `_import_capability_file()`. Since a capability file is a `component-definition` document with an extra `capabilities` array, its bundled components are imported via the *same* `_import_component_file()` call — `_import_capability_file()` only has to handle that extra array: recording each capability in Capabilities Used (Section 7a), and walking its `control-implementations` to either add a by-component response (when an `implemented-requirement` carries a `source-component-uuid` prop) or fold a capability-level-only response into that control's Section 9 remarks (when it doesn't) — the same two cases `_import_capability_into_ssp()` already handles for a *live* capability from the Capability Editor tab, just driven from a parsed file instead of an in-memory dict.
+- Both paths dedup by UUID (`_add_by_component_response()`'s existing "already has an entry for this component" check), so re-running Sync after adding more files to the system folder is always safe — nothing is duplicated.
+
+This intentionally does **not** replace the older `_import_components_from_files`/`_import_capability_into_ssp` paths — a user can still hand-pick an arbitrary file, or pull a capability that's only ever been opened live in the Capability Editor. Sync from System Folder is an additional, system-folder-scoped path alongside them.
+
+**Assessment Plan / POA&M — read-only SSP awareness:** `ap_tab.py` already had a components tree fed by `_refresh_ssp_components()`, which parses the referenced SSP file directly from disk (not via the SSP Editor tab, so it works even if that tab never opened this particular file) — it just had no equivalent for capabilities. Both `ap_tab.py` and `poam_tab.py` (which previously had no SSP-derived visibility at all beyond the bare `import_ssp` reference field) now show a read-only Capabilities pane alongside Components, populated from the same parsed SSP's `capabilities_used` list. This is deliberately name-only: OSCAL's SSP schema has no native capabilities structure (`capabilities_used` is a toolkit-side tag list — `{uuid, name}`, see §4.6), so a capability's member components aren't recoverable from the SSP file alone once you're outside the toolkit's own live Capability Editor state. Both tabs are strictly read-only here — no write path was added, matching the design decision that editing a system's components/capabilities stays the System Owner's job in Component/Capability Editor, not the auditor's.
+
 ---
 
 ## 11. Example Component Library
@@ -930,6 +943,16 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.4 (July 2026)
+
+**New features:**
+- **SSP Editor — "🔄 Sync from System Folder" (Section 8)**: imports every component/capability file in the current system's folder directly into the SSP, closing the loop on the Library → system folder pipeline from v3.2 (see §10.15). Reuses the existing `_import_component_file()` for components; new `_import_capability_file()` handles capability files' extra `capabilities` array (Capabilities Used entry + control-implementation folding), reusing `_import_component_file()` for their bundled member components.
+- **Assessment Plan / POA&M — read-only Capabilities visibility**: both tabs now show a Capabilities pane (name only, read from the referenced SSP's `capabilities_used`) alongside their existing/new read-only Components pane. `poam_tab.py` previously had no SSP-derived visibility at all beyond the bare SSP reference field; it now mirrors `ap_tab.py`'s existing components-from-SSP pattern for both.
+
+**Data model additions:**
+- `ssp_tab.py`: `_import_capability_file()`, `_sync_from_system_folder()`, new `get_system_folder` constructor parameter (wired from `app.py`).
+- `poam_tab.py`: `_refresh_ssp_components()` (new — mirrors `ap_tab.py`'s existing method), `parse_ssp_file` import.
 
 ### Version 3.3 (July 2026)
 

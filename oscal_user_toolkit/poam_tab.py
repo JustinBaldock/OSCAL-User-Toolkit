@@ -23,7 +23,7 @@ from pathlib import Path
 
 from .models import (
     new_uuid, now_iso,
-    empty_poam, build_oscal_poam, parse_poam_file,
+    empty_poam, build_oscal_poam, parse_poam_file, parse_ssp_file,
     # Import shared enum constants — defined once in models.py so AR and POA&M
     # always display the same option lists. (L1 / M1 fix)
     DEFAULT_OSCAL_VERSION,
@@ -325,6 +325,53 @@ class POAMTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(6, 0))
+
+        # ── Read-only visibility of the referenced SSP's components/
+        # capabilities (see ap_tab.py's equivalent section) — helps when
+        # writing a weakness/observation to know what the system is built
+        # from, without separately opening the SSP file.
+        ssp_ref_btn_row = tk.Frame(parent, bg=C["BG"])
+        ssp_ref_btn_row.pack(fill="x", **P, pady=(2, 2))
+        tk.Button(ssp_ref_btn_row, text="🔄  Refresh from SSP",
+                  command=self._refresh_ssp_components,
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+        self._ssp_comp_status = tk.Label(
+            ssp_ref_btn_row, text="No SSP referenced yet.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+        )
+        self._ssp_comp_status.pack(side="left", padx=(8, 0))
+
+        ssp_ref_panes = tk.Frame(parent, bg=C["BG"])
+        ssp_ref_panes.pack(fill="x", **P, pady=(0, 6))
+
+        comp_pane = tk.Frame(ssp_ref_panes, bg=C["CARD_BG"],
+                              highlightthickness=1, highlightbackground=C["HEADER_BG"])
+        comp_pane.pack(side="left", fill="both", expand=True, padx=(0, 6))
+        tk.Label(comp_pane, text="Components", bg=C["CARD_BG"], fg=C["ACCENT"],
+                 font=("Helvetica", 9, "bold")).pack(anchor="w", padx=8, pady=(6, 2))
+        self._ssp_comp_tree = ttk.Treeview(
+            comp_pane, columns=("component",), show="headings", height=4, selectmode="browse",
+        )
+        self._ssp_comp_tree.heading("component", text="Component", anchor="w")
+        self._ssp_comp_tree.column("component", anchor="w", stretch=True)
+        self._ssp_comp_tree.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+
+        cap_pane = tk.Frame(ssp_ref_panes, bg=C["CARD_BG"],
+                             highlightthickness=1, highlightbackground=C["HEADER_BG"])
+        cap_pane.pack(side="left", fill="both", expand=True, padx=(6, 0))
+        tk.Label(cap_pane, text="Capabilities", bg=C["CARD_BG"], fg=C["ACCENT"],
+                 font=("Helvetica", 9, "bold")).pack(anchor="w", padx=8, pady=(6, 2))
+        self._ssp_cap_tree = ttk.Treeview(
+            cap_pane, columns=("capability",), show="headings", height=4, selectmode="browse",
+        )
+        self._ssp_cap_tree.heading("capability", text="Capability", anchor="w")
+        self._ssp_cap_tree.column("capability", anchor="w", stretch=True)
+        self._ssp_cap_tree.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+
+        # Refresh automatically whenever the SSP path changes (typed or browsed to).
+        ssp_v.trace_add("write", lambda *_a: self._refresh_ssp_components())
 
         field("System ID",         "system_id",  width=40)
         tk.Label(parent,
@@ -1185,6 +1232,64 @@ class POAMTab(tk.Frame):
         )
         if path:
             self._vars["import_ssp"].set(path)
+
+    def _refresh_ssp_components(self):
+        """
+        Parse the referenced SSP file and populate the read-only Components/
+        Capabilities panes, so a weakness/observation can be written with
+        visibility into what the system is built from — mirrors ap_tab.py's
+        equivalent method. Reads directly from disk (not from the SSP Editor
+        tab), and shows any problem as a quiet inline status message rather
+        than a popup, since this runs on every keystroke in the SSP field.
+        """
+        if not hasattr(self, "_ssp_comp_tree"):
+            return   # Called before the form is built yet — nothing to do
+
+        self._ssp_comp_tree.delete(*self._ssp_comp_tree.get_children())
+        self._ssp_cap_tree.delete(*self._ssp_cap_tree.get_children())
+
+        raw_path = self._vars["import_ssp"].get().strip()
+        if not raw_path:
+            self._ssp_comp_status.config(text="No SSP referenced yet.")
+            return
+
+        # A path saved into a POA&M file is a relative href (relative to the
+        # POA&M file's own directory), so try it as-is first, then relative
+        # to this POA&M's own file location.
+        path = Path(raw_path)
+        if not path.is_file() and not path.is_absolute() and self._current_path:
+            candidate = Path(self._current_path).resolve().parent / raw_path
+            if candidate.is_file():
+                path = candidate
+        if not path.is_file():
+            self._ssp_comp_status.config(text=f"SSP file not found: {raw_path}")
+            return
+
+        try:
+            with open(path, encoding="utf-8") as f:
+                raw = json.load(f)
+            if "system-security-plan" not in raw:
+                self._ssp_comp_status.config(
+                    text="Not a valid OSCAL SSP file (missing 'system-security-plan')."
+                )
+                return
+            ssp, _bm_info = parse_ssp_file(raw)
+        except (json.JSONDecodeError, OSError) as exc:
+            self._ssp_comp_status.config(text=f"Could not read SSP: {exc}")
+            return
+
+        components = ssp.get("components", [])
+        for comp in components:
+            self._ssp_comp_tree.insert("", "end", values=(comp.get("title", "").strip() or "(untitled)",))
+
+        capabilities = ssp.get("capabilities_used", [])
+        for cap in capabilities:
+            self._ssp_cap_tree.insert("", "end", values=(cap.get("name", "").strip() or "(untitled)",))
+
+        self._ssp_comp_status.config(
+            text=f"{len(components)} component(s), {len(capabilities)} capability(ies) "
+                 f"loaded from {Path(path).name}."
+        )
 
     def _import_from_ar(self):
         """

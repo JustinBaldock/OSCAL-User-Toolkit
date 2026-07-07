@@ -95,7 +95,7 @@ class SSPTab(tk.Frame):
 
     def __init__(self, parent, colors, get_profile, get_catalog, set_status,
                  get_components=None, get_oscal_version=None, open_profile=None,
-                 get_capabilities=None):
+                 get_capabilities=None, get_system_folder=None):
         """
         Set up the SSPTab panel.
 
@@ -118,6 +118,10 @@ class SSPTab(tk.Frame):
             get_capabilities  - Optional callback returning the list of capability dicts
                                 currently loaded in the Capability Editor tab. Used by
                                 the draw.io export to place capabilities in the diagram.
+            get_system_folder - Optional callback returning the current system's
+                                folder Path (see app.py get_system_folder()), or
+                                None if no workspace is active. Used by
+                                "🔄 Sync from System Folder" (Section 8).
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -133,6 +137,7 @@ class SSPTab(tk.Frame):
         # Callback to read the Capability Editor's loaded capabilities. Returns
         # an empty list when not wired (e.g. unit tests or standalone use).
         self._get_capabilities  = get_capabilities  or (lambda: [])
+        self._get_system_folder = get_system_folder or (lambda: None)
 
         # Dirty flag — True when there are unsaved changes in the form.
         # Set by any add/edit/remove action; cleared after a successful save.
@@ -958,6 +963,12 @@ class SSPTab(tk.Frame):
             comp8_btn, text="📁  Import Folder",
             command=self._import_components_from_folder,
             bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=6)
+        tk.Button(
+            comp8_btn, text="🔄  Sync from System Folder",
+            command=self._sync_from_system_folder,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
         tk.Button(
@@ -1893,6 +1904,156 @@ class SSPTab(tk.Frame):
         self._set_status(
             f"Imported components from {added} file(s); skipped {skipped}."
         )
+
+    def _import_capability_file(self, path):
+        """
+        Import a saved capability-definition file (produced by
+        capability_tab.py's "💾 Save Capability", which bundles a
+        capability's member components in the same file) directly into
+        this SSP — without requiring that capability to be currently open
+        in the Capability Editor tab, unlike _import_capability_into_ssp()
+        (used by the "＋ Add Capability" dialog, which reads from the live
+        Capability Editor list instead of a file).
+
+        A capability file IS a component-definition document — it has the
+        same top-level "components" array as a plain component file, plus
+        an additional "capabilities" array — so its bundled member
+        components are imported via the existing _import_component_file(),
+        which already knows that shape and ignores the extra "capabilities"
+        key. This method only handles that extra key: recording each
+        capability in Capabilities Used (Section 7a) and folding its
+        control-implementations into Section 9, exactly as
+        _import_capability_into_ssp() does for a live capability.
+
+        Returns (added_capabilities, added_responses) counts. Silently
+        does nothing (returns (0, 0)) for a file with no "capabilities"
+        array — including a plain component file, which is a normal case,
+        not an error.
+        """
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return 0, 0
+
+        caps = data.get("component-definition", {}).get("capabilities", [])
+        if not caps:
+            return 0, 0
+
+        # Bundled member components — same shape _import_component_file
+        # already knows how to read.
+        self._import_component_file(path)
+
+        existing_cap_uuids = {u["uuid"] for u in self._ssp_capabilities_used}
+        added_capabilities = 0
+        added_responses    = 0
+
+        for cap in caps:
+            cap_uuid = cap.get("uuid", "")
+            if not cap_uuid or cap_uuid in existing_cap_uuids:
+                continue
+            self._ssp_capabilities_used.append({"uuid": cap_uuid, "name": cap.get("name", "")})
+            existing_cap_uuids.add(cap_uuid)
+            added_capabilities += 1
+
+            for ci in cap.get("control-implementations", []):
+                for ir in ci.get("implemented-requirements", []):
+                    ctrl_id = ir.get("control-id", "")
+                    if not ctrl_id:
+                        continue
+                    description  = ir.get("description", "")
+                    source_uuid  = next(
+                        (p["value"] for p in ir.get("props", [])
+                         if p.get("name") == "source-component-uuid"),
+                        None,
+                    )
+                    if source_uuid:
+                        # By-component response — _add_by_component_response()
+                        # already dedups, so this is a safe no-op in the
+                        # common case where _import_component_file() above
+                        # already added the same response from the
+                        # component's own control-implementations.
+                        if self._add_by_component_response(ctrl_id, source_uuid, description):
+                            added_responses += 1
+                    elif description.strip():
+                        # Capability-level-only response — no single owning
+                        # component, so fold it into that control's remarks
+                        # instead (same pattern as _import_capability_into_ssp).
+                        existing = next(
+                            (e for e in self._ssp_ctrl_impls if e["control_id"] == ctrl_id), None
+                        )
+                        if existing is None:
+                            existing = {"control_id": ctrl_id, "remarks": "", "by_components": []}
+                            self._ssp_ctrl_impls.append(existing)
+                        note = f"Capability '{cap.get('name', '')}': {description}"
+                        if note not in existing["remarks"]:
+                            existing["remarks"] = (existing["remarks"] + "\n\n" + note).strip()
+                            added_responses += 1
+
+        return added_capabilities, added_responses
+
+    def _sync_from_system_folder(self):
+        """
+        Import every component and capability file found in the current
+        system's folder — <system folder>/components/ and .../capabilities/
+        — directly into this SSP. This is the SSP-side half of the
+        Library → system folder pipeline (see design document §10.13):
+        Component/Capability Editor's "📚 Import from Library" copies
+        files into the system folder; this reads them into the SSP.
+
+        Files already imported (matched by UUID, via the same dedup logic
+        _import_component_file()/_import_capability_file() always use) are
+        skipped, so this can be re-run safely any time more files are
+        added to the system folder.
+        """
+        system_folder = self._get_system_folder()
+        if not system_folder:
+            messagebox.showinfo(
+                "No active system",
+                "Open or save a Workspace first, so the app knows which "
+                "system's folder to sync from.",
+            )
+            return
+
+        comp_dir = Path(system_folder) / "components"
+        cap_dir  = Path(system_folder) / "capabilities"
+
+        added_components = 0
+        if comp_dir.is_dir():
+            for path in sorted(comp_dir.glob("*.json")):
+                if self._import_component_file(path):
+                    added_components += 1
+
+        added_capabilities   = 0
+        added_cap_responses  = 0
+        if cap_dir.is_dir():
+            for path in sorted(cap_dir.glob("*.json")):
+                caps, responses = self._import_capability_file(path)
+                added_capabilities  += caps
+                added_cap_responses += responses
+
+        self._refresh_comp8_tree()
+        self._refresh_cap8_tree()
+        self._refresh_ctrl9_list(self._ctrl9_search_var.get())
+        self._refresh_bycomp_tree()
+
+        if not comp_dir.is_dir() and not cap_dir.is_dir():
+            messagebox.showinfo(
+                "Nothing to sync",
+                f"No components/ or capabilities/ folder found yet under:\n{system_folder}\n\n"
+                "Use \"📚 Import from Library\" in the Component/Capability Editor "
+                "first to populate this system's folder.",
+            )
+            return
+
+        summary = (
+            f"Component files imported: {added_components}\n"
+            f"Capabilities added: {added_capabilities}\n"
+            f"Capability-level responses added: {added_cap_responses}"
+        )
+        self._set_status(f"Synced from system folder: {added_components} component file(s), "
+                          f"{added_capabilities} capability(ies).")
+        messagebox.showinfo("Synced from System Folder", summary)
 
     def _ssp_component_dialog(self, existing=None):
         """
