@@ -26,6 +26,13 @@ import zipfile
 from datetime import datetime, timezone   # Used to get the current date/time
 from pathlib import Path                  # Cross-platform file path handling
 
+# Used by build_workspace_manifest()/load_workspace_manifest() to resolve
+# catalog/profile paths against the configured Library folder — see the
+# "Library folder" design (settings.py, oscal_user_toolkit_design_document.md
+# §10.13). settings.py has no imports of its own, so this can't create a
+# circular import.
+from . import settings
+
 try:
     # jsonschema validates a JSON document against a schema (a set of rules).
     # It is an optional dependency — if not installed, schema validation is
@@ -1675,9 +1682,37 @@ def build_workspace_manifest(workspace_path, title="", catalog=None, profile=Non
     def rel(p):
         return os.path.relpath(Path(p).resolve(), base_dir)
 
+    def rel_catalog_or_profile(p, library_subfolder):
+        """
+        Catalogs/profiles now normally live in the shared Library folder
+        (settings.py), not alongside any one system's own workspace files.
+        A path relative to the *workspace* directory (like the other keys
+        use) would be fragile here — it silently breaks if the workspace
+        folder and the Library folder ever move independently of each
+        other (e.g. sharing just the workspace folder with someone else).
+
+        So: if p is directly inside the configured Library's
+        catalogs/profiles subfolder, store just its filename — resolved
+        against *that machine's own* configured Library at load time
+        (see load_workspace_manifest()), not against the workspace folder.
+        Otherwise (a catalog/profile opened from outside the Library, via
+        Data Sources' "Browse Elsewhere"), fall back to the same
+        workspace-relative path used for everything else.
+        """
+        library = settings.get_library_path()
+        if library:
+            lib_sub = (Path(library) / library_subfolder).resolve()
+            if Path(p).resolve().parent == lib_sub:
+                return Path(p).name
+        return rel(p)
+
     ws = {"title": title}
+    if catalog:
+        ws["catalog"] = rel_catalog_or_profile(catalog, "catalogs")
+    if profile:
+        ws["profile"] = rel_catalog_or_profile(profile, "profiles")
     for key, val in [
-        ("catalog", catalog), ("profile", profile), ("ssp", ssp),
+        ("ssp", ssp),
         ("assessment_plan", assessment_plan),
         ("assessment_results", assessment_results),
         ("poam", poam),
@@ -1733,10 +1768,35 @@ def load_workspace_manifest(workspace_path):
     def abs_path(p):
         return str((base_dir / p).resolve())
 
+    def abs_catalog_or_profile(value, library_subfolder):
+        """
+        Resolve a catalog/profile entry, preferring the workspace-relative
+        interpretation (matches how everything else resolves, and covers a
+        catalog/profile that was opened from outside the Library), then
+        falling back to the configured Library's catalogs/profiles
+        subfolder if that path doesn't exist.
+
+        This fallback is also what fixes OLDER workspace files saved
+        before catalogs/profiles moved into the Library folder — their
+        catalog/profile entry is just a plain filename that no longer
+        exists next to the workspace, but does exist in the Library.
+        """
+        workspace_relative = base_dir / value
+        if workspace_relative.is_file():
+            return str(workspace_relative.resolve())
+        library = settings.get_library_path()
+        if library:
+            library_relative = Path(library) / library_subfolder / Path(value).name
+            if library_relative.is_file():
+                return str(library_relative.resolve())
+        # Neither resolved — return the workspace-relative guess anyway, so
+        # the caller's existing "file not found" handling still applies.
+        return str(workspace_relative.resolve())
+
     return {
         "title":              ws.get("title", ""),
-        "catalog":            abs_path(ws["catalog"]) if ws.get("catalog") else None,
-        "profile":            abs_path(ws["profile"]) if ws.get("profile") else None,
+        "catalog":            abs_catalog_or_profile(ws["catalog"], "catalogs") if ws.get("catalog") else None,
+        "profile":            abs_catalog_or_profile(ws["profile"], "profiles") if ws.get("profile") else None,
         "ssp":                abs_path(ws["ssp"]) if ws.get("ssp") else None,
         "components":         [abs_path(p) for p in ws.get("components", [])],
         "capabilities":       [abs_path(p) for p in ws.get("capabilities", [])],

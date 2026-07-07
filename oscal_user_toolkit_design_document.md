@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.4  
+**Version:** 3.5  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -902,6 +902,14 @@ This intentionally does **not** replace the older `_import_components_from_files
 
 **Assessment Plan / POA&M — read-only SSP awareness:** `ap_tab.py` already had a components tree fed by `_refresh_ssp_components()`, which parses the referenced SSP file directly from disk (not via the SSP Editor tab, so it works even if that tab never opened this particular file) — it just had no equivalent for capabilities. Both `ap_tab.py` and `poam_tab.py` (which previously had no SSP-derived visibility at all beyond the bare `import_ssp` reference field) now show a read-only Capabilities pane alongside Components, populated from the same parsed SSP's `capabilities_used` list. This is deliberately name-only: OSCAL's SSP schema has no native capabilities structure (`capabilities_used` is a toolkit-side tag list — `{uuid, name}`, see §4.6), so a capability's member components aren't recoverable from the SSP file alone once you're outside the toolkit's own live Capability Editor state. Both tabs are strictly read-only here — no write path was added, matching the design decision that editing a system's components/capabilities stays the System Owner's job in Component/Capability Editor, not the auditor's.
 
+### 10.16 Workspace manifest resolves catalog/profile against the Library, not just the workspace folder
+
+`build_workspace_manifest()`/`load_workspace_manifest()` (§6.8) originally stored every referenced file — catalog, profile, SSP, components, etc. — as a path relative to the workspace manifest's own folder, so the whole folder stayed portable if moved or shared. That assumption broke once catalogs/profiles became Library resources (§10.13/§10.14): a catalog opened via the Data Sources tab now normally lives in the Library folder, which is a separate, independently-configured location, not inside any one system's workspace folder. A workspace-relative path to it (`../../library/catalogs/x.json`) is fragile — it silently breaks if the workspace folder is ever shared or moved on its own, and it broke outright for the bundled `example-data-ism/workspace_ERN.json`, whose catalog/profile were plain filenames relative to `example-data-ism/` from before the Library existed, pointing at files that have since moved to `library/catalogs/`/`library/profiles/`.
+
+**Fix, save side:** `build_workspace_manifest()` now checks whether the given catalog/profile path sits directly inside the *configured* Library's `catalogs/`/`profiles/` subfolder. If it does, only the bare filename is stored (resolved against whatever Library is configured on the machine that opens it later — see load side). Otherwise it falls back to the original workspace-relative path, unchanged, which still covers a catalog/profile opened from outside the Library via Data Sources' "…  Browse Elsewhere".
+
+**Fix, load side:** `load_workspace_manifest()` tries the workspace-relative interpretation *first* (matching every other field, and covering the non-Library case above), and only falls back to resolving the same filename against the configured Library's `catalogs/`/`profiles/` subfolder if that file doesn't exist. This fallback is what fixes *already-saved* workspace files like `workspace_ERN.json` without needing to edit them — no schema change or version marker was needed, since the fallback only ever triggers when the primary (workspace-relative) resolution fails to find a file, which is exactly the situation those older files are now in.
+
 ---
 
 ## 11. Example Component Library
@@ -943,6 +951,11 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.5 (July 2026)
+
+**Fixes:**
+- **Workspace manifest catalog/profile resolution** (`models.py`, §10.16): `load_workspace_manifest()` now falls back to resolving a catalog/profile filename against the configured Library folder when the workspace-relative path doesn't exist — fixes opening `example-data-ism/workspace_ERN.json` (and any other pre-Library workspace file) without editing it, since its catalog/profile now live in `library/catalogs/`/`library/profiles/` instead of next to the workspace. `build_workspace_manifest()` also now stores just the filename (instead of a workspace-relative path) for a catalog/profile that lives directly inside the Library, so future saves resolve correctly even if the workspace and Library folders are shared/moved independently of each other.
 
 ### Version 3.4 (July 2026)
 
