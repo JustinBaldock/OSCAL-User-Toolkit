@@ -1,0 +1,40 @@
+{
+  "component-definition": {
+    "uuid": "e8e4d16b-481b-4f83-8b03-1ac13a5bb2ea",
+    "metadata": {
+      "title": "policy - Cyber Security Principles Protect",
+      "last-modified": "2026-07-02T04:01:14Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "62161acb-53d3-4a0c-bfe4-76b5fe317873",
+        "type": "policy",
+        "title": "Cyber Security Principles Protect",
+        "description": "Implement and maintain controls to manage security risks.",
+        "purpose": "Implement and maintain controls to manage security risks.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "51a10845-f18d-43f8-8a0d-1b0e0a7f26a6",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Protect.",
+            "implemented-requirements": [
+              {
+                "uuid": "e7782c3f-d6f1-40a7-87fd-85b164a6a0e3",
+                "control-id": "ism-principle-pro-01",
+                "description": "This system is maintained and developed trying to implement Secure by Design and Secure by Default principles and practices."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

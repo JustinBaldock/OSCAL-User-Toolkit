@@ -1,0 +1,108 @@
+{
+  "component-definition": {
+    "uuid": "f59b6c6a-8144-4aa5-afbb-6e0205a8dbac",
+    "metadata": {
+      "title": "hardware - Firewall central",
+      "last-modified": "2026-06-25T07:03:59Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "14e81bf8-7ff1-4857-a520-588d55bad0b4",
+        "type": "hardware",
+        "title": "Firewall central",
+        "description": "This is the networks primary firewall.",
+        "purpose": "The primary firewall",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "bee27879-34e7-473c-92e8-665665f7c098",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Firewall central.",
+            "implemented-requirements": [
+              {
+                "uuid": "4be7e9c0-dcde-451a-a2b7-4af3163fdd52",
+                "control-id": "ism-0639",
+                "description": "The central Firewall is used to provide network segregation between different security domains."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "a5149148-af5c-48ac-b617-ca8aa4f8fd62",
+            "name": "https",
+            "title": "HTTPS \u2014 Web-based management console",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "17dffd36-04d6-4ea8-8859-9990e0c9a353",
+            "name": "ssh",
+            "title": "SSH \u2014 Secure CLI management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2b0dad22-1704-4453-bd28-305009bf3f15",
+            "name": "snmp",
+            "title": "SNMP \u2014 Network monitoring (inbound queries / traps outbound)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP",
+                "remarks": "SNMP trap"
+              }
+            ]
+          },
+          {
+            "uuid": "c7b17d12-7cc5-4659-b675-9f2f46ccdb5d",
+            "name": "syslog",
+            "title": "Syslog \u2014 Security event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "6e24de35-f38d-4dec-aaa9-16433cbb17f0",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "component-definition": {
+    "uuid": "bda8c23c-c9f1-4306-b605-54f9303196fb",
+    "metadata": {
+      "title": "policy - IT Equipment Management Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "7d6af4f2-ff51-410e-916f-398c04bc6c95",
+        "type": "policy",
+        "title": "IT Equipment Management Policy",
+        "description": "The IT equipment management policy defines requirements for the procurement, configuration, use, transport, storage, maintenance, and disposal of IT equipment throughout its lifecycle. It covers supply chain integrity requirements for new equipment, physical security obligations, and the sanitisation and destruction requirements when equipment is decommissioned.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a IT Equipment Management Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "90e8289a-7c85-4bf7-9535-5aecc8efd8df",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for IT Equipment Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "35309154-cc28-4cc4-aa1f-5b44ed43b473",
+                "control-id": "ism-1551",
+                "description": "This document is the IT equipment management policy required by ISM-1551. It is developed, implemented, and maintained by the organisation. The policy covers: the approved supplier list and procurement requirements for IT equipment; supply chain integrity verification on receipt; baseline configuration and hardening requirements before equipment is placed into production; physical security requirements for IT equipment in use and in storage; processes for authorising the removal of IT equipment from the facility; and decommissioning procedures including sanitisation, destruction, and removal from the asset register."
+              },
+              {
+                "uuid": "5d502500-ab9c-4069-b63e-83d704a3e835",
+                "control-id": "ism-0161",
+                "description": "As required by ISM-0161, IT equipment and media are secured when not in use. Servers and network equipment in server rooms and communications rooms are secured by physical access controls (badge readers with audit logging). Workstations and laptops in public-access or semi-public areas are secured with cable locks or stored in locked cabinets when unattended overnight. Portable IT equipment (laptops, tablets, external storage) must not be left unattended in vehicles or public areas."
+              },
+              {
+                "uuid": "30dad3d7-0385-4ec2-95bb-aaadbd5dc6b4",
+                "control-id": "ism-1791",
+                "description": "As required by ISM-1791, the integrity of IT equipment is verified on receipt from suppliers before it is placed into the production environment. Verification steps include: confirming packaging has not been tampered with; verifying hardware serial numbers against the purchase order; checking firmware versions against vendor release notes; and for high-risk components, performing a known-good hash comparison of firmware images where vendor tooling supports this."
+              },
+              {
+                "uuid": "94888c7e-015b-4834-aeba-8c209495cbf3",
+                "control-id": "ism-1790",
+                "description": "As required by ISM-1790, IT equipment is delivered via means that protect against tampering and substitution. Critical networking and security equipment is ordered directly from the vendor or their authorised distributor (not from third-party resellers or marketplaces). Delivery address is the organisation's secure facility. Equipment is inspected by IT staff immediately upon delivery."
+              },
+              {
+                "uuid": "6e6721e8-dbfa-475d-bdfe-a964ee8c7487",
+                "control-id": "ism-1789",
+                "description": "As required by ISM-1789, sufficient spares of critical IT equipment are sourced and kept in reserve to support continuity of operations. The spare parts register identifies minimum stock levels for critical components (firewalls, core switches, domain controllers). Spare equipment is stored in a secure location, inventoried quarterly, and maintained in a ready-to-deploy configuration."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

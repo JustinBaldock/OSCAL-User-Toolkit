@@ -1,0 +1,133 @@
+{
+  "component-definition": {
+    "uuid": "8abb6dde-ef8f-40fd-90a8-b20016028996",
+    "metadata": {
+      "title": "Internet Connection (Filtered) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "ce3a18bd-0a02-48e0-848b-f7083b8dd5d4",
+        "type": "interconnection",
+        "title": "Internet Connection (Filtered)",
+        "description": "The organisation's internet connection providing filtered outbound web access for end users and cloud service connectivity. All internet traffic passes through the central firewall and a web proxy/content filtering service. Inbound internet access is blocked by default at the perimeter firewall; only explicitly permitted inbound services (e.g. published HTTPS services via WAF) are allowed.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "connection-type",
+            "value": "ISP-provided internet uplink (fibre)"
+          },
+          {
+            "name": "filtering",
+            "value": "Web proxy with content filtering and SSL inspection for outbound traffic"
+          },
+          {
+            "name": "inbound",
+            "value": "Default deny inbound; published services via WAF/reverse proxy only"
+          },
+          {
+            "name": "bandwidth",
+            "value": "Replace with actual bandwidth"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "57902fa7-31a1-43bd-b04f-d15560c3e97b",
+            "name": "https",
+            "title": "HTTPS \u2014 Permitted outbound cloud and web traffic (primary)",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b97e57d0-8888-43dd-a8f6-9d0062ce76bd",
+            "name": "http",
+            "title": "HTTP \u2014 Permitted for CRL/OCSP and HTTP-to-HTTPS redirects only",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "840018b3-4c56-49fd-a692-65836bbe261a",
+            "name": "dns",
+            "title": "DNS \u2014 Outbound DNS resolution via approved secure DNS resolver",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b0e26d62-f1f3-410d-9e93-3f0b6a03d78a",
+            "name": "ntp",
+            "title": "NTP \u2014 Outbound NTP to approved internet time sources (if no internal stratum-1)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "c22acdcd-3a76-4aac-8b9d-ee702f70fb47",
+            "name": "smtp",
+            "title": "SMTP \u2014 Outbound email delivery to Exchange Online (SMTP submission)",
+            "port-ranges": [
+              {
+                "start": 587,
+                "end": 587,
+                "transport": "TCP",
+                "remarks": "SMTP with STARTTLS \u2014 outbound email relay"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "aab6325b-bb30-4303-ac4e-05f92304b4c0",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Internet Connection (Filtered).",
+            "implemented-requirements": [
+              {
+                "uuid": "42b4885f-6adc-45cc-ade1-731c74d76882",
+                "control-id": "ism-0963",
+                "description": "All internet-bound traffic from the organisation traverses a web proxy with content filtering enabled. The web proxy blocks access to known-malicious, phishing, and non-business-appropriate categories. SSL/TLS inspection is applied to outbound HTTPS traffic to inspect for data exfiltration and malware download. Users cannot bypass the proxy. DNS requests are directed to an approved secure recursive resolver with DNS filtering (DNSBL) for known-malicious domains."
+              },
+              {
+                "uuid": "624778be-d50b-4a13-a5d6-5c1d2c17fece",
+                "control-id": "ism-1234",
+                "description": "All inbound email is routed through Microsoft Defender for Office 365 Safe Attachments and Safe Links (or equivalent gateway) before delivery. Direct inbound SMTP to organisation mail servers from the internet is not permitted; all inbound mail is delivered via the approved mail gateway."
+              },
+              {
+                "uuid": "7bdc269f-cd2e-44b5-80a1-4f099456e76e",
+                "control-id": "ism-1405",
+                "description": "Perimeter firewall and web proxy logs for internet traffic are forwarded to the SIEM. Blocked connection attempts (inbound and outbound) are logged and alerted on for unusual patterns. DNS query logs are collected for threat hunting purposes."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

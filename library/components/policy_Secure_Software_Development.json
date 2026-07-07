@@ -1,0 +1,85 @@
+{
+  "component-definition": {
+    "uuid": "2958e612-27d1-48aa-8135-7f2b078bb0c5",
+    "metadata": {
+      "title": "policy - Secure Software Development Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "0baacd9d-758f-4780-b78e-0c42574c6dc9",
+        "type": "policy",
+        "title": "Secure Software Development Policy",
+        "description": "The secure software development policy establishes the organisation's requirements for developing, testing, and maintaining software in a secure manner. It mandates segregation of development environments, secure coding practices, the use of an authoritative source for software, static and dynamic testing, and secure supply chain practices for imported software artefacts.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Secure Software Development Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "ec9e694c-43f0-4f8a-a6eb-6e9489d5f7fa",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Secure Software Development Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "b4147d29-451b-4e27-92bd-18823a0fd7d5",
+                "control-id": "ism-2120",
+                "description": "This document is the secure software development policy required by ISM-2120. It is developed, implemented, and maintained by the organisation. The policy covers: the requirement to segregate development, testing, staging, and production environments; approved secure coding standards and practices; mandatory security testing requirements before code is promoted to production; the use of an authoritative source for all software artefacts; supply chain integrity verification for imported libraries and dependencies; and the training requirements for development staff on secure coding practices. The policy applies to all in-house software development and to bespoke development outsourced to third parties."
+              },
+              {
+                "uuid": "a0f1e5ba-6bb4-4886-b7b2-06aa0ee81388",
+                "control-id": "ism-0400",
+                "description": "As required by ISM-0400, development, testing, staging, and production environments are segregated. Segregation is implemented through separate physical or virtual infrastructure, separate network VLANs or cloud accounts, and separate access controls for each environment tier. Personnel with production access do not have unrestricted development access, and vice versa. Promotion of code between environments follows the change management process."
+              },
+              {
+                "uuid": "b5b4d475-eea1-4c3b-9b28-a7616e2669c6",
+                "control-id": "ism-1419",
+                "description": "As required by ISM-1419, development and modification of software only takes place in designated development environments. Direct modification of code in production or staging environments is prohibited except in documented emergency change procedures which require retrospective review. All code changes originate in the development environment and are promoted through the pipeline to production via the CI/CD process."
+              },
+              {
+                "uuid": "7043f4cf-cf1a-47f9-a69c-9d85d7d42b55",
+                "control-id": "ism-2023",
+                "description": "As required by ISM-2023, an authoritative source for software (the source code repository) is established and maintained. The approved version control system is the single source of truth for all software artefacts. Direct deployment of code that has not passed through the authoritative source is prohibited. The repository is backed up daily and access is controlled by role with all access changes logged."
+              },
+              {
+                "uuid": "4d38546b-2b45-40dc-9901-04ac937afda6",
+                "control-id": "ism-1422",
+                "description": "As required by ISM-1422, unauthorised access to the authoritative source for software is prevented. Access to the source code repository is controlled by role-based access: developers have read/write access to their team's repositories; read access to other repositories is granted on request with manager approval; write access to the main/production branch is restricted to senior developers via branch protection rules requiring peer review approval."
+              },
+              {
+                "uuid": "51ca4c25-8977-4f1f-99aa-9c4db250c417",
+                "control-id": "ism-2028",
+                "description": "As required by ISM-2028, all software artefacts are tested to detect known weaknesses using static application security testing (SAST) before being imported into the authoritative source. The approved SAST tool is integrated into the CI/CD pipeline and runs automatically on every pull request. Critical and high severity findings block promotion to the next environment tier and must be resolved or risk-accepted by the security team before merging."
+              },
+              {
+                "uuid": "e9306ea7-1926-404e-8356-69a88508d17d",
+                "control-id": "ism-2026",
+                "description": "As required by ISM-2026, all software artefacts imported from external sources (open source libraries, vendor SDKs, container base images) are scanned for malicious content before being imported into the authoritative source. Scanning is performed using the approved software composition analysis (SCA) tool. Artefacts with known malicious indicators are rejected and an incident is raised."
+              },
+              {
+                "uuid": "8fd7346d-b3c2-42c8-a987-5a094738c5b8",
+                "control-id": "ism-2027",
+                "description": "As required by ISM-2027, all software artefacts are verified by a digital signature or a secure hash provided over a separate channel before being used. Container images must be signed by the approved image signing key before they can be deployed to production. Third-party libraries must have their SHA-256 hash verified against the vendor-published hash before import."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

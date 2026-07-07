@@ -1,0 +1,55 @@
+{
+  "component-definition": {
+    "uuid": "64b1e334-6d3d-4147-929a-95ac75441d37",
+    "metadata": {
+      "title": "Remote Access Policy Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "1f842f76-766a-49ce-a67f-e4a47c4d1aee",
+        "type": "policy",
+        "title": "Remote Access Policy",
+        "description": "The remote access policy defines the requirements and conditions under which personnel may access organisational systems and data remotely. This includes requirements for VPN usage, multi-factor authentication, device compliance checks before granting access, restrictions on the use of personal (unmanaged) devices, and logging of remote access sessions. The policy applies to all staff, contractors, and third-party support personnel requiring remote access.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [],
+        "control-implementations": [
+          {
+            "uuid": "14eaaae9-8c98-4714-ac96-f2efc13666ea",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Remote Access Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "5787133b-a45d-4d81-9eac-2b2ea776a65e",
+                "control-id": "ism-1173",
+                "description": "As defined in this policy, all privileged remote access (system administration, network management, database administration) requires multi-factor authentication. Privileged remote access is only permitted from approved Privileged Access Workstations (PAWs) or organisation-managed jump servers, and only over the approved VPN or direct encrypted management channel."
+              },
+              {
+                "uuid": "88aa11cf-ee45-4557-af38-84f705e0e8eb",
+                "control-id": "ism-0974",
+                "description": "As defined in this policy, all unprivileged remote access requires multi-factor authentication enforced at the identity provider before VPN or remote access session establishment is permitted. Single-factor (password-only) remote access is not permitted."
+              },
+              {
+                "uuid": "88fc01f7-3c34-43a9-a97b-7e8526fdc83b",
+                "control-id": "ism-1508",
+                "description": "As defined in this policy, remote access is granted on the principle of least privilege. Users are granted remote access only to the specific systems and resources required for their role, not unrestricted access to the entire network. Split-tunnelling is configured so that all traffic \u2014 including internet-bound traffic \u2014 from remote sessions traverses the organisation's security controls."
+              },
+              {
+                "uuid": "f57f5071-54ae-40ca-a15f-6e2f60610cb6",
+                "control-id": "ism-1509",
+                "description": "As defined in this policy, all remote access events (VPN connection establishment and termination, authentication success and failure, session duration, source IP address) are centrally logged to the SIEM. Anomalous remote access patterns (unusual hours, unusual source locations, excessive failed attempts) trigger alerts."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

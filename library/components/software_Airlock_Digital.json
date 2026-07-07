@@ -1,0 +1,118 @@
+{
+  "component-definition": {
+    "uuid": "f59b6c6a-8144-4aa5-afbb-6e0205a8dbac",
+    "metadata": {
+      "title": "software - Airlock Digital",
+      "last-modified": "2026-06-25T06:59:10Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7da1abbc-fa71-4bb9-b561-21000ea23a1a",
+        "type": "software",
+        "title": "Airlock Digital",
+        "description": "Airlock digital provides applicatoin allow listing and execution control of software.",
+        "purpose": "Provides application control solution",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "421e2505-0ad3-421b-818d-9ac89dccd502",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Airlock Digital.",
+            "implemented-requirements": [
+              {
+                "uuid": "33afe5b0-5ff8-4380-869f-bfb9588d860d",
+                "control-id": "ism-0843",
+                "description": "Airlock Digital agent is installed on all Windows workstations via group policy. All workstations are configured in enforcement mode providing application control."
+              },
+              {
+                "uuid": "d1504649-2281-4766-85c4-3ddf39205727",
+                "control-id": "ism-1656",
+                "description": "Airlock Digital agent is installed on all non-internface facing servers. All servers are configured in enforcement mode providing applicaiton control."
+              },
+              {
+                "uuid": "c957bfba-8623-4c37-a868-99c963acf2d1",
+                "control-id": "ism-0955",
+                "description": "Airlock Digital implements application control using cryptographic hash rules, publisher certificate rules and path rules."
+              },
+              {
+                "uuid": "44ecab17-e429-44bd-aed5-6d91419f993e",
+                "control-id": "ism-1471",
+                "description": "Airlock digital  implemented application control using publisher certificate rules. Publisher names and product names are used."
+              }
+            ]
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "a6de261d-e08f-4128-8133-576effc0dfae",
+            "name": "https",
+            "title": "HTTPS \u2014 Airlock Digital management console and agent-to-server communication",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "99fbe14b-f445-4f0e-986f-928dd5b4b60f",
+            "name": "airlock-agent",
+            "title": "Airlock Digital agent communication \u2014 Agent check-in and policy download",
+            "port-ranges": [
+              {
+                "start": 4433,
+                "end": 4433,
+                "transport": "TCP",
+                "remarks": "Default Airlock Digital agent port \u2014 confirm with vendor deployment guide; may use 443"
+              }
+            ]
+          },
+          {
+            "uuid": "6fa0d25a-03b2-42b6-a386-60b9f192ff4f",
+            "name": "syslog",
+            "title": "Syslog \u2014 Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "5ab834ad-ab77-400c-b0e1-a4f8eed62807",
+            "name": "ldaps",
+            "title": "LDAPS \u2014 Active Directory integration for Airlock Digital management console authentication",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "367c84ab-88df-4c0e-a579-aef225770441",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation for audit log timestamps",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

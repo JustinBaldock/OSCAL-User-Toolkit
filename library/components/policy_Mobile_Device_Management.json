@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "bc1abab1-9273-4d87-8cea-fb6e2361fa95",
+    "metadata": {
+      "title": "policy - Mobile Device Management Policy",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "48d24c94-4504-43d4-b7db-7ce5007e5735",
+        "type": "policy",
+        "title": "Mobile Device Management Policy",
+        "description": "The mobile device management policy defines requirements for enrolling, configuring, monitoring, and managing organisational and personally owned mobile devices that access organisational systems and data. It mandates the use of an approved Mobile Device Management (MDM) solution, defines the baseline security configuration that must be enforced, and establishes the process for remote wipe of lost or stolen devices.",
+        "purpose": "Satisfy the ISM requirement to develop, implement and maintain a Mobile Device Management Policy.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "Accountable for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Responsible for day-to-day implementation"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "20126723-610d-4b38-bdbb-fc03f6be1378",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Mobile Device Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "561a1179-cf75-42ec-aac7-0b3979f99ae7",
+                "control-id": "ism-1533",
+                "description": "This document is the mobile device management policy required by ISM-1533. It is developed, implemented, and maintained by the organisation. The policy covers: the requirement for all mobile devices accessing organisational systems or data to be enrolled in the approved MDM solution before access is permitted; the baseline MDM configuration profile that is applied to all enrolled devices; the process for de-enrolling devices when personnel leave or when a device is retired; the obligation to report lost or stolen devices within 2 hours so remote wipe can be initiated; and the process for approving exceptions (e.g. personal devices with limited access)."
+              },
+              {
+                "uuid": "fa83e1af-2148-478f-9579-1329329b6157",
+                "control-id": "ism-1195",
+                "description": "As required by ISM-1195, the organisation uses an MDM solution that has completed a Common Criteria evaluation against the Protection Profile for Mobile Device Management, version 4.0 or later. The approved MDM solution is Microsoft Intune, which holds the relevant Common Criteria certification. The MDM solution is used to enforce the organisational mobile device security baseline on all enrolled devices."
+              },
+              {
+                "uuid": "410b3cf7-92ba-4e19-8d44-604d4c6fc0de",
+                "control-id": "ism-1886",
+                "description": "As required by ISM-1886, mobile devices are configured to operate in supervised (iOS) or fully managed (Android Enterprise) mode via the MDM solution. Supervised mode enables additional management capabilities including restriction of App Store access to organisational approved applications, enforcement of configuration profiles that cannot be removed by the user, and activation lock management."
+              },
+              {
+                "uuid": "e90129e9-06c8-4c38-8fb8-c5c8f74e5d35",
+                "control-id": "ism-1887",
+                "description": "As required by ISM-1887, remote locate and remote wipe functionality is enabled and configured on all enrolled mobile devices via the MDM solution. Remote wipe is initiated immediately upon confirmed report of a lost or stolen device. The decision to initiate remote wipe is authorised by the system owner or their delegate. Remote wipe events are logged and the affected user is notified."
+              },
+              {
+                "uuid": "5cfc9715-5032-4e24-9215-919c80847c0e",
+                "control-id": "ism-2096",
+                "description": "As required by ISM-2096, mobile devices are configured to enforce separation between organisational and personal mobile device data where BYOD is permitted. Work Profile (Android Enterprise) or Managed Open In (iOS) is enforced via the MDM solution to prevent organisational data being copied to personal applications and storage."
+              },
+              {
+                "uuid": "064239db-5019-4ae7-9c24-20efe80804a3",
+                "control-id": "ism-2097",
+                "description": "As required by ISM-2097, mobile devices are configured with always-on VPN functionality via the MDM solution. The always-on VPN is configured in the MDM configuration profile and cannot be disabled by the user. The VPN routes all traffic through the organisational perimeter, ensuring content filtering and security monitoring coverage applies to mobile device traffic."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

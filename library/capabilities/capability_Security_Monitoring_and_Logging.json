@@ -1,0 +1,234 @@
+{
+  "component-definition": {
+    "uuid": "774cb946-6269-4b44-9d4b-31f5a90cdc99",
+    "metadata": {
+      "title": "Capability: Security Monitoring and Logging",
+      "last-modified": "2026-06-30T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+        "type": "policy",
+        "title": "Security Logging and Monitoring Policy",
+        "description": "Defines requirements for capturing, protecting, retaining, and reviewing security event logs from all organisational systems. Mandates centralised log collection, minimum event types to be logged, log retention periods, and alert response timeframes.",
+        "purpose": "Establish and enforce centralised security logging and monitoring requirements.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "CISO \u2014 responsible for policy approval and log review oversight"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Security Operations Centre (SOC) \u2014 responsible for daily log review"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "82b95d3e-2076-4125-8938-14c98245fe0b",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Security Logging and Monitoring Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "3fcc2c56-f418-43ec-9c31-277c57585612",
+                "control-id": "ism-1405",
+                "description": "The logging policy requires a centralised event logging facility (SIEM) to collect security events from all in-scope systems. Log data must be protected from unauthorised access and deletion."
+              },
+              {
+                "uuid": "3c106e32-a08c-4c59-8068-7dd6d234d5fe",
+                "control-id": "ism-0585",
+                "description": "The logging policy mandates that each logged security event includes: date and time of the event, the user or service account that performed the action, the source and destination of the event, and the outcome (success or failure)."
+              },
+              {
+                "uuid": "9bd9cd21-7234-4ee4-8a0e-9146b1c16ab8",
+                "control-id": "ism-1509",
+                "description": "The logging policy requires that privileged access events (logon, logoff, account management, group policy changes, security policy changes) are centrally logged and reviewed by the security team within each business day."
+              },
+              {
+                "uuid": "a65e3a22-75c7-4550-b2d0-55869a9c3504",
+                "control-id": "ism-1566",
+                "description": "The logging policy requires that standard user access events are centrally logged. Anomalous user activity (after-hours access, impossible travel, bulk data access) is flagged for security team review."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+        "type": "service",
+        "title": "SIEM \u2014 Microsoft Sentinel",
+        "description": "Microsoft Sentinel is the cloud-native SIEM and SOAR platform collecting security telemetry from all in-scope systems. Data connectors ingest Windows events via Windows Event Forwarding (WEF), Defender for Endpoint events, Entra ID sign-in and audit logs, and Microsoft 365 activity logs. Analytics Rules detect threats; Playbooks automate initial response.",
+        "purpose": "Centralise security event collection, threat detection, and automated incident response.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "e5b9a3ad-5d08-4e5a-b0d2-732ea428d532",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for SIEM \u2014 Microsoft Sentinel.",
+            "implemented-requirements": [
+              {
+                "uuid": "54e68218-e988-48f0-8826-54c1c9b61c92",
+                "control-id": "ism-1405",
+                "description": "Microsoft Sentinel is the centralised event logging facility. Log Analytics Workspace retains hot data for 90 days and archive data for 1 year. Write access to the workspace is restricted to the Sentinel service principal and authorised security administrators. Log purging requires two authorised approvals."
+              },
+              {
+                "uuid": "8383344d-1953-4b28-a017-7871b03bf8a4",
+                "control-id": "ism-0585",
+                "description": "Sentinel Analytics Rules require structured log fields: timestamp, source host, user identity, action performed, and outcome. Custom parsers (KQL functions) normalise unstructured logs into this schema before alerting rules operate on them."
+              },
+              {
+                "uuid": "c72b6e1d-d8df-4151-800c-3efa63e910c8",
+                "control-id": "ism-1509",
+                "description": "Sentinel Analytics Rules detect privileged access events in real time: new Domain Admin additions, failed privileged logons, privileged account use outside business hours. Alerts are triaged by the SOC within 15 minutes (P1) or 4 hours (P2/P3)."
+              },
+              {
+                "uuid": "64c438d5-2e51-4c17-a6f6-d1d8eabb98a7",
+                "control-id": "ism-1566",
+                "description": "Sentinel detects anomalous standard user behaviour via Analytics Rules and Microsoft Entra ID Protection: impossible travel, atypical locations, mass file access (ransomware indicator), and sign-in risk detections generate alerts for SOC review."
+              },
+              {
+                "uuid": "e0f99d7c-aae1-4229-8f45-330ee89cb7f3",
+                "control-id": "ism-1683",
+                "description": "Sentinel ingests Entra ID Sign-In logs via the Entra ID data connector. MFA authentication events (success and failure) are available for analysis. MFA bypass attempts trigger a P1 alert with automated account review."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+        "type": "software",
+        "title": "Windows Advanced Audit Policy",
+        "description": "Windows Advanced Audit Policy is configured via Group Policy on all domain-joined systems to capture the event types required by the logging policy. Windows Event Forwarding (WEF) streams events to a Windows Event Collector (WEC) server, which forwards them to Microsoft Sentinel. Critical event IDs monitored include: 4624, 4625, 4634, 4648, 4672, 4688, 4698, 4720, 4726, 4740.",
+        "purpose": "Configure and forward Windows security events to the centralised SIEM.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b6604e1f-5057-49ce-93bd-df90a64c1213",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Windows Advanced Audit Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "81c66fbd-9f21-48af-b622-53731436a722",
+                "control-id": "ism-1405",
+                "description": "Windows Event Forwarding (WEF) is configured on all Windows endpoints and servers via Group Policy. Events are forwarded to the WEC server within 60 seconds using a subscription-based push model. The WEC server forwards all collected events to Microsoft Sentinel."
+              },
+              {
+                "uuid": "9e6ac625-d7f5-4bc1-935e-ffe4b2333bc8",
+                "control-id": "ism-0585",
+                "description": "Windows Advanced Audit Policy is configured to capture: Account Logon (success and failure), Account Management (all), Privilege Use (success and failure), Process Creation (success), Object Access (failure), Policy Change (all), and System events (all). Each event includes timestamp, host, user SID, and outcome."
+              },
+              {
+                "uuid": "5a33f64b-feef-44b7-b2a6-ccce5213354a",
+                "control-id": "ism-1509",
+                "description": "Security event log maximum size is 1GB with 'Archive when full' policy. Privileged access events (EID 4672 \u2014 Special Logon, EID 4673 \u2014 Privileged Service Called, EID 4674 \u2014 Operation on Privileged Object) are forwarded to Sentinel and trigger review alerts."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "30970cbd-839d-4394-a708-aed4c38a9765",
+        "name": "Security Monitoring and Logging",
+        "description": "The security monitoring and logging capability combines policy, a cloud-native SIEM, and Windows event configuration to provide centralised visibility across all systems. The logging policy defines what must be captured and reviewed; Windows Advanced Audit Policy and Event Forwarding collect endpoint events; Microsoft Sentinel aggregates, detects threats in, and alerts on security-relevant activity across the environment.",
+        "incorporates-components": [
+          {
+            "component-uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+            "description": "Defines logging requirements, event types, retention periods, and alert response SLAs."
+          },
+          {
+            "component-uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+            "description": "Provides centralised log collection, threat detection, and automated incident response."
+          },
+          {
+            "component-uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+            "description": "Captures and forwards Windows security events to the SIEM via Windows Event Forwarding."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "cae9102c-a294-47a3-bb2b-4064d4133240",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for capability: Security Monitoring and Logging. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "64f9a980-d139-44d1-b417-cf64a9becafd",
+                "control-id": "ism-1405",
+                "description": "The logging policy mandates a centralised SIEM; Microsoft Sentinel is the SIEM with 90-day hot and 1-year archive retention, protected from unauthorised deletion.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "3eae4f19-abed-4036-b321-ada4688a2056"
+                  }
+                ]
+              },
+              {
+                "uuid": "a50aad4c-2d84-4688-a3e4-4f9d49749fbf",
+                "control-id": "ism-0585",
+                "description": "Windows Advanced Audit Policy captures structured events with timestamp, user identity, source, and outcome; Sentinel parsers normalise log fields for consistent querying.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "7956b3ae-1cff-4db9-b06c-038ee0de469e"
+                  }
+                ]
+              },
+              {
+                "uuid": "d0d8042e-25dd-46cd-bf87-aeaa42b01364",
+                "control-id": "ism-1509",
+                "description": "Sentinel Analytics Rules detect privileged access events (EID 4672, 4673) in real time; SOC reviews P1 alerts within 15 minutes; the logging policy sets the daily review obligation.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "3eae4f19-abed-4036-b321-ada4688a2056"
+                  }
+                ]
+              },
+              {
+                "uuid": "7c6743d5-8cb4-4248-9899-2f9f1c5ead09",
+                "control-id": "ism-1566",
+                "description": "Sentinel Entra ID Protection detects anomalous standard user behaviour; the logging policy requires standard user event centralisation and anomaly review.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "3eae4f19-abed-4036-b321-ada4688a2056"
+                  }
+                ]
+              },
+              {
+                "uuid": "22c3f974-1097-47a6-a6df-bd4796ef9399",
+                "control-id": "ism-1683",
+                "description": "Sentinel ingests Entra ID MFA authentication events; MFA bypass attempts generate P1 alerts; the logging policy requires MFA events to be centrally logged.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "3eae4f19-abed-4036-b321-ada4688a2056"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

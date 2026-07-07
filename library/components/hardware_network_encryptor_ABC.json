@@ -1,0 +1,83 @@
+{
+  "component-definition": {
+    "uuid": "404240c7-851f-440b-9774-217e72be9c97",
+    "metadata": {
+      "title": "hardware - network encryptor ABC",
+      "last-modified": "2026-06-26T08:41:26Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+        "type": "hardware",
+        "title": "network encryptor ABC",
+        "description": "A hardware network encryptor that does abc.",
+        "purpose": "provide hardware based network encryption",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "0bf83da1-ec34-419e-a953-25ae59ec4a79",
+            "name": "https",
+            "title": "Secure local management",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2b9ff774-f121-4c8a-a651-c4a85a63c848",
+            "name": "IKE",
+            "title": "Encrypted data transport",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "e9b93ad1-458c-46e5-9d2a-721aaa9fc855",
+            "name": "NAT-T",
+            "title": "NAT Traversal",
+            "port-ranges": [
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "62deb13c-ea4d-4c70-945e-7fcb11abf0e1",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for network encryptor ABC.",
+            "implemented-requirements": [
+              {
+                "uuid": "6b3a1347-1977-49d1-bf50-4043d5efdeee",
+                "control-id": "ism-0457",
+                "description": "This device means the cryptographic requirements."
+              },
+              {
+                "uuid": "4e23c0de-e025-4680-a968-5b64d7310a45",
+                "control-id": "ism-0465",
+                "description": "The common criteria evaluation certificate is document abc"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

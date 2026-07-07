@@ -1,0 +1,176 @@
+{
+  "component-definition": {
+    "uuid": "ba47e217-56da-42fb-a925-51bd87efeb0a",
+    "metadata": {
+      "title": "VMware ESXi Hypervisor Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "1b174cea-39ed-4906-87b1-d940f9d8e604",
+        "type": "operating-system",
+        "title": "VMware ESXi Hypervisor",
+        "description": "VMware ESXi 8.x bare-metal hypervisor providing the virtualisation platform for organisation server workloads. ESXi hosts are managed via VMware vCenter Server. Virtual machines run on dedicated ESXi hosts with separate resource pools for production, development, and management workloads. ESXi management is restricted to the dedicated management network.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Broadcom / VMware"
+          },
+          {
+            "name": "version",
+            "value": "VMware ESXi 8.x (latest patch release)"
+          },
+          {
+            "name": "management",
+            "value": "VMware vCenter Server"
+          },
+          {
+            "name": "security-features",
+            "value": "Secure Boot, TPM 2.0, ESXi lockdown mode, vSphere Trust Authority"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "4423eba6-4f0f-4345-a248-3499793228ab",
+            "name": "https",
+            "title": "HTTPS \u2014 vSphere Client (web UI via vCenter), ESXi Host Client",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "dae8eb51-153c-4ea6-9112-6bebf56900ba",
+            "name": "vmware-vsphere",
+            "title": "vSphere API \u2014 vCenter-to-ESXi management communication",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP",
+                "remarks": "Primary vCenter-to-ESXi API channel"
+              }
+            ]
+          },
+          {
+            "uuid": "65346649-1bb8-48e0-b316-671cf446c2f8",
+            "name": "ssh",
+            "title": "SSH \u2014 ESXi SSH shell (disabled by default; enabled only during maintenance)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP",
+                "remarks": "Disabled in production; enabled only for approved maintenance via change request"
+              }
+            ]
+          },
+          {
+            "uuid": "4c4dc1dc-18de-452d-bfcd-d1fbaba39484",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation (via vCenter or direct NTP)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "9846ab74-6546-4327-8435-fe8ef82936ec",
+            "name": "snmp",
+            "title": "SNMP \u2014 ESXi host monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "d4ba3742-2823-4817-a0af-64b177c513b0",
+            "name": "syslog",
+            "title": "Syslog \u2014 ESXi security and audit event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "ded60c44-2a71-4cb5-b164-8ed475613ded",
+            "name": "vmotion",
+            "title": "vMotion \u2014 Live VM migration between ESXi hosts",
+            "port-ranges": [
+              {
+                "start": 8000,
+                "end": 8000,
+                "transport": "TCP",
+                "remarks": "vMotion traffic \u2014 restricted to vMotion VMkernel network"
+              }
+            ]
+          },
+          {
+            "uuid": "d809d744-a914-4e0b-99bc-c810e027b85a",
+            "name": "vsphere-replication",
+            "title": "vSphere Replication \u2014 VM replication for DR",
+            "port-ranges": [
+              {
+                "start": 31031,
+                "end": 31031,
+                "transport": "TCP"
+              },
+              {
+                "start": 44046,
+                "end": 44046,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "fc96d676-c612-4f8c-861e-bad01f585a3a",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for VMware ESXi Hypervisor.",
+            "implemented-requirements": [
+              {
+                "uuid": "b757bbd4-3b88-49ff-949e-794da465c936",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for VMware ESXi is developed and maintained based on the VMware vSphere Security Configuration Guide and CIS Benchmark for VMware ESXi. Key hardening items: ESXi Lockdown Mode enabled (Normal or Strict); SSH and ESXi Shell disabled by default; DCUI access restricted to approved local accounts; Acceptance Level for VIBs set to PartnerSupported or higher; Secure Boot enabled; TPM 2.0 attestation enabled; iSCSI CHAP authentication configured; NTP synchronisation enforced; logging to remote syslog server configured; and default self-signed certificate replaced with an enterprise CA-issued certificate."
+              },
+              {
+                "uuid": "93cbf504-faee-413f-b414-ced05193e02f",
+                "control-id": "ism-1175",
+                "description": "ESXi administrator accounts (vCenter administrator, ESXi root) are not used for general internet access or email. vCenter and ESXi administration is performed from a dedicated management network segment, accessible only via jump server. Direct access to ESXi management interfaces from end-user networks is blocked at the firewall."
+              },
+              {
+                "uuid": "d00ef776-dacc-486d-92b2-e15e6c768732",
+                "control-id": "ism-1509",
+                "description": "ESXi and vCenter privileged access events (administrator login, VM power operations, configuration changes, role assignments) are captured in the vCenter event log and forwarded via Syslog to the SIEM. ESXi host authentication events are also forwarded to the SIEM via the ESXi syslog target configuration."
+              },
+              {
+                "uuid": "a60fa0b4-facb-462c-87b2-e1cc9561f2b9",
+                "control-id": "ism-0383",
+                "description": "The ESXi root account password is changed from any default or installation value and is managed in the organisation's PAM vault with a unique, randomly-generated high-entropy password. The root account is not used for routine administration \u2014 named vCenter administrator accounts are used for day-to-day ESXi management via vCenter. ESXi Lockdown Mode prevents direct root login except via DCUI."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

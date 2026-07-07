@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "f59b6c6a-8144-4aa5-afbb-6e0205a8dbac",
+    "metadata": {
+      "title": "hardware - Cabling Infrastrucutre",
+      "last-modified": "2026-06-25T06:51:15Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "5c98eeba-85da-4f43-bb9a-d01b339b840b",
+        "type": "hardware",
+        "title": "Cabling Infrastrucutre",
+        "description": "All permament cabling infrastructure",
+        "purpose": "Provide connectivity between equipment",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "270d3426-37d0-4374-b2e9-6257ca73c390",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Cabling Infrastrucutre.",
+            "implemented-requirements": [
+              {
+                "uuid": "eaad384f-db3a-40b3-adf1-07ae0a0eb4c1",
+                "control-id": "ism-0181",
+                "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards."
+              },
+              {
+                "uuid": "a3e3bbef-aad7-4f6e-afdc-b9d4bd2eaaad",
+                "control-id": "ism-1111",
+                "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre."
+              },
+              {
+                "uuid": "a8d88aa7-b091-4297-98f2-bda8cfe9420e",
+                "control-id": "ism-1820",
+                "description": "All fibre-optic and copper cables use a consistent colour."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

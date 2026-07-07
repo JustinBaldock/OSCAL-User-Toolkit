@@ -1,0 +1,40 @@
+{
+  "component-definition": {
+    "uuid": "e8e4d16b-481b-4f83-8b03-1ac13a5bb2ea",
+    "metadata": {
+      "title": "policy - Cyber Security Principles Recover",
+      "last-modified": "2026-07-02T04:09:45Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "c9dda83f-5601-4f72-92c3-56bde4040bab",
+        "type": "policy",
+        "title": "Cyber Security Principles Recover",
+        "description": "Resume normal business operations following cyber security incidents.",
+        "purpose": "Resume normal business operations following cyber security incidents.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "under-development"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "14e66af5-fd4b-4265-aa46-2e684c49bbca",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Cyber Security Principles Recover.",
+            "implemented-requirements": [
+              {
+                "uuid": "4b443755-0fc5-4bc5-81ec-68c4841df58d",
+                "control-id": "ism-principle-rec-01",
+                "description": "The various responce and recovery plans will include processes to report on residual security risks for systems to the cyber security executive committee."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

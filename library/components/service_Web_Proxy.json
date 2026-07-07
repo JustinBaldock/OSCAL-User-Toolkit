@@ -1,0 +1,133 @@
+{
+  "component-definition": {
+    "uuid": "5d8f8bb9-bef7-41e6-a8e0-c7abe9f64beb",
+    "metadata": {
+      "title": "Web Proxy and Content Filtering Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "10172541-d2d8-4ed7-9621-b869cc935ca6",
+        "type": "service",
+        "title": "Web Proxy and Content Filtering",
+        "description": "A web proxy server providing outbound HTTP/HTTPS content filtering, SSL inspection, and URL categorisation for all organisation endpoints. All web traffic from internal hosts is directed through the proxy before reaching the internet. The proxy enforces acceptable use policy by blocking prohibited web content categories and known-malicious domains. SSL/TLS inspection is performed using a trusted enterprise root CA certificate deployed to all managed endpoints.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Squid / Zscaler / Microsoft Defender for Endpoint Web Protection / equivalent"
+          },
+          {
+            "name": "mode",
+            "value": "Explicit proxy (PAC file) and/or transparent interception"
+          },
+          {
+            "name": "inspection",
+            "value": "SSL/TLS inspection with enterprise CA for HTTPS traffic"
+          },
+          {
+            "name": "filtering",
+            "value": "URL categorisation, DNS filtering, file type blocking"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "c0ab5e7a-80da-46bc-8381-b7d2fd4ca7eb",
+            "name": "http-proxy",
+            "title": "HTTP Proxy \u2014 Explicit proxy port for HTTP and CONNECT tunnelling",
+            "port-ranges": [
+              {
+                "start": 3128,
+                "end": 3128,
+                "transport": "TCP",
+                "remarks": "Squid default; or 8080/8443 depending on configuration"
+              }
+            ]
+          },
+          {
+            "uuid": "bed24cfd-1fa5-4765-a6bb-47b5a3f8664d",
+            "name": "https",
+            "title": "HTTPS \u2014 Proxy administration console",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "91a5b90b-86c0-47dc-a101-fca2343114cb",
+            "name": "dns",
+            "title": "DNS \u2014 DNS filtering and resolution (forward and response inspection)",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "37c4bf33-43f9-4617-9b7c-cfe16981919b",
+            "name": "syslog",
+            "title": "Syslog \u2014 Proxy access log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "11426522-fc7a-4bff-b2e9-9bcc9fe0eea8",
+            "name": "icap",
+            "title": "ICAP \u2014 Internet Content Adaptation Protocol for AV scanning integration",
+            "port-ranges": [
+              {
+                "start": 1344,
+                "end": 1344,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5a3dc5d4-ecdd-45b8-b04f-78db9507c804",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Web Proxy and Content Filtering.",
+            "implemented-requirements": [
+              {
+                "uuid": "18a89e66-50cc-4398-8bc2-0a8ef6752e85",
+                "control-id": "ism-0963",
+                "description": "The web proxy enforces content filtering for all outbound web requests, blocking: known-malicious and phishing domains (via threat intelligence feeds); prohibited content categories (as defined in the acceptable use policy); and unapproved file types (e.g. executable downloads from non-approved sources). Users cannot bypass the proxy \u2014 all internet-bound HTTP/HTTPS traffic is directed through the proxy via PAC file or transparent interception."
+              },
+              {
+                "uuid": "5ed85ac2-16d5-4da2-9293-948f9c1a3e40",
+                "control-id": "ism-0961",
+                "description": "Client-side active content is restricted by the web proxy to an organisation-approved list of domain names. JavaScript execution from domains not on the approved list is blocked or sandboxed in the browser via the proxy content policy. The approved domain list is reviewed at least quarterly."
+              },
+              {
+                "uuid": "f16e57d9-37ae-4029-adb8-9fc0a5c87a66",
+                "control-id": "ism-1405",
+                "description": "Web proxy access logs (URL requested, category, action taken, bytes transferred, source IP, user identity where available) are forwarded to the SIEM. Proxy logs are a primary source for detecting data exfiltration attempts, command-and-control beaconing, and attempts to access malicious infrastructure."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "component-definition": {
+    "uuid": "241dd3ce-737d-4fc4-9425-3ebf29a39fd1",
+    "metadata": {
+      "title": "Access Control Policy Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "2b3359d3-4c14-4d23-88a1-b69f575c96b7",
+        "type": "policy",
+        "title": "Access Control Policy",
+        "description": "The access control policy defines the organisation's requirements for managing user identities and controlling access to systems, applications, and data. It establishes the principles of least privilege and separation of duties, requirements for unique user identification, the process for requesting, approving, and revoking access, requirements for privileged access management, and mandatory periodic access reviews.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [],
+        "control-implementations": [
+          {
+            "uuid": "7c39af99-4711-4c63-8e0f-69991ec81c25",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Access Control Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "88aabf29-e5b7-43ea-9fa1-8bf105309515",
+                "control-id": "ism-0414",
+                "description": "As defined in this policy, all personnel must be uniquely identifiable before being granted access to any organisational system or resource. Generic or shared accounts are not permitted for interactive access. The access control policy defines the identity verification requirements, unique account naming standard, and the provisioning and deprovisioning process tied to the HR Joiner/Mover/Leaver workflow."
+              },
+              {
+                "uuid": "f2e56f41-62dc-497f-ba92-4fd22552e19a",
+                "control-id": "ism-1508",
+                "description": "As defined in this policy, access to all systems is granted on the principle of least privilege. Users are given only the permissions necessary for their defined role. The policy mandates quarterly access reviews for privileged accounts and annual reviews for all other accounts, with over-privileged access remediated within 30 days of review."
+              },
+              {
+                "uuid": "feef7a3b-9c4c-4a55-a7e0-11efb55d2210",
+                "control-id": "ism-0445",
+                "description": "As defined in this policy, privileged users must be assigned dedicated privileged accounts used solely for administrative duties. Privileged accounts are subject to stricter controls including mandatory MFA, PAM vault management, session recording for remote privileged access, and restricted logon workstations."
+              },
+              {
+                "uuid": "5a7b92df-b805-45cd-96be-cdc590444cf6",
+                "control-id": "ism-1507",
+                "description": "As defined in this policy, all requests for privileged access must be formally submitted via the ITSM system, include a stated business justification, and receive management approval before access is provisioned. Approval records are retained for audit purposes."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

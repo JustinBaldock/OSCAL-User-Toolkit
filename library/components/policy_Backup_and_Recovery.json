@@ -1,0 +1,55 @@
+{
+  "component-definition": {
+    "uuid": "391b0c77-ba6b-44d3-b934-1c0b3a02c1fb",
+    "metadata": {
+      "title": "Backup and Recovery Policy Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "ea20768b-9b4c-44c8-8d48-b102972f48b0",
+        "type": "policy",
+        "title": "Backup and Recovery Policy",
+        "description": "The backup and recovery policy defines the organisation's requirements for backing up critical systems, applications, and data to ensure business continuity and resilience against ransomware, hardware failure, or disaster. The policy establishes backup frequency, retention periods, offsite storage requirements, encryption of backup data, and the process for testing and validating backups through regular restoration exercises.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [],
+        "control-implementations": [
+          {
+            "uuid": "debd9958-cb79-4055-b31c-4b919403c1bc",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Backup and Recovery Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "a1ce9bfc-db40-40ae-ad07-f56304cee5c1",
+                "control-id": "ism-1547",
+                "description": "As defined in this policy, backup processes and supporting procedures are developed, implemented and maintained for all systems classified as critical or high business impact. The policy specifies the backup schedule per system tier, backup owner responsibilities, procedures for monitoring backup job success and failure, and the process for escalating failed backups."
+              },
+              {
+                "uuid": "3bda9464-7635-4cbf-93ad-d207695a7737",
+                "control-id": "ism-1511",
+                "description": "As defined in this policy, backups of critical data, applications and settings are performed and retained in accordance with business criticality. The policy defines retention tiers (e.g. 14 daily, 13 weekly, 12 monthly snapshots), mandates offsite or cloud-based backup storage, requires backup encryption (AES-256), and prohibits backups being stored only on the same system as the primary data."
+              },
+              {
+                "uuid": "a6b5226d-dfd3-4b58-a607-3fb9a75d4806",
+                "control-id": "ism-1810",
+                "description": "As defined in this policy, backups are synchronised to enable restoration to a common point in time. For systems where data and configuration are stored separately, the policy requires coordinated backup jobs. Restoration testing validates that data and configuration backups can be restored together to a consistent state."
+              },
+              {
+                "uuid": "5712b63f-1e48-4acb-8b03-dcbbf487e1ea",
+                "control-id": "ism-0912",
+                "description": "Backup system changes (backup schedule modifications, retention policy changes, backup destination changes) are governed by the organisation's change and configuration management process. This backup and recovery policy is itself reviewed as part of the configuration management plan at least annually."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

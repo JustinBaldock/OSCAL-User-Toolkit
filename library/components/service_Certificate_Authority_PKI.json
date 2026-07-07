@@ -1,0 +1,138 @@
+{
+  "component-definition": {
+    "uuid": "3c9522c2-fa1f-4a18-be07-4e53cbac177d",
+    "metadata": {
+      "title": "Certificate Authority (Windows AD CS / PKI) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "186edc98-d417-4b40-94da-153fcccdcf31",
+        "type": "service",
+        "title": "Certificate Authority (Windows AD CS / PKI)",
+        "description": "Windows Server Active Directory Certificate Services (AD CS) providing the organisation's internal Public Key Infrastructure (PKI). A two-tier PKI hierarchy is deployed: an offline Root CA (kept powered off and in a physically secure location) issues certificates to a subordinate Issuing CA (online). The Issuing CA issues certificates for: user authentication (smart card / Windows Hello for Business), computer authentication (802.1X), TLS server certificates for internal services, S/MIME email signing, and code signing.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "platform",
+            "value": "Windows Server 2022 Active Directory Certificate Services (AD CS)"
+          },
+          {
+            "name": "hierarchy",
+            "value": "Two-tier (offline Root CA + online Issuing/Subordinate CA)"
+          },
+          {
+            "name": "issued-cert-types",
+            "value": "User auth, computer auth, TLS server, code signing, S/MIME"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "4d32486c-c17b-4cb3-9acd-3582189bb57b",
+            "name": "https",
+            "title": "HTTPS \u2014 CA web enrolment interface (if enabled) and CRL/OCSP publication",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "76c217ca-b9ca-4992-a8f5-bfb01e8baba6",
+            "name": "ldap",
+            "title": "LDAP \u2014 Certificate publication to Active Directory",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "e4012c2d-8c0b-489f-9a36-430ed816ca16",
+            "name": "ocsp",
+            "title": "OCSP \u2014 Online Certificate Status Protocol (certificate revocation checking)",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP",
+                "remarks": "OCSP responder served over HTTP per RFC 5019 recommendation"
+              }
+            ]
+          },
+          {
+            "uuid": "669d062c-6155-4375-bb8e-6cc8d4057615",
+            "name": "crl-http",
+            "title": "CRL Distribution Point \u2014 Certificate Revocation List download",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP",
+                "remarks": "CRL download via HTTP \u2014 CDP URL embedded in issued certificates"
+              }
+            ]
+          },
+          {
+            "uuid": "70a23495-0805-4182-8714-683b923022d0",
+            "name": "dcom-rpc",
+            "title": "DCOM/RPC \u2014 Certificate Authority MMC and certutil remote management",
+            "port-ranges": [
+              {
+                "start": 135,
+                "end": 135,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "70461f18-c34f-4435-b6a0-ff5e1ddbdc75",
+            "name": "ms-cert-enroll",
+            "title": "DCOM Certificate Enrolment \u2014 Autoenrollment and manual enrolment",
+            "port-ranges": [
+              {
+                "start": 49152,
+                "end": 65535,
+                "transport": "TCP",
+                "remarks": "Dynamic RPC high ports for DCOM certificate enrolment"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f9107c20-e0f7-455a-9bda-04f73881d1ed",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Certificate Authority (Windows AD CS / PKI).",
+            "implemented-requirements": [
+              {
+                "uuid": "2dfabf67-b55a-46c5-9d76-45e5e0240ec5",
+                "control-id": "ism-1913",
+                "description": "The AD CS Issuing CA is hardened per Microsoft PKI design guidance: the Root CA is kept offline and powered off between certificate issuance events; the Issuing CA private key is protected by a Hardware Security Module (HSM) where the data classification requires it; CA certificate templates are reviewed quarterly and templates not in use are disabled; the default CA templates are disabled and custom templates with appropriate security descriptors are used; audit logging is enabled on the CA for certificate issuance, revocation, and configuration changes."
+              },
+              {
+                "uuid": "f82225a3-6eae-4762-9b65-ae32b2de4557",
+                "control-id": "ism-1509",
+                "description": "CA audit events (certificate issuance, revocation, template changes, CA configuration changes, administrator access) are forwarded to the SIEM. Unexpected certificate issuance (e.g. code signing certificates issued outside of normal business hours) triggers security alerts."
+              },
+              {
+                "uuid": "6ba12528-a3ee-4075-81d3-ec61d7d45772",
+                "control-id": "ism-1402",
+                "description": "CA private keys are protected using an HSM (Hardware Security Module) for the Root CA and Issuing CA. CA private keys cannot be exported. Where an HSM is not in scope, CA private keys are stored using Windows DPAPI with strong protection and are backed up to encrypted offline media stored in a physically secure location."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "component-definition": {
+    "uuid": "b9737087-e0ac-44a8-b7b4-222788367ebb",
+    "metadata": {
+      "title": "Capability: Privileged Access Management",
+      "last-modified": "2026-06-30T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+        "type": "policy",
+        "title": "Privileged Access Management Policy",
+        "description": "Defines requirements for granting, managing, reviewing, and revoking privileged access across all organisational systems. Mandates the use of separate privileged accounts, multi-factor authentication for all privileged activities, and quarterly access reviews.",
+        "purpose": "Establish and enforce privileged access management requirements.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "CISO \u2014 responsible for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Identity and Access Management Team"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "15fbfe93-f186-4ea9-89c4-725b341de25d",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Privileged Access Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "5f1889d3-fd73-4b6d-ba33-287323372ba2",
+                "control-id": "ism-1175",
+                "description": "The PAM policy prohibits the use of privileged accounts for standard activities such as email, web browsing, or general productivity tasks. Privileged accounts are restricted to administrative tasks only."
+              },
+              {
+                "uuid": "8e6e495c-b20a-4ee9-a0b0-ba1abd432c45",
+                "control-id": "ism-0445",
+                "description": "The PAM policy requires that privileged access requests are approved by the relevant system owner and the CISO before access is granted. All privileged accounts are individually named \u2014 shared privileged accounts are prohibited."
+              },
+              {
+                "uuid": "42d64aeb-6148-479c-bbbd-0df1d95f22da",
+                "control-id": "ism-1507",
+                "description": "The PAM policy mandates formal requests for privileged access, including business justification, the specific systems and actions required, and a defined review date (maximum 12 months)."
+              },
+              {
+                "uuid": "ff2701f5-b99a-4b78-bbb3-31ca02f7535b",
+                "control-id": "ism-1508",
+                "description": "The PAM policy requires that privileged access is limited to the minimum required to perform approved administrative tasks (principle of least privilege)."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+        "type": "service",
+        "title": "Active Directory \u2014 Privileged Access",
+        "description": "Active Directory implements the technical controls for privileged access management. Privileged groups (Domain Admins, Server Admins, Workstation Admins) are tightly controlled. LAPS manages unique local administrator passwords per device. PAM tooling enforces just-in-time privileged access with session recording.",
+        "purpose": "Enforce privileged account separation and least-privilege access in the directory.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "03f0d937-98af-4d16-91eb-b39d341a07a6",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Active Directory \u2014 Privileged Access.",
+            "implemented-requirements": [
+              {
+                "uuid": "0844d219-acd5-4eb5-8033-b84f632c8757",
+                "control-id": "ism-1175",
+                "description": "Privileged AD accounts (Domain Admin, Server Admin) are not used for email or web browsing. All privileged users have a separate standard user account for daily productivity tasks."
+              },
+              {
+                "uuid": "b3fce264-b2f6-43a7-9958-fc4f5623df65",
+                "control-id": "ism-0445",
+                "description": "Membership of privileged AD groups is reviewed quarterly. Any additions to Domain Admins, Enterprise Admins, or Schema Admins require written approval from the CISO."
+              },
+              {
+                "uuid": "c511c688-877c-4f05-af29-3fd35111ef9c",
+                "control-id": "ism-1508",
+                "description": "AD group nesting and role assignments are reviewed to ensure no account holds more privileges than required. LAPS generates unique 20-character local admin passwords per workstation."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+        "type": "software",
+        "title": "Multi-Factor Authentication \u2014 Microsoft Entra ID",
+        "description": "Microsoft Entra ID (formerly Azure AD) enforces MFA for all user and privileged access. Conditional Access policies require MFA for all cloud services, VPN, and privileged administrative actions. Microsoft Authenticator is the primary MFA method; FIDO2 hardware tokens are required for privileged accounts.",
+        "purpose": "Enforce multi-factor authentication for all privileged and standard user access.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1a0494f5-2f07-46c7-b7aa-eca5f2c09c2d",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Multi-Factor Authentication \u2014 Microsoft Entra ID.",
+            "implemented-requirements": [
+              {
+                "uuid": "fbea73fd-b4be-4ec4-abed-fc641cd37059",
+                "control-id": "ism-1173",
+                "description": "MFA is enforced for all privileged users authenticating to domain resources and cloud services via Entra ID Conditional Access policy. FIDO2 hardware tokens are required for accounts with Domain Admin or equivalent privileges."
+              },
+              {
+                "uuid": "c8073b4a-0981-43fe-920e-c032b27d9a6b",
+                "control-id": "ism-0974",
+                "description": "MFA is enforced for all standard users accessing organisational systems via the corporate VPN, Microsoft 365, and web-based applications through Entra ID Conditional Access policies."
+              },
+              {
+                "uuid": "8a390037-cab0-4133-96d0-a95877f73736",
+                "control-id": "ism-2012",
+                "description": "MFA is enforced for all remote access to organisational systems. The VPN gateway integrates with Entra ID MFA via RADIUS/NPS extension. SMS OTP is not permitted; only app-based OTP, push notification, and FIDO2 are accepted."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "43b4400f-c72b-4f63-a5fc-361a945a0ab1",
+        "name": "Privileged Access Management",
+        "description": "The privileged access management capability combines policy, directory controls, and MFA enforcement to protect administrative accounts. The PAM policy defines approval and review obligations; Active Directory enforces account separation and least privilege; Entra ID MFA ensures all privileged access requires a second authentication factor.",
+        "incorporates-components": [
+          {
+            "component-uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+            "description": "Defines privileged access governance, approval requirements, and review obligations."
+          },
+          {
+            "component-uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+            "description": "Enforces privileged account separation and least-privilege in the directory."
+          },
+          {
+            "component-uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+            "description": "Enforces MFA for all privileged and standard user access."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "0fae41fe-b9bb-432a-b318-3f41b0f742ef",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for capability: Privileged Access Management. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "f6cc48dd-cd1d-4c76-b45a-4e1269fbc205",
+                "control-id": "ism-1175",
+                "description": "PAM policy and AD configuration both enforce that privileged accounts are not used for standard daily activities \u2014 email, web browsing, or productivity tasks.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd"
+                  }
+                ]
+              },
+              {
+                "uuid": "31d70f6c-86a1-4e6a-bfe4-bd6483fcfef3",
+                "control-id": "ism-0445",
+                "description": "PAM policy defines the approval process; AD group membership is reviewed quarterly and any additions require CISO written approval.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2"
+                  }
+                ]
+              },
+              {
+                "uuid": "ca244afa-9378-4bcc-837e-06d02d314d82",
+                "control-id": "ism-1507",
+                "description": "The PAM policy mandates formal privileged access requests with documented business justification, specific systems identified, and a maximum 12-month review date.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2"
+                  }
+                ]
+              },
+              {
+                "uuid": "2a9fd780-1c2b-45ad-ac57-1d98ecdcb272",
+                "control-id": "ism-1508",
+                "description": "Least privilege is enforced through the PAM policy (requirement) and AD group structure (technical control), ensuring no account holds more access than required.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd"
+                  }
+                ]
+              },
+              {
+                "uuid": "5addfa5e-aa97-4bf1-8999-a0c26dca7d1b",
+                "control-id": "ism-1173",
+                "description": "Entra ID Conditional Access enforces MFA for all privileged users; FIDO2 hardware tokens are required for Domain Admin-level accounts.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "7f575bb9-8468-488f-8cd7-9134be145986"
+                  }
+                ]
+              },
+              {
+                "uuid": "99384d71-8ec5-4644-bb97-478fe4356c53",
+                "control-id": "ism-0974",
+                "description": "Entra ID Conditional Access enforces MFA for all standard users accessing organisational cloud services and VPN.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "7f575bb9-8468-488f-8cd7-9134be145986"
+                  }
+                ]
+              },
+              {
+                "uuid": "cf6a66d2-5782-4cc2-b472-34201c267b45",
+                "control-id": "ism-2012",
+                "description": "Entra ID MFA via RADIUS/NPS integration enforces MFA for all VPN remote access connections. SMS OTP is blocked by policy.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "7f575bb9-8468-488f-8cd7-9134be145986"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

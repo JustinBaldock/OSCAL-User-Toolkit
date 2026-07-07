@@ -1,0 +1,66 @@
+{
+  "component-definition": {
+    "uuid": "2ce481f8-4698-4ce2-83a7-97bceed3952f",
+    "metadata": {
+      "title": "NTP Time Service (Network Time Protocol Server) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f036033e-8975-4abe-8d63-74874f576b37",
+        "type": "service",
+        "title": "NTP Time Service (Network Time Protocol Server)",
+        "description": "The organisation's internal NTP time service providing accurate, synchronised time to all network-connected devices. A hierarchy of NTP servers is deployed: stratum-1 servers synchronise to approved external time sources; internal stratum-2 NTP servers receive time from stratum-1 and distribute it to all internal clients. Accurate time synchronisation is critical for security event log correlation, Kerberos authentication, and digital certificate validity.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "implementation",
+            "value": "Windows Time (W32tm) on Active Directory Domain Controllers (primary) and dedicated NTP appliance or GPS-disciplined clock (stratum-1)"
+          },
+          {
+            "name": "external-sources",
+            "value": "pool.ntp.org stratum-1 servers or GPS disciplined oscillator"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "0cf0a126-99ac-489f-8a6a-b00f35b94735",
+            "name": "ntp",
+            "title": "NTP \u2014 Network Time Protocol (time synchronisation)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "e4cb460c-77aa-4959-b8dd-df47bf8d5162",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for NTP Time Service (Network Time Protocol Server).",
+            "implemented-requirements": [
+              {
+                "uuid": "87199572-022b-4f51-bc81-38d18be79577",
+                "control-id": "ism-0585",
+                "description": "Accurate NTP synchronisation is configured on all devices that generate security event logs, ensuring that log timestamps are accurate and correlated across systems. All event logs forwarded to the SIEM include an accurate UTC timestamp derived from the NTP-synchronised system clock. Clock drift monitoring alerts when a device deviates beyond an acceptable threshold."
+              },
+              {
+                "uuid": "a0da2f8d-a572-4c3e-9e2c-3499f887c6f8",
+                "control-id": "ism-1913",
+                "description": "The NTP service configuration is hardened: NTP servers are configured to accept time synchronisation only from approved upstream sources; NTP authentication (MD5 or SHA-1 NTP keys, or NTPsec with stronger algorithms) is configured between NTP peers; and NTP monitoring mode is restricted to prevent NTP amplification reflection attacks (restrict default noquery nopeer)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "f634dc33-4ea8-41fd-91ef-97bca9e3f6e9",
+    "metadata": {
+      "title": "Cyber Security Incident Response Policy Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "3c6ca724-c331-4c0c-aad6-6368875b14ca",
+        "type": "policy",
+        "title": "Cyber Security Incident Response Policy",
+        "description": "The cyber security incident response policy defines how the organisation identifies, reports, classifies, responds to, and recovers from cyber security incidents. It establishes the incident response team structure, escalation paths, communication requirements (including mandatory reporting obligations to the Australian Signals Directorate / ACSC), evidence preservation requirements, and the post-incident review process for improving security controls.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [],
+        "control-implementations": [
+          {
+            "uuid": "d30ed09d-ba44-426c-90eb-76e7290e46b6",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Cyber Security Incident Response Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "a731da77-8375-466b-a2df-64ad45731dc4",
+                "control-id": "ism-0917",
+                "description": "As defined in this policy, when malicious code is detected, the following steps are followed: the infected system is isolated from the network; all recently-connected media is scanned; antivirus is used to attempt removal; if removal is unreliable, the system is rebuilt from a trusted baseline; and the incident is documented in the cyber security incident register. The incident response procedures referenced by this policy operationalise these steps with specific roles, tools, and timeframes."
+              },
+              {
+                "uuid": "fdf365ab-e412-480e-af56-f54ec709e2b2",
+                "control-id": "ism-1405",
+                "description": "As defined in this policy, the centralised event logging facility (SIEM) provides the primary source of evidence for incident investigation. Incident responders have access to the SIEM for the duration of the incident. Logs are preserved and protected from modification once an incident is declared. Log retention meets the minimum retention period required for forensic investigation."
+              },
+              {
+                "uuid": "16e5c14f-eaa4-468d-9c0d-1b862ec36129",
+                "control-id": "ism-0912",
+                "description": "As defined in this policy, lessons learned from cyber security incidents are incorporated into the change and configuration management process. Security control gaps identified during incidents are raised as change requests and tracked to completion. The incident response policy itself is reviewed after any significant incident and at least annually."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

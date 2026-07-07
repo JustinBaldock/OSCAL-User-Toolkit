@@ -1,0 +1,157 @@
+{
+  "component-definition": {
+    "uuid": "2b7a91ac-1b29-4090-be3d-09ccf50a1339",
+    "metadata": {
+      "title": "Capability: Account Management",
+      "last-modified": "2026-06-26T01:18:05Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+        "type": "service",
+        "title": "Active Directory",
+        "description": "Provide authenciation to all devices and provide group policy to Windows computers.",
+        "purpose": "Provide authenciation to all devices and provide group policy to Windows computers.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5d293284-9191-479c-902e-f62e09b4fe22",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Active Directory.",
+            "implemented-requirements": [
+              {
+                "uuid": "b76a481b-f267-4b6e-8b60-e3a7674b4f8f",
+                "control-id": "ism-1055",
+                "description": "AD has a group policy applied to all Windows computers that disables LAN Manager and NT LAN Manager authenication."
+              },
+              {
+                "uuid": "b8504d52-32f9-4f01-94a8-0a4554aa5281",
+                "control-id": "ism-1546",
+                "description": "All users must authenicate against AD before being provided access to systems and resources."
+              },
+              {
+                "uuid": "698a1017-7990-4edd-beaf-365ac760723e",
+                "control-id": "ism-0417",
+                "description": "Currently the system is using single-factor authenciation using passwords."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "69089434-0a47-46cd-b249-a924ebf536bd",
+        "type": "policy",
+        "title": "System usage",
+        "description": "The system usage policy provides clear guidance for what the system will be used for.",
+        "purpose": "This policy describes how the system can be used by staff.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "The system owner"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Joe Bloggs"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "8554830e-19f8-41de-a472-4ebe550db0a2",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for System usage.",
+            "implemented-requirements": [
+              {
+                "uuid": "735ad3e2-2bbc-43de-99e8-8dcb337e4932",
+                "control-id": "ism-1864",
+                "description": "A system usage policy exists and is checked and maintained yearly."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "8b54e448-60e9-44d9-bd5e-f4388e3a48bb",
+        "name": "Account Management",
+        "description": "The system uses multiple components to manage accounts.",
+        "incorporates-components": [
+          {
+            "component-uuid": "69089434-0a47-46cd-b249-a924ebf536bd",
+            "description": "The system usage policy describes what type of people can get accounts."
+          },
+          {
+            "component-uuid": "ea739e91-d4c2-4725-915c-3984411b3ace",
+            "description": "AD provides the method that we manage accounts for all system devices."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f3662a7e-2fa1-474f-b951-71b7c00c348a",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for capability: Account Management. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "17b54a91-fce8-4385-a578-a8f9226e68b4",
+                "control-id": "ism-1864",
+                "description": "A system usage policy exists and is checked and maintained yearly.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "69089434-0a47-46cd-b249-a924ebf536bd"
+                  }
+                ]
+              },
+              {
+                "uuid": "c0109869-acca-4d3c-bd67-e85d10fbc863",
+                "control-id": "ism-1055",
+                "description": "AD has a group policy applied to all Windows computers that disables LAN Manager and NT LAN Manager authenication.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea739e91-d4c2-4725-915c-3984411b3ace"
+                  }
+                ]
+              },
+              {
+                "uuid": "ac7945a9-fe2e-4d9d-94f6-6595279d71fe",
+                "control-id": "ism-1546",
+                "description": "All users must authenicate against AD before being provided access to systems and resources.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea739e91-d4c2-4725-915c-3984411b3ace"
+                  }
+                ]
+              },
+              {
+                "uuid": "62bdb4a4-c350-4fe5-8065-3f698638703d",
+                "control-id": "ism-0417",
+                "description": "Currently the system is using single-factor authenciation using passwords.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea739e91-d4c2-4725-915c-3984411b3ace"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

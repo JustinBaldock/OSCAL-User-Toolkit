@@ -1,0 +1,96 @@
+{
+  "component-definition": {
+    "uuid": "5f86aadf-8077-4919-bab5-b9eda08178ae",
+    "metadata": {
+      "title": "Microsoft Defender for Endpoint (EDR) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "b4999c4f-88f3-430b-bf1e-0d090174d082",
+        "type": "software",
+        "title": "Microsoft Defender for Endpoint (EDR)",
+        "description": "Microsoft Defender for Endpoint (MDE) is the organisation's Endpoint Detection and Response (EDR) platform, deployed as an agent on all Windows workstations and servers. MDE provides: real-time threat detection and automated remediation, attack surface reduction (ASR) rule enforcement, device health and compliance reporting, threat intelligence integration, and investigation and response capabilities. MDE is managed via the Microsoft Defender portal and integrates with Microsoft Sentinel (SIEM).",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "platform",
+            "value": "Microsoft Defender for Endpoint Plan 2"
+          },
+          {
+            "name": "deployment",
+            "value": "Agent deployed via Microsoft Intune / Group Policy to all endpoints"
+          },
+          {
+            "name": "mode",
+            "value": "Active / Block mode (not Audit mode) for all prevention capabilities"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "a56ddb5d-39db-47a1-bf34-319383e64505",
+            "name": "https",
+            "title": "HTTPS \u2014 MDE agent communication to Microsoft cloud backend and Defender portal",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "6f3ea1be-87dc-4fd6-ba89-182e1abf27c1",
+            "name": "http",
+            "title": "HTTP \u2014 CRL/OCSP certificate validation and some legacy telemetry URLs",
+            "port-ranges": [
+              {
+                "start": 80,
+                "end": 80,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "70f0f91a-a58e-4373-b279-f78ead98aa06",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Microsoft Defender for Endpoint (EDR).",
+            "implemented-requirements": [
+              {
+                "uuid": "9388e2bf-4052-4f46-b3d8-a7ddce2a27b5",
+                "control-id": "ism-1341",
+                "description": "Microsoft Defender for Endpoint is deployed on all Windows 11 workstations as the approved HIPS/EDR solution, operating in active/block mode. EDR agent health and coverage is monitored daily via the MDE portal. Any workstation without an active MDE agent is flagged for remediation within 24 hours."
+              },
+              {
+                "uuid": "cfa913a3-3655-43d6-adad-6cbe2bef9440",
+                "control-id": "ism-1034",
+                "description": "Microsoft Defender for Endpoint is deployed on all critical and high-value Windows Server 2022 servers as the approved EDR solution. Server onboarding uses a different MDE onboarding package from workstations. Tamper Protection is enabled on all servers to prevent the MDE agent from being disabled by an attacker."
+              },
+              {
+                "uuid": "e4b0525a-8bd8-40ee-a49b-7ca7f0c0c138",
+                "control-id": "ism-1601",
+                "description": "Microsoft Defender for Endpoint enforces Attack Surface Reduction (ASR) rules in Block mode on all managed workstations and applicable servers. ASR rule status (Block/Audit/Off per rule) is monitored in the MDE portal. Rules switched to Audit mode require a documented exception with security team approval and a return-to-block plan. ASR block events are forwarded to the SIEM."
+              },
+              {
+                "uuid": "9728febb-63df-458d-ac0c-3263315d7db8",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus (integrated with MDE) provides real-time antivirus protection on all endpoints with Tamper Protection enabled. Cloud-delivered protection is set to 'High' or 'High+' block level. Antivirus signature update frequency, real-time protection status, and Tamper Protection status are monitored via the MDE compliance dashboard and reported on weekly."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

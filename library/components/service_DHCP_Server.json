@@ -1,0 +1,114 @@
+{
+  "component-definition": {
+    "uuid": "c4e68a3f-93c6-4a0b-b2cd-71f97e99b695",
+    "metadata": {
+      "title": "DHCP Server (Windows Server DHCP) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "1c0b1edd-b9c2-4e57-a24d-5ebc09f98901",
+        "type": "service",
+        "title": "DHCP Server (Windows Server DHCP)",
+        "description": "Windows Server DHCP role providing dynamic IP address assignment to workstations, wireless clients, and other network-connected devices. DHCP scopes are configured per network segment (VLAN). DHCP failover is configured between two DHCP servers for high availability. DHCP logging provides a record of IP address assignments for incident investigation.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "platform",
+            "value": "Windows Server 2022 DHCP Role"
+          },
+          {
+            "name": "ha-mode",
+            "value": "DHCP Failover (Hot Standby or Load Balance) between two servers"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "ec4d01a9-7df0-4bf1-b2b3-440c229d69b4",
+            "name": "dhcp",
+            "title": "DHCP \u2014 Dynamic IP address assignment to clients",
+            "port-ranges": [
+              {
+                "start": 67,
+                "end": 67,
+                "transport": "UDP",
+                "remarks": "DHCP server listens on UDP 67"
+              },
+              {
+                "start": 68,
+                "end": 68,
+                "transport": "UDP",
+                "remarks": "DHCP client response port"
+              }
+            ]
+          },
+          {
+            "uuid": "c497ca64-cde0-47cc-b589-70e86d542400",
+            "name": "dhcp-failover",
+            "title": "DHCP Failover \u2014 DHCP server-to-server replication and failover",
+            "port-ranges": [
+              {
+                "start": 647,
+                "end": 647,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "fba628f4-c60a-4c20-bcc9-2d206532c994",
+            "name": "dns",
+            "title": "DNS \u2014 Dynamic DNS (DDNS) registration of DHCP leases",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "721be9ee-161d-404a-ad36-15a4684bfdbd",
+            "name": "ldap",
+            "title": "LDAP \u2014 Active Directory integration for DHCP authorisation",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "92dd991e-d24c-46b6-9698-84517ee4881c",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for DHCP Server (Windows Server DHCP).",
+            "implemented-requirements": [
+              {
+                "uuid": "9259a34e-5059-432d-8ac9-104fc4195d37",
+                "control-id": "ism-1913",
+                "description": "The Windows DHCP Server role is configured per an approved baseline: DHCP server is authorised in Active Directory (preventing rogue DHCP servers from issuing leases); DHCP audit logging is enabled and logs retained and forwarded to the SIEM; unused DHCP scopes are deactivated; DHCP options are reviewed to ensure they provide only approved gateway, DNS server, and domain search parameters; and DHCP snooping is enabled on network switches to prevent rogue DHCP servers on switch ports."
+              },
+              {
+                "uuid": "13471c42-5a9f-4633-b680-cf2be6da144b",
+                "control-id": "ism-1405",
+                "description": "DHCP server audit logs (lease grants, renewals, expirations, and errors) are forwarded to the SIEM. DHCP logs provide the critical mapping between IP address and MAC address / hostname needed for incident investigation. Retention of DHCP logs aligns with the organisation's minimum log retention policy."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

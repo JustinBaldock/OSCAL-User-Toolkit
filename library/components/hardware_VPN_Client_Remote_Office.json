@@ -1,0 +1,139 @@
+{
+  "component-definition": {
+    "uuid": "9911ca08-4f3f-428f-8ae8-1695f423d997",
+    "metadata": {
+      "title": "VPN Client (Remote Office) Component",
+      "last-modified": "2026-07-01T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
+        "type": "hardware",
+        "title": "VPN Client (Remote Office)",
+        "description": "A SonicWall TZ270 firewall/router deployed at each remote office — a smaller, lower-cost model than the main office hub, sized only for that site's own traffic. Establishes a single site-to-site IPsec VPN tunnel back to the main office VPN Hub, acting as the spoke in a hub-and-spoke topology. This component is defined once and reused across every remote office site via a separate inventory item per site (see SSP Section 12).",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "SonicWall"
+          },
+          {
+            "name": "model",
+            "value": "TZ270"
+          },
+          {
+            "name": "role",
+            "value": "vpn-spoke"
+          },
+          {
+            "name": "site",
+            "value": "remote-office (one inventory item per physical site)"
+          },
+          {
+            "name": "topology",
+            "value": "hub-and-spoke (single tunnel back to the main office hub)"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "34e46dfe-2492-4670-aa63-188fdaee9fd3",
+            "name": "ike",
+            "title": "IKEv2 — VPN tunnel negotiation with the main office hub",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "4b6dd68d-feb0-4bb8-afd1-98b761a3d18d",
+            "name": "ipsec-nat-t",
+            "title": "IPsec NAT-Traversal encapsulation",
+            "port-ranges": [
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "83fa001d-a707-4d98-ac95-b6f0b8f41416",
+            "name": "https",
+            "title": "HTTPS — SonicOS management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "36341a41-44d1-4556-aaaf-c81e674dd90f",
+            "name": "syslog",
+            "title": "Syslog — event forwarding to SIEM at the main office",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "77a0658f-114a-4b54-b110-7fa8d3f23ef2",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for VPN Client (Remote Office).",
+            "implemented-requirements": [
+              {
+                "uuid": "3a9a9131-3605-4f1f-88ee-cf5849019592",
+                "control-id": "ism-0705",
+                "description": "Split tunnelling is disabled on this device — all traffic from the remote office is routed through the single IPsec tunnel back to the main office hub, with no direct path to the internet."
+              },
+              {
+                "uuid": "a1e788d8-9482-4605-87b8-6d221b5de804",
+                "control-id": "ism-0622",
+                "description": "This device authenticates to the main office network using IKEv2 with certificate-based authentication before its site-to-site VPN tunnel is established."
+              },
+              {
+                "uuid": "6a5a1283-55ae-4b6f-add8-899350f17363",
+                "control-id": "ism-0494",
+                "description": "Tunnel mode is used for the IPsec site-to-site VPN connection back to the main office hub."
+              },
+              {
+                "uuid": "61769486-3711-41b6-a506-9137f655b3aa",
+                "control-id": "ism-0496",
+                "description": "The ESP protocol is used for authentication and encryption of the IPsec connection to the hub."
+              },
+              {
+                "uuid": "34aa0e12-67da-4a90-ae1e-ac6e3bc92f73",
+                "control-id": "ism-1233",
+                "description": "IKEv2 is used for key exchange when establishing the IPsec connection to the main office hub."
+              },
+              {
+                "uuid": "a1ee5936-be15-408e-88a3-d7cbdc07c13b",
+                "control-id": "ism-1771",
+                "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting the IPsec connection to the main office hub."
+              },
+              {
+                "uuid": "e9c55dfa-62b3-4621-8526-f4362c5f8a72",
+                "control-id": "ism-1000",
+                "description": "Perfect Forward Secrecy is enabled for the IPsec connection back to the main office hub."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

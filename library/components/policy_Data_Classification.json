@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "598f01d4-91ce-4d78-a849-2a7d3c7b2265",
+    "metadata": {
+      "title": "Data Classification and Handling Policy Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "9c9e3fc9-e57b-48a8-aaef-1d81d99ab959",
+        "type": "policy",
+        "title": "Data Classification and Handling Policy",
+        "description": "The data classification and handling policy defines how the organisation classifies, labels, and handles information based on its sensitivity. It establishes classification levels (aligned to the Australian Government Information Security Classification system \u2014 OFFICIAL, OFFICIAL: Sensitive, PROTECTED), the obligations that apply to each level for storage, transmission, access control, and disposal, and the responsibilities of all personnel for correctly classifying and protecting organisational data.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [],
+        "control-implementations": [
+          {
+            "uuid": "8dd478b0-1da4-4029-a93b-33ef6bfb3e06",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Data Classification and Handling Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "1b79b7d6-42ca-4c70-b470-8e7e69b7eb62",
+                "control-id": "ism-0663",
+                "description": "As defined in this policy, data transfer processes and procedures are developed for each classification level, specifying approved transfer mechanisms (encrypted email, secure file transfer, approved cloud storage), prohibited mechanisms (unencrypted USB, personal cloud storage), and logging requirements for bulk data transfers."
+              },
+              {
+                "uuid": "0bc2bd82-2de9-42e0-8e08-0ccf3340fd6e",
+                "control-id": "ism-1080",
+                "description": "As defined in this policy, data classified as OFFICIAL: Sensitive or above that is stored at rest must be encrypted using an ASD-approved algorithm (AES-256). The policy defines the encryption requirements per classification level, the approved encryption tools and methods, and the process for key management and escrow."
+              },
+              {
+                "uuid": "551a0e9d-4539-438e-abc8-e3c0e6bd102e",
+                "control-id": "ism-0912",
+                "description": "As defined in this policy, data classification labels must be maintained throughout the data lifecycle. Configuration management processes ensure that system classifications are documented in the CMDB, and that access controls and encryption settings appropriate to the classification are enforced and reviewed as part of the configuration baseline."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

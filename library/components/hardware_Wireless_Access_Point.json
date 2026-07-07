@@ -1,0 +1,187 @@
+{
+  "component-definition": {
+    "uuid": "f39457cc-c107-46e9-8255-02a880a75493",
+    "metadata": {
+      "title": "Wireless Access Point (Enterprise WiFi) Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "d2fa7012-adb9-47c1-a9f7-a90bf4d0d325",
+        "type": "hardware",
+        "title": "Wireless Access Point (Enterprise WiFi)",
+        "description": "Enterprise-grade wireless access points managed by a central wireless LAN controller (WLC) or cloud management platform. Provides IEEE 802.11ax (Wi-Fi 6) coverage for organisation endpoints. Separate SSIDs are configured for corporate devices (802.1X authentication), guest network (isolated, internet-only), and IoT devices (segmented VLAN). WPA3-Enterprise with 802.1X is mandatory for the corporate SSID.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Cisco / HP Aruba / Fortinet / equivalent"
+          },
+          {
+            "name": "wifi-standard",
+            "value": "IEEE 802.11ax (Wi-Fi 6)"
+          },
+          {
+            "name": "authentication",
+            "value": "WPA3-Enterprise with 802.1X for corporate SSID; WPA3-Personal for guest"
+          },
+          {
+            "name": "management",
+            "value": "Central WLC or cloud-managed controller"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "c6e79191-2cf7-48ef-aa57-258a94832778",
+            "name": "https",
+            "title": "HTTPS \u2014 Cloud management controller or WLC web interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "03a5c954-3146-4104-8d78-240d1ed6c08b",
+            "name": "ssh",
+            "title": "SSH \u2014 Secure CLI management access to WLC",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "1a761667-2290-4a57-a23f-271a9e03cc6b",
+            "name": "capwap",
+            "title": "CAPWAP \u2014 AP-to-WLC control and data channel",
+            "port-ranges": [
+              {
+                "start": 5246,
+                "end": 5246,
+                "transport": "UDP",
+                "remarks": "CAPWAP control"
+              },
+              {
+                "start": 5247,
+                "end": 5247,
+                "transport": "UDP",
+                "remarks": "CAPWAP data"
+              }
+            ]
+          },
+          {
+            "uuid": "e30c953e-cbd3-4044-9db1-697d4ae9fe49",
+            "name": "radius",
+            "title": "RADIUS \u2014 802.1X wireless authentication to NPS/RADIUS server",
+            "port-ranges": [
+              {
+                "start": 1812,
+                "end": 1812,
+                "transport": "UDP"
+              },
+              {
+                "start": 1813,
+                "end": 1813,
+                "transport": "UDP",
+                "remarks": "RADIUS accounting"
+              }
+            ]
+          },
+          {
+            "uuid": "6c586c03-9611-4d56-8464-79478dd7ab8c",
+            "name": "snmp",
+            "title": "SNMP \u2014 Network monitoring of AP and WLC status",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP",
+                "remarks": "SNMP traps"
+              }
+            ]
+          },
+          {
+            "uuid": "7fe1ab9f-c842-4ec4-b53c-5d801c4ce2b0",
+            "name": "syslog",
+            "title": "Syslog \u2014 Event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "41390421-13f8-4e59-9734-5fd2af8df6a0",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "bf5347b3-277d-4d8a-8258-b26763ba269d",
+            "name": "dhcp",
+            "title": "DHCP \u2014 IP assignment for wireless clients",
+            "port-ranges": [
+              {
+                "start": 67,
+                "end": 68,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "471c20b6-d383-4a5f-a076-d37e633a344b",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Wireless Access Point (Enterprise WiFi).",
+            "implemented-requirements": [
+              {
+                "uuid": "281166d1-327d-4669-aadc-a5d4de939281",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for wireless access points and the WLC, based on the vendor's security hardening guide and ASD wireless network guidance. Hardening includes: disabling legacy protocols (802.11b/g where not required), disabling WPS (Wi-Fi Protected Setup), disabling SSID broadcast for management networks, configuring management VLAN separation, enabling rogue AP detection, and setting minimum RSSI thresholds to limit coverage footprint."
+              },
+              {
+                "uuid": "2c94ec03-c050-4d15-88e1-ac58ea90d787",
+                "control-id": "ism-1504",
+                "description": "WPA3-Enterprise with 802.1X and EAP-TLS (or PEAP-MSCHAPv2 with server certificate validation) is used to authenticate all organisation devices to the corporate wireless SSID. Authentication is validated against Active Directory via a RADIUS/NPS server. Devices that fail 802.1X authentication cannot join the corporate SSID. The guest SSID is isolated and provides internet-only access with no path to organisational resources."
+              },
+              {
+                "uuid": "aa98eb8b-2ef5-4986-b166-c5b7c5afc500",
+                "control-id": "ism-1416",
+                "description": "Wireless client traffic is segmented by SSID into separate VLANs: corporate devices on the corporate VLAN with firewall-controlled access to organisation resources; guest devices on an isolated guest VLAN with internet-only access; and IoT devices on a dedicated IoT VLAN. Inter-VLAN routing between the corporate and guest/IoT VLANs is blocked at the firewall. Wireless management traffic is on a dedicated management VLAN."
+              },
+              {
+                "uuid": "401359fc-49e3-4b77-a0bc-089212e39881",
+                "control-id": "ism-1405",
+                "description": "Wireless infrastructure events (802.1X authentication success/failure, rogue AP detections, deauthentication floods, WLC alerts) are forwarded via Syslog to the SIEM for security monitoring and retention."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

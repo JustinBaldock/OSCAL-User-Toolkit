@@ -1,0 +1,164 @@
+{
+  "component-definition": {
+    "uuid": "ae5e406c-e9df-4647-94af-f78a64efed7e",
+    "metadata": {
+      "title": "Managed Network Switch Component",
+      "last-modified": "2026-06-27T04:31:31Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "52c971b8-e788-4489-b3bc-3470b554149e",
+        "type": "hardware",
+        "title": "Managed Network Switch",
+        "description": "Layer 2/3 managed network switch providing VLAN segmentation, 802.1X port-based authentication, and Spanning Tree Protocol (STP) for the organisation's LAN infrastructure. Configured with separate VLANs for user endpoints, servers, management, and guest networks.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Cisco / HP Aruba / equivalent"
+          },
+          {
+            "name": "switch-type",
+            "value": "Layer 2/3 Managed"
+          },
+          {
+            "name": "features",
+            "value": "VLAN, 802.1X, STP, SNMP, SSH management, port security"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "a5d4cd6a-e38e-4e56-895b-f5fe98608542",
+            "name": "ssh",
+            "title": "SSH \u2014 Secure CLI management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "fe9a863e-90d7-496c-bbc5-b61693326d73",
+            "name": "https",
+            "title": "HTTPS \u2014 Web-based management console",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "9bb85945-4fab-4403-8dba-bebd69517d92",
+            "name": "snmp",
+            "title": "SNMP \u2014 Network monitoring (queries and traps)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP",
+                "remarks": "SNMP traps to NMS/SIEM"
+              }
+            ]
+          },
+          {
+            "uuid": "75dfeb6c-26e3-4ecc-83ec-51e95ad20e69",
+            "name": "syslog",
+            "title": "Syslog \u2014 Event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "8a5bbd6f-7cf1-4d29-9855-ae9b1868a982",
+            "name": "ntp",
+            "title": "NTP \u2014 Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "5f65c652-73f5-49cb-9a33-71833691064b",
+            "name": "radius",
+            "title": "RADIUS \u2014 802.1X port authentication to NPS/RADIUS server",
+            "port-ranges": [
+              {
+                "start": 1812,
+                "end": 1812,
+                "transport": "UDP"
+              },
+              {
+                "start": 1813,
+                "end": 1813,
+                "transport": "UDP",
+                "remarks": "RADIUS accounting"
+              }
+            ]
+          },
+          {
+            "uuid": "c8c01961-f353-43c3-b07a-ff1644d5dd0d",
+            "name": "tacacs",
+            "title": "TACACS+ \u2014 Privileged management authentication (optional)",
+            "port-ranges": [
+              {
+                "start": 49,
+                "end": 49,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "35da9273-d8e5-446d-910d-fd177384cd54",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Managed Network Switch.",
+            "implemented-requirements": [
+              {
+                "uuid": "d62d6e95-2fe4-4ee8-9e81-a5605d9747c2",
+                "control-id": "ism-0912",
+                "description": "The managed network switch has a documented change and configuration management plan. Authorised baseline configurations are maintained in the network configuration management database. All switch configuration changes are approved via the ITSM change process, version-controlled, and backed up to a secure configuration repository after each change."
+              },
+              {
+                "uuid": "0cef1972-e66b-45d6-bf27-58a759cadc35",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is developed and maintained for the managed network switch, referencing the vendor's security hardening guide and CIS Benchmark for the switch platform. Hardening includes: disabling unused ports (admin shutdown), disabling unused protocols (CDP where not required, DTP trunk auto-negotiation, unused VLANs), enabling BPDU Guard and Root Guard on access ports, enabling dynamic ARP inspection, enabling IP Source Guard on access ports, configuring port security, and disabling the default VLAN 1 for user or management traffic."
+              },
+              {
+                "uuid": "4b92851a-b123-47c9-9094-5122a0277f9d",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for all privileged (administrator) access to the network switch management interface. This is enforced via TACACS+ or RADIUS integration with Active Directory, which applies MFA via Entra Conditional Access or NPS extension before granting privileged CLI access. Local fallback accounts are stored in the PAM vault and used only in emergency scenarios."
+              },
+              {
+                "uuid": "9865a8c5-5257-4d4c-8cbc-f3c649af3c53",
+                "control-id": "ism-1405",
+                "description": "All network switch security-relevant events (authentication success/failure, configuration changes, port status changes, STP topology changes, SNMP authentication failures) are forwarded via Syslog to the centralised SIEM for retention and monitoring."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
