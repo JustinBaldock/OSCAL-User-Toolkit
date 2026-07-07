@@ -16,6 +16,10 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 - **System Owner** — accountable for a system's security posture; assembles
   and maintains its SSP; the primary user of this toolkit today.
+- **Application User** — anyone running the toolkit day to day, regardless
+  of which editor tab they work in; cares about the app itself being
+  convenient across sessions (workspace continuity, display preferences),
+  as distinct from the OSCAL content they're producing.
 
 ---
 
@@ -61,6 +65,32 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - Can build up all SSP sections (system characteristics, boundary, network architecture, data flow, information types, roles, parties, components, control implementations, etc.) referencing the catalog/profile from US-1 and the components/capabilities from US-2.
 - Can export the SSP as a `.docx` file that reads cleanly for a human auditor.
 - Can save the SSP as OSCAL-conformant JSON that validates against the bundled OSCAL 1.2.2 schema.
+
+---
+
+## Application Preferences & Session Continuity
+
+### US-4: Save a workspace and have it reopen automatically
+
+**As an** Application User,
+**I want to** save a workspace file that records all my currently open files,
+**so that** I can pick up where I left off without manually reopening each catalog, profile, component, capability, or SSP file one at a time.
+
+**Acceptance criteria:**
+- Can save a workspace manifest capturing every file currently open across all tabs.
+- Opening a saved workspace file reopens every one of those files into the correct tabs.
+- **Status: partially implemented.** Save/Open Workspace already exists (`app.py` `_save_workspace()` / `_open_workspace()`, `WorkspaceTab`), but reopening today is a manual "Open Workspace" action, not automatic on launch — whether "automatically reopened" means auto-loading the last workspace on startup, versus just one-click reopen via the existing manifest, is worth clarifying before treating this as done.
+
+### US-5: Remember light/dark mode preference
+
+**As an** Application User,
+**I want to** have my light/dark theme choice remembered between sessions,
+**so that** I don't have to reselect it every time I open the app.
+
+**Acceptance criteria:**
+- Switching theme via the toolbar persists the choice somewhere outside the current process.
+- On next launch, the app starts in the previously selected theme rather than always defaulting to one.
+- **Status: not yet implemented.** `set_theme()` (`app.py`) currently only mutates the in-memory `COLORS` dict for the running session — there's no persisted preference file yet.
 
 ---
 
