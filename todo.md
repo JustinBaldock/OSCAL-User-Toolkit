@@ -241,19 +241,15 @@ The app currently treats catalog and profile as a 1:1 relationship — one catal
 
 ### What Needs to Change
 
-#### 1 — Catalog Resolver in `models.py`
+#### 1 — Catalog Resolver in `models.py` — ✅ Done (stage 1 of 3 — see design document §10.17)
 
-- Replace the single `load_catalog()` call with a `CatalogResolver` that holds a list of loaded catalogs
-- `resolve_control(control_id)` searches all loaded catalogs and returns the matching control (title, description, parameters)
-- When a profile is loaded, auto-discover referenced catalog files relative to the profile's file path — if a `href` points to a local file that exists, load it automatically without requiring the user to open it manually
+`CatalogResolver` exists, keyed by resolved absolute catalog path (not by href, which is only meaningful relative to whichever file declared it). `resolve_control(path, control_id)` and `all_controls()` are implemented but not yet consumed by any tab. `load_from_profile()` auto-loads every catalog a profile's `imports[]` references — including resolving `"#uuid"` back-matter indirection, which turned out to be how the bundled NIST example profiles actually reference their catalog (confirmed directly on those files; a plain relative href turned out to be the less common case in practice). `app.py` owns one `self._resolver`, populated on Open Catalog and auto-populated on Open Profile, exposed via `get_resolver()`.
 
-#### 2 — UI: Multiple Catalog Slots or Auto-Load
+**Still open — stages 2 and 3:**
+- **Component Editor Source column/filter** (stage 2): "All Controls"/"Applied Controls" (Section 7) currently read from the single `self._catalog`. Brainstormed three UI options (a catalog switcher, tabs per catalog, or one merged list with a Source column + filter) and settled on the merged-list approach — same Treeview structure, sourced from `resolver.all_controls()` instead, with a Source filter dropdown alongside the existing search/type filter (same pattern as Catalog Viewer's Guideline filter). The single static "Source: X" label that's currently written to every control-implementation on save goes away — source becomes per-control, resolved automatically from whichever catalog it came from.
+- **Multi-source OSCAL output** (stage 3): `build_component_oscal_entry()` in `models.py` currently always emits exactly one `control-implementations` block with one `source`. Needs to group a component's control responses by distinct `source_href` and emit one block per group, since a component whose controls come from two catalogs needs two `source` values, not one.
 
-Two approaches (pick one):
-
-**Option A — Auto-load from profile** (preferred): When the user opens a profile, the app resolves all `imports[].href` values relative to the profile file. Any that point to local JSON files are loaded automatically into the resolver. The info panel shows a list of all loaded catalogs (not just one). No extra UI controls needed.
-
-**Option B — Manual multi-catalog**: Add an "Add Catalog…" button that appends to a catalog list. The info panel shows a scrollable list of loaded catalogs with individual remove buttons.
+#### 2 — UI: Multiple Catalog Slots or Auto-Load — ✅ Decided: Option A (see #1 above)
 
 #### 2b — "Data Sources" tab — ✅ Done (single catalog/profile, Library-backed)
 

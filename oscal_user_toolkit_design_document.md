@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.5  
+**Version:** 3.6  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -910,6 +910,18 @@ This intentionally does **not** replace the older `_import_components_from_files
 
 **Fix, load side:** `load_workspace_manifest()` tries the workspace-relative interpretation *first* (matching every other field, and covering the non-Library case above), and only falls back to resolving the same filename against the configured Library's `catalogs/`/`profiles/` subfolder if that file doesn't exist. This fallback is what fixes *already-saved* workspace files like `workspace_ERN.json` without needing to edit them — no schema change or version marker was needed, since the fallback only ever triggers when the primary (workspace-relative) resolution fails to find a file, which is exactly the situation those older files are now in.
 
+### 10.17 CatalogResolver — foundation for multi-catalog profiles (todo.md §3, stage 1 of 3)
+
+The app has always treated catalog and profile as strictly 1:1 — one `self._catalog` dict, loaded once via Open Catalog. OSCAL's own profile schema doesn't have that limitation: a profile's `imports[]` is an array, each entry independently referencing its own catalog (or another profile) via `href`, with its own `include-controls`/`include-all`/`exclude-controls` selection (confirmed directly against `oscal_profile_schema.json`'s `import` definition) — the documented pattern for a baseline spanning two frameworks (e.g. SP 800-53 + SP 800-171). `load_profile()` already walked every import to build a flat, merged `ids` set, but discarded which import each ID came from, so there was no way to know which catalog a given control actually belongs to once more than one is involved.
+
+**`CatalogResolver`** (`models.py`) is a small class an `OSCALApp` instance owns one of (`self._resolver`), holding every loaded catalog keyed by **resolved absolute file path** — not by the href as written in a profile or component file. An href is only meaningful relative to whichever file declared it (two profiles could use different relative hrefs for the same catalog, or the same href could resolve to different files from different directories), so resolving to an absolute path first is what makes the resolver's cache key collision-free regardless of which file referenced a given catalog.
+
+**Auto-load, not manual "Add Catalog"** (Option A from the brainstorm that preceded this): `CatalogResolver.load_from_profile(profile, profile_path)` is called from `app.py`'s `_open_profile()` after the profile loads successfully. It re-reads `profile_path` itself directly (rather than trusting `load_profile()`'s already-flattened return value, whose new `imports` list — added alongside the unchanged `ids` set for backward compatibility — doesn't retain back-matter), because **an import's `href` is frequently a `"#uuid"` reference to one of the profile's own back-matter resources**, not a direct file path — confirmed on the actual bundled NIST example profiles, which use exactly this indirection to point at their source catalog. This is the *same* indirection `parse_ssp_file()` already resolves for `import-profile.href`; `load_from_profile()` mirrors that logic (look up the back-matter resource by UUID, take its first `rlink`) rather than inventing a second resolution scheme. Each resolved href is then treated as relative to the profile file's own directory, exactly like every other relative-href resolution elsewhere in this app. An href that doesn't resolve to a real local file — e.g. many published OSCAL profiles' `rlinks` point at the *upstream content repository's* own directory layout (confirmed on the bundled NIST profiles, whose rlinks assume a `nist.gov/SP800-53/rev5/json/...` structure that doesn't exist locally) — is silently skipped, matching how this app has never fetched remote URLs.
+
+**What this stage does and doesn't do:** `self._catalog` remains "the" catalog for every tab not yet updated to consult the resolver — Catalog Viewer, Component Editor, SSP Editor, Capability Editor all still work exactly as before, reading only the one manually-opened catalog. The resolver exists, is populated automatically by `_open_profile()`, and is exposed via a `get_resolver()` callback (mirroring `get_library_path()`/`get_system_folder()`) — but nothing consumes `resolve_control()`/`all_controls()` yet except a small "(+N more via profile imports)" note on the Data Sources tab's catalog label, added mainly to make this stage independently verifiable. Loading a brand-new catalog via Open Catalog clears the resolver first (a fresh catalog starts a fresh multi-catalog session) and re-adds itself, so the resolver and `self._catalog` never disagree about which catalogs are "current."
+
+**Still to come (stages 2–3, not built yet):** Component Editor's "All Controls"/"Applied Controls" trees gaining a Source column and Source filter, sourced from `resolver.all_controls()` instead of the single active catalog (the UI design settled on merging every loaded catalog into one filterable list rather than a catalog switcher or per-catalog tabs); and `build_component_oscal_entry()` in `models.py` grouping a component's control responses by distinct `source_href` into multiple `control-implementations` blocks, since it currently always emits exactly one block with one global `source`.
+
 ---
 
 ## 11. Example Component Library
@@ -951,6 +963,16 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.6 (July 2026)
+
+**New features (foundation only — see §10.17):**
+- **`CatalogResolver`** (`models.py`): holds every loaded catalog keyed by resolved absolute path; `load_from_profile()` auto-loads any additional catalogs a profile's `imports[]` references, resolving `"#uuid"` back-matter indirection the same way `parse_ssp_file()` already does for `import-profile.href`.
+- `app.py`: new `self._resolver`, populated on Open Catalog (reset + re-add) and Open Profile (auto-load additional imports); new `get_resolver()` callback (not yet consumed by any tab).
+- `load_profile()` gained a new `imports` key (raw per-import href/include/exclude data) alongside the existing, unchanged `ids` set.
+- Data Sources tab shows "(+N more via profile imports)" on the catalog label when a profile has auto-loaded additional catalogs.
+
+**Not yet implemented (stages 2–3 of `todo.md` §3):** Component Editor's Source column/filter, and grouping a component's control-implementations by distinct source in `build_component_oscal_entry()`. `self._catalog` remains the single source every other tab reads from until those land.
 
 ### Version 3.5 (July 2026)
 

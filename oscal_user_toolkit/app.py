@@ -32,7 +32,8 @@ from pathlib import Path   # Cross-platform file path handling
 
 # Import the data-loading functions from our models module
 from .models import (load_catalog, load_profile, validate_oscal_file,
-                     build_workspace_manifest, load_workspace_manifest)
+                     build_workspace_manifest, load_workspace_manifest,
+                     CatalogResolver)
 from . import settings
 
 # Import the tab classes
@@ -161,6 +162,14 @@ class OSCALApp(tk.Tk):
         # None means "nothing loaded yet".
         self._catalog = None    # The loaded catalog dict (from models.load_catalog)
         self._profile = None    # The loaded profile dict (from models.load_profile)
+        # Holds every catalog currently loaded, keyed by resolved absolute
+        # path — supports a profile that draws controls from more than one
+        # catalog (see CatalogResolver in models.py, todo.md §3, and
+        # oscal_user_toolkit_design_document.md §10.17). self._catalog above
+        # remains "the" catalog for every tab not yet updated to consult the
+        # resolver; the resolver additionally holds any further catalogs a
+        # profile's imports[] reference beyond that one.
+        self._resolver = CatalogResolver()
         # Path of the last workspace manifest opened or saved. Used so
         # "Save Workspace" can default to overwriting the same file, and
         # as the basis for the "current system folder" that Component/
@@ -726,6 +735,7 @@ class OSCALApp(tk.Tk):
             open_profile      = self._open_profile,
             clear_profile     = self._clear_profile,
             set_status        = lambda msg: self._status_lbl.config(text=msg),
+            get_resolver      = self.get_resolver,
         )
         nb.insert(0, self._data_sources_tab, text="📚  Data Sources")
 
@@ -914,9 +924,15 @@ class OSCALApp(tk.Tk):
             messagebox.showerror("Failed to load catalog", str(exc))
             return
 
-        # Store the loaded catalog and clear any previously loaded profile
+        # Store the loaded catalog and clear any previously loaded profile.
+        # A fresh catalog also starts a fresh multi-catalog session — clear
+        # the resolver before re-adding this one, then register it under
+        # its own resolved path so it participates in resolve_control()/
+        # all_controls() the same as anything loaded via a profile's imports.
         self._catalog = catalog
         self._profile = None   # Loading a new catalog clears the profile
+        self._resolver.clear()
+        self._resolver.add_catalog(path, catalog)
 
         # ── Update the catalog info card ──────────────────────────────────────
         self._apply_catalog_info_labels(catalog)
@@ -979,6 +995,13 @@ class OSCALApp(tk.Tk):
         # Store the profile
         self._profile = profile
 
+        # Auto-load any further catalogs this profile's imports[] reference
+        # beyond the one already open (see CatalogResolver.load_from_profile
+        # in models.py) — this is what lets a profile spanning two catalogs
+        # (e.g. SP 800-53 + SP 800-171) work without a manual "Add Catalog"
+        # step for the second one.
+        added_catalogs = self._resolver.load_from_profile(profile, path)
+
         # ── Update the profile info card ──────────────────────────────────────
         self._apply_profile_info_labels(profile)
 
@@ -991,7 +1014,10 @@ class OSCALApp(tk.Tk):
         # Tell the CatalogTab to filter by the new profile's control IDs.
         # The tab keeps its own class filter and search term unchanged.
         self._catalog_tab.apply_profile(profile["ids"])
-        self._status_lbl.config(text=f"Profile applied: {Path(path).name}")
+        status = f"Profile applied: {Path(path).name}"
+        if added_catalogs:
+            status += f" (+{added_catalogs} catalog{'s' if added_catalogs != 1 else ''} auto-loaded from imports)"
+        self._status_lbl.config(text=status)
         return True
 
     def _clear_profile(self):
@@ -1042,6 +1068,16 @@ class OSCALApp(tk.Tk):
     def get_library_path(self):
         """Callback passed to Component/Capability Editor: the configured library Path, or None."""
         return self._library_path
+
+    def get_resolver(self):
+        """
+        Callback for tabs that need to look up controls across every
+        currently loaded catalog (see models.CatalogResolver), not just
+        the single primary self._catalog. Not yet consumed by any tab —
+        Component Editor's Source column/filter (todo.md §3) will be the
+        first.
+        """
+        return self._resolver
 
     def get_system_folder(self):
         """

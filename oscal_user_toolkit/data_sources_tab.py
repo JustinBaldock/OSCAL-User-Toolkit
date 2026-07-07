@@ -24,7 +24,7 @@ class DataSourcesTab(tk.Frame):
 
     def __init__(self, parent, colors, get_library_path=None, get_catalog=None,
                  get_profile=None, open_catalog=None, open_profile=None,
-                 clear_profile=None, set_status=None, **kwargs):
+                 clear_profile=None, set_status=None, get_resolver=None, **kwargs):
         """
         Parameters:
             parent           - The ttk.Notebook this tab lives inside
@@ -37,6 +37,9 @@ class DataSourcesTab(tk.Frame):
             open_profile     - Callback: app.py._open_profile(path=None), same shape
             clear_profile    - Callback: app.py._clear_profile()
             set_status       - Callback: updates the main window status bar text
+            get_resolver     - Callback: returns app.py's CatalogResolver, used
+                                only to show how many catalogs a multi-catalog
+                                profile has auto-loaded (see models.CatalogResolver)
         """
         super().__init__(parent, bg=colors["BG"], **kwargs)
         self._colors           = colors
@@ -47,6 +50,7 @@ class DataSourcesTab(tk.Frame):
         self._open_profile     = open_profile       or (lambda path=None: None)
         self._clear_profile    = clear_profile      or (lambda: None)
         self._set_status       = set_status         or (lambda msg: None)
+        self._get_resolver     = get_resolver       or (lambda: None)
 
         self._build()
 
@@ -222,9 +226,12 @@ class DataSourcesTab(tk.Frame):
             text=f"Library folder: {library}" if library else "No Library folder configured."
         )
 
-        catalog = self._get_catalog()
+        catalog  = self._get_catalog()
+        resolver = self._get_resolver()
+        extra    = (len(resolver.catalogs()) - 1) if (catalog and resolver and not resolver.is_empty()) else 0
+        extra_note = f"  (+{extra} more via profile imports)" if extra > 0 else ""
         self._current_catalog_lbl.config(
-            text=f"📄 Current catalog: {catalog['title']}" if catalog else "📄 No catalog loaded.",
+            text=f"📄 Current catalog: {catalog['title']}{extra_note}" if catalog else "📄 No catalog loaded.",
             fg=C["TEXT"] if catalog else C["SUBTEXT"],
         )
         profile = self._get_profile()

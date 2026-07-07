@@ -358,6 +358,23 @@ def load_profile(filepath):
             for ctrl_id in selector.get("with-ids", []):
                 included_ids.add(ctrl_id)
 
+    # Preserved separately from the flattened 'ids' set above (which stays
+    # unchanged for backward compatibility with existing callers) — this is
+    # the per-import structure CatalogResolver.load_from_profile() needs to
+    # know which catalog href(s) this profile actually references, since
+    # 'ids' alone discards which import each control ID came from.
+    imports = [
+        {
+            "href":         imp.get("href", ""),
+            "include_all":  "include-all" in imp,
+            "include_ids":  [cid for sel in imp.get("include-controls", [])
+                             for cid in sel.get("with-ids", [])],
+            "exclude_ids":  [cid for sel in imp.get("exclude-controls", [])
+                             for cid in sel.get("with-ids", [])],
+        }
+        for imp in profile.get("imports", [])
+    ]
+
     return {
         "title":         meta.get("title", "Untitled profile"),
         "published":     meta.get("published", "—"),
@@ -365,8 +382,128 @@ def load_profile(filepath):
         "version":       meta.get("version", "—"),
         "oscal_version": meta.get("oscal-version", "—"),
         "ids":           included_ids,
+        "imports":       imports,
         "filepath":      filepath,
     }
+
+
+class CatalogResolver:
+    """
+    Holds every catalog currently loaded, to support a profile that draws
+    controls from more than one catalog (see todo.md §3 and
+    oscal_user_toolkit_design_document.md §10.17 for the design behind
+    this). A single OSCALApp instance owns exactly one CatalogResolver.
+
+    Catalogs are keyed by their RESOLVED ABSOLUTE FILE PATH (as a string),
+    not by the href as written in a profile/component file — an href is
+    only meaningful relative to whichever file declared it, so two
+    profiles could use different relative hrefs for the same catalog, or
+    the same href could point to different files from different
+    directories. Resolving to an absolute path first is what makes
+    add_catalog()/get_catalog() a reliable, collision-free cache key
+    regardless of which file referenced the catalog or how.
+
+    Callers resolving a component's control-implementation.source (itself
+    just a relative href) against this resolver must first turn it into an
+    absolute path the same way — relative to that component file's own
+    location — before calling resolve_control()/get_catalog().
+    """
+
+    def __init__(self):
+        self._catalogs = {}   # {absolute_path_str: catalog_dict}
+
+    def add_catalog(self, path, catalog):
+        """Register a loaded catalog under its resolved absolute path."""
+        self._catalogs[str(Path(path).resolve())] = catalog
+
+    def get_catalog(self, path):
+        """Return the catalog dict for an (already resolved) absolute path, or None."""
+        return self._catalogs.get(str(Path(path).resolve()))
+
+    def catalogs(self):
+        """Return {absolute_path_str: catalog_dict} for every loaded catalog."""
+        return dict(self._catalogs)
+
+    def is_empty(self):
+        return not self._catalogs
+
+    def clear(self):
+        self._catalogs.clear()
+
+    def resolve_control(self, path, control_id):
+        """(absolute catalog path, control_id) -> control dict, or None."""
+        cat = self.get_catalog(path)
+        if not cat:
+            return None
+        return next((c for c in cat.get("controls", []) if c["id"] == control_id), None)
+
+    def all_controls(self):
+        """Flat list of (absolute_path_str, control_dict) pairs across every loaded catalog."""
+        return [
+            (path, c)
+            for path, cat in self._catalogs.items()
+            for c in cat.get("controls", [])
+        ]
+
+    def load_from_profile(self, profile, profile_path):
+        """
+        Auto-load every catalog a profile's imports[] references, resolving
+        each href relative to the profile file's own location.
+
+        An import's href is frequently a "#uuid" reference to one of the
+        profile's OWN back-matter resources rather than a direct file path
+        — the same indirection parse_ssp_file() already resolves for
+        import-profile.href. When that's the case, the back-matter
+        resource's first rlink is used as the actual file reference instead
+        of the raw href. This method re-reads profile_path itself (rather
+        than trusting the caller's already-flattened `profile` dict, whose
+        'imports' list — see load_profile() — doesn't retain back-matter)
+        so this resolution has everything it needs in one place.
+
+        Hrefs already loaded (by resolved path) are skipped, and an href
+        that doesn't resolve to a local file is silently skipped too — real
+        published OSCAL profiles often point their rlinks at the upstream
+        content repo's own directory layout (e.g. NIST's), which won't
+        exist locally; this app doesn't fetch remote URLs.
+
+        Returns the number of newly loaded catalogs.
+        """
+        try:
+            with open(profile_path, encoding="utf-8") as f:
+                raw = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            return 0
+
+        root      = raw.get("profile", {})
+        resources = root.get("back-matter", {}).get("resources", [])
+        base_dir  = Path(profile_path).resolve().parent
+
+        def resolve_href(href):
+            """Mirrors parse_ssp_file()'s "#uuid" back-matter resolution."""
+            if href.startswith("#"):
+                resource = next(
+                    (r for r in resources if r.get("uuid") == href.lstrip("#")), None
+                )
+                rlinks = resource.get("rlinks", []) if resource else []
+                return rlinks[0].get("href", "") if rlinks else ""
+            return href
+
+        added = 0
+        for imp in root.get("imports", []):
+            href = resolve_href(imp.get("href", ""))
+            if not href:
+                continue
+            candidate = (base_dir / href).resolve()
+            if not candidate.is_file():
+                continue
+            if str(candidate) in self._catalogs:
+                continue
+            try:
+                self.add_catalog(candidate, load_catalog(candidate))
+                added += 1
+            except (ValueError, KeyError, json.JSONDecodeError, OSError):
+                continue
+        return added
 
 
 # =============================================================================
