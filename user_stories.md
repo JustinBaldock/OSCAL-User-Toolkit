@@ -134,6 +134,19 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - The Assessment Plan can be populated with every control ID selected for the system, and clearly shows/tracks which of those controls are still outstanding.
 - **Status: partially implemented.** `ap_tab.py` already has "🔄 Refresh from SSP" to pull components from the referenced SSP's file, and "📋 Load IDs from profile" to populate control IDs from the toolbar's loaded profile. There is currently no equivalent capability-coverage step (capabilities aren't referenced anywhere in `ap_tab.py` yet), and "Load IDs from profile" draws from whichever profile happens to be loaded in the toolbar rather than specifically the control set recorded against the referenced SSP itself — worth checking these two sources always agree before treating control coverage as complete.
 
+### US-11: Open/save assessment results referencing the assessment plan, with full observations/risks/findings
+
+**As a** System Auditor,
+**I want to** open and save an Assessment Results file that references the Assessment Plan it was performed against, and records every observation, risk, and finding I identified,
+**so that** the assessment results are traceable back to the plan that scoped them and give a complete account of what I found during the assessment.
+
+**Acceptance criteria:**
+- Can open an existing Assessment Results (`.json`) file and save changes back to it.
+- The Assessment Results reference the Assessment Plan they were performed against (import-ap href).
+- Can record observations, risks, and findings, and every one recorded is shown — nothing captured during the assessment is hidden or lost.
+- Findings can relate back to specific observations and risks, so the connection between "what was found," "what risk it represents," and "what conclusion was drawn" is preserved, not just a flat list of unrelated entries.
+- **Status: implemented.** `ar_tab.py` already supports opening/saving Assessment Results, an Assessment Plan reference (Section 2, `import_ap`), and full observation/risk/finding tracking (Sections 3–5) with findings able to relate to specific observations and risks.
+
 ---
 
 ## Application Preferences & Session Continuity
@@ -155,5 +168,5 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ## Backlog (not yet written as full stories)
 
-- System Auditor conducting/recording the assessment itself (Assessment Results authoring) — US-9/US-10 cover planning; actually running the assessment and recording findings isn't written up yet.
 - Multi-system / multi-SSP management for an organisation with several systems.
+- System Auditor exporting Assessment Results as docx (mirrors the SSP/POA&M docx-for-auditor pattern in US-3/US-8, but not yet requested for Assessment Results).
