@@ -1,0 +1,10 @@
+{
+  "workspace": {
+    "title": "workspace",
+    "catalog": "ISM_catalog_2026_06.json",
+    "profile": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+    "components": [
+      "components/operating-system_Microsoft_Windows_11_(Workstation).json"
+    ]
+  }
+}
