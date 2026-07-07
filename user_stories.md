@@ -20,6 +20,9 @@ Roles referenced by stories below. Add to this list as new personas come up.
   of which editor tab they work in; cares about the app itself being
   convenient across sessions (workspace continuity, display preferences),
   as distinct from the OSCAL content they're producing.
+- **System Auditor** — reviews a system's SSP and plans/conducts its
+  assessment; needs the SSP's documentation and full coverage of its
+  components, capabilities, and selected controls before assessing.
 
 ---
 
@@ -105,6 +108,34 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ---
 
+## Assessment Planning (System Auditor)
+
+### US-9: Load an SSP to view system documentation
+
+**As a** System Auditor,
+**I want to** load a System Security Plan and read its documentation,
+**so that** I understand the system I'm assessing — its boundary, network architecture, components, capabilities, and control implementations — before planning the assessment.
+
+**Acceptance criteria:**
+- Can open an existing SSP (`.json`) file and browse its sections in the SSP Editor.
+- All SSP sections (system characteristics, boundary, network architecture, VLANs, data flow, information types, roles, parties, components, control implementations, etc.) are readable, not just raw JSON.
+- **Status: implemented.** `ssp_tab.py` already supports opening and displaying a saved SSP.
+
+### US-10: Create an assessment plan covering all components, capabilities, and selected controls
+
+**As a** System Auditor,
+**I want to** create an Assessment Plan that references the system's SSP and covers every one of its components and capabilities, addressing every control selected for the system,
+**so that** the assessment plan has complete coverage — nothing in the system's boundary or control baseline is left unassessed.
+
+**Acceptance criteria:**
+- Can reference an SSP by href in the Assessment Plan (Section 2 — SSP Reference).
+- The Assessment Plan can be populated with every component from the referenced SSP.
+- The Assessment Plan can be populated with every capability from the referenced SSP.
+- The Assessment Plan can be populated with every control ID selected for the system, and clearly shows/tracks which of those controls are still outstanding.
+- **Status: partially implemented.** `ap_tab.py` already has "🔄 Refresh from SSP" to pull components from the referenced SSP's file, and "📋 Load IDs from profile" to populate control IDs from the toolbar's loaded profile. There is currently no equivalent capability-coverage step (capabilities aren't referenced anywhere in `ap_tab.py` yet), and "Load IDs from profile" draws from whichever profile happens to be loaded in the toolbar rather than specifically the control set recorded against the referenced SSP itself — worth checking these two sources always agree before treating control coverage as complete.
+
+---
+
 ## Application Preferences & Session Continuity
 
 ### US-4: Save and reopen a workspace, including its theme
@@ -124,5 +155,5 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ## Backlog (not yet written as full stories)
 
-- Auditor-side workflow (reviewing/annotating an SSP) — no known persona yet.
+- System Auditor conducting/recording the assessment itself (Assessment Results authoring) — US-9/US-10 cover planning; actually running the assessment and recording findings isn't written up yet.
 - Multi-system / multi-SSP management for an organisation with several systems.
