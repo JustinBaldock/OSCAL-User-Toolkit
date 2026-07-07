@@ -77,6 +77,22 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ---
 
+## Multi-Network Dashboard (Large Organisations)
+
+### US-13: See summaries across multiple networks' SSPs, Assessment Results, and POA&Ms at once
+
+**As an** Organisation User,
+**I want to** open the Dashboard and load multiple SSPs, Assessment Results, and POA&Ms — one set per network — and see a summary across all of them at once,
+**so that** I can understand how the organisation as a whole is tracking (compliance posture, assessment currency, risk, POA&M health) rather than only being able to see one network at a time.
+
+**Acceptance criteria:**
+- Can add more than one SSP/AP/AR/POA&M document to the Dashboard, not just whatever happens to be the single currently-open file in each editor tab.
+- The Dashboard shows a per-network summary card (or row) for each loaded network, plus an organisation-wide rollup (e.g. total open risks, POA&Ms overdue, systems not yet assessed).
+- Adding or removing a network's documents from the Dashboard doesn't require closing/reopening them in the SSP/AP/AR/POA&M editor tabs.
+- **Status: not implemented.** `dashboard_tab.py` is explicitly single-document today — it aggregates "the currently open SSP, Assessment Plan, Assessment Results, and POA&M documents" via `get_ssp_tab`/`get_ap_tab`/`get_ar_tab`/`get_poam_tab` callbacks that each return the one singleton editor tab's current state. There's no concept of multiple loaded networks, no per-network cards, and no organisation-wide rollup — this would need a real design decision on how a "network" is loaded into the Dashboard independently of the single-document SSP/AP/AR/POA&M editor tabs (e.g. picking several files directly on the Dashboard, distinct from "open in the editor tab").
+
+---
+
 ## System Security Plan
 
 ### US-3: Produce an SSP for system auditors
@@ -189,5 +205,4 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ## Backlog (not yet written as full stories)
 
-- Multi-system / multi-SSP management for an organisation with several systems.
 - System Auditor exporting Assessment Results as docx (mirrors the SSP/POA&M docx-for-auditor pattern in US-3/US-8, but not yet requested for Assessment Results).
