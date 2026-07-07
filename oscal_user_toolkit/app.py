@@ -33,6 +33,7 @@ from pathlib import Path   # Cross-platform file path handling
 # Import the data-loading functions from our models module
 from .models import (load_catalog, load_profile, validate_oscal_file,
                      build_workspace_manifest, load_workspace_manifest)
+from . import settings
 
 # Import the tab classes
 from .catalog_tab import CatalogTab
@@ -161,8 +162,14 @@ class OSCALApp(tk.Tk):
         self._catalog = None    # The loaded catalog dict (from models.load_catalog)
         self._profile = None    # The loaded profile dict (from models.load_profile)
         # Path of the last workspace manifest opened or saved. Used so
-        # "Save Workspace" can default to overwriting the same file.
+        # "Save Workspace" can default to overwriting the same file, and
+        # as the basis for the "current system folder" that Component/
+        # Capability Editor import into (see get_system_folder() below).
         self._workspace_path = None
+        # Configured Library folder (catalogs/profiles/components/
+        # capabilities shared across systems) — persisted via settings.py,
+        # so it survives between app launches. None until first set.
+        self._library_path = settings.get_library_path()
         # Current colour theme — "dark" or "light". Toggled from the
         # Workspace tab via set_theme(). See DARK_COLORS/LIGHT_COLORS above.
         self._theme = "dark"
@@ -435,6 +442,25 @@ class OSCALApp(tk.Tk):
         )
         self._clear_profile_btn.pack(side="left", pady=10)
 
+        # Visual separator
+        tk.Frame(tb, bg=C["SUBTEXT"], width=1).pack(
+            side="left", fill="y", padx=8, pady=12
+        )
+
+        # Library Folder button — sets/changes the persisted library path
+        # (settings.py) that Component/Capability Editor import from.
+        tk.Button(
+            tb, text="📚  Library Folder", command=self._set_library_folder,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
+            relief="flat", padx=14, pady=6, cursor="hand2",
+        ).pack(side="left", padx=(8, 8), pady=10)
+
+        self._library_path_lbl = tk.Label(
+            tb, text=self._library_path_display(),
+            bg=C["HEADER_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
+        )
+        self._library_path_lbl.pack(side="left", padx=(0, 8))
+
         # App title
         tk.Label(
             tb, text="OSCAL User Toolkit",
@@ -591,6 +617,8 @@ class OSCALApp(tk.Tk):
             get_profile= lambda: self._profile,
             set_status = lambda msg: self._status_lbl.config(text=msg),
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_library_path  = self.get_library_path,
+            get_system_folder = self.get_system_folder,
         )
         nb.add(self._component_tab, text="⚙  Component Editor")
 
@@ -612,6 +640,8 @@ class OSCALApp(tk.Tk):
             # Allows CapabilityTab to import bundled components from saved
             # capability files directly into ComponentTab's live list.
             add_component       = self._component_tab.add_component,
+            get_library_path    = self.get_library_path,
+            get_system_folder   = self.get_system_folder,
         )
         nb.add(self._capability_tab, text="🔗  Capability Editor")
 
@@ -982,6 +1012,46 @@ class OSCALApp(tk.Tk):
         # The tab keeps its own class filter and search term unchanged.
         self._catalog_tab.apply_profile(None)
         self._status_lbl.config(text="Profile cleared — showing full catalog.")
+
+    # =========================================================================
+    # LIBRARY — shared catalogs/profiles/components/capabilities folder,
+    # separate from any one system's own workspace (see settings.py and
+    # user_stories.md US-12/US-13 for the design behind this).
+    # =========================================================================
+
+    def _library_path_display(self):
+        """Return the label text for the current library path (or 'not set')."""
+        return f"📚 {self._library_path}" if self._library_path else "📚 Library: not set"
+
+    def _set_library_folder(self):
+        """
+        Ask the user to choose a library folder, persist it (settings.py),
+        and ensure its standard subfolders exist.
+        """
+        folder = filedialog.askdirectory(title="Choose Library Folder")
+        if not folder:
+            return
+        settings.set_library_path(folder)
+        self._library_path = Path(folder)
+        self._library_path_lbl.config(text=self._library_path_display())
+        self._status_lbl.config(text=f"Library folder set: {folder}")
+
+    def get_library_path(self):
+        """Callback passed to Component/Capability Editor: the configured library Path, or None."""
+        return self._library_path
+
+    def get_system_folder(self):
+        """
+        Callback passed to Component/Capability Editor: the current
+        system's folder, i.e. the directory containing the currently
+        open/saved workspace manifest, or None if no workspace is active.
+
+        This is what "Import from Library" copies files into — it treats
+        the workspace file's own folder as the system's folder, so every
+        file for one system naturally lives together without introducing
+        a second, separate "system folder" concept to track.
+        """
+        return Path(self._workspace_path).parent if self._workspace_path else None
 
     # =========================================================================
     # WORKSPACE — load/save a manifest of every file for one system

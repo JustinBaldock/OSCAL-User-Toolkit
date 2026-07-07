@@ -38,6 +38,7 @@ until the user loads both files via the main toolbar.
 """
 
 import json
+import shutil
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
@@ -130,7 +131,7 @@ class ComponentTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, get_catalog, get_profile, set_status,
-                 get_oscal_version=None):
+                 get_oscal_version=None, get_library_path=None, get_system_folder=None):
         """
         Initialise the ComponentTab.
 
@@ -144,6 +145,13 @@ class ComponentTab(tk.Frame):
                                 string selected in the toolbar (e.g. "1.2.2").
                                 Defaults to a lambda returning "1.1.2" so the
                                 tab still works if constructed standalone.
+            get_library_path  - Optional callback returning the configured
+                                Library folder Path, or None if not set.
+            get_system_folder - Optional callback returning the current
+                                system's folder Path (see app.py
+                                get_system_folder()), or None if no
+                                workspace is active. Used by "Import from
+                                Library" to know where to copy files to.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -152,6 +160,8 @@ class ComponentTab(tk.Frame):
         self._get_profile       = get_profile
         self._set_status        = set_status
         self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        self._get_library_path  = get_library_path  or (lambda: None)
+        self._get_system_folder = get_system_folder or (lambda: None)
 
         # ── File-level state ──────────────────────────────────────────────────
         self._file_uuid    = new_uuid()          # UUID for the whole file
@@ -362,6 +372,16 @@ class ComponentTab(tk.Frame):
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
             activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
+        ).pack(side="left", padx=(0, 8), pady=8)
+
+        # "Import from Library" copies component file(s) from the shared
+        # Library folder (see settings.py) into the current system's
+        # folder, then loads the copies into this list — see
+        # _import_from_library().
+        tk.Button(
+            tb, text="📚  Import from Library", command=self._import_from_library,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
@@ -2839,6 +2859,70 @@ class ComponentTab(tk.Frame):
                 skipped += 1
 
         self._after_open(added, skipped)
+
+    def _import_from_library(self):
+        """
+        Copy one or more component files from the shared Library folder
+        into the current system's folder, then load the copies into this
+        list — the System Owner's way of inheriting a component from an
+        organisation-level library rather than defining it from scratch
+        (see user_stories.md US-12).
+
+        Requires both a configured Library folder (app.py "📚 Library
+        Folder" button) and an active system folder (a workspace must be
+        open/saved — see app.py get_system_folder()), since otherwise
+        there is nowhere to copy the file to.
+        """
+        library = self._get_library_path()
+        if not library:
+            messagebox.showinfo(
+                "No Library folder set",
+                "Set a Library folder first, using the '📚 Library Folder' "
+                "button in the main toolbar.",
+            )
+            return
+
+        system_folder = self._get_system_folder()
+        if not system_folder:
+            messagebox.showinfo(
+                "No active system",
+                "Open or save a Workspace first, so the app knows which "
+                "system's folder to import into.",
+            )
+            return
+
+        library_components = Path(library) / "components"
+        paths = filedialog.askopenfilenames(
+            title="Import Component(s) from Library — Ctrl+click to select multiple",
+            initialdir=str(library_components) if library_components.is_dir() else str(library),
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not paths:
+            return
+
+        dest_folder = Path(system_folder) / "components"
+        dest_folder.mkdir(parents=True, exist_ok=True)
+
+        copied_paths = []
+        skipped_existing = 0
+        for src in paths:
+            dest = dest_folder / Path(src).name
+            if dest.exists():
+                # Don't clobber a copy that's already been imported and
+                # possibly edited locally for this system.
+                skipped_existing += 1
+                continue
+            shutil.copy2(src, dest)
+            copied_paths.append(str(dest))
+
+        added, skipped_invalid = self.load_from_paths(copied_paths)
+
+        parts = [f"{added} imported"]
+        if skipped_existing:
+            parts.append(f"{skipped_existing} already in this system's folder")
+        if skipped_invalid:
+            parts.append(f"{skipped_invalid} not valid component files")
+        self._set_status("Import from Library: " + ", ".join(parts))
 
     def _after_open(self, added, skipped):
         """

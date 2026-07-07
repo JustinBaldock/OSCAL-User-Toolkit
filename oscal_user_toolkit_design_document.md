@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.1  
+**Version:** 3.2  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -869,6 +869,18 @@ Because `data-flow.description` is the field any plain OSCAL consumer will actua
 
 **VLANs (Section 4) reuse the same pattern on `network-architecture`**, which has the identical sparse schema shape (`description`/`props`/`links`/`diagrams`/`remarks`, `additionalProperties: false`). Each VLAN is a set of `network-architecture.props[]` entries (`vlan-id`, `vlan-name`, `vlan-description`) sharing the VLAN's UUID as `group`, tagged with `ns: https://oscal-user-toolkit/ns/vlan` (`_build_vlan_props` / `_parse_vlan_props` in `models.py`). No narrative auto-draft is generated for VLANs — unlike data flow, a list of VLAN IDs/names doesn't reduce to a natural sentence the way a source→target edge does, so `network-architecture.description` is left to the user as free text.
 
+### 10.13 Library folder — a shared source, copied into each system's own folder
+
+Large organisations maintain a shared library of reusable components/capabilities (and eventually catalogs/profiles) at an org level, separate from any one system's SSP. Rather than have every editor tab reach into that shared library directly (which risks two systems silently sharing and mutating the same file), the design copies a library item into the current system's own folder at import time, and every SSP-side tool only ever reads/writes that copy — never the library source. This mirrors, and is a direct generalisation of, the "independent editable copy" behaviour `ssp_tab.py`'s older `_import_component_file` already had for one-off component-definition imports.
+
+**Where the library path lives:** a small new module, `settings.py`, persists the configured library folder in `~/.oscal_user_toolkit/settings.json` — outside any project/workspace file, since it's a per-installation preference (which library this machine points at) rather than OSCAL content. `set_library_path()` also creates the standard `catalogs/`, `profiles/`, `components/`, `capabilities/` subfolders if missing. `OSCALApp` loads this once at startup (`self._library_path = settings.get_library_path()`) and exposes it to other tabs via a `get_library_path()` callback, plus a "📚 Library Folder" toolbar button (`_set_library_folder()`) to change it.
+
+**Where "the current system's folder" comes from:** rather than invent a second concept to track, the design reuses the existing workspace manifest path (`self._workspace_path`, already tracked for Save/Open Workspace) — `OSCALApp.get_system_folder()` simply returns that path's parent directory, or `None` if no workspace is active yet. A system's folder is therefore just wherever its workspace JSON lives, which is also the natural place for that workspace's `components/`/`capabilities/` subfolders to sit alongside it.
+
+**The import action itself** (`_import_from_library()` in `component_tab.py` and `capability_tab.py`) requires both a configured library path and an active system folder — it refuses with a clear message if either is missing, rather than silently picking an arbitrary destination. It copies the chosen library file(s) into `<system folder>/components/` (or `.../capabilities/`), skipping any file whose name already exists at the destination so that re-importing never clobbers a copy the user has since edited for this system, then loads the copies into the tab's in-memory list via the existing `load_from_paths()` — the same function already used by "Open Folder", so import behaves identically to opening a folder of files, just with an extra copy step first.
+
+**Scope note:** this stage makes Component Editor and Capability Editor library-aware and gives them a working import-into-system-folder action. It does **not** yet change how the SSP Editor, Assessment Plan, or POA&M editors source their own component/capability lists — those still use their pre-existing mechanisms (`ssp_tab.py`'s own `_import_components_from_files`/`_import_capability_into_ssp`, independent of the system folder). Making those tabs read from the system folder is a separate, not-yet-built stage — see `user_stories.md` US-12 and `todo.md`.
+
 ---
 
 ## 11. Example Component Library
@@ -910,6 +922,16 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.2 (July 2026)
+
+**New features:**
+- **Library folder mechanism** (`settings.py`, new): a persisted, configurable folder holding shared `catalogs/`, `profiles/`, `components/`, `capabilities/` — set via a new "📚 Library Folder" toolbar button in `app.py`, persisted in `~/.oscal_user_toolkit/settings.json` across launches.
+- **"📚 Import from Library" button** in Component Editor and Capability Editor: copies a file from the library into the current system's folder (derived from the active workspace's own folder — see §10.13) as an independent, editable copy, then loads it for editing. Refuses with a clear message if no library is configured or no workspace is active.
+
+**Not yet implemented (see `user_stories.md` US-12, `todo.md`):**
+- SSP Editor, Assessment Plan, and POA&M editors do not yet read a system's folder for its components/capabilities — this stage only covers importing them into that folder, not consuming them from it.
+- Catalogs/profiles are not yet library-aware; only components/capabilities are, via Component/Capability Editor.
 
 ### Version 3.1 (July 2026)
 

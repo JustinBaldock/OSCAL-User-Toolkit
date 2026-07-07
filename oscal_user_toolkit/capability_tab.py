@@ -55,6 +55,7 @@ The tab calls on_state_changed() whenever it needs to re-evaluate.
 """
 
 import json
+import shutil
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
@@ -90,7 +91,7 @@ class CapabilityTab(tk.Frame):
     def __init__(self, parent, colors,
                  get_catalog, get_components, get_profile, set_status,
                  get_oscal_version=None, get_oscal_zip_path=None,
-                 add_component=None):
+                 add_component=None, get_library_path=None, get_system_folder=None):
         """
         Initialise the CapabilityTab.
 
@@ -106,6 +107,12 @@ class CapabilityTab(tk.Frame):
             add_component     - Callback: ComponentTab.add_component(comp) — used
                                 when loading a capability file to import its bundled
                                 member components into the Component Editor's list
+            get_library_path  - Optional callback returning the configured
+                                Library folder Path, or None if not set.
+            get_system_folder - Optional callback returning the current
+                                system's folder Path, or None if no
+                                workspace is active. Used by "Import from
+                                Library" to know where to copy files to.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -120,6 +127,8 @@ class CapabilityTab(tk.Frame):
         # components via this method keeps CapabilityTab decoupled from
         # ComponentTab's internal data structure.
         self._add_component       = add_component or (lambda comp: None)
+        self._get_library_path    = get_library_path  or (lambda: None)
+        self._get_system_folder   = get_system_folder or (lambda: None)
 
         # ── File-level state ──────────────────────────────────────────────────
         # Each saved capability gets its own component-definition file.
@@ -270,6 +279,15 @@ class CapabilityTab(tk.Frame):
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
             activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
+        ).pack(side="left", padx=(0, 4), pady=8)
+
+        # "Import from Library" copies capability file(s) from the shared
+        # Library folder into the current system's folder, then loads the
+        # copies into this list — see _import_from_library().
+        tk.Button(
+            tb, text="📚  Import from Library", command=self._import_from_library,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 4), pady=8)
 
         # Save the selected capability (bundles member components in same file)
@@ -1928,6 +1946,67 @@ class CapabilityTab(tk.Frame):
             else:
                 skipped += 1
         self._after_open(added, skipped)
+
+    def _import_from_library(self):
+        """
+        Copy one or more capability files from the shared Library folder
+        into the current system's folder, then load the copies into this
+        list — the System Owner's way of inheriting a capability from an
+        organisation-level library rather than defining it from scratch
+        (see user_stories.md US-12).
+
+        Requires both a configured Library folder (app.py "📚 Library
+        Folder" button) and an active system folder (a workspace must be
+        open/saved — see app.py get_system_folder()).
+        """
+        library = self._get_library_path()
+        if not library:
+            messagebox.showinfo(
+                "No Library folder set",
+                "Set a Library folder first, using the '📚 Library Folder' "
+                "button in the main toolbar.",
+            )
+            return
+
+        system_folder = self._get_system_folder()
+        if not system_folder:
+            messagebox.showinfo(
+                "No active system",
+                "Open or save a Workspace first, so the app knows which "
+                "system's folder to import into.",
+            )
+            return
+
+        library_capabilities = Path(library) / "capabilities"
+        paths = filedialog.askopenfilenames(
+            title="Import Capability(s) from Library — Ctrl+click to select multiple",
+            initialdir=str(library_capabilities) if library_capabilities.is_dir() else str(library),
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not paths:
+            return
+
+        dest_folder = Path(system_folder) / "capabilities"
+        dest_folder.mkdir(parents=True, exist_ok=True)
+
+        copied_paths = []
+        skipped_existing = 0
+        for src in paths:
+            dest = dest_folder / Path(src).name
+            if dest.exists():
+                skipped_existing += 1
+                continue
+            shutil.copy2(src, dest)
+            copied_paths.append(str(dest))
+
+        added, skipped_invalid = self.load_from_paths(copied_paths)
+
+        parts = [f"{added} imported"]
+        if skipped_existing:
+            parts.append(f"{skipped_existing} already in this system's folder")
+        if skipped_invalid:
+            parts.append(f"{skipped_invalid} not valid capability files")
+        self._set_status("Import from Library: " + ", ".join(parts))
 
     def _after_open(self, added, skipped):
         """Shared cleanup after _open_files() or _open_folder() finishes."""
