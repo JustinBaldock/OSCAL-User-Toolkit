@@ -63,6 +63,7 @@ from pathlib import Path
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, validate_oscal_file,
                      get_source_href, get_profile_controls)
+from .tab_utils import is_tab_active
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -539,14 +540,12 @@ class CapabilityTab(tk.Frame):
         """
         Scroll the canvas on mouse-wheel, only when this tab is active.
 
-        bind_all fires on every tab, so we compare the notebook's currently
-        selected widget against str(self). This is resilient to tab reordering
-        — unlike a hardcoded tab index which silently breaks if tabs are ever
-        added, removed, or rearranged.
+        bind_all fires on every tab, so we use is_tab_active(), which walks
+        up through any nested Notebook grouping (see app.py's Data/System
+        Overview/Audit tabs), not just the immediate parent's selection.
         """
         try:
-            nb = self.master   # The main ttk.Notebook
-            if hasattr(nb, "select") and nb.select() == str(self):
+            if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass

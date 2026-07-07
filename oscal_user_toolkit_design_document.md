@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.6  
+**Version:** 3.7  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -922,6 +922,22 @@ The app has always treated catalog and profile as strictly 1:1 — one `self._ca
 
 **Still to come (stages 2–3, not built yet):** Component Editor's "All Controls"/"Applied Controls" trees gaining a Source column and Source filter, sourced from `resolver.all_controls()` instead of the single active catalog (the UI design settled on merging every loaded catalog into one filterable list rather than a catalog switcher or per-catalog tabs); and `build_component_oscal_entry()` in `models.py` grouping a component's control responses by distinct `source_href` into multiple `control-implementations` blocks, since it currently always emits exactly one block with one global `source`.
 
+### 10.18 Grouped top-level tabs — nested Notebooks for Data / System Overview / Audit
+
+The top-level tab bar had grown to ten flat tabs (Workspace, Data Sources, Catalog Viewer, Component Editor, Capability Editor, SSP Editor, Assessment Plan, Assessment Results, POA&M Editor, Dashboard) as features accumulated across this project's history — each addition made sense on its own, but the cumulative result was a crowded bar with no structure. `app.py._build_notebook()` now groups related tabs under three umbrella tabs, each itself a `ttk.Notebook` nested inside the outer one:
+
+- **Data** — Data Sources, Catalog Viewer (browsing/loading shared reference material; nothing system-specific happens here)
+- **System Overview** — Component Editor, Capability Editor, SSP Editor (defining one system)
+- **Audit** — Assessment Plan, Assessment Results, POA&M Editor (the assessment-to-remediation lifecycle)
+
+**Workspace and Dashboard stay top-level, not inside any group.** Workspace is the landing tab shown at startup. Dashboard was deliberately *not* filed under System Overview (where POA&M-adjacent Component/Capability/SSP editors live) despite reading from the SSP — it's a cross-cutting rollup that also reads AP, AR, and POA&M, so nesting it inside any one group would make it invisible while working in a different one.
+
+**No individual tab class needed to change.** Every `ComponentTab`/`CapabilityTab`/`SSPTab`/etc. constructor call is identical to before — only the `parent=` argument (which Notebook the widget is built inside) and which Notebook's `.add()` receives it changed. This is possible because tabs never assumed anything about their parent beyond "a widget I can build into and register with" — the one place that *did* implicitly assume exactly one level of Notebook nesting was the mousewheel-scroll guard every tab uses (`bind_all("<MouseWheel>")` fires regardless of which tab is visible, so each tab checks whether it's the active one before scrolling its own canvas).
+
+**Fix: `tab_utils.is_tab_active()`.** The old guard compared only the immediate parent Notebook's `.select()` against `str(self)` — correct for "is this tab selected within its own Notebook," but not "is this tab actually visible," since a tab nested inside an unselected group tab would still appear as its own inner Notebook's current selection. `is_tab_active()` walks up through `.master` however many levels deep, checking `.select()` at every ancestor that has one (skipping non-Notebook ancestors), stopping at the first mismatch. This generalizes correctly to any nesting depth — including the zero-nesting case (Dashboard, Workspace), where it behaves identically to the old check. Every tab whose mousewheel guard used the old pattern (`component_tab.py`, `capability_tab.py`, `ssp_tab.py`, `ap_tab.py`, `ar_tab.py`, `poam_tab.py`) now calls this shared helper instead of duplicating the comparison inline. `catalog_tab.py` uses an unrelated, position-based guard (checks mouse position against the canvas widget) and didn't need changing; `workspace_tab.py`/`dashboard_tab.py` stay top-level so their existing single-level check remains correct as-is, though they could adopt the shared helper too if ever nested later.
+
+**`set_theme()`'s per-tab refresh loop needed no changes** — it already iterates leaf tab objects directly (`self._component_tab`, `self._ssp_tab`, etc.), never the Notebook structure itself, so grouping doesn't affect it. The group Notebooks themselves (`data_nb`/`system_nb`/`audit_nb`) are plain `ttk.Notebook` instances styled globally by `_style_ttk()`'s `ttk.Style` configuration, the same as the outer Notebook always was — no per-instance theme handling was needed for them either.
+
 ---
 
 ## 11. Example Component Library
@@ -963,6 +979,15 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.7 (July 2026)
+
+**New features:**
+- **Grouped top-level tabs** (`app.py`, see §10.18): the ten flat top-level tabs are now five — Workspace, Data (Data Sources + Catalog Viewer), System Overview (Component + Capability + SSP Editor), Audit (Assessment Plan + Assessment Results + POA&M Editor), and Dashboard, which stays top-level as a cross-cutting rollup.
+- New `tab_utils.py` module: `is_tab_active(widget)` replaces the mousewheel-scroll guard's old "compare immediate parent's `.select()`" check with one that walks up through any nesting depth — needed once tabs could be nested two Notebooks deep.
+
+**Refactoring:**
+- `component_tab.py`, `capability_tab.py`, `ssp_tab.py`, `ap_tab.py`, `ar_tab.py`, `poam_tab.py` all switched their `_on_mousewheel()` guard to the shared `is_tab_active()` helper instead of duplicating the (now nesting-unaware) inline check.
 
 ### Version 3.6 (July 2026)
 

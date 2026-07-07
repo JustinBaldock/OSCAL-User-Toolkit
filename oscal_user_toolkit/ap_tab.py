@@ -31,6 +31,7 @@ from .models import (
     # assessment actually is without opening a second tab/file.
     parse_ssp_file,
 )
+from .tab_utils import is_tab_active
 
 TASK_TYPES    = ["milestone", "action"]
 TIMING_TYPES  = ["none", "on-date", "within-date-range", "at-frequency"]
@@ -149,8 +150,7 @@ class APTab(tk.Frame):
 
     def _on_mousewheel(self, event):
         try:
-            nb = self.master
-            if hasattr(nb, "select") and nb.select() == str(self):
+            if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass

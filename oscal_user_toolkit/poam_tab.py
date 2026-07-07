@@ -31,6 +31,7 @@ from .models import (
     RISK_STATUSES, REMEDIATION_LIFECYCLES,
     FINDING_STATUS_STATES, FINDING_STATUS_REASONS,
 )
+from .tab_utils import is_tab_active
 
 # FINDING_TARGET_TYPES is specific to POA&M (not shared with AR) so it stays here.
 FINDING_TARGET_TYPES = ["statement-id", "objective-id"]
@@ -192,12 +193,12 @@ class POAMTab(tk.Frame):
 
         bind_all("<MouseWheel>") fires on every tab in the notebook, so without
         this guard, scrolling on any tab would also scroll this canvas.
-        We compare the notebook's currently selected widget path against str(self)
-        to scroll only when this tab is the one the user is looking at.
+        is_tab_active() walks up through any nested Notebook grouping (see
+        app.py's Data/System Overview/Audit tabs), not just the immediate
+        parent's selection, to confirm this tab is the one being viewed.
         """
         try:
-            nb = self.master
-            if hasattr(nb, "select") and nb.select() == str(self):
+            if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass

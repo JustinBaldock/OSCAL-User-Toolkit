@@ -42,6 +42,7 @@ from .models import (
     DEFAULT_OSCAL_VERSION,
 )
 from .component_tab import COMMON_PROTOCOLS  # Shared protocol name list (Section 4 data flow links)
+from .tab_utils import is_tab_active
 
 
 # =============================================================================
@@ -373,13 +374,12 @@ class SSPTab(tk.Frame):
         when the SSP tab is the currently selected one.
 
         bind_all means this fires regardless of which tab is visible, so we
-        compare nb.select() against str(self) to confirm THIS tab is active.
-        That is resilient to tab reordering — unlike hardcoding a tab index,
-        which silently breaks if tabs are added, removed, or reordered.
+        use is_tab_active(), which walks up through any nested Notebook
+        grouping (see app.py's Data/System Overview/Audit tabs), not just
+        the immediate parent's selection.
         """
         try:
-            nb = self.master
-            if hasattr(nb, "select") and nb.select() == str(self):
+            if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass   # Silently ignore any errors (e.g. during startup)

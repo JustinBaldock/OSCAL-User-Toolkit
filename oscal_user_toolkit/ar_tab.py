@@ -40,6 +40,7 @@ from .models import (
     RISK_STATUSES, REMEDIATION_LIFECYCLES,
     FINDING_STATUS_STATES, FINDING_STATUS_REASONS,
 )
+from .tab_utils import is_tab_active
 
 # IMPL_STATUS_VALUES is specific to AR (not shared with POA&M) so it stays here.
 IMPL_STATUS_VALUES = [
@@ -188,8 +189,7 @@ class ARTab(tk.Frame):
 
     def _on_mousewheel(self, event):
         try:
-            nb = self.master
-            if hasattr(nb, "select") and nb.select() == str(self):
+            if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         except Exception:
             pass

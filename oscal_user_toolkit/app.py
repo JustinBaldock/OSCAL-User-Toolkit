@@ -588,22 +588,59 @@ class OSCALApp(tk.Tk):
         nb.pack(fill="both", expand=True)
         self._notebook = nb   # Store so SSPTab can check which tab is active
 
-        # ── Catalog Viewer tab ────────────────────────────────────────────────
+        # ── Grouped tab structure ────────────────────────────────────────────
+        # The top-level Notebook holds five tabs: Workspace, Data, System
+        # Overview, Audit, and Dashboard. Three of those (Data, System
+        # Overview, Audit) are themselves a ttk.Notebook containing the
+        # "real" editor tabs — grouping related tabs together after the
+        # flat top-level tab bar grew to ten entries. Workspace and
+        # Dashboard stay top-level: Workspace is the landing tab, and
+        # Dashboard is a cross-cutting rollup that reads across every
+        # group (SSP, AP, AR, POA&M), so it doesn't belong inside any one
+        # of them. See oscal_user_toolkit_design_document.md §10.18.
+        #
+        # Every individual tab's construction/wiring below is otherwise
+        # UNCHANGED from the flat layout — only which Notebook each one is
+        # added to (its "parent=" and ".add()" target) changed. Tabs don't
+        # need to know whether their immediate parent is the outer Notebook
+        # or one of these inner ones.
+        data_nb   = ttk.Notebook(nb)
+        system_nb = ttk.Notebook(nb)
+        audit_nb  = ttk.Notebook(nb)
+
+        # ── Data Sources tab (Data group) ───────────────────────────────────────
+        # Browses the Library's catalogs/profiles subfolders and is now the
+        # only way to open/clear a catalog or profile — see data_sources_tab.py
+        # and oscal_user_toolkit_design_document.md §10.13/10.14.
+        self._data_sources_tab = DataSourcesTab(
+            parent            = data_nb,
+            colors            = COLORS,
+            get_library_path  = self.get_library_path,
+            get_catalog       = lambda: self._catalog,
+            get_profile       = lambda: self._profile,
+            open_catalog      = self._open_catalog,
+            open_profile      = self._open_profile,
+            clear_profile     = self._clear_profile,
+            set_status        = lambda msg: self._status_lbl.config(text=msg),
+            get_resolver      = self.get_resolver,
+        )
+        data_nb.add(self._data_sources_tab, text="📚  Data Sources")
+
+        # ── Catalog Viewer tab (Data group) ─────────────────────────────────────
         self._catalog_tab = CatalogTab(
-            parent     = nb,
+            parent     = data_nb,
             colors     = COLORS,
             # on_select: called when user clicks a control — reserved for Stage 2
             on_select  = lambda ctrl: None,
             # get_catalog: lets the tab check if a catalog is loaded
             get_catalog= lambda: self._catalog,
         )
-        nb.add(self._catalog_tab, text="📋  Catalog Viewer")
+        data_nb.add(self._catalog_tab, text="📋  Catalog Viewer")
 
-        # ── Component Editor tab ──────────────────────────────────────────────
-        # This tab sits BETWEEN Catalog Viewer and SSP Editor.
+        # ── Component Editor tab (System Overview group) ───────────────────────
         # It lets users create and save OSCAL Component Definition JSON files.
         self._component_tab = ComponentTab(
-            parent     = nb,
+            parent     = system_nb,
             colors     = COLORS,
             get_catalog= lambda: self._catalog,
             get_profile= lambda: self._profile,
@@ -612,14 +649,13 @@ class OSCALApp(tk.Tk):
             get_library_path  = self.get_library_path,
             get_system_folder = self.get_system_folder,
         )
-        nb.add(self._component_tab, text="⚙  Component Editor")
+        system_nb.add(self._component_tab, text="⚙  Component Editor")
 
-        # ── Capability Editor tab ─────────────────────────────────────────────
-        # Sits between Component Editor and SSP Editor.
+        # ── Capability Editor tab (System Overview group) ──────────────────────
         # Requires a catalog loaded AND at least one component in the
         # Component Editor before editing is allowed.
         self._capability_tab = CapabilityTab(
-            parent              = nb,
+            parent              = system_nb,
             colors              = COLORS,
             get_catalog         = lambda: self._catalog,
             get_components      = lambda: self._component_tab._components,
@@ -635,7 +671,7 @@ class OSCALApp(tk.Tk):
             get_library_path    = self.get_library_path,
             get_system_folder   = self.get_system_folder,
         )
-        nb.add(self._capability_tab, text="🔗  Capability Editor")
+        system_nb.add(self._capability_tab, text="🔗  Capability Editor")
 
         # Wire up the component-change notification so the Capability Editor
         # re-evaluates its guard whenever the component list grows or shrinks.
@@ -644,9 +680,9 @@ class OSCALApp(tk.Tk):
             self._capability_tab.on_state_changed
         )
 
-        # ── SSP Editor tab ────────────────────────────────────────────────────
+        # ── SSP Editor tab (System Overview group) ──────────────────────────────
         self._ssp_tab = SSPTab(
-            parent     = nb,
+            parent     = system_nb,
             colors     = COLORS,
             # The SSP tab needs to read the profile when saving
             get_profile= lambda: self._profile,
@@ -669,46 +705,54 @@ class OSCALApp(tk.Tk):
             # system's components/capabilities folders.
             get_system_folder = self.get_system_folder,
         )
-        nb.add(self._ssp_tab, text="🛡  SSP Editor")
+        system_nb.add(self._ssp_tab, text="🛡  SSP Editor")
 
-        # ── Assessment Plan Editor tab ────────────────────────────────────────
+        # ── Assessment Plan Editor tab (Audit group) ────────────────────────────
         self._ap_tab = APTab(
-            parent            = nb,
+            parent            = audit_nb,
             colors            = COLORS,
             set_status        = lambda msg: self._status_lbl.config(text=msg),
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
             get_profile       = lambda: self._profile,
         )
-        nb.add(self._ap_tab, text="📝  Assessment Plan")
+        audit_nb.add(self._ap_tab, text="📝  Assessment Plan")
 
-        # ── Assessment Results Editor tab ─────────────────────────────────────
+        # ── Assessment Results Editor tab (Audit group) ─────────────────────────
         # Must be created before POAMTab so get_poam_tab can reference it,
         # but POAMTab must exist first for the lambda to resolve at call time.
-        # We create POAMTab first (not yet added to nb), then ARTab, then add
-        # POAMTab to nb last so the tab order is AP → AR → POA&M.
+        # We create POAMTab first (not yet added to audit_nb), then ARTab,
+        # then add POAMTab last so the tab order is AP → AR → POA&M.
         self._poam_tab = POAMTab(
-            parent     = nb,
+            parent     = audit_nb,
             colors     = COLORS,
             set_status = lambda msg: self._status_lbl.config(text=msg),
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
         )
 
         self._ar_tab = ARTab(
-            parent            = nb,
+            parent            = audit_nb,
             colors            = COLORS,
             set_status        = lambda msg: self._status_lbl.config(text=msg),
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
             # Lets the AR tab push findings directly into the POA&M editor
             get_poam_tab      = lambda: self._poam_tab,
         )
-        nb.add(self._ar_tab, text="🔍  Assessment Results")
+        audit_nb.add(self._ar_tab, text="🔍  Assessment Results")
 
-        # ── POA&M Editor tab ─────────────────────────────────────────────────
-        nb.add(self._poam_tab, text="📋  POA&M Editor")
+        # ── POA&M Editor tab (Audit group) ──────────────────────────────────────
+        audit_nb.add(self._poam_tab, text="📋  POA&M Editor")
 
-        # ── Authorization Dashboard tab ───────────────────────────────────────
+        # ── Group tabs go into the outer Notebook, between Workspace and
+        # Dashboard ──────────────────────────────────────────────────────────
+        nb.add(data_nb,   text="🗂  Data")
+        nb.add(system_nb, text="⚙  System Overview")
+        nb.add(audit_nb,  text="🔍  Audit")
+
+        # ── Authorization Dashboard tab (top-level) ─────────────────────────────
         # Constructed last so all tab lambdas resolve, then added at the end
-        # so it appears as the FAR RIGHT tab, after POA&M Editor.
+        # so it appears as the FAR RIGHT tab. Stays top-level (not inside any
+        # group) since it reads across SSP/AP/AR/POA&M and isn't specific to
+        # any one of them.
         self._dashboard_tab = DashboardTab(
             parent       = nb,
             colors       = COLORS,
@@ -719,27 +763,7 @@ class OSCALApp(tk.Tk):
         )
         nb.add(self._dashboard_tab, text="📊  Dashboard")
 
-        # ── Data Sources tab ───────────────────────────────────────────────────
-        # Inserted at index 0 (before the Workspace insert below pushes it to
-        # index 1), so it lands between Workspace and Catalog Viewer.
-        # Browses the Library's catalogs/profiles subfolders and is now the
-        # only way to open/clear a catalog or profile — see data_sources_tab.py
-        # and oscal_user_toolkit_design_document.md §10.13/10.14.
-        self._data_sources_tab = DataSourcesTab(
-            parent            = nb,
-            colors            = COLORS,
-            get_library_path  = self.get_library_path,
-            get_catalog       = lambda: self._catalog,
-            get_profile       = lambda: self._profile,
-            open_catalog      = self._open_catalog,
-            open_profile      = self._open_profile,
-            clear_profile     = self._clear_profile,
-            set_status        = lambda msg: self._status_lbl.config(text=msg),
-            get_resolver      = self.get_resolver,
-        )
-        nb.insert(0, self._data_sources_tab, text="📚  Data Sources")
-
-        # ── Workspace tab ──────────────────────────────────────────────────────
+        # ── Workspace tab (top-level) ────────────────────────────────────────────
         # Inserted at index 0 so it appears first and is the tab shown when
         # the application starts. Provides Open/Save Workspace buttons plus
         # the static per-tab reference cards (formerly the Welcome tab).

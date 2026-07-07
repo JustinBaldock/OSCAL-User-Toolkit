@@ -45,6 +45,7 @@ from pathlib import Path
 
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, get_source_href, get_profile_controls)
+from .tab_utils import is_tab_active
 
 # =============================================================================
 # CONSTANTS — Allowed values from the OSCAL Component schema
@@ -664,13 +665,12 @@ class ComponentTab(tk.Frame):
 
         bind_all means this fires regardless of which tab is visible, so we
         check whether THIS tab is the currently selected one before scrolling.
-        Comparing nb.select() against str(self) is resilient to tab reordering
-        — unlike hardcoding a tab index number which silently breaks if tabs
-        are ever added, removed, or reordered.
+        is_tab_active() walks up through any nested Notebook grouping (see
+        app.py's Data/System Overview/Audit tabs), not just the immediate
+        parent, so this stays correct regardless of how deeply nested.
         """
         try:
-            nb = self.master
-            if hasattr(nb, "select") and nb.select() == str(self):
+            if is_tab_active(self):
                 self._detail_canvas.yview_scroll(
                     int(-1 * (event.delta / 120)), "units"
                 )
