@@ -68,6 +68,43 @@ Roles referenced by stories below. Add to this list as new personas come up.
 
 ---
 
+## Assessment Results & Plan of Action and Milestones (POA&M)
+
+### US-6: Open and read assessment results
+
+**As a** System Owner,
+**I want to** open an Assessment Results file and read its findings and observations,
+**so that** I know what problems an assessor identified and need to be addressed.
+
+**Acceptance criteria:**
+- Can open an existing Assessment Results (`.json`) file.
+- Findings, observations, and risks are readable in the Assessment Results tab, not just raw JSON.
+- **Status: implemented.** `ar_tab.py` already supports opening and displaying Assessment Results files.
+
+### US-7: Create a POA&M in response to an assessment result
+
+**As a** System Owner,
+**I want to** create a Plan of Action and Milestones (POA&M) that responds to findings from an Assessment Result,
+**so that** I have a documented remediation plan for each identified problem, tied back to the finding it addresses.
+
+**Acceptance criteria:**
+- Can create POA&M items (weaknesses/risks, remediation milestones, target dates) in the POA&M Editor.
+- Each POA&M item can reference the assessment finding/observation it responds to.
+- **Status: partially implemented.** `poam_tab.py` supports creating and editing POA&M items and saving/opening POA&M JSON, but there is no current linkage step that lets a user open an Assessment Result and generate or cross-reference POA&M items directly from its findings — POA&M items are created independently today.
+
+### US-8: Provide a POA&M to a system auditor to show remediation progress
+
+**As a** System Owner,
+**I want to** export my POA&M as both a Word document and OSCAL JSON,
+**so that** I can give a system auditor evidence of progress fixing identified problems, in a form they can read (docx) and a form other tools can validate/ingest (JSON).
+
+**Acceptance criteria:**
+- Can save the POA&M as OSCAL-conformant JSON that validates against the bundled OSCAL 1.2.2 schema.
+- Can export the POA&M as a `.docx` file that reads cleanly for a human auditor.
+- **Status: partially implemented.** POA&M JSON save/open exists (`poam_tab.py`), but there is no `build_poam_docx()` equivalent to `build_ssp_docx()` yet — POA&M docx export does not exist.
+
+---
+
 ## Application Preferences & Session Continuity
 
 ### US-4: Save and reopen a workspace, including its theme
