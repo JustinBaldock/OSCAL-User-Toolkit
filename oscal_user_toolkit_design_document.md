@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.2  
+**Version:** 3.3  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -873,13 +873,21 @@ Because `data-flow.description` is the field any plain OSCAL consumer will actua
 
 Large organisations maintain a shared library of reusable components/capabilities (and eventually catalogs/profiles) at an org level, separate from any one system's SSP. Rather than have every editor tab reach into that shared library directly (which risks two systems silently sharing and mutating the same file), the design copies a library item into the current system's own folder at import time, and every SSP-side tool only ever reads/writes that copy — never the library source. This mirrors, and is a direct generalisation of, the "independent editable copy" behaviour `ssp_tab.py`'s older `_import_component_file` already had for one-off component-definition imports.
 
-**Where the library path lives:** a small new module, `settings.py`, persists the configured library folder in `~/.oscal_user_toolkit/settings.json` — outside any project/workspace file, since it's a per-installation preference (which library this machine points at) rather than OSCAL content. `set_library_path()` also creates the standard `catalogs/`, `profiles/`, `components/`, `capabilities/` subfolders if missing. `OSCALApp` loads this once at startup (`self._library_path = settings.get_library_path()`) and exposes it to other tabs via a `get_library_path()` callback, plus a "📚 Library Folder" toolbar button (`_set_library_folder()`) to change it.
+**Where the library path lives:** a small module, `settings.py`, persists the configured library folder in `settings.json` inside the `oscal_user_toolkit/` package folder itself (`.gitignore`d, since it's machine-specific) — a per-installation preference rather than OSCAL content. `set_library_path()` also creates the standard `catalogs/`, `profiles/`, `components/`, `capabilities/` subfolders if missing. If nothing has been configured yet, `get_library_path()` falls back to `DEFAULT_LIBRARY_PATH` — the repo's own `library/` folder — so the app and Import from Library work out of the box without a manual setup step. `OSCALApp` loads this once at startup (`self._library_path = settings.get_library_path()`) and exposes it to other tabs via a `get_library_path()` callback, plus a "📚 Library Folder" toolbar button (`_set_library_folder()`) to change it. `settings.py` also persists the default light/dark theme (`get_theme()`/`set_theme()`), applied on startup before any widget is built.
 
 **Where "the current system's folder" comes from:** rather than invent a second concept to track, the design reuses the existing workspace manifest path (`self._workspace_path`, already tracked for Save/Open Workspace) — `OSCALApp.get_system_folder()` simply returns that path's parent directory, or `None` if no workspace is active yet. A system's folder is therefore just wherever its workspace JSON lives, which is also the natural place for that workspace's `components/`/`capabilities/` subfolders to sit alongside it.
 
 **The import action itself** (`_import_from_library()` in `component_tab.py` and `capability_tab.py`) requires both a configured library path and an active system folder — it refuses with a clear message if either is missing, rather than silently picking an arbitrary destination. It copies the chosen library file(s) into `<system folder>/components/` (or `.../capabilities/`), skipping any file whose name already exists at the destination so that re-importing never clobbers a copy the user has since edited for this system, then loads the copies into the tab's in-memory list via the existing `load_from_paths()` — the same function already used by "Open Folder", so import behaves identically to opening a folder of files, just with an extra copy step first.
 
 **Scope note:** this stage makes Component Editor and Capability Editor library-aware and gives them a working import-into-system-folder action. It does **not** yet change how the SSP Editor, Assessment Plan, or POA&M editors source their own component/capability lists — those still use their pre-existing mechanisms (`ssp_tab.py`'s own `_import_components_from_files`/`_import_capability_into_ssp`, independent of the system folder). Making those tabs read from the system folder is a separate, not-yet-built stage — see `user_stories.md` US-12 and `todo.md`.
+
+### 10.14 Data Sources tab replaces the toolbar's Open Catalog/Profile buttons
+
+Extending the Library concept (§10.13) to catalogs/profiles meant deciding where "browse the library's catalogs/profiles" should live. Rather than add a second way to open a catalog/profile alongside the existing toolbar buttons, the toolbar's "📂 Open Catalog", "🔖 Open Profile", and "✕ Clear Profile" buttons were removed from `app.py._build_toolbar()` entirely, and `data_sources_tab.py` — previously a "feature coming soon" placeholder — became the single place to open, browse, or clear a catalog/profile.
+
+The tab lists every `.json` file directly under the configured library's `catalogs/` and `profiles/` subfolders (re-scanned on `refresh()`, not cached), alongside a "…  Browse Elsewhere" button per list that falls through to `app.py`'s own file dialog (`_open_catalog()`/`_open_profile()` called with `path=None`) — so a catalog or profile that isn't in the library can still be opened; the library list is a shortcut for the common case, not the only path in. Selecting a library entry and clicking "📂 Load Selected" (or double-clicking) calls the same `_open_catalog(path)`/`_open_profile(path)` methods with the file's path directly.
+
+`app._catalog`/`app._profile` remain the single source of truth, exactly as before — `DataSourcesTab` holds no catalog/profile state of its own. It reflects the current selection via `get_catalog()`/`get_profile()` callbacks, and `OSCALApp` now calls `self._data_sources_tab.refresh()` at the end of `_open_catalog()`, `_open_profile()`, and `_clear_profile()` (alongside the existing `on_catalog_or_profile_changed()`/`on_state_changed()` calls to the Component/Capability tabs), so the tab's "currently loaded" labels and Clear Profile button's enabled state stay correct regardless of which tab triggered the change (including Open Workspace, which calls `_open_catalog`/`_open_profile` with an explicit path).
 
 ---
 
@@ -922,6 +930,16 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.3 (July 2026)
+
+**New features:**
+- **Data Sources tab is now the catalog/profile Library browser** (`data_sources_tab.py`, previously a placeholder): lists the configured library's `catalogs/`/`profiles/` subfolders, loads a selected file, browses elsewhere when needed, and shows/clears the currently loaded catalog/profile.
+- Removed the toolbar's "📂 Open Catalog", "🔖 Open Profile", and "✕ Clear Profile" buttons (`app.py._build_toolbar()`) — the Data Sources tab is now the only way to open or clear a catalog/profile.
+- "📂 Open Catalog"/"🔖 Open Profile" (still used internally, and by the Data Sources tab's "Browse Elsewhere") now default their file dialogs to the library's `catalogs/`/`profiles/` subfolders when those exist.
+
+**Fixes:**
+- `settings.py`'s library path now falls back to the repo's own `library/` folder (`DEFAULT_LIBRARY_PATH`) when nothing has been configured, instead of returning `None` and requiring a manual "Library Folder" click first.
 
 ### Version 3.2 (July 2026)
 

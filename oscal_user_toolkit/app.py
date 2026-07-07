@@ -368,7 +368,6 @@ class OSCALApp(tk.Tk):
             self._apply_catalog_info_labels(self._catalog)
         if self._profile:
             self._apply_profile_info_labels(self._profile)
-            self._clear_profile_btn.config(state="normal")
 
         # ── Rebuild every tab's own widgets in place ────────────────────────────
         # Order doesn't matter — each tab only touches its own children.
@@ -384,14 +383,16 @@ class OSCALApp(tk.Tk):
     def _build_toolbar(self, before=None):
         """
         Create the top toolbar with:
-          - Open Catalog button (purple)
-          - Open Profile button (yellow)
-          - Clear Profile button (disabled until a profile is loaded)
+          - OSCAL version selector
+          - Library Folder button
           - App title label
 
-        The class filter dropdown, search box, and control count have moved
-        into the Catalog Viewer tab (catalog_tab.py) where they belong —
-        they are only relevant when browsing the catalog.
+        Open Catalog/Open Profile/Clear Profile moved into the Data Sources
+        tab (data_sources_tab.py), which now browses the Library's
+        catalogs/profiles subfolders directly — see DataSourcesTab.
+        The class filter dropdown, search box, and control count live in
+        the Catalog Viewer tab (catalog_tab.py) — only relevant when
+        browsing the catalog.
 
         Parameters:
             before - Optional widget to pack this frame immediately above.
@@ -423,32 +424,6 @@ class OSCALApp(tk.Tk):
             font=("Helvetica", 11),
         )
         version_box.pack(side="left", padx=(0, 14), pady=10)
-
-        # ── Left-side buttons ─────────────────────────────────────────────────
-        tk.Button(
-            tb, text="📂  Open Catalog", command=self._open_catalog,
-            bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
-            relief="flat", padx=14, pady=6, cursor="hand2",
-            activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
-        ).pack(side="left", padx=14, pady=10)
-
-        tk.Button(
-            tb, text="🔖  Open Profile", command=self._open_profile,
-            bg=C["YELLOW_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
-            relief="flat", padx=14, pady=6, cursor="hand2",
-            activebackground="#f5c842", activeforeground=C["BUTTON_TEXT"],
-        ).pack(side="left", padx=(0, 8), pady=10)
-
-        # Clear Profile button — stored as an instance variable so we can
-        # enable/disable it when a profile is loaded/cleared.
-        self._clear_profile_btn = tk.Button(
-            tb, text="✕  Clear Profile", command=self._clear_profile,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
-            relief="flat", padx=10, pady=6, cursor="hand2",
-            state="disabled",              # Greyed out until a profile is loaded
-            disabledforeground="#555570",
-        )
-        self._clear_profile_btn.pack(side="left", pady=10)
 
         # Visual separator
         tk.Frame(tb, bg=C["SUBTEXT"], width=1).pack(
@@ -732,11 +707,23 @@ class OSCALApp(tk.Tk):
         )
         nb.add(self._dashboard_tab, text="📊  Dashboard")
 
-        # ── Data Sources tab (placeholder) ────────────────────────────────────
+        # ── Data Sources tab ───────────────────────────────────────────────────
         # Inserted at index 0 (before the Workspace insert below pushes it to
-        # index 1), so it lands between Workspace and Catalog Viewer. No
-        # real functionality yet — see data_sources_tab.py.
-        self._data_sources_tab = DataSourcesTab(parent=nb, colors=COLORS)
+        # index 1), so it lands between Workspace and Catalog Viewer.
+        # Browses the Library's catalogs/profiles subfolders and is now the
+        # only way to open/clear a catalog or profile — see data_sources_tab.py
+        # and oscal_user_toolkit_design_document.md §10.13/10.14.
+        self._data_sources_tab = DataSourcesTab(
+            parent            = nb,
+            colors            = COLORS,
+            get_library_path  = self.get_library_path,
+            get_catalog       = lambda: self._catalog,
+            get_profile       = lambda: self._profile,
+            open_catalog      = self._open_catalog,
+            open_profile      = self._open_profile,
+            clear_profile     = self._clear_profile,
+            set_status        = lambda msg: self._status_lbl.config(text=msg),
+        )
         nb.insert(0, self._data_sources_tab, text="📚  Data Sources")
 
         # ── Workspace tab ──────────────────────────────────────────────────────
@@ -933,7 +920,6 @@ class OSCALApp(tk.Tk):
 
         # ── Reset the profile info card (profile was cleared above) ───────────
         self._reset_profile_card()
-        self._clear_profile_btn.config(state="disabled")
 
         # ── Tell the tabs about the new data ─────────────────────────────────
         # load_controls() hands the full control list to the CatalogTab, which
@@ -943,6 +929,7 @@ class OSCALApp(tk.Tk):
         self._component_tab.on_catalog_or_profile_changed()
         # Notify the capability tab — catalog changed, re-evaluate guard
         self._capability_tab.on_state_changed()
+        self._data_sources_tab.refresh()
 
         self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
         return True
@@ -986,9 +973,8 @@ class OSCALApp(tk.Tk):
             messagebox.showerror("Failed to load profile", str(exc))
             return
 
-        # Store the profile and enable the Clear Profile button
+        # Store the profile
         self._profile = profile
-        self._clear_profile_btn.config(state="normal")
 
         # ── Update the profile info card ──────────────────────────────────────
         self._apply_profile_info_labels(profile)
@@ -997,6 +983,7 @@ class OSCALApp(tk.Tk):
         self._component_tab.on_catalog_or_profile_changed()
         # Profile changed — capability control list may need to update
         self._capability_tab.on_state_changed()
+        self._data_sources_tab.refresh()
 
         # Tell the CatalogTab to filter by the new profile's control IDs.
         # The tab keeps its own class filter and search term unchanged.
@@ -1011,8 +998,6 @@ class OSCALApp(tk.Tk):
         C = COLORS
 
         self._profile = None
-        # Disable the button again (nothing to clear now)
-        self._clear_profile_btn.config(state="disabled")
 
         # Reset the profile info card to its default state
         self._reset_profile_card()
@@ -1021,6 +1006,7 @@ class OSCALApp(tk.Tk):
         self._component_tab.on_catalog_or_profile_changed()
         # Profile cleared — capability control list may need to update
         self._capability_tab.on_state_changed()
+        self._data_sources_tab.refresh()
 
         # Remove the profile filter — pass None so all controls are shown.
         # The tab keeps its own class filter and search term unchanged.

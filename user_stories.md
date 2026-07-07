@@ -42,6 +42,7 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - Can open a catalog file and see its controls in the Catalog Viewer.
 - Can open a profile file and see it filter the catalog down to the applicable control baseline.
 - The loaded catalog/profile drives which controls are selectable elsewhere (Component Editor, Capability Editor, SSP Editor Section 8/9).
+- **Status: implemented — mechanism changed.** Opening/clearing a catalog/profile now happens in the Data Sources tab (`data_sources_tab.py`), which browses the configured Library's `catalogs/`/`profiles/` subfolders and can still browse elsewhere for anything outside the library — the toolbar's old "Open Catalog"/"Open Profile"/"Clear Profile" buttons were removed. Only one catalog and one profile are active at a time, same as before (see `todo.md` §2b for the still-open multi-catalog question).
 
 ---
 
@@ -169,7 +170,7 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - The Assessment Plan can be populated with every component from the referenced SSP.
 - The Assessment Plan can be populated with every capability from the referenced SSP.
 - The Assessment Plan can be populated with every control ID selected for the system, and clearly shows/tracks which of those controls are still outstanding.
-- **Status: partially implemented.** `ap_tab.py` already has "🔄 Refresh from SSP" to pull components from the referenced SSP's file, and "📋 Load IDs from profile" to populate control IDs from the toolbar's loaded profile. There is currently no equivalent capability-coverage step (capabilities aren't referenced anywhere in `ap_tab.py` yet), and "Load IDs from profile" draws from whichever profile happens to be loaded in the toolbar rather than specifically the control set recorded against the referenced SSP itself — worth checking these two sources always agree before treating control coverage as complete.
+- **Status: partially implemented.** `ap_tab.py` already has "🔄 Refresh from SSP" to pull components from the referenced SSP's file, and "📋 Load IDs from profile" to populate control IDs from the app's currently loaded profile (now set via the Data Sources tab). There is currently no equivalent capability-coverage step (capabilities aren't referenced anywhere in `ap_tab.py` yet), and "Load IDs from profile" draws from whichever profile happens to be currently active rather than specifically the control set recorded against the referenced SSP itself — worth checking these two sources always agree before treating control coverage as complete.
 
 ### US-11: Open/save assessment results referencing the assessment plan, with full observations/risks/findings
 
