@@ -879,9 +879,12 @@ class OSCALApp(tk.Tk):
 
         if path is None:
             # Open a file browser dialog. Returns the chosen path, or "" if cancelled.
+            # Defaults to the Library's catalogs/ subfolder, if it exists.
+            catalogs_dir = self._library_path / "catalogs" if self._library_path else None
             path = filedialog.askopenfilename(
                 title="Open OSCAL Catalog",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+                **({"initialdir": str(catalogs_dir)} if catalogs_dir and catalogs_dir.is_dir() else {}),
             )
             if not path:
                 return   # User cancelled — do nothing
@@ -967,9 +970,12 @@ class OSCALApp(tk.Tk):
             return
 
         if path is None:
+            # Defaults to the Library's profiles/ subfolder, if it exists.
+            profiles_dir = self._library_path / "profiles" if self._library_path else None
             path = filedialog.askopenfilename(
                 title="Open OSCAL Profile",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+                **({"initialdir": str(profiles_dir)} if profiles_dir and profiles_dir.is_dir() else {}),
             )
             if not path:
                 return
