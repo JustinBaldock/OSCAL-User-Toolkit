@@ -1,0 +1,713 @@
+{
+  "component-definition": {
+    "uuid": "0628f8b2-21c0-4618-9dcb-fc8fab7bd1bc",
+    "metadata": {
+      "title": "Capability: Virtualisation (VMware)",
+      "last-modified": "2026-07-08T07:36:09Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f3b09383-42cb-4247-a6e5-c7b7340afa82",
+        "type": "hardware",
+        "title": "Network Attached Storage (NAS)",
+        "description": "Enterprise network attached storage providing shared file storage over SMB and NFS protocols for file server workloads, backup target storage, and archive storage. Managed via a web administration interface. Storage volumes are encrypted at rest. Active Directory integration provides Windows Authentication for SMB shares.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Synology / QNAP / NetApp / equivalent"
+          },
+          {
+            "name": "protocols-served",
+            "value": "SMB 3.x (primary), NFS v4 (Linux clients), iSCSI (block storage)"
+          },
+          {
+            "name": "authentication",
+            "value": "Active Directory integration (Windows Authentication for SMB)"
+          },
+          {
+            "name": "encryption",
+            "value": "AES-256 volume encryption at rest"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "e8956109-7ac4-4dbe-9934-964e2fa2a42d",
+            "name": "smb",
+            "title": "SMB — Primary file share access protocol for Windows clients",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "de2bd47e-1c5b-41f5-88bd-bdb9f2983a5e",
+            "name": "nfs",
+            "title": "NFS — File share access for Linux/Unix clients",
+            "port-ranges": [
+              {
+                "start": 2049,
+                "end": 2049,
+                "transport": "TCP"
+              },
+              {
+                "start": 2049,
+                "end": 2049,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "aaffd909-741a-4a4c-ada4-0e41df9fd18c",
+            "name": "iscsi",
+            "title": "iSCSI — Block storage access for servers",
+            "port-ranges": [
+              {
+                "start": 3260,
+                "end": 3260,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2a026f36-d0c7-4eca-9fd6-9125bab1c68d",
+            "name": "https",
+            "title": "HTTPS — Web-based NAS administration interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "10c0bbb9-7039-4142-903e-6b8d85f7ee7f",
+            "name": "ssh",
+            "title": "SSH — Secure CLI management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "a1b6a124-4974-4d06-895e-3f4c1182ee9d",
+            "name": "snmp",
+            "title": "SNMP — NAS monitoring (disk health, capacity, RAID status)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "f61c5db9-6080-458c-bdfd-e2798300dbd7",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "4823658d-c1e7-42ba-974f-eb846fa7cd47",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "030442f6-0889-4e38-aa09-3cd6063032f5",
+            "name": "ldap",
+            "title": "LDAP — Active Directory integration for Windows Authentication",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "e8220ac8-29ec-4a52-ba45-9107814d6b08",
+            "name": "ldaps",
+            "title": "LDAPS — Secure LDAP for Active Directory integration",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5307de11-74fa-47a3-8bb4-479cd7e36f92",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for Network Attached Storage (NAS).",
+            "implemented-requirements": [
+              {
+                "uuid": "24c81260-1a86-4b04-af15-5ada5ef7df2c",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the NAS, covering: disabling unused protocols (FTP, Telnet, AFP, rsync where not required), disabling the default admin account and creating named administrator accounts, enabling HTTPS-only management (HTTP disabled), enabling SMB signing (SMB 3.x), enabling NFS Kerberos authentication where supported, configuring share-level and filesystem-level access controls (ACLs per share), and keeping NAS firmware current with vendor security updates."
+              },
+              {
+                "uuid": "c68a3bc2-da8e-4432-b66d-c713ceb7499b",
+                "control-id": "ism-0459",
+                "description": "NAS storage volumes containing sensitive or classified data are encrypted at rest using AES-256 volume encryption. Encryption keys are managed securely (not stored in plaintext on the NAS). Encryption status of all volumes is verified and reported in the monthly security review."
+              },
+              {
+                "uuid": "92319db8-5a0f-4fb7-bf31-5e931699aae1",
+                "control-id": "ism-1511",
+                "description": "Backups of NAS configuration and critical stored data are performed and retained per business continuity requirements. NAS snapshot schedules provide point-in-time recovery. Backup jobs and snapshot jobs are monitored for failure."
+              },
+              {
+                "uuid": "9d0b6c2e-75be-4b17-9d56-5aa8ca6a67f1",
+                "control-id": "ism-1537",
+                "description": "Security-relevant NAS events (authentication failures, share access by privileged accounts, configuration changes, failed login attempts, volume mount/unmount events) are centrally logged and forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "bcd3ae40-12df-4596-888e-97a5243cefb1",
+        "type": "hardware",
+        "title": "SAN Storage Array",
+        "description": "Enterprise block-level storage array providing shared storage for virtualisation hosts and database servers over Fibre Channel and iSCSI. Configured with RAID-6 disk groups, thin provisioning, storage-based snapshots, and asynchronous replication to a secondary site for disaster recovery. Managed via a dedicated management LAN, isolated from production data paths.",
+        "purpose": "Provide highly available, high-performance shared block storage for the virtualisation and database tiers, with built-in snapshot and replication capability to support backup and disaster recovery objectives.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Dell EMC / NetApp / Pure Storage / equivalent"
+          },
+          {
+            "name": "protocols-served",
+            "value": "Fibre Channel (primary), iSCSI (secondary hosts)"
+          },
+          {
+            "name": "raid-configuration",
+            "value": "RAID-6 disk groups with hot spares"
+          },
+          {
+            "name": "replication",
+            "value": "Asynchronous replication to secondary site (DR)"
+          },
+          {
+            "name": "encryption",
+            "value": "Controller-based AES-256 encryption at rest (self-encrypting drives)"
+          },
+          {
+            "name": "management-network",
+            "value": "Dedicated out-of-band management VLAN, isolated from data paths"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "c6fcf1f4-e55c-455d-af27-2abaea4d0e90",
+            "name": "https",
+            "title": "HTTPS — Web-based storage management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "d061152a-e87a-4421-bcb5-b97f9d8b58c7",
+            "name": "ssh",
+            "title": "SSH — CLI management and scripted administration",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "a3fff1fe-a5b9-49a6-b0ea-22e630a9dc07",
+            "name": "snmp",
+            "title": "SNMP — Capacity, health, and performance monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "fa38bb47-ee9c-4e47-8165-fda762198fe2",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "02c1d2b0-05b9-489b-ae62-9209e9cf25c5",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "b213052e-1f10-4e3f-8596-a3afb6b8265e",
+            "name": "ldaps",
+            "title": "LDAPS — Active Directory integration for management authentication",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "7f2a06ab-27cd-441c-bb18-4ebea18f0e0e",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for SAN Storage Array.",
+            "implemented-requirements": [
+              {
+                "uuid": "7b6a196f-0460-4662-a1f7-52cf2ccb250e",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the SAN storage array controllers, covering: disabling unused management protocols (Telnet, HTTP, FTP), restricting the management interface to the dedicated management VLAN only, enabling role-based access control for named administrator accounts, and keeping array controller firmware current with vendor security releases."
+              },
+              {
+                "uuid": "67b681b3-66b5-4b5d-a9a7-3aba3595b9a8",
+                "control-id": "ism-0459",
+                "description": "All disk groups on the SAN storage array are encrypted at rest using controller-based AES-256 encryption via self-encrypting drives (SEDs). Encryption keys are managed through the array's built-in key manager or an external KMIP-compliant key management server, never stored in plaintext on the array."
+              },
+              {
+                "uuid": "efdd3dfc-8ba5-4a02-a06b-5cc57ad84cb0",
+                "control-id": "ism-1511",
+                "description": "Storage-based snapshots of critical volumes are taken on a scheduled basis per business continuity requirements, and asynchronous replication to the secondary site provides an offsite recoverable copy. Snapshot and replication job status is monitored and failures are alerted to the storage team."
+              },
+              {
+                "uuid": "1dc69826-7652-49d8-92b4-4f63586cef68",
+                "control-id": "ism-1405",
+                "description": "Security-relevant array events (authentication failures, configuration changes, controller failover, RAID degradation, replication failures) are centrally logged and forwarded to the SIEM via syslog."
+              },
+              {
+                "uuid": "c062aebf-b4ba-4184-82b6-1248c983efb8",
+                "control-id": "ism-0445",
+                "description": "Storage administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for SAN array administration. Role-based access control on the array restricts unprivileged operator accounts to read-only monitoring."
+              },
+              {
+                "uuid": "64332cbc-f714-4493-9f42-b69538bbc54a",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the SAN array's management interface, enforced via integration with the organisation's identity provider or a jump host requiring MFA."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "1b174cea-39ed-4906-87b1-d940f9d8e604",
+        "type": "operating-system",
+        "title": "VMware ESXi Hypervisor",
+        "description": "VMware ESXi 8.x bare-metal hypervisor providing the virtualisation platform for organisation server workloads. ESXi hosts are managed via VMware vCenter Server. Virtual machines run on dedicated ESXi hosts with separate resource pools for production, development, and management workloads. ESXi management is restricted to the dedicated management network.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Broadcom / VMware"
+          },
+          {
+            "name": "version",
+            "value": "VMware ESXi 8.x (latest patch release)"
+          },
+          {
+            "name": "management",
+            "value": "VMware vCenter Server"
+          },
+          {
+            "name": "security-features",
+            "value": "Secure Boot, TPM 2.0, ESXi lockdown mode, vSphere Trust Authority"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "0ded549d-a47f-4323-b43d-c8f208e41a7a",
+            "name": "https",
+            "title": "HTTPS — vSphere Client (web UI via vCenter), ESXi Host Client",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "45a45e11-49a7-40de-9319-27887506730a",
+            "name": "vmware-vsphere",
+            "title": "vSphere API — vCenter-to-ESXi management communication",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "45a4c060-96a3-4cb1-91c0-e0b254286fb9",
+            "name": "ssh",
+            "title": "SSH — ESXi SSH shell (disabled by default; enabled only during maintenance)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "47c5c82a-eaf7-4388-b190-7bc71e3b62b6",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation (via vCenter or direct NTP)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "cb193197-8a7e-40eb-83a2-0ce3b6e4f293",
+            "name": "snmp",
+            "title": "SNMP — ESXi host monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "be68d43a-e847-47d5-893f-b1a0faa0e8ae",
+            "name": "syslog",
+            "title": "Syslog — ESXi security and audit event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "d1788094-2fc2-4929-88b2-ab829203421b",
+            "name": "vmotion",
+            "title": "vMotion — Live VM migration between ESXi hosts",
+            "port-ranges": [
+              {
+                "start": 8000,
+                "end": 8000,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "ec9bdac1-0c84-4778-aadc-7eb7a89d9d0a",
+            "name": "vsphere-replication",
+            "title": "vSphere Replication — VM replication for DR",
+            "port-ranges": [
+              {
+                "start": 31031,
+                "end": 31031,
+                "transport": "TCP"
+              },
+              {
+                "start": 44046,
+                "end": 44046,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "cff2eaf0-9ac9-4894-ab96-6dab643bfa8b",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for VMware ESXi Hypervisor.",
+            "implemented-requirements": [
+              {
+                "uuid": "20d72dff-8eca-4751-8f38-f13c8fa34771",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for VMware ESXi is developed and maintained based on the VMware vSphere Security Configuration Guide and CIS Benchmark for VMware ESXi. Key hardening items: ESXi Lockdown Mode enabled (Normal or Strict); SSH and ESXi Shell disabled by default; DCUI access restricted to approved local accounts; Acceptance Level for VIBs set to PartnerSupported or higher; Secure Boot enabled; TPM 2.0 attestation enabled; iSCSI CHAP authentication configured; NTP synchronisation enforced; logging to remote syslog server configured; and default self-signed certificate replaced with an enterprise CA-issued certificate."
+              },
+              {
+                "uuid": "239be46f-0429-40ed-b470-6c54fae2271d",
+                "control-id": "ism-1175",
+                "description": "ESXi administrator accounts (vCenter administrator, ESXi root) are not used for general internet access or email. vCenter and ESXi administration is performed from a dedicated management network segment, accessible only via jump server. Direct access to ESXi management interfaces from end-user networks is blocked at the firewall."
+              },
+              {
+                "uuid": "c61ff197-34f7-4a15-96cb-b911de413007",
+                "control-id": "ism-1509",
+                "description": "ESXi and vCenter privileged access events (administrator login, VM power operations, configuration changes, role assignments) are captured in the vCenter event log and forwarded via Syslog to the SIEM. ESXi host authentication events are also forwarded to the SIEM via the ESXi syslog target configuration."
+              },
+              {
+                "uuid": "fb6a2432-ae83-4d70-9ee7-690e8cc36c08",
+                "control-id": "ism-0383",
+                "description": "The ESXi root account password is changed from any default or installation value and is managed in the organisation's PAM vault with a unique, randomly-generated high-entropy password. The root account is not used for routine administration — named vCenter administrator accounts are used for day-to-day ESXi management via vCenter. ESXi Lockdown Mode prevents direct root login except via DCUI."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "9591a263-753d-4edf-94ee-523568b9b5c5",
+        "name": "Virtualisation (VMware)",
+        "description": "Provides server virtualisation using VMware ESXi hypervisor hosts, backed by shared block and file storage. ESXi hosts consume block storage from the SAN Storage Array over Fibre Channel/iSCSI for virtual machine datastores, and use the NAS for ISO/template repositories, VM export/backup staging, and content library storage. Together these components provide a resilient, shared-storage virtualisation platform for consolidating server workloads.",
+        "incorporates-components": [
+          {
+            "component-uuid": "1b174cea-39ed-4906-87b1-d940f9d8e604",
+            "description": "Hypervisor hosts providing compute virtualisation for the capability."
+          },
+          {
+            "component-uuid": "bcd3ae40-12df-4596-888e-97a5243cefb1",
+            "description": "Shared block storage (Fibre Channel/iSCSI) presenting VM datastores to the ESXi hosts."
+          },
+          {
+            "component-uuid": "f3b09383-42cb-4247-a6e5-c7b7340afa82",
+            "description": "Shared file storage for ISO/template repositories, content library, and VM export/backup staging."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "dce5b708-28ff-44c1-b2a5-7f9ee871fd2e",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for capability: Virtualisation (VMware). Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "3adb4176-5bce-4c6c-b55a-36ca9d57e22d",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for VMware ESXi is developed and maintained based on the VMware vSphere Security Configuration Guide and CIS Benchmark for VMware ESXi. Key hardening items: ESXi Lockdown Mode enabled (Normal or Strict); SSH and ESXi Shell disabled by default; DCUI access restricted to approved local accounts; Acceptance Level for VIBs set to PartnerSupported or higher; Secure Boot enabled; TPM 2.0 attestation enabled; iSCSI CHAP authentication configured; NTP synchronisation enforced; logging to remote syslog server configured; and default self-signed certificate replaced with an enterprise CA-issued certificate.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b174cea-39ed-4906-87b1-d940f9d8e604"
+                  }
+                ]
+              },
+              {
+                "uuid": "5202a95e-1673-499d-b261-7020fe36f85f",
+                "control-id": "ism-1175",
+                "description": "ESXi administrator accounts (vCenter administrator, ESXi root) are not used for general internet access or email. vCenter and ESXi administration is performed from a dedicated management network segment, accessible only via jump server. Direct access to ESXi management interfaces from end-user networks is blocked at the firewall.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b174cea-39ed-4906-87b1-d940f9d8e604"
+                  }
+                ]
+              },
+              {
+                "uuid": "ac541209-d14c-44a6-86e2-de686fbf14f8",
+                "control-id": "ism-1509",
+                "description": "ESXi and vCenter privileged access events (administrator login, VM power operations, configuration changes, role assignments) are captured in the vCenter event log and forwarded via Syslog to the SIEM. ESXi host authentication events are also forwarded to the SIEM via the ESXi syslog target configuration.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b174cea-39ed-4906-87b1-d940f9d8e604"
+                  }
+                ]
+              },
+              {
+                "uuid": "957f5227-f67c-4d3d-9c7b-2bae2bf0868c",
+                "control-id": "ism-0383",
+                "description": "The ESXi root account password is changed from any default or installation value and is managed in the organisation's PAM vault with a unique, randomly-generated high-entropy password. The root account is not used for routine administration — named vCenter administrator accounts are used for day-to-day ESXi management via vCenter. ESXi Lockdown Mode prevents direct root login except via DCUI.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b174cea-39ed-4906-87b1-d940f9d8e604"
+                  }
+                ]
+              },
+              {
+                "uuid": "088cdc79-a576-4dba-b816-22a4166eb7c1",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the SAN storage array controllers, covering: disabling unused management protocols (Telnet, HTTP, FTP), restricting the management interface to the dedicated management VLAN only, enabling role-based access control for named administrator accounts, and keeping array controller firmware current with vendor security releases.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "707f57a9-4c25-4c51-9c8c-efdd4e1c8ef9",
+                "control-id": "ism-0459",
+                "description": "All disk groups on the SAN storage array are encrypted at rest using controller-based AES-256 encryption via self-encrypting drives (SEDs). Encryption keys are managed through the array's built-in key manager or an external KMIP-compliant key management server, never stored in plaintext on the array.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "f8a2ddd7-e16a-4ccd-b5ef-76cbd3052cdb",
+                "control-id": "ism-1511",
+                "description": "Storage-based snapshots of critical volumes are taken on a scheduled basis per business continuity requirements, and asynchronous replication to the secondary site provides an offsite recoverable copy. Snapshot and replication job status is monitored and failures are alerted to the storage team.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "f889c64e-a02a-4573-ae20-441a649e2c82",
+                "control-id": "ism-1405",
+                "description": "Security-relevant array events (authentication failures, configuration changes, controller failover, RAID degradation, replication failures) are centrally logged and forwarded to the SIEM via syslog.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "6fb4fe3d-277a-499a-9244-0c561eed428d",
+                "control-id": "ism-0445",
+                "description": "Storage administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for SAN array administration. Role-based access control on the array restricts unprivileged operator accounts to read-only monitoring.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "5c1a57f8-47e5-435d-9317-813fbcdc7818",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the SAN array's management interface, enforced via integration with the organisation's identity provider or a jump host requiring MFA.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "fdeac2c7-9f58-41f0-9a85-25f84a99e3ca",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the NAS, covering: disabling unused protocols (FTP, Telnet, AFP, rsync where not required), disabling the default admin account and creating named administrator accounts, enabling HTTPS-only management (HTTP disabled), enabling SMB signing (SMB 3.x), enabling NFS Kerberos authentication where supported, configuring share-level and filesystem-level access controls (ACLs per share), and keeping NAS firmware current with vendor security updates.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              },
+              {
+                "uuid": "5be99fe0-1422-46e9-bbbd-8513a03d1f50",
+                "control-id": "ism-0459",
+                "description": "NAS storage volumes containing sensitive or classified data are encrypted at rest using AES-256 volume encryption. Encryption keys are managed securely (not stored in plaintext on the NAS). Encryption status of all volumes is verified and reported in the monthly security review.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              },
+              {
+                "uuid": "c83a33d9-3813-419b-b4ac-cee87df68554",
+                "control-id": "ism-1511",
+                "description": "Backups of NAS configuration and critical stored data are performed and retained per business continuity requirements. NAS snapshot schedules provide point-in-time recovery. Backup jobs and snapshot jobs are monitored for failure.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              },
+              {
+                "uuid": "c931d483-aa0d-4702-ad6e-ceb5117042fa",
+                "control-id": "ism-1537",
+                "description": "Security-relevant NAS events (authentication failures, share access by privileged accounts, configuration changes, failed login attempts, volume mount/unmount events) are centrally logged and forwarded to the SIEM.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "remarks": "Storage sizing, RAID/replication configuration, and datastore layout are documented separately in the system's Network Architecture and asset register."
+      }
+    ]
+  }
+}

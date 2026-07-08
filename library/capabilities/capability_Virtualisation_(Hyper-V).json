@@ -1,0 +1,773 @@
+{
+  "component-definition": {
+    "uuid": "28541347-3ad9-4491-8545-f219e664bc5a",
+    "metadata": {
+      "title": "Capability: Virtualisation (Hyper-V)",
+      "last-modified": "2026-07-08T07:36:09Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f3b09383-42cb-4247-a6e5-c7b7340afa82",
+        "type": "hardware",
+        "title": "Network Attached Storage (NAS)",
+        "description": "Enterprise network attached storage providing shared file storage over SMB and NFS protocols for file server workloads, backup target storage, and archive storage. Managed via a web administration interface. Storage volumes are encrypted at rest. Active Directory integration provides Windows Authentication for SMB shares.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Synology / QNAP / NetApp / equivalent"
+          },
+          {
+            "name": "protocols-served",
+            "value": "SMB 3.x (primary), NFS v4 (Linux clients), iSCSI (block storage)"
+          },
+          {
+            "name": "authentication",
+            "value": "Active Directory integration (Windows Authentication for SMB)"
+          },
+          {
+            "name": "encryption",
+            "value": "AES-256 volume encryption at rest"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "2f1a12b4-705e-491c-9e09-edfd09bf7f63",
+            "name": "smb",
+            "title": "SMB — Primary file share access protocol for Windows clients",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "46562179-438e-43d2-b74a-fcc48ea9a25d",
+            "name": "nfs",
+            "title": "NFS — File share access for Linux/Unix clients",
+            "port-ranges": [
+              {
+                "start": 2049,
+                "end": 2049,
+                "transport": "TCP"
+              },
+              {
+                "start": 2049,
+                "end": 2049,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "37047af3-6f5b-47e5-a10d-16d0725e502d",
+            "name": "iscsi",
+            "title": "iSCSI — Block storage access for servers",
+            "port-ranges": [
+              {
+                "start": 3260,
+                "end": 3260,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "9c17da24-5e9a-4366-b685-35cc25e4fd1c",
+            "name": "https",
+            "title": "HTTPS — Web-based NAS administration interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "bf62f280-3b3a-4a0f-8f82-f143a0702f04",
+            "name": "ssh",
+            "title": "SSH — Secure CLI management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f9f0b33e-b283-402c-8247-3d8fa82fa231",
+            "name": "snmp",
+            "title": "SNMP — NAS monitoring (disk health, capacity, RAID status)",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "a927df77-48d0-49b4-a5d5-48b15405dc6a",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "fddbfdf9-b775-4dc7-9470-9c8226bb0353",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "6ed7a559-d85e-4825-b64a-5ff24e4d4432",
+            "name": "ldap",
+            "title": "LDAP — Active Directory integration for Windows Authentication",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "86e01fe8-cedd-43ce-878a-fa865fd0b8fa",
+            "name": "ldaps",
+            "title": "LDAPS — Secure LDAP for Active Directory integration",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "9f59d53d-ecfe-45d4-b5f2-b18d92b56997",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for Network Attached Storage (NAS).",
+            "implemented-requirements": [
+              {
+                "uuid": "5e824802-e465-4642-8edc-451c206a1d44",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the NAS, covering: disabling unused protocols (FTP, Telnet, AFP, rsync where not required), disabling the default admin account and creating named administrator accounts, enabling HTTPS-only management (HTTP disabled), enabling SMB signing (SMB 3.x), enabling NFS Kerberos authentication where supported, configuring share-level and filesystem-level access controls (ACLs per share), and keeping NAS firmware current with vendor security updates."
+              },
+              {
+                "uuid": "3fbc3e33-ad7a-45d7-96a9-902d5c284507",
+                "control-id": "ism-0459",
+                "description": "NAS storage volumes containing sensitive or classified data are encrypted at rest using AES-256 volume encryption. Encryption keys are managed securely (not stored in plaintext on the NAS). Encryption status of all volumes is verified and reported in the monthly security review."
+              },
+              {
+                "uuid": "687375bf-9ec9-4f83-8a18-2cefd8d9d6b2",
+                "control-id": "ism-1511",
+                "description": "Backups of NAS configuration and critical stored data are performed and retained per business continuity requirements. NAS snapshot schedules provide point-in-time recovery. Backup jobs and snapshot jobs are monitored for failure."
+              },
+              {
+                "uuid": "f85a29f4-9446-4120-ac0a-249c1509546f",
+                "control-id": "ism-1537",
+                "description": "Security-relevant NAS events (authentication failures, share access by privileged accounts, configuration changes, failed login attempts, volume mount/unmount events) are centrally logged and forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "bcd3ae40-12df-4596-888e-97a5243cefb1",
+        "type": "hardware",
+        "title": "SAN Storage Array",
+        "description": "Enterprise block-level storage array providing shared storage for virtualisation hosts and database servers over Fibre Channel and iSCSI. Configured with RAID-6 disk groups, thin provisioning, storage-based snapshots, and asynchronous replication to a secondary site for disaster recovery. Managed via a dedicated management LAN, isolated from production data paths.",
+        "purpose": "Provide highly available, high-performance shared block storage for the virtualisation and database tiers, with built-in snapshot and replication capability to support backup and disaster recovery objectives.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Dell EMC / NetApp / Pure Storage / equivalent"
+          },
+          {
+            "name": "protocols-served",
+            "value": "Fibre Channel (primary), iSCSI (secondary hosts)"
+          },
+          {
+            "name": "raid-configuration",
+            "value": "RAID-6 disk groups with hot spares"
+          },
+          {
+            "name": "replication",
+            "value": "Asynchronous replication to secondary site (DR)"
+          },
+          {
+            "name": "encryption",
+            "value": "Controller-based AES-256 encryption at rest (self-encrypting drives)"
+          },
+          {
+            "name": "management-network",
+            "value": "Dedicated out-of-band management VLAN, isolated from data paths"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "d40ec756-b938-4ffa-893d-7140beda5378",
+            "name": "https",
+            "title": "HTTPS — Web-based storage management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "8c9ac970-d39c-4fa0-af2a-e920e5c8a262",
+            "name": "ssh",
+            "title": "SSH — CLI management and scripted administration",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "53341328-4d0e-4914-bd3d-21a85c985ba8",
+            "name": "snmp",
+            "title": "SNMP — Capacity, health, and performance monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "a904b616-566b-4f09-ac74-753653e0a671",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "e76f4fa1-ecee-4cb5-83e2-240350160931",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "38c02513-27bf-441a-a79f-7db5da90f5c5",
+            "name": "ldaps",
+            "title": "LDAPS — Active Directory integration for management authentication",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "8d822239-ce52-4fb0-b952-c204dcaa66cb",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for SAN Storage Array.",
+            "implemented-requirements": [
+              {
+                "uuid": "84ce3260-1122-4d55-8a19-2793f5b9b418",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the SAN storage array controllers, covering: disabling unused management protocols (Telnet, HTTP, FTP), restricting the management interface to the dedicated management VLAN only, enabling role-based access control for named administrator accounts, and keeping array controller firmware current with vendor security releases."
+              },
+              {
+                "uuid": "f8ace677-71b0-471a-ac67-a88398acb8db",
+                "control-id": "ism-0459",
+                "description": "All disk groups on the SAN storage array are encrypted at rest using controller-based AES-256 encryption via self-encrypting drives (SEDs). Encryption keys are managed through the array's built-in key manager or an external KMIP-compliant key management server, never stored in plaintext on the array."
+              },
+              {
+                "uuid": "08e72664-74cf-488f-8709-7569a24d37b4",
+                "control-id": "ism-1511",
+                "description": "Storage-based snapshots of critical volumes are taken on a scheduled basis per business continuity requirements, and asynchronous replication to the secondary site provides an offsite recoverable copy. Snapshot and replication job status is monitored and failures are alerted to the storage team."
+              },
+              {
+                "uuid": "4cac4ade-be06-45f1-80bf-e9665b120d70",
+                "control-id": "ism-1405",
+                "description": "Security-relevant array events (authentication failures, configuration changes, controller failover, RAID degradation, replication failures) are centrally logged and forwarded to the SIEM via syslog."
+              },
+              {
+                "uuid": "e4488643-1d7e-446b-90de-931a43495445",
+                "control-id": "ism-0445",
+                "description": "Storage administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for SAN array administration. Role-based access control on the array restricts unprivileged operator accounts to read-only monitoring."
+              },
+              {
+                "uuid": "3b900180-75b3-4f4e-b0fa-511efec70bb2",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the SAN array's management interface, enforced via integration with the organisation's identity provider or a jump host requiring MFA."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "576eb7c1-1cac-490a-b10a-4f123ba51125",
+        "type": "operating-system",
+        "title": "Microsoft Hyper-V",
+        "description": "Microsoft Hyper-V, deployed as either the Hyper-V role on Windows Server (with a hardened Server Core install) or as the standalone Hyper-V Server, providing bare-metal virtualisation for the organisation's server workloads. Managed centrally via Windows Admin Center or System Center Virtual Machine Manager (SCVMM). Hosts are joined to a dedicated management domain/OU with Credential Guard and Secure Boot enabled, and virtual machines are configured as Generation 2 with vTPM for BitLocker support inside guest operating systems.",
+        "purpose": "Provide bare-metal server virtualisation for consolidating organisational server workloads, integrated with the existing Windows Server and Active Directory management estate.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "version",
+            "value": "Windows Server 2022 Hyper-V role / Hyper-V Server (latest cumulative update)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Hyper-V role on hardened Windows Server Core, or standalone Hyper-V Server"
+          },
+          {
+            "name": "management",
+            "value": "Windows Admin Center / System Center Virtual Machine Manager (SCVMM)"
+          },
+          {
+            "name": "security-features",
+            "value": "Secure Boot, vTPM per VM, Shielded VMs (Host Guardian Service), Credential Guard on hosts"
+          },
+          {
+            "name": "clustering",
+            "value": "Failover Clustering with Cluster Shared Volumes (CSV) for high availability"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "ead7df72-5c8b-47b8-b425-d7333bb818ae",
+            "name": "https",
+            "title": "HTTPS — Windows Admin Center / SCVMM management console",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "fd4066a2-7f4a-47fc-9299-8767ec4c34df",
+            "name": "wsman",
+            "title": "WS-Management — Hyper-V PowerShell remoting and WAC management",
+            "port-ranges": [
+              {
+                "start": 5985,
+                "end": 5985,
+                "transport": "TCP"
+              },
+              {
+                "start": 5986,
+                "end": 5986,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "13bc881e-0321-431c-8acb-7afea17c3a08",
+            "name": "smb",
+            "title": "SMB — Cluster Shared Volumes and live migration traffic",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "05eb4c61-62f6-45a2-b0e9-7d56db8e5754",
+            "name": "ssh",
+            "title": "SSH — CLI administration (Hyper-V Server / Server Core)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "3f501dd1-0d8a-467f-ada8-4b83e3a2d536",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation with Active Directory domain controller",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "f285149f-725d-4302-89dd-44013cdb18f6",
+            "name": "syslog",
+            "title": "Syslog — Event forwarding to SIEM (via Windows Event Forwarding gateway)",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5d3d468b-25da-4909-bd7e-d0430aef0dc7",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for Microsoft Hyper-V.",
+            "implemented-requirements": [
+              {
+                "uuid": "79d6affa-365f-4593-a8e6-42da63fd9add",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for Hyper-V hosts is developed and maintained, based on Microsoft's Security Baseline for Windows Server and ASD's Windows Server hardening guidance, deployed via Group Policy Objects and validated through Windows Admin Center or SCVMM compliance reporting."
+              },
+              {
+                "uuid": "cfbbee67-2d9c-424c-8a7d-c863685ec268",
+                "control-id": "ism-1409",
+                "description": "Hyper-V hosts are hardened using the Server Core installation option (no GUI, reduced attack surface), with Credential Guard, Secure Boot, and Device Guard enabled where hardware supports it, and unnecessary roles and features removed from the host operating system."
+              },
+              {
+                "uuid": "785c7565-92e0-4fdd-bdd0-c77eba212868",
+                "control-id": "ism-0383",
+                "description": "Local administrator accounts on Hyper-V hosts have their default/installation passwords changed and are managed through Microsoft LAPS, generating a unique random credential per host rather than a shared local administrator password across the cluster."
+              },
+              {
+                "uuid": "4c4ee51b-1ad6-4ddd-8a82-bc89f3b57d46",
+                "control-id": "ism-0445",
+                "description": "Hyper-V and cluster administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for hypervisor and virtual machine administration."
+              },
+              {
+                "uuid": "27a1ff66-6311-4748-af0a-e4422f3c636b",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to Windows Admin Center, SCVMM, or Hyper-V host management interfaces, enforced via integration with the organisation's identity provider."
+              },
+              {
+                "uuid": "922406b0-e104-4329-a981-d777f19bd171",
+                "control-id": "ism-1509",
+                "description": "Hyper-V privileged access events (host logon, VM power operations, configuration changes, live migration) are centrally logged via Windows Event Forwarding and forwarded to the SIEM."
+              },
+              {
+                "uuid": "2b4b4db9-2f96-4318-8117-556ceac5aa56",
+                "control-id": "ism-1511",
+                "description": "Virtual machine backups are performed using an application-consistent, Hyper-V VSS-integrated backup solution, retained per business continuity requirements, with restore testing performed periodically."
+              },
+              {
+                "uuid": "b332ff25-8046-46b9-af85-c01a7cb03fe2",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan governs the Hyper-V host and cluster baseline, including the approved host hardening configuration, patch management schedule, and VM template lifecycle, reviewed at least annually."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capabilities": [
+      {
+        "uuid": "8a6b65d9-cd0e-4332-a471-40c22ecf4c21",
+        "name": "Virtualisation (Hyper-V)",
+        "description": "Provides server virtualisation using Microsoft Hyper-V hosts, backed by shared block and file storage. Hyper-V hosts consume block storage from the SAN Storage Array (Fibre Channel/iSCSI, or SMB3 Cluster Shared Volumes) for virtual machine storage, and use the NAS for ISO repositories and VM export/backup staging. Together these components provide a resilient, shared-storage virtualisation platform integrated with the organisation's Windows Server and Active Directory management estate.",
+        "incorporates-components": [
+          {
+            "component-uuid": "576eb7c1-1cac-490a-b10a-4f123ba51125",
+            "description": "Hypervisor hosts providing compute virtualisation for the capability."
+          },
+          {
+            "component-uuid": "bcd3ae40-12df-4596-888e-97a5243cefb1",
+            "description": "Shared block storage (Fibre Channel/iSCSI) presenting virtual machine storage to the Hyper-V hosts."
+          },
+          {
+            "component-uuid": "f3b09383-42cb-4247-a6e5-c7b7340afa82",
+            "description": "Shared file storage for ISO repositories and VM export/backup staging."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "25fd3825-9139-4b9d-ab7b-5756cdf6a751",
+            "source": "PROFILE_OR_CATALOG_HREF",
+            "description": "Control implementations for capability: Virtualisation (Hyper-V). Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "511dd78f-3db3-48d2-bb12-377ea8016560",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for Hyper-V hosts is developed and maintained, based on Microsoft's Security Baseline for Windows Server and ASD's Windows Server hardening guidance, deployed via Group Policy Objects and validated through Windows Admin Center or SCVMM compliance reporting.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "5b7ec956-0567-4078-9f37-62c99d4ff4ed",
+                "control-id": "ism-1409",
+                "description": "Hyper-V hosts are hardened using the Server Core installation option (no GUI, reduced attack surface), with Credential Guard, Secure Boot, and Device Guard enabled where hardware supports it, and unnecessary roles and features removed from the host operating system.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "5c05a1d3-65fd-4bc3-9196-58c0125b6c5c",
+                "control-id": "ism-0383",
+                "description": "Local administrator accounts on Hyper-V hosts have their default/installation passwords changed and are managed through Microsoft LAPS, generating a unique random credential per host rather than a shared local administrator password across the cluster.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "592ea780-4758-4d6f-81b7-35084a6efede",
+                "control-id": "ism-0445",
+                "description": "Hyper-V and cluster administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for hypervisor and virtual machine administration.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "b4efae26-cd07-43a7-985a-f4b8c9c3928c",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to Windows Admin Center, SCVMM, or Hyper-V host management interfaces, enforced via integration with the organisation's identity provider.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "e75faa8a-eee2-409b-ba29-a9e894bd7154",
+                "control-id": "ism-1509",
+                "description": "Hyper-V privileged access events (host logon, VM power operations, configuration changes, live migration) are centrally logged via Windows Event Forwarding and forwarded to the SIEM.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "31195890-f82b-4596-a8a6-8c988b20a66f",
+                "control-id": "ism-1511",
+                "description": "Virtual machine backups are performed using an application-consistent, Hyper-V VSS-integrated backup solution, retained per business continuity requirements, with restore testing performed periodically.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "0d06753c-0d6a-4e1c-8685-45fa447998ec",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan governs the Hyper-V host and cluster baseline, including the approved host hardening configuration, patch management schedule, and VM template lifecycle, reviewed at least annually.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "576eb7c1-1cac-490a-b10a-4f123ba51125"
+                  }
+                ]
+              },
+              {
+                "uuid": "ec96a0fb-e0ba-49db-b05a-2ffd4af31745",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the SAN storage array controllers, covering: disabling unused management protocols (Telnet, HTTP, FTP), restricting the management interface to the dedicated management VLAN only, enabling role-based access control for named administrator accounts, and keeping array controller firmware current with vendor security releases.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "6d440d31-a1f6-4d49-8292-c8f43dc2d1f5",
+                "control-id": "ism-0459",
+                "description": "All disk groups on the SAN storage array are encrypted at rest using controller-based AES-256 encryption via self-encrypting drives (SEDs). Encryption keys are managed through the array's built-in key manager or an external KMIP-compliant key management server, never stored in plaintext on the array.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "4994d499-df3f-403a-82c4-fd07117c50b9",
+                "control-id": "ism-1511",
+                "description": "Storage-based snapshots of critical volumes are taken on a scheduled basis per business continuity requirements, and asynchronous replication to the secondary site provides an offsite recoverable copy. Snapshot and replication job status is monitored and failures are alerted to the storage team.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "50deddc9-96d7-43af-a390-b58142293424",
+                "control-id": "ism-1405",
+                "description": "Security-relevant array events (authentication failures, configuration changes, controller failover, RAID degradation, replication failures) are centrally logged and forwarded to the SIEM via syslog.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "b9434944-c969-4a68-8fca-9a6d9d3d6e0b",
+                "control-id": "ism-0445",
+                "description": "Storage administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for SAN array administration. Role-based access control on the array restricts unprivileged operator accounts to read-only monitoring.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "c2f180d8-3418-45c1-b308-a139da97291e",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the SAN array's management interface, enforced via integration with the organisation's identity provider or a jump host requiring MFA.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "bcd3ae40-12df-4596-888e-97a5243cefb1"
+                  }
+                ]
+              },
+              {
+                "uuid": "44f5d992-6e7a-4bea-a6dd-c373629c57c1",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the NAS, covering: disabling unused protocols (FTP, Telnet, AFP, rsync where not required), disabling the default admin account and creating named administrator accounts, enabling HTTPS-only management (HTTP disabled), enabling SMB signing (SMB 3.x), enabling NFS Kerberos authentication where supported, configuring share-level and filesystem-level access controls (ACLs per share), and keeping NAS firmware current with vendor security updates.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              },
+              {
+                "uuid": "694b52d2-c7bb-4c10-9bf5-52ebf20149e9",
+                "control-id": "ism-0459",
+                "description": "NAS storage volumes containing sensitive or classified data are encrypted at rest using AES-256 volume encryption. Encryption keys are managed securely (not stored in plaintext on the NAS). Encryption status of all volumes is verified and reported in the monthly security review.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              },
+              {
+                "uuid": "fe2b0590-95a0-4888-ba3c-7bba6a87baea",
+                "control-id": "ism-1511",
+                "description": "Backups of NAS configuration and critical stored data are performed and retained per business continuity requirements. NAS snapshot schedules provide point-in-time recovery. Backup jobs and snapshot jobs are monitored for failure.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              },
+              {
+                "uuid": "e62f0387-4633-4724-9407-5589908a6457",
+                "control-id": "ism-1537",
+                "description": "Security-relevant NAS events (authentication failures, share access by privileged accounts, configuration changes, failed login attempts, volume mount/unmount events) are centrally logged and forwarded to the SIEM.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "f3b09383-42cb-4247-a6e5-c7b7340afa82"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "remarks": "Storage sizing, RAID/replication configuration, and Cluster Shared Volume layout are documented separately in the system's Network Architecture and asset register."
+      }
+    ]
+  }
+}
