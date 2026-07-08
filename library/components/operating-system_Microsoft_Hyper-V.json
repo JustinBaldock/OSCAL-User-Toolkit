@@ -1,0 +1,189 @@
+{
+  "component-definition": {
+    "uuid": "3bc0bce4-3c66-4368-a2a8-153e2657705e",
+    "metadata": {
+      "title": "operating-system - Microsoft Hyper-V",
+      "last-modified": "2026-07-08T07:31:43Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "576eb7c1-1cac-490a-b10a-4f123ba51125",
+        "type": "operating-system",
+        "title": "Microsoft Hyper-V",
+        "description": "Microsoft Hyper-V, deployed as either the Hyper-V role on Windows Server (with a hardened Server Core install) or as the standalone Hyper-V Server, providing bare-metal virtualisation for the organisation's server workloads. Managed centrally via Windows Admin Center or System Center Virtual Machine Manager (SCVMM). Hosts are joined to a dedicated management domain/OU with Credential Guard and Secure Boot enabled, and virtual machines are configured as Generation 2 with vTPM for BitLocker support inside guest operating systems.",
+        "purpose": "Provide bare-metal server virtualisation for consolidating organisational server workloads, integrated with the existing Windows Server and Active Directory management estate.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "version",
+            "value": "Windows Server 2022 Hyper-V role / Hyper-V Server (latest cumulative update)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Hyper-V role on hardened Windows Server Core, or standalone Hyper-V Server"
+          },
+          {
+            "name": "management",
+            "value": "Windows Admin Center / System Center Virtual Machine Manager (SCVMM)"
+          },
+          {
+            "name": "security-features",
+            "value": "Secure Boot, vTPM per VM, Shielded VMs (Host Guardian Service), Credential Guard on hosts"
+          },
+          {
+            "name": "clustering",
+            "value": "Failover Clustering with Cluster Shared Volumes (CSV) for high availability"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "0786b4a7-81c6-4849-b5d5-f2b7d75bd44f",
+            "name": "https",
+            "title": "HTTPS — Windows Admin Center / SCVMM management console",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "bbe41b40-76f1-4742-9a80-59d3d6e1cdda",
+            "name": "wsman",
+            "title": "WS-Management — Hyper-V PowerShell remoting and WAC management",
+            "port-ranges": [
+              {
+                "start": 5985,
+                "end": 5985,
+                "transport": "TCP"
+              },
+              {
+                "start": 5986,
+                "end": 5986,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "c0e6698b-967f-4249-9762-aa89a5db73fa",
+            "name": "smb",
+            "title": "SMB — Cluster Shared Volumes and live migration traffic",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "eef999ad-95c0-467b-91c9-7befa6eeb1e3",
+            "name": "ssh",
+            "title": "SSH — CLI administration (Hyper-V Server / Server Core)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2cfa86ae-a22b-4bcd-9b57-713291b071d8",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation with Active Directory domain controller",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "b0989f8c-b56a-41ca-a49d-789ef753feca",
+            "name": "syslog",
+            "title": "Syslog — Event forwarding to SIEM (via Windows Event Forwarding gateway)",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "7b6ec8a8-8d62-4e52-adac-72d265d32fd6",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Microsoft Hyper-V.",
+            "implemented-requirements": [
+              {
+                "uuid": "d5509549-9c81-4bc3-9d29-5b9802b2a81c",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for Hyper-V hosts is developed and maintained, based on Microsoft's Security Baseline for Windows Server and ASD's Windows Server hardening guidance, deployed via Group Policy Objects and validated through Windows Admin Center or SCVMM compliance reporting."
+              },
+              {
+                "uuid": "f6e2cbc5-c5c6-40c4-bf87-42ad48153e2e",
+                "control-id": "ism-1409",
+                "description": "Hyper-V hosts are hardened using the Server Core installation option (no GUI, reduced attack surface), with Credential Guard, Secure Boot, and Device Guard enabled where hardware supports it, and unnecessary roles and features removed from the host operating system."
+              },
+              {
+                "uuid": "ad247d73-d203-4518-9caa-43b146dee3e4",
+                "control-id": "ism-0383",
+                "description": "Local administrator accounts on Hyper-V hosts have their default/installation passwords changed and are managed through Microsoft LAPS, generating a unique random credential per host rather than a shared local administrator password across the cluster."
+              },
+              {
+                "uuid": "e2694e01-9048-4092-82d9-3c9e003f7ffe",
+                "control-id": "ism-0445",
+                "description": "Hyper-V and cluster administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for hypervisor and virtual machine administration."
+              },
+              {
+                "uuid": "4c74f536-6ed3-488d-a655-0461289f30b7",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to Windows Admin Center, SCVMM, or Hyper-V host management interfaces, enforced via integration with the organisation's identity provider."
+              },
+              {
+                "uuid": "53c1c258-61ab-4c80-8689-20b3fdd6f5c3",
+                "control-id": "ism-1509",
+                "description": "Hyper-V privileged access events (host logon, VM power operations, configuration changes, live migration) are centrally logged via Windows Event Forwarding and forwarded to the SIEM."
+              },
+              {
+                "uuid": "50a847e7-e095-421b-b4e8-f424d12f1a0f",
+                "control-id": "ism-1511",
+                "description": "Virtual machine backups are performed using an application-consistent, Hyper-V VSS-integrated backup solution, retained per business continuity requirements, with restore testing performed periodically."
+              },
+              {
+                "uuid": "2c6f3365-4dec-4720-8915-57d02654b713",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan governs the Hyper-V host and cluster baseline, including the approved host hardening configuration, patch management schedule, and VM template lifecycle, reviewed at least annually."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

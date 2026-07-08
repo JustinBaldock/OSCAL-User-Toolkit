@@ -1,0 +1,184 @@
+{
+  "component-definition": {
+    "uuid": "5ca0985b-b16f-42b2-9030-cea6ed9adaa7",
+    "metadata": {
+      "title": "operating-system - Proxmox VE",
+      "last-modified": "2026-07-08T07:31:43Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "c0aafd55-553c-4db0-adad-423080e47487",
+        "type": "operating-system",
+        "title": "Proxmox VE",
+        "description": "Proxmox Virtual Environment (VE), a Debian-based open-source bare-metal hypervisor combining KVM full virtualisation with LXC containers, deployed for server workload consolidation. Nodes are joined into a Proxmox cluster with Corosync for cluster communication and Ceph or ZFS for shared/replicated storage. Managed via the built-in web management interface (pveproxy), secured with organisation-issued TLS certificates and, where available, integrated with the organisation's identity provider via Proxmox's realm-based authentication (LDAP/AD or OpenID Connect).",
+        "purpose": "Provide open-source bare-metal server virtualisation and container hosting for workload consolidation, with cluster-based high availability and integrated backup via Proxmox Backup Server.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Proxmox Server Solutions GmbH"
+          },
+          {
+            "name": "version",
+            "value": "Proxmox VE 8.x (latest point release)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Debian-based bare-metal hypervisor (KVM + LXC), clustered via Corosync"
+          },
+          {
+            "name": "storage-backend",
+            "value": "Ceph (hyperconverged) or ZFS with replication"
+          },
+          {
+            "name": "management",
+            "value": "Built-in web management interface (pveproxy) and pvesh/pvecm CLI tools"
+          },
+          {
+            "name": "backup",
+            "value": "Proxmox Backup Server with deduplicated, incremental, encrypted backups"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "136e61b8-2832-402d-ad10-ddc86c5770ce",
+            "name": "https",
+            "title": "HTTPS — Proxmox VE web management interface (pveproxy)",
+            "port-ranges": [
+              {
+                "start": 8006,
+                "end": 8006,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "250ec21c-d259-45c4-9cd0-e33a60cd373d",
+            "name": "ssh",
+            "title": "SSH — CLI administration and cluster node management",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "0d29332d-af9e-4836-b747-9002c757c2e5",
+            "name": "corosync",
+            "title": "Corosync — Cluster communication between Proxmox nodes",
+            "port-ranges": [
+              {
+                "start": 5405,
+                "end": 5412,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "741e47e3-ea79-4688-9cc0-2041a27d1ce5",
+            "name": "https",
+            "title": "HTTPS — Proxmox Backup Server API (backup/restore)",
+            "port-ranges": [
+              {
+                "start": 8007,
+                "end": 8007,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "a24d97eb-fbfa-47e5-af7a-a5b8e8dc34af",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation across cluster nodes",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "3fe3e1fc-3309-4e6d-8d08-f9b4adc1f292",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "d6f58181-1232-45a0-8651-18059e5fa8aa",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Proxmox VE.",
+            "implemented-requirements": [
+              {
+                "uuid": "a942ee58-430a-422e-9d71-65e4ad5a74dc",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for Proxmox VE hosts is developed and maintained, based on the underlying Debian base OS CIS Benchmark and Proxmox's own security guidance, including disabling the root account for web login where realm-based authentication is available and restricting SSH to key-based authentication."
+              },
+              {
+                "uuid": "bcf302bb-c38f-44e1-96ac-add30cb8b821",
+                "control-id": "ism-1409",
+                "description": "Proxmox VE hosts are hardened by disabling unused services, restricting the web management interface (port 8006) and cluster communication (Corosync) to the dedicated management/cluster network, and applying the Debian base OS hardening guidance to the underlying operating system."
+              },
+              {
+                "uuid": "2c99b2c8-296a-4182-a46f-9bdb119cb16a",
+                "control-id": "ism-0383",
+                "description": "The default Proxmox VE root account password set at installation is changed immediately, and named administrator accounts (mapped via LDAP/AD or OpenID Connect realm authentication) are used for day-to-day administration instead of shared root login."
+              },
+              {
+                "uuid": "9f41c040-ffe5-4f5c-820b-401a311ec4b5",
+                "control-id": "ism-0445",
+                "description": "Proxmox cluster administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for hypervisor and cluster administration, managed via Proxmox's role-based access control (Datacenter → Permissions)."
+              },
+              {
+                "uuid": "d947fac1-b273-479f-881b-15bf4ca01c60",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is enforced for administrators authenticating to the Proxmox VE web interface, using Proxmox's built-in TOTP support or realm-based authentication integrated with the organisation's MFA-enforcing identity provider."
+              },
+              {
+                "uuid": "06e46d59-4cc5-4202-97b4-dd2499a7575d",
+                "control-id": "ism-1405",
+                "description": "Security-relevant Proxmox VE events (authentication attempts, VM/container lifecycle operations, cluster configuration changes) are centrally logged and forwarded to the SIEM via rsyslog."
+              },
+              {
+                "uuid": "de8e0f0c-4d48-4703-bbac-ca683ee6689f",
+                "control-id": "ism-1511",
+                "description": "Virtual machine and container backups are performed via Proxmox Backup Server on a scheduled basis, using deduplicated and encrypted backup storage, with restore capability tested periodically."
+              },
+              {
+                "uuid": "00da0566-4bbf-415f-87f3-d31c7c771909",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan governs the Proxmox VE cluster baseline, including the approved node hardening configuration, patch/update schedule (pve-no-subscription or enterprise repository), and storage backend configuration, reviewed at least annually."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

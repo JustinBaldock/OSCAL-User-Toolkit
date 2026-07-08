@@ -1,0 +1,119 @@
+{
+  "component-definition": {
+    "uuid": "e2a8ceba-d532-4034-886f-4617ad53c5e9",
+    "metadata": {
+      "title": "software - Oracle VirtualBox",
+      "last-modified": "2026-07-08T07:31:43Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "ab99643f-fb3a-4efe-b902-9d2469aabbed",
+        "type": "software",
+        "title": "Oracle VirtualBox",
+        "description": "Oracle VirtualBox, a Type-2 (hosted) desktop hypervisor used on a limited, approved set of engineering and testing workstations for running isolated virtual machines (e.g. for software testing, legacy application compatibility, or analysing untrusted files/software in a disposable sandbox). Because VirtualBox runs atop the host operating system rather than bare metal, its use is restricted to non-production, non-sensitive workloads and is governed by the organisation's approved application register rather than treated as production virtualisation infrastructure.",
+        "purpose": "Provide engineering and technical staff with a controlled, approved means of running isolated virtual machines on workstations for software testing, compatibility testing, and safe analysis of untrusted files, without introducing unmanaged production virtualisation infrastructure.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Oracle Corporation"
+          },
+          {
+            "name": "version",
+            "value": "Oracle VirtualBox (latest stable release, with Guest Additions kept current)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Type-2 (hosted) hypervisor installed on approved engineering/testing workstations only — not used for production server virtualisation"
+          },
+          {
+            "name": "usage-scope",
+            "value": "Non-production only: software testing, legacy application compatibility testing, disposable sandboxing of untrusted files"
+          },
+          {
+            "name": "isolation-controls",
+            "value": "Guest VM networking restricted to Host-Only or NAT mode by default; no direct bridged access to the production network without explicit approval"
+          },
+          {
+            "name": "licence-requirement",
+            "value": "GNU GPL v2 (base package); Oracle VirtualBox Extension Pack requires a Personal Use and Evaluation License or a paid Enterprise license for commercial use"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "f0fe779e-9a9f-48ee-8862-51bf90e4bd1c",
+            "name": "rdp",
+            "title": "RDP — Optional VRDP (VirtualBox Remote Display Protocol) for remote console access to a guest VM",
+            "port-ranges": [
+              {
+                "start": 3389,
+                "end": 3389,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "bd827d24-04b5-4aef-a41f-59097d59a6d4",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Oracle VirtualBox.",
+            "implemented-requirements": [
+              {
+                "uuid": "34eed68c-1a2d-458e-9d17-41dd7984f810",
+                "control-id": "ism-1915",
+                "description": "Approved configurations for VirtualBox are developed and maintained, specifying the approved version, permitted guest operating systems, default network isolation mode (Host-Only/NAT rather than Bridged), and the approved list of workstations on which installation is permitted."
+              },
+              {
+                "uuid": "cac44568-e2c4-4417-b820-c36e63a9ab87",
+                "control-id": "ism-2110",
+                "description": "VirtualBox is hardened per vendor guidance: guest VM shared folders and clipboard sharing between host and guest are disabled by default and enabled only when explicitly justified, and the VRDP remote display feature is disabled unless a specific, approved use case requires it."
+              },
+              {
+                "uuid": "1c828daf-1fc7-40be-b385-34a28f3d35bc",
+                "control-id": "ism-0843",
+                "description": "Installation of Oracle VirtualBox is restricted to an organisation-approved set of engineering and testing workstations via application control (WDAC/AppLocker or endpoint management software restriction policy) — it is not part of the standard workstation build."
+              },
+              {
+                "uuid": "8a1df7c4-b0ce-4a93-8e7e-0f0da8c97a3a",
+                "control-id": "ism-1143",
+                "description": "Oracle VirtualBox and Guest Additions are kept current with vendor security patches as part of the standard workstation patch management process, tracked in the software inventory alongside other approved applications."
+              },
+              {
+                "uuid": "7788062a-974b-4a4e-b762-dbfe6cbb537e",
+                "control-id": "ism-1852",
+                "description": "Guest virtual machines created in VirtualBox default to Host-Only or NAT networking, preventing direct guest access to the production network; bridged networking (giving a guest VM its own network-visible address) requires documented approval and a business justification."
+              },
+              {
+                "uuid": "f6efb387-b9fa-4983-81fa-f298b3db7879",
+                "control-id": "ism-1704",
+                "description": "Guest virtual machine images and snapshots used for disposable sandboxing of untrusted files are deleted after analysis is complete and are not retained as persistent VMs, minimising the window during which potentially compromised guest state exists on the host."
+              },
+              {
+                "uuid": "8590a05c-5f4d-4d1a-a807-44fd53bea6e3",
+                "control-id": "ism-1405",
+                "description": "Where VirtualBox is used to analyse untrusted or potentially malicious files in an isolated guest VM, findings and any indicators of compromise identified are reported through the organisation's security incident reporting process and, where relevant, forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

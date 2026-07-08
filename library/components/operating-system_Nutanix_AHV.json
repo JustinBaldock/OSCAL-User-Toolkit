@@ -1,0 +1,172 @@
+{
+  "component-definition": {
+    "uuid": "783af1b2-3cc9-4682-b668-3210fdc446df",
+    "metadata": {
+      "title": "operating-system - Nutanix AHV",
+      "last-modified": "2026-07-08T07:31:43Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "664ef2f0-b84f-41e2-bf4e-c1e5330b35ff",
+        "type": "operating-system",
+        "title": "Nutanix AHV",
+        "description": "Nutanix AHV, the built-in KVM-based hypervisor of the Nutanix hyperconverged infrastructure (HCI) platform, providing compute virtualisation tightly integrated with the Nutanix Distributed Storage Fabric (DSF) across a cluster of Nutanix nodes. Managed centrally via Prism Central (multi-cluster management) and Prism Element (per-cluster management), with cluster-wide data-at-rest encryption and role-based access control integrated with the organisation's identity provider.",
+        "purpose": "Provide hyperconverged compute and storage virtualisation for organisational server workloads, with built-in resilience, data services (snapshots, replication, deduplication), and simplified lifecycle management via the Nutanix platform.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Nutanix, Inc."
+          },
+          {
+            "name": "version",
+            "value": "Nutanix AOS / AHV (latest LTS release)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Hyperconverged infrastructure — AHV hypervisor integrated with the Nutanix Distributed Storage Fabric across clustered nodes"
+          },
+          {
+            "name": "management",
+            "value": "Prism Central (multi-cluster) and Prism Element (per-cluster) management interfaces"
+          },
+          {
+            "name": "security-features",
+            "value": "Cluster-wide data-at-rest encryption (software or SED-based), Security Configuration Management Automation (SCMA), micro-segmentation via Flow Network Security"
+          },
+          {
+            "name": "identity-platform",
+            "value": "Role-based access control integrated with Active Directory / LDAP / SAML SSO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "3d4c65d9-5767-4f1b-ba54-3dd88568f00e",
+            "name": "https",
+            "title": "HTTPS — Prism Central / Prism Element management interface",
+            "port-ranges": [
+              {
+                "start": 9440,
+                "end": 9440,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "0ab3f311-5c80-47ca-a822-abc41fc91058",
+            "name": "ssh",
+            "title": "SSH — CLI administration of Controller VMs (CVMs) and AHV hosts",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "ea55d173-0de4-40a2-a880-2c5f3a12b56d",
+            "name": "https",
+            "title": "HTTPS — Nutanix REST API for automation and orchestration integration",
+            "port-ranges": [
+              {
+                "start": 9440,
+                "end": 9440,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "dd51d9e6-8553-4f3c-b57e-d500f0be9be1",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation across cluster nodes and CVMs",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "b965e39e-922f-4d63-9c07-7923cb26137b",
+            "name": "syslog",
+            "title": "Syslog — Cluster and security event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "13a848a8-b3ab-43b8-b793-46ef06c3cd30",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Nutanix AHV.",
+            "implemented-requirements": [
+              {
+                "uuid": "f494ce31-b401-40d5-b57e-dc31aa3571d8",
+                "control-id": "ism-1914",
+                "description": "An approved hardening baseline for the Nutanix AHV cluster is developed and maintained, based on Nutanix Security Configuration Management Automation (SCMA) guidance benchmarked against DISA STIG/CIS-equivalent controls, applied consistently across AHV hosts and Controller VMs (CVMs)."
+              },
+              {
+                "uuid": "6ee85772-c88a-459f-b3eb-082feaf003ed",
+                "control-id": "ism-1409",
+                "description": "Nutanix AHV hosts and Controller VMs are hardened per Nutanix SCMA guidance: unused services are disabled, SSH access to CVMs is restricted to designated administrator accounts, and cluster communication is isolated to a dedicated management/storage VLAN."
+              },
+              {
+                "uuid": "c59c75e5-6375-4ee1-83b0-d7e4cb23266a",
+                "control-id": "ism-0459",
+                "description": "Cluster-wide data-at-rest encryption is enabled on the Nutanix Distributed Storage Fabric (software-based encryption or self-encrypting drives), with encryption keys managed via the Nutanix native key manager or an external KMIP-compliant key management server."
+              },
+              {
+                "uuid": "90de45f8-9d34-4126-979e-8abc4deb12d7",
+                "control-id": "ism-0445",
+                "description": "Nutanix cluster administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for Prism Central/Prism Element and cluster administration, managed via Nutanix role-based access control."
+              },
+              {
+                "uuid": "2d2901c5-3ef6-4429-8276-7dfb90cb1a09",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is enforced for administrators authenticating to Prism Central and Prism Element, via SAML SSO integration with the organisation's MFA-enforcing identity provider."
+              },
+              {
+                "uuid": "7f9933a6-b088-4371-9647-68fbe13b6d81",
+                "control-id": "ism-1405",
+                "description": "Security-relevant Nutanix cluster events (authentication attempts, VM lifecycle operations, cluster configuration and Flow Network Security policy changes) are centrally logged via Prism and forwarded to the SIEM."
+              },
+              {
+                "uuid": "d8ae5cfd-142c-46bd-b0b8-d7f494f25808",
+                "control-id": "ism-1511",
+                "description": "Virtual machine data is protected via Nutanix native snapshots and asynchronous or near-synchronous replication to a secondary Nutanix cluster or cloud target, retained per business continuity requirements."
+              },
+              {
+                "uuid": "381df9e3-f0e1-4fe4-8bc8-7a455d315638",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan governs the Nutanix cluster baseline, including the approved SCMA hardening profile, AOS/AHV upgrade (LCM) schedule, and Flow Network Security micro-segmentation policy, reviewed at least annually."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
