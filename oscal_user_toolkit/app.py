@@ -1066,6 +1066,10 @@ class OSCALApp(tk.Tk):
         self._component_tab.on_catalog_or_profile_changed()
         # Notify the capability tab — catalog changed, re-evaluate guard
         self._capability_tab.on_state_changed()
+        # Same notification for the Organisation tab's Library editors —
+        # they share the same catalog/profile gate as System Overview's.
+        self._library_component_tab.on_catalog_or_profile_changed()
+        self._library_capability_tab.on_state_changed()
         self._data_sources_tab.refresh()
 
         self._status_lbl.config(text=f"Loaded catalog: {Path(path).name}")
@@ -1127,6 +1131,8 @@ class OSCALApp(tk.Tk):
         self._component_tab.on_catalog_or_profile_changed()
         # Profile changed — capability control list may need to update
         self._capability_tab.on_state_changed()
+        self._library_component_tab.on_catalog_or_profile_changed()
+        self._library_capability_tab.on_state_changed()
         self._data_sources_tab.refresh()
 
         # Tell the CatalogTab to filter by the new profile's control IDs.
@@ -1153,6 +1159,8 @@ class OSCALApp(tk.Tk):
         self._component_tab.on_catalog_or_profile_changed()
         # Profile cleared — capability control list may need to update
         self._capability_tab.on_state_changed()
+        self._library_component_tab.on_catalog_or_profile_changed()
+        self._library_capability_tab.on_state_changed()
         self._data_sources_tab.refresh()
 
         # Remove the profile filter — pass None so all controls are shown.
