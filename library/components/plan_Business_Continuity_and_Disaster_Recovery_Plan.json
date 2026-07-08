@@ -1,0 +1,64 @@
+{
+  "component-definition": {
+    "uuid": "d921cc4a-eff7-4acd-9ff0-d207899aa1f9",
+    "metadata": {
+      "title": "plan - Business Continuity and Disaster Recovery Plan",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "4f8567bc-48b7-4491-8f39-128ab7498e20",
+        "type": "plan",
+        "title": "Business Continuity and Disaster Recovery Plan",
+        "description": "The organisation's documented plan for maintaining or restoring critical business functions and IT services following a disruptive event — building/site loss, extended power outage, major system failure, or a cyber security incident with a business continuity impact. Defines recovery time and recovery point objectives per critical system, the order of service restoration, and the roles responsible for executing recovery. Distinct from the Backup and Recovery Policy, which governs how individual systems are backed up — this plan governs the coordinated, organisation-wide response to a major disruption.",
+        "purpose": "Ensure the organisation can restore critical business functions and IT services within an acceptable timeframe following a major disruptive event, with a rehearsed plan rather than an improvised response.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "55e4e3b1-dc6f-4a40-a4a9-2c255198db67",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Business Continuity and Disaster Recovery Plan.",
+            "implemented-requirements": [
+              {
+                "uuid": "adda776d-303d-46bc-8500-cee769ea4dce",
+                "control-id": "ism-0734",
+                "description": "The CISO contributes to the development, implementation, and maintenance of this Business Continuity and Disaster Recovery Plan, ensuring cyber security considerations (system dependencies, restoration order, security control re-verification) are reflected in the organisation's continuity planning."
+              },
+              {
+                "uuid": "9f87c55d-abea-4937-9c83-a062ffb2fa29",
+                "control-id": "ism-1515",
+                "description": "Restoration of data, applications, and settings from backups to a common point in time is tested as part of scheduled disaster recovery exercises conducted under this plan, confirming that documented recovery time and recovery point objectives are realistically achievable."
+              },
+              {
+                "uuid": "78bad3eb-b3c1-4960-8b7c-7b374c2e23b6",
+                "control-id": "ism-1511",
+                "description": "This plan's recovery objectives are informed by, and consistent with, the backup retention and business criticality classifications defined in the Backup and Recovery Policy for each system in scope."
+              },
+              {
+                "uuid": "78f75741-26f8-4209-ba18-3a7c32de956a",
+                "control-id": "ism-1610",
+                "description": "A method of emergency access to systems and their resources during a disaster recovery scenario is documented within this plan and tested at least once when initially implemented and after each fundamental change to the recovery environment."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

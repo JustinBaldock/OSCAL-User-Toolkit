@@ -1,0 +1,59 @@
+{
+  "component-definition": {
+    "uuid": "d32a8efd-7c5c-44f5-986f-67c8d1628a8c",
+    "metadata": {
+      "title": "standard - OWASP Application and Mobile Security Verification Standards (ASVS / MASVS)",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7851989d-9561-4f32-8b17-ef26cadad5b4",
+        "type": "standard",
+        "title": "OWASP Application and Mobile Security Verification Standards (ASVS / MASVS)",
+        "description": "The OWASP Application Security Verification Standard (ASVS) and OWASP Mobile Application Security Verification Standard (MASVS), adopted as the organisation's baseline security requirements for in-house web and mobile application development. Development teams select an appropriate verification level (e.g. ASVS Level 2 for applications handling sensitive data) and requirements are incorporated into design reviews, secure coding checklists, and CI/CD pipeline security scanning (see the GitLab / Subversion source code management components) rather than being treated as a one-off audit checklist.",
+        "purpose": "Provide development teams with an externally maintained, comprehensive set of application security requirements to design, build, and verify in-house web and mobile applications against, rather than relying on an internally-invented and likely incomplete requirements list.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b3026ed1-86b6-48dc-8ea8-9014d9a8ea02",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the OWASP Application and Mobile Security Verification Standards.",
+            "implemented-requirements": [
+              {
+                "uuid": "89201ad4-a590-489f-926e-c3700bb8427e",
+                "control-id": "ism-0971",
+                "description": "The OWASP Application Security Verification Standard (ASVS) is used in the development of the organisation's web applications, with the verification level selected based on the sensitivity of the data the application handles."
+              },
+              {
+                "uuid": "25866511-3626-4190-a80d-aa26117b5f2f",
+                "control-id": "ism-1922",
+                "description": "The OWASP Mobile Application Security Verification Standard (MASVS) is used in the development of the organisation's mobile applications, covering platform-specific controls not addressed by the general ASVS."
+              },
+              {
+                "uuid": "84904705-9e1c-4be5-9a76-1d6233dc4e9d",
+                "control-id": "ism-1798",
+                "description": "Secure configuration guidance produced as part of the organisation's software development process (see the source code management components) references the applicable ASVS/MASVS requirements alongside platform-specific hardening guidance."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "component-definition": {
+    "uuid": "ade63ccc-9a55-4ae1-a5da-9d45c192df56",
+    "metadata": {
+      "title": "physical - Air Conditioning (Server Room Precision Cooling)",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "28db1b80-ec41-4bf5-84b2-bcee5065c902",
+        "type": "physical",
+        "title": "Air Conditioning (Server Room Precision Cooling)",
+        "description": "Dedicated precision (CRAC/CRAH) air conditioning units maintaining the Main Office Server Room within the manufacturer-recommended temperature and humidity range for the installed IT equipment. Deployed as an N+1 redundant pair so a single unit failure does not cause the room to exceed safe operating temperature before the fault is addressed. Unit status and room temperature/humidity are monitored continuously, with alerts raised to the facilities and IT teams on threshold breach.",
+        "purpose": "Maintain server room environmental conditions (temperature and humidity) within safe operating limits for IT equipment, protecting infrastructure availability from environmental failure.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "location",
+            "value": "Main Office Server Room — dedicated CRAC/CRAH units"
+          },
+          {
+            "name": "redundancy",
+            "value": "N+1 redundant units — room remains within tolerance on a single unit failure"
+          },
+          {
+            "name": "target-range",
+            "value": "18-27°C, 40-60% relative humidity (ASHRAE recommended range for IT equipment)"
+          },
+          {
+            "name": "monitoring",
+            "value": "Continuous temperature/humidity monitoring with threshold alerting to facilities and IT teams"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "418b2fd7-18f9-47ae-a09e-30a9b04693a7",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Air Conditioning (Server Room Precision Cooling).",
+            "implemented-requirements": [
+              {
+                "uuid": "3e1e40a8-00c4-4f7b-ab96-e67be2c12270",
+                "control-id": "ism-1974",
+                "description": "Environmental conditioning for the Main Office Server Room is provided by dedicated precision air conditioning units, supporting the room's function as a suitably secure server room for the organisation's non-classified IT equipment."
+              },
+              {
+                "uuid": "8eeb4280-4383-4718-a195-b0fa9a760353",
+                "control-id": "ism-0734",
+                "description": "Server room cooling redundancy (N+1 unit configuration) and environmental monitoring form part of the organisation's business continuity and disaster recovery planning input, addressing environmental failure as a business continuity risk to IT service availability."
+              },
+              {
+                "uuid": "d2942bea-82c4-4231-91ad-4f29246d8103",
+                "control-id": "ism-0161",
+                "description": "Server room air conditioning units are located within the secured server room and are not separately accessible from unsecured areas, benefiting from the same physical access controls as the IT equipment they cool."
+              },
+              {
+                "uuid": "7257bf38-4455-44bc-b4a9-92c7108d539d",
+                "control-id": "ism-0306",
+                "description": "Vendor technicians servicing the air conditioning units are escorted by an authorised staff member for the duration of any work performed inside the secured server room."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "component-definition": {
+    "uuid": "3d8a75ae-94c4-4beb-a477-fea8034404ec",
+    "metadata": {
+      "title": "validation - Penetration Testing and Security Assessment Program",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "db39a7fa-ff04-4416-b47e-07c535642875",
+        "type": "validation",
+        "title": "Penetration Testing and Security Assessment Program",
+        "description": "The organisation's recurring program of independent security assessments and penetration tests, conducted by an approved third-party assessor prior to deployment of new systems and significant changes, and on an ongoing scheduled basis thereafter. Distinct from the continuous automated scanning performed by the Tenable Nessus vulnerability scanner component, this represents point-in-time, human-led testing and formal assessment reporting that validates whether implemented controls actually work as intended.",
+        "purpose": "Independently validate that the organisation's implemented security controls are effective in practice, identifying exploitable weaknesses that automated scanning alone would not surface, before they can be exploited by a real attacker.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b786150e-e721-49f2-bd38-3c05600a5686",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Penetration Testing and Security Assessment Program.",
+            "implemented-requirements": [
+              {
+                "uuid": "518c6f9c-bfa1-48f4-b92f-5ec5568cee2e",
+                "control-id": "ism-2118",
+                "description": "Vulnerability assessments and penetration tests are conducted for systems prior to their deployment, including prior to the deployment of significant changes, and periodically thereafter on a scheduled basis for systems already in production."
+              },
+              {
+                "uuid": "8a779261-079b-4e77-b4f7-a8a02c6c10e8",
+                "control-id": "ism-1563",
+                "description": "At the conclusion of each security assessment, the assessor produces a security assessment report covering the scope of the assessment, the methodology used, findings and their severity, and recommended remediation actions."
+              },
+              {
+                "uuid": "ada5b589-2aea-4856-b5e7-e9180256fd5a",
+                "control-id": "ism-1564",
+                "description": "At the conclusion of each security assessment, the system owner produces a plan of action and milestones addressing the findings in the assessment report, tracked through to closure."
+              },
+              {
+                "uuid": "8333472c-604d-46e0-b57d-6d80f6c0da12",
+                "control-id": "ism-1163",
+                "description": "The organisation's continuous monitoring plan incorporates the findings and cadence of this Penetration Testing and Security Assessment Program alongside continuous automated vulnerability scanning, providing both point-in-time deep assessment and ongoing broad coverage."
+              },
+              {
+                "uuid": "1f0605cb-2a6c-4891-9493-d14827cc863d",
+                "control-id": "ism-2119",
+                "description": "Where suitable, AI-assisted tooling is used to augment the scope and efficiency of vulnerability assessments and penetration tests conducted under this program, under the assessor's supervision rather than as an unsupervised replacement for human testing."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

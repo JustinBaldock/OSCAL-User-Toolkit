@@ -1,0 +1,64 @@
+{
+  "component-definition": {
+    "uuid": "a18b61b0-95c4-409f-a0a5-c9f638d94fca",
+    "metadata": {
+      "title": "process-procedure - Cyber Security Incident Response Procedure",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "70c22e3d-efb7-4180-ae16-8f1b6a8c1960",
+        "type": "process-procedure",
+        "title": "Cyber Security Incident Response Procedure",
+        "description": "The documented, step-by-step procedure that operationalises the organisation's Cyber Security Incident Management Policy — covering detection and triage, containment, eradication, recovery, and post-incident review, with defined roles, escalation paths, and communication templates. Where the policy states the organisation's commitment and governance intent, this procedure specifies the concrete actions responders take when a cyber security incident is identified.",
+        "purpose": "Provide responders with a clear, rehearsed, step-by-step process to follow when a cyber security incident is identified, so response actions are consistent, timely, and do not depend on individual judgement calls made under pressure.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "26c6282d-8d77-4b93-96c4-bc8d545903f1",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Cyber Security Incident Response Procedure.",
+            "implemented-requirements": [
+              {
+                "uuid": "75fd3e45-46a9-4997-b3b4-dc8dab5f30bf",
+                "control-id": "ism-0043",
+                "description": "The Cyber Security Incident Response Procedure covers: guidelines on what constitutes a cyber security incident, the types of cyber security incidents to be reported and to whom, the response actions to be taken for different incident categories, and how incidents are documented and tracked to closure."
+              },
+              {
+                "uuid": "594564ae-3d63-4967-9eec-5332d2d0b848",
+                "control-id": "ism-1819",
+                "description": "Following the identification of a cyber security incident, this procedure is enacted immediately — responders follow the documented triage, containment, eradication, and recovery steps rather than improvising a response."
+              },
+              {
+                "uuid": "f95b592d-1e74-455e-947e-2820c4669d97",
+                "control-id": "ism-1784",
+                "description": "This procedure, together with the Cyber Security Incident Management Policy it operationalises, is exercised at least annually via a tabletop or simulated incident exercise, with lessons learned fed back into procedure updates."
+              },
+              {
+                "uuid": "46e7fe45-2f8f-4fc3-a1d8-6d8bf1613e8d",
+                "control-id": "ism-1970",
+                "description": "Where the procedure requires malicious code to be analysed for incident response or research purposes, that analysis is conducted in a dedicated environment segregated from the organisation's production network, preventing accidental spread during investigation."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "component-definition": {
+    "uuid": "9dcf591c-833a-403a-9b0e-df1ce001e21d",
+    "metadata": {
+      "title": "physical - Main Office Server Room",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "680ba586-b4a2-41c0-bc5d-f4b701c3c7a9",
+        "type": "physical",
+        "title": "Main Office Server Room",
+        "description": "The primary on-premises server room at the main office, housing core server, storage, and network infrastructure (SAN Storage Array, hypervisor hosts, core switches, firewalls). Access is restricted to a dedicated proximity-card-controlled door with no external windows, separate from general office space, with environmental monitoring (temperature, humidity, water leak detection) and fire suppression. Access events are logged by the building access control system.",
+        "purpose": "Provide a physically secured, environmentally controlled space for the organisation's core IT infrastructure, restricting access to authorised IT personnel only.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "location",
+            "value": "Main office, ground floor, no external windows"
+          },
+          {
+            "name": "access-control",
+            "value": "Proximity card reader with PIN, building access control system"
+          },
+          {
+            "name": "environmental-monitoring",
+            "value": "Temperature, humidity, and water leak sensors with alerting"
+          },
+          {
+            "name": "fire-suppression",
+            "value": "Clean-agent (FM-200 or equivalent) fire suppression system"
+          },
+          {
+            "name": "capacity",
+            "value": "Six 42U server racks, hot/cold aisle containment"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "84aa6c04-e496-421e-b958-99146f666bbf",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Main Office Server Room.",
+            "implemented-requirements": [
+              {
+                "uuid": "5792aad9-b852-4628-a821-12f2a6fba949",
+                "control-id": "ism-1974",
+                "description": "The Main Office Server Room is a suitably secure server room housing non-classified servers, network devices, and cryptographic equipment, rather than general office space."
+              },
+              {
+                "uuid": "e277cea0-9c4c-4f40-bad8-a30ce7fe6ffd",
+                "control-id": "ism-0813",
+                "description": "The Main Office Server Room door is not left in an unsecured state — it is self-closing and self-locking, and propping the door open is prohibited by site policy and monitored by the door position sensor on the access control system."
+              },
+              {
+                "uuid": "6559ef7b-eafe-401a-bb0e-cdf679428c40",
+                "control-id": "ism-1074",
+                "description": "Access cards and PINs granting entry to the Main Office Server Room are appropriately controlled: the access list is maintained by IT security, reviewed at least annually, and revoked immediately upon a cardholder's role change or departure."
+              },
+              {
+                "uuid": "b4f7bce8-0d53-45f4-af03-6c5f817e613e",
+                "control-id": "ism-0161",
+                "description": "IT equipment and media held in the Main Office Server Room are secured within locked server racks when not actively being worked on, in addition to the room-level access control."
+              },
+              {
+                "uuid": "6bc19c85-907c-409b-83bf-ce43ef141b4c",
+                "control-id": "ism-0306",
+                "description": "Vendor technicians or contractors who are not appropriately cleared are escorted by an authorised staff member for the duration of any work performed in the Main Office Server Room."
+              },
+              {
+                "uuid": "458baad9-5450-453a-8192-43bb65fba9f4",
+                "control-id": "ism-1101",
+                "description": "Cable reticulation into equipment racks within the Main Office Server Room is terminated as close as practicable to the rack, minimising exposed cable runs that could be tapped or tampered with."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

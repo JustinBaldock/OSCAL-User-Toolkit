@@ -1,0 +1,83 @@
+{
+  "component-definition": {
+    "uuid": "25697f6e-ed7e-4bdc-be61-bf8455826cce",
+    "metadata": {
+      "title": "physical - Power Generator (Backup Diesel Generator)",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "03a1b25d-113e-4896-8c0c-6dfa0944e9bf",
+        "type": "physical",
+        "title": "Power Generator (Backup Diesel Generator)",
+        "description": "Diesel backup generator providing emergency power to the Main Office Server Room and associated building critical loads in the event of a mains power outage, automatically starting via an automatic transfer switch (ATS) within seconds of a detected outage. Sized to run the full server room load (including precision air conditioning) plus building life-safety systems. Fuel supply is maintained for a documented minimum runtime, and the generator is load-tested on a scheduled basis.",
+        "purpose": "Maintain power availability to the Main Office Server Room and critical building systems during a mains power outage, bridging the gap until mains power is restored or the site's UPS capacity would otherwise be exhausted.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "location",
+            "value": "External generator enclosure, main office site"
+          },
+          {
+            "name": "capacity",
+            "value": "Sized for full server room load plus precision air conditioning and building life-safety systems"
+          },
+          {
+            "name": "transfer-mechanism",
+            "value": "Automatic Transfer Switch (ATS) — automatic start and transfer within seconds of detected mains outage"
+          },
+          {
+            "name": "fuel-runtime",
+            "value": "On-site diesel fuel maintained for a documented minimum runtime; refuelling arrangement in place for extended outages"
+          },
+          {
+            "name": "testing",
+            "value": "Scheduled load-testing under simulated outage conditions"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "201500f4-8f65-431c-9150-5d389a00568a",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Power Generator (Backup Diesel Generator).",
+            "implemented-requirements": [
+              {
+                "uuid": "2aed6c43-0629-44fb-a22f-064e33689a80",
+                "control-id": "ism-1123",
+                "description": "The Power Generator, together with the site's Uninterruptible Power Supply, provides a resilient power feed to the IT equipment in the Main Office Server Room, ensuring continuity of power during a mains outage until either mains power is restored or the outage is resolved."
+              },
+              {
+                "uuid": "aa5ca9da-d00b-40e0-bf1f-01de2e8d1093",
+                "control-id": "ism-0734",
+                "description": "The Power Generator's capacity, fuel runtime, and scheduled load-testing regime form part of the organisation's business continuity and disaster recovery planning, addressing extended mains power loss as a business continuity risk to IT service availability."
+              },
+              {
+                "uuid": "2bf2bb31-798a-4fe7-bf74-1f31186c3954",
+                "control-id": "ism-1974",
+                "description": "The Power Generator supports the continued operation of the Main Office Server Room as a suitably secure, continuously available facility for the organisation's non-classified IT equipment during a power outage."
+              },
+              {
+                "uuid": "eeb84fe2-0a41-4d75-abdd-518389f89e90",
+                "control-id": "ism-0306",
+                "description": "Vendor technicians servicing or refuelling the Power Generator are escorted by an authorised staff member where the generator enclosure is located within, or provides access to, a physically secured area."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

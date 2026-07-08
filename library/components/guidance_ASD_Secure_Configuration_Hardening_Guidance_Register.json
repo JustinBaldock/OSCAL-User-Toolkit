@@ -1,0 +1,59 @@
+{
+  "component-definition": {
+    "uuid": "b69b4366-0cd7-4501-a839-6f899a31f01b",
+    "metadata": {
+      "title": "guidance - ASD Secure Configuration and Hardening Guidance Register",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "3f943d29-9a98-4ccb-aabe-fdc370422ca5",
+        "type": "guidance",
+        "title": "ASD Secure Configuration and Hardening Guidance Register",
+        "description": "A maintained register of the external, non-mandatory hardening and secure-configuration guidance the organisation draws on when building its own approved hardening baselines — including ASD's published hardening guides (Windows, Linux, web browsers, Office productivity suites) and vendor security baselines (Microsoft Security Baseline, CIS Benchmarks). This guidance is advisory reference material: it informs the organisation's own binding, approved configuration baselines for each platform (see the individual operating system and software components' own control implementations), rather than being directly enforced itself.",
+        "purpose": "Maintain an authoritative, current reference of the external hardening guidance the organisation's platform-specific baselines are built from, so baseline reviews start from the latest available guidance rather than an ad hoc or outdated source.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "da5d51bc-5778-4b18-93c5-d1165b61b30b",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the ASD Secure Configuration and Hardening Guidance Register.",
+            "implemented-requirements": [
+              {
+                "uuid": "a19f22e5-6970-455d-ba78-a6838f953d5c",
+                "control-id": "ism-1798",
+                "description": "Secure configuration guidance referenced in this register, in the form of hardening guides and loosening guides, is tracked for currency and made available to the staff responsible for developing and maintaining each platform's approved hardening baseline."
+              },
+              {
+                "uuid": "9196947c-f71c-4144-af02-447f825c1c5f",
+                "control-id": "ism-1914",
+                "description": "The approved configuration baselines for the organisation's operating systems (see each operating-system component's own hardening control implementations) are developed with direct reference to the guidance tracked in this register."
+              },
+              {
+                "uuid": "640af4ba-0281-4cd8-84fe-26f589862900",
+                "control-id": "ism-1409",
+                "description": "Hardening measures applied to the organisation's operating systems reference the guidance in this register (ASD hardening guidance and vendor security baselines), with ASD guidance taking precedence where the two sources conflict, consistent with the precedence rule applied throughout the platform-specific components."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

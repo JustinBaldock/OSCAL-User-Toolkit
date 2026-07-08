@@ -1,0 +1,84 @@
+{
+  "component-definition": {
+    "uuid": "61448b75-66d2-4cca-9c7c-9812f01a83a1",
+    "metadata": {
+      "title": "physical - Remote Office Comms Room",
+      "last-modified": "2026-07-08T07:55:33Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "0854a4b9-2b4b-4b58-93b4-b648e5137784",
+        "type": "physical",
+        "title": "Remote Office Comms Room",
+        "description": "A small communications room at the remote/branch office, housing the site's WAN router, network switch, wireless access point controller, and patch panel — no server or storage infrastructure is located at this site. The room is a locked, keyed closet (no proximity card system at this smaller site) with a shared key held by the site's designated local IT contact and the central IT team.",
+        "purpose": "Provide a physically secured space for the remote office's network termination and distribution equipment, appropriately scaled to a smaller site without on-premises servers.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "location",
+            "value": "Remote office, internal room adjoining reception, no external windows"
+          },
+          {
+            "name": "access-control",
+            "value": "Keyed lock; key held by the site's designated local IT contact and the central IT team"
+          },
+          {
+            "name": "environmental-monitoring",
+            "value": "Standalone temperature sensor with email alert (no dedicated precision cooling at this site)"
+          },
+          {
+            "name": "capacity",
+            "value": "Single 12U wall-mount rack"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b87aabaa-40ef-4de3-b737-f5242440b252",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Remote Office Comms Room.",
+            "implemented-requirements": [
+              {
+                "uuid": "5bacce11-8423-4f82-aa87-ba109887be39",
+                "control-id": "ism-1974",
+                "description": "The Remote Office Comms Room is a suitably secure communications room housing the site's network devices, scaled appropriately to a smaller branch office without on-premises servers."
+              },
+              {
+                "uuid": "4ba0d97a-f7d4-4759-bbf4-dc8782883e51",
+                "control-id": "ism-0813",
+                "description": "The Remote Office Comms Room is kept locked whenever unattended; it is not left in an unsecured state during or outside business hours."
+              },
+              {
+                "uuid": "0e75053e-c2d9-41e3-93d5-f65e7d9ec37c",
+                "control-id": "ism-1074",
+                "description": "The key to the Remote Office Comms Room is appropriately controlled: a record is kept of who holds a copy, and the key is not left unsecured at reception or another publicly accessible location."
+              },
+              {
+                "uuid": "b7315672-f9a2-45f0-92fc-93e32dd69413",
+                "control-id": "ism-1296",
+                "description": "Physical security measures (a locked, enclosed wall-mount rack in addition to the room lock) protect the network devices in the Remote Office Comms Room from physical damage or unauthorised access by other building occupants or visitors."
+              },
+              {
+                "uuid": "2d641446-7798-4e0b-a71a-08bab3559122",
+                "control-id": "ism-0306",
+                "description": "Vendor technicians or contractors who are not appropriately cleared are escorted by the site's designated local IT contact for the duration of any work performed in the Remote Office Comms Room."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
