@@ -1,0 +1,161 @@
+{
+  "component-definition": {
+    "uuid": "8f2ede5f-0f68-4499-a2d9-795c74a06c07",
+    "metadata": {
+      "title": "service - Two-Factor Authentication Service (Duo Security)",
+      "last-modified": "2026-07-08T07:46:51Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "9cde65b3-b092-4d7f-8909-6b96b797a9f2",
+        "type": "service",
+        "title": "Two-Factor Authentication Service (Duo Security)",
+        "description": "Two-factor authentication (2FA) service (Duo Security, or equivalent such as RSA SecurID) bolting multi-factor authentication onto systems that cannot federate to the cloud Identity Provider directly — VPN remote access, SSH/RDP jump host logon, on-premises legacy applications, and local Windows/Linux logon via an authentication proxy. Supports push notification, TOTP (time-based one-time password) authenticator app codes, and WebAuthn/FIDO2 security keys as the phishing-resistant option. Complements the Identity Provider (Microsoft Entra ID) service, which handles MFA for cloud/SSO-federated applications, and the Privileged Access Management platform, which handles MFA for brokered privileged sessions.",
+        "purpose": "Provide multi-factor authentication for systems and access paths that are not covered by the cloud Identity Provider's Conditional Access policies, so that no user-facing or administrative logon path in the environment is protected by a password alone.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Cisco Duo Security / RSA SecurID / equivalent"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Cloud-hosted 2FA service with an on-premises Authentication Proxy for LDAP/RADIUS-integrated systems (VPN concentrator, SSH bastion, RDP gateway)"
+          },
+          {
+            "name": "factors-supported",
+            "value": "Push notification (Duo Mobile), TOTP authenticator app codes, WebAuthn/FIDO2 security keys, SMS/phone callback (fallback only, discouraged)"
+          },
+          {
+            "name": "phishing-resistant-option",
+            "value": "WebAuthn/FIDO2 security key enrolment available and preferred for privileged accounts"
+          },
+          {
+            "name": "integration-points",
+            "value": "VPN Remote Access (RADIUS), SSH bastion/jump host (PAM module), RDP Gateway, on-premises legacy web applications (RADIUS/LDAP proxy)"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "f4d8a07e-9805-40f5-af9d-1690bb56daba",
+            "name": "https",
+            "title": "HTTPS — 2FA service admin console and push notification API",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "c48f165d-8102-40fa-a427-80357b303088",
+            "name": "radius",
+            "title": "RADIUS — Authentication proxy integration with VPN concentrator, SSH bastion, RDP gateway",
+            "port-ranges": [
+              {
+                "start": 1812,
+                "end": 1812,
+                "transport": "UDP"
+              },
+              {
+                "start": 1813,
+                "end": 1813,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "58afc37e-547d-4d34-81c2-dd5c869be7d7",
+            "name": "ldaps",
+            "title": "LDAPS — Authentication proxy lookups against Active Directory for username/primary-factor validation",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "93c547f9-e404-48a5-a082-f83381866efa",
+            "name": "syslog",
+            "title": "Syslog — Authentication event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "806a58af-f85f-4337-9215-7d4811cdf971",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Two-Factor Authentication Service (Duo Security).",
+            "implemented-requirements": [
+              {
+                "uuid": "6c2c8363-4063-4568-bb31-95138e47b115",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is enforced for unprivileged users authenticating to systems and access paths covered by this 2FA service — VPN remote access, SSH/RDP jump host logon, and on-premises legacy applications — closing the gap for access paths that cannot federate to the cloud Identity Provider's Conditional Access policies."
+              },
+              {
+                "uuid": "ebe9ca3a-3ab7-43bc-b500-28c7533345e2",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is enforced for privileged users authenticating via the access paths covered by this 2FA service, with WebAuthn/FIDO2 security key enrolment required (rather than push notification or TOTP) for privileged accounts."
+              },
+              {
+                "uuid": "c6fe81ad-ed83-401a-b173-5e0fae3af101",
+                "control-id": "ism-1401",
+                "description": "The second factor enforced by this service is something the user has (a registered mobile device running Duo Mobile, a hardware security key, or a TOTP authenticator app) combined with something the user knows (their primary directory password), satisfying the required combination of authentication factors."
+              },
+              {
+                "uuid": "af507de4-a577-4c75-a0f5-9fe96dac5a01",
+                "control-id": "ism-1682",
+                "description": "For privileged and administrative accounts, multi-factor authentication enforced by this service is phishing-resistant, using WebAuthn/FIDO2 security key enrolment rather than push notification, TOTP, or SMS-based factors, which remain susceptible to MFA-fatigue and real-time phishing relay attacks."
+              },
+              {
+                "uuid": "a78643de-5a4f-47d0-9de6-9cef1db1f46c",
+                "control-id": "ism-2011",
+                "description": "Where a user account has enrolled a phishing-resistant WebAuthn/FIDO2 security key, non-phishing-resistant factors (SMS, phone callback) are disabled for that account so a compromised phone number cannot be used to bypass the stronger factor."
+              },
+              {
+                "uuid": "3ff611ea-0c22-4514-a39e-973f0c75944c",
+                "control-id": "ism-1919",
+                "description": "Legacy authentication paths that do not support multi-factor authentication are identified and either integrated with this 2FA service via the Authentication Proxy (RADIUS/LDAP) or decommissioned — no production access path is permitted to bypass MFA enforcement."
+              },
+              {
+                "uuid": "ea321d35-c437-47fe-8409-e0cad2a1ea19",
+                "control-id": "ism-1683",
+                "description": "Successful and unsuccessful multi-factor authentication events (push approvals/denials, TOTP failures, fallback SMS usage) are centrally logged by the 2FA service and forwarded to the SIEM, supporting detection of MFA-fatigue attacks and credential-stuffing campaigns."
+              },
+              {
+                "uuid": "d0a0c7d7-270c-412a-ae28-7b75a4703a94",
+                "control-id": "ism-0445",
+                "description": "Administrators of the 2FA service platform itself are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for 2FA policy and integration administration."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
