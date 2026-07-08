@@ -851,18 +851,38 @@ class ComponentTab(tk.Frame):
                  font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=20)
 
-        # ── Version & Revision History (§10.21) ─────────────────────────────
+        # ── Metadata: Version & Revision History (§10.21) ───────────────────
         # Kept inside Section 1 rather than its own numbered section, to
         # avoid renumbering every section below it. Each component carries
         # its own document uuid/version/revisions — never shared tab-level
         # state — so this stays correct even when many components share one
-        # tab instance (library_mode).
+        # tab instance (library_mode). Rendered as its own clearly-bounded
+        # box, with a header and hint text explaining the two workflows
+        # (plain edit-in-place vs. "Save New Version"), so it doesn't read
+        # as just more Basic Information fields.
         ver_card = tk.Frame(parent, bg=C["CARD_BG"], highlightthickness=1,
                              highlightbackground=C["HEADER_BG"])
         ver_card.pack(fill="x", **P, pady=(10, 4))
 
+        ver_hdr = tk.Frame(ver_card, bg=C["HEADER_BG"])
+        ver_hdr.pack(fill="x")
+        tk.Label(ver_hdr, text="🗂  Metadata — Version & Revision History",
+                  bg=C["HEADER_BG"], fg=C["ACCENT"], font=("Helvetica", 10, "bold"),
+                  anchor="w").pack(side="left", padx=10, pady=4)
+
+        tk.Label(
+            ver_card,
+            text="  Editing the Version field and clicking Apply/Save just relabels "
+                 "the current version in place. To keep a record of what changed, use "
+                 "'Save New Version' instead — it archives the current version and your "
+                 "remarks into the history below (dated automatically) before moving to "
+                 "the new version number.",
+            bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
+            wraplength=760, justify="left",
+        ).pack(anchor="w", padx=10, pady=(6, 4))
+
         ver_row = tk.Frame(ver_card, bg=C["CARD_BG"])
-        ver_row.pack(fill="x", padx=10, pady=(8, 2))
+        ver_row.pack(fill="x", padx=10, pady=(0, 2))
         tk.Label(ver_row, text="Version:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10)).pack(side="left")
         self._v_version = tk.StringVar(value="1.0")
@@ -878,7 +898,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
 
         id_row = tk.Frame(ver_card, bg=C["CARD_BG"])
-        id_row.pack(fill="x", padx=10, pady=(0, 2))
+        id_row.pack(fill="x", padx=10, pady=(6, 2))
         self._v_component_uuid_lbl = tk.Label(
             id_row, text="Component UUID: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 8),

@@ -983,7 +983,7 @@ So the model is: each single-component file carries a stable document `uuid`, a 
 - `_parse_single_component()` reads `component-definition.uuid` and `metadata.version`/`metadata.revisions[]` back onto the component dict on load; a file with no `revisions[]` gets an empty list, and a missing/empty root uuid gets a freshly generated one rather than erroring.
 - `_build_single_component_oscal(comp)` reads `comp["file_uuid"]` / `comp["version"]` / `comp["revisions"]` — never shared tab-level state — and only emits a `metadata.revisions` key at all when the list is non-empty (an empty array is needless noise in the OSCAL output).
 
-**UI** — a "Version & Revision History" card sits inside Section 1 "Basic Information" (deliberately *not* its own numbered section, to avoid renumbering every section after it):
+**UI** — a bordered "🗂 Metadata — Version & Revision History" card sits inside Section 1 "Basic Information" (deliberately *not* its own numbered section, to avoid renumbering every section after it). It has its own header bar (visually distinct from the surrounding Basic Information fields) and an italic hint line explaining the two available workflows before any of the controls, since "editing Version and clicking Apply" vs. "Save New Version" look similar but do different things:
 - Component UUID and document UUID, shown as small read-only labels (traceability only — never hand-edited).
 - An editable Version field (`self._v_version`), replacing the old shared toolbar Version entry, which was removed entirely.
 - A read-only `ttk.Treeview` revision history list (version / date / remarks), rebuilt from `comp["revisions"]` on every `_populate_from()`.
