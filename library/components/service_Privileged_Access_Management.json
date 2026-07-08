@@ -1,0 +1,156 @@
+{
+  "component-definition": {
+    "uuid": "ded5435e-6bd8-4b11-82f5-27f28cc06342",
+    "metadata": {
+      "title": "service - Privileged Access Management (PAM)",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "20d6d6d2-953e-4f99-9818-e4dcbf77db68",
+        "type": "service",
+        "title": "Privileged Access Management (PAM)",
+        "description": "Privileged Access Management platform (e.g. CyberArk, BeyondTrust, or Microsoft Entra Privileged Identity Management for cloud roles) providing a credential vault for privileged and service account passwords, just-in-time privileged session brokering, and full session recording for administrative access to servers, network devices, and management consoles. Standing privileged access is minimised in favour of time-bound, approved elevation requests.",
+        "purpose": "Provide a controlled, audited, and time-bound mechanism for granting and using privileged access to systems, removing the need for administrators to know or directly hold standing privileged credentials.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "CyberArk / BeyondTrust / Microsoft Entra PIM"
+          },
+          {
+            "name": "credential-vaulting",
+            "value": "Privileged account passwords and service account secrets stored in an encrypted vault, rotated automatically after each checkout"
+          },
+          {
+            "name": "session-brokering",
+            "value": "Just-in-time privileged session brokering via a jump/proxy host — administrators never directly see the underlying credential"
+          },
+          {
+            "name": "session-recording",
+            "value": "Full session recording (video and/or keystroke logging) for all brokered privileged sessions"
+          },
+          {
+            "name": "approval-workflow",
+            "value": "Time-bound elevation requests requiring documented justification and, for high-risk targets, manager or security team approval"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "0f7c5861-8e84-451b-a917-47ab4bd3d811",
+            "name": "https",
+            "title": "HTTPS — PAM web console and API",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "c118fb2e-6102-4d4f-a288-4f13feceaf48",
+            "name": "rdp",
+            "title": "RDP — Brokered privileged sessions to Windows targets",
+            "port-ranges": [
+              {
+                "start": 3389,
+                "end": 3389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "cc375125-5630-4015-b9e5-2b70c7817e75",
+            "name": "ssh",
+            "title": "SSH — Brokered privileged sessions to Linux/network device targets",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "c50f0922-488e-40fa-a8f2-ff38be3c08af",
+            "name": "syslog",
+            "title": "Syslog — Session and vault event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "b6711d90-a47f-4f6c-8834-3e8966a8f8b1",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Privileged Access Management (PAM) platform.",
+            "implemented-requirements": [
+              {
+                "uuid": "0fd556e3-2cb9-40c9-bf05-6d34b6c3787a",
+                "control-id": "ism-0445",
+                "description": "Privileged users are assigned a dedicated privileged account, vaulted and checked out through the PAM platform, used solely for duties requiring privileged access — never for day-to-day productivity tasks."
+              },
+              {
+                "uuid": "2861de96-2339-4795-9380-67b2803e0469",
+                "control-id": "ism-1507",
+                "description": "Requests for privileged access are validated before provisioning: the PAM platform requires a documented justification for each elevation request, and access to designated high-risk targets additionally requires manager or security team approval before the session is brokered."
+              },
+              {
+                "uuid": "426d8ac0-c50c-485a-af5e-7ceb85ac81a9",
+                "control-id": "ism-1508",
+                "description": "Privileged access granted through the PAM platform is limited to the minimum required for the requested task and time window (just-in-time access), rather than standing, always-available privileged access to target systems."
+              },
+              {
+                "uuid": "a60681f6-d5ba-4c55-945f-d7b850d71c5a",
+                "control-id": "ism-1648",
+                "description": "Privileged access sessions and vaulted credential checkouts are time-bound, with the PAM platform automatically revoking the session and rotating the underlying credential at the end of the approved window, or after a period of inactivity."
+              },
+              {
+                "uuid": "496bf817-0a93-4fb7-94b4-0bb0bf816221",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for all users authenticating to the PAM platform before a privileged session can be requested or brokered."
+              },
+              {
+                "uuid": "93f44dad-d8ba-4dd8-a8d4-51ce915e8e95",
+                "control-id": "ism-1509",
+                "description": "All privileged sessions brokered through the PAM platform are recorded (session video and/or keystroke logging) and privileged access events (checkout, session start/end, approval decisions) are centrally logged and forwarded to the SIEM."
+              },
+              {
+                "uuid": "48b16054-1b3a-4869-8efb-c1913727bbbc",
+                "control-id": "ism-1685",
+                "description": "Credentials for break glass accounts, local administrator accounts, and service accounts are vaulted in the PAM platform as long, unique, unpredictable, and centrally managed secrets rather than manually set and remembered passwords."
+              },
+              {
+                "uuid": "f8c93c04-aea5-4a4f-85d5-cc85d6c09dbc",
+                "control-id": "ism-1647",
+                "description": "Privileged access granted through the PAM platform is disabled after 12 months unless formally revalidated, and standing privileged role assignments are reviewed at least annually to confirm they are still required."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

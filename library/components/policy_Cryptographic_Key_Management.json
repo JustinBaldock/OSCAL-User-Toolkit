@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "01e09afc-4b8d-4f50-8a9b-99935e259018",
+    "metadata": {
+      "title": "policy - Cryptographic Key Management Policy",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "cffd036f-b4bb-4c18-bd98-384990a5c7c2",
+        "type": "policy",
+        "title": "Cryptographic Key Management Policy",
+        "description": "This policy sets the organisation's requirements for the generation, distribution, storage, rotation, and destruction of cryptographic keys used across the organisation's systems, including TLS certificates, disk/volume encryption keys, and keys used by cryptographic equipment and applications. It complements individual system components' own encryption controls by defining the lifecycle process that governs the keys those components rely on.",
+        "purpose": "Ensure cryptographic keys used across the organisation are generated, protected, rotated, and destroyed using approved processes, so that the strength of the organisation's encryption controls is not undermined by weak key management practices.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "82674706-6828-42e8-adb9-0d9beb3ca7a1",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Cryptographic Key Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "ea04f3e4-c05f-4ac3-8be8-ec38969d420a",
+                "control-id": "ism-0507",
+                "description": "Cryptographic key management processes, and supporting cryptographic key management procedures, are developed, implemented and maintained, covering key generation, distribution, storage, rotation, and destruction for all cryptographic keys in use across the organisation."
+              },
+              {
+                "uuid": "02ea13e4-c608-46ce-83ef-4f84c409328d",
+                "control-id": "ism-0471",
+                "description": "Only Australian Approved Cryptographic Algorithms (AACAs) or other high-assurance cryptographic algorithms are used by the organisation's cryptographic equipment, applications, and libraries."
+              },
+              {
+                "uuid": "a6ede31c-a6d2-4f80-8337-e84c3ed1f43e",
+                "control-id": "ism-1080",
+                "description": "An AACA or high-assurance cryptographic algorithm is used whenever data at rest is encrypted, whether by a hardware self-encrypting drive, a full-disk encryption product, or an application-level encryption library."
+              },
+              {
+                "uuid": "8c14a4ff-69fc-4a6e-a7fe-70fa972844eb",
+                "control-id": "ism-0479",
+                "description": "Symmetric cryptographic algorithms used across the organisation's systems are not configured to operate in Electronic Codebook (ECB) mode, which does not adequately obscure patterns in the underlying plaintext."
+              },
+              {
+                "uuid": "c1bc56ed-48f5-4cbb-9c38-a0d3ca54d8ac",
+                "control-id": "ism-0455",
+                "description": "Where practical, cryptographic equipment, applications, and libraries used by the organisation provide a means of data recovery for circumstances where the encryption key becomes unavailable, preventing irrecoverable data loss due to key loss."
+              },
+              {
+                "uuid": "75969114-e583-4c6b-8ffd-411c9432d488",
+                "control-id": "ism-1449",
+                "description": "SSH private keys used for administrative or service authentication are protected with a password or an equivalent key-encryption key, rather than stored unencrypted on disk."
+              },
+              {
+                "uuid": "003c0cea-3b8c-4c67-aac5-5a55284a8315",
+                "control-id": "ism-1327",
+                "description": "Certificates (TLS/PKI) issued by or used within the organisation are protected by logical and physical access controls, encryption of the private key material, and user authentication before any operation involving the private key."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

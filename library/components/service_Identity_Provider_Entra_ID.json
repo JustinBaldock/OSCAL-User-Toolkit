@@ -1,0 +1,115 @@
+{
+  "component-definition": {
+    "uuid": "805e2c0d-3f18-446e-942d-7fc75e5e680a",
+    "metadata": {
+      "title": "service - Identity Provider (Microsoft Entra ID)",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "4f852bcf-1080-406d-b757-c6ae25c22800",
+        "type": "service",
+        "title": "Identity Provider (Microsoft Entra ID)",
+        "description": "Cloud identity provider (Microsoft Entra ID, hybrid-joined with on-premises Active Directory) providing single sign-on and conditional access enforcement across the organisation's cloud services, SaaS applications, and any on-premises applications federated via SAML/OIDC. Enforces phishing-resistant multi-factor authentication for all users and blocks legacy authentication protocols that cannot support MFA. This is distinct from on-premises Active Directory, which provides domain-joined device authentication and Group Policy — Entra ID is the identity plane for cloud and SSO-federated access.",
+        "purpose": "Provide centralised single sign-on and conditional-access-enforced authentication across cloud services and federated applications, with multi-factor authentication enforced consistently regardless of which application a user is signing into.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Cloud identity provider, hybrid-joined with on-premises Active Directory via Entra Connect (or Entra ID-only for cloud-native tenants)"
+          },
+          {
+            "name": "sso-protocols",
+            "value": "SAML 2.0, OpenID Connect / OAuth 2.0 for federated application single sign-on"
+          },
+          {
+            "name": "mfa-method",
+            "value": "Phishing-resistant MFA (FIDO2 security keys, Windows Hello for Business, Certificate-based Authentication) as the primary method"
+          },
+          {
+            "name": "conditional-access",
+            "value": "Conditional Access policies enforcing MFA, device compliance, and location/risk-based access controls for all cloud application sign-in"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "f3ba7288-8a4f-4f97-acd2-df03641b2497",
+            "name": "https",
+            "title": "HTTPS — Authentication endpoints, admin portal, Conditional Access policy evaluation",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "fcfc52d0-43fa-4c50-9861-1bbc91953b4f",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Identity Provider (Microsoft Entra ID).",
+            "implemented-requirements": [
+              {
+                "uuid": "bd8a5100-2f69-46b9-82d9-3716af496ce3",
+                "control-id": "ism-1504",
+                "description": "Multi-factor authentication is enforced via Conditional Access policy for all users authenticating to the organisation's online services and SSO-federated applications that process, store, or communicate sensitive organisational data."
+              },
+              {
+                "uuid": "c0bca11c-85c9-4647-8eaf-7c6e8f88e52c",
+                "control-id": "ism-1872",
+                "description": "Multi-factor authentication for user access to online services is phishing-resistant, enforced via Conditional Access Authentication Strength policies requiring FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication rather than SMS or voice OTP."
+              },
+              {
+                "uuid": "bc6ddd10-e829-4f37-8613-9f7add87a083",
+                "control-id": "ism-1919",
+                "description": "Legacy authentication protocols that do not support multi-factor authentication (Basic Auth, legacy MAPI/RPC, POP3/IMAP4 without modern auth) are blocked at the identity provider for all cloud service access via a dedicated Conditional Access policy targeting the 'Other clients' condition."
+              },
+              {
+                "uuid": "e14c41e6-b117-4bc4-bb99-999d90cc79d7",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for privileged users (Global Administrators, Conditional Access administrators, and other directory role holders) authenticating to the identity provider's administrative portal, with a stricter Authentication Strength requirement than standard users."
+              },
+              {
+                "uuid": "4629f5b7-8145-4b70-87ad-bcd5c6cd68cf",
+                "control-id": "ism-1508",
+                "description": "Directory role assignments (privileged access within the identity provider itself) are limited to the minimum required for each administrator's function, using Privileged Identity Management (PIM) for just-in-time, time-bound elevation rather than standing role assignments."
+              },
+              {
+                "uuid": "9f943acb-bf93-4b3e-9cb7-3fdf8a4afae3",
+                "control-id": "ism-1683",
+                "description": "Successful and unsuccessful multi-factor authentication events are centrally logged via the identity provider's sign-in logs and forwarded to the SIEM, supporting detection of credential-stuffing and MFA-fatigue attack patterns."
+              },
+              {
+                "uuid": "40f0128c-f285-4bed-8fb9-8c1fcfb3c07e",
+                "control-id": "ism-1509",
+                "description": "Privileged access events within the identity provider (directory role assignment changes, Conditional Access policy changes, PIM activations) are centrally logged and forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

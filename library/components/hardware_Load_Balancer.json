@@ -1,0 +1,171 @@
+{
+  "component-definition": {
+    "uuid": "904dbecb-aae8-41dd-aed9-8cdd6be00ace",
+    "metadata": {
+      "title": "hardware - Load Balancer",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f4d3b41d-c806-4774-a49c-1fb0a19db1df",
+        "type": "hardware",
+        "title": "Load Balancer",
+        "description": "Enterprise load balancing appliance (e.g. F5 BIG-IP, Citrix ADC, or equivalent) distributing traffic across redundant application and web server instances, performing SSL/TLS termination and health-checked failover. Deployed as a redundant active/standby pair to avoid a single point of failure for the services it fronts.",
+        "purpose": "Distribute traffic across redundant backend servers to improve availability and performance, and centralise SSL/TLS termination and health monitoring for the services it fronts.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "F5 Networks / Citrix / equivalent"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Redundant active/standby appliance pair"
+          },
+          {
+            "name": "tls-termination",
+            "value": "SSL/TLS termination at the load balancer, re-encrypted to backend servers"
+          },
+          {
+            "name": "health-checking",
+            "value": "Layer 4/7 health checks with automatic failover on backend failure"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "b09b2fd8-c04e-4143-b525-622d6e69fce4",
+            "name": "https",
+            "title": "HTTPS — Load-balanced application traffic (client-facing)",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "ab5f1f39-b128-4092-b466-7db0d0d08d8d",
+            "name": "https",
+            "title": "HTTPS — Management interface",
+            "port-ranges": [
+              {
+                "start": 8443,
+                "end": 8443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "70dc2ff7-96d8-454f-b469-7deaf0ea4fa4",
+            "name": "ssh",
+            "title": "SSH — CLI administration",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2938b579-e192-47f5-a040-f6bc05745b62",
+            "name": "snmp",
+            "title": "SNMP — Health and performance monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "7263f5e6-0906-4367-9093-6cc5379c8114",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "17abcbd0-fbb5-45dd-9b74-20c2cd358fcf",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "59f97ddb-e2bb-4c49-9ec2-0101978dacfa",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Load Balancer.",
+            "implemented-requirements": [
+              {
+                "uuid": "24b7f7f9-3bc0-4f64-bd28-b53d082599da",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the load balancer appliance, covering disabling unused management protocols, restricting the management interface to the dedicated management VLAN, and keeping appliance firmware current with vendor security releases."
+              },
+              {
+                "uuid": "0c692aec-7e9e-48bf-a6a2-f7b3001b7260",
+                "control-id": "ism-0631",
+                "description": "The load balancer only forwards explicitly authorised data flows to backend servers, configured via virtual server and pool definitions that map specific client-facing services to specific approved backend server pools — traffic to any other backend is not permitted."
+              },
+              {
+                "uuid": "4941d5a3-fdc3-40fa-9379-137455bb94ca",
+                "control-id": "ism-1080",
+                "description": "SSL/TLS termination on the load balancer uses only AACA-approved or high-assurance cryptographic algorithms and current TLS protocol versions; legacy protocol versions and weak cipher suites are disabled."
+              },
+              {
+                "uuid": "7917757c-da8c-4ef0-95b5-68db8d51b52c",
+                "control-id": "ism-1436",
+                "description": "Critical online services fronted by the load balancer are segregated (via separate virtual servers, pools, and where appropriate separate appliance pairs) from other, less critical online services that are more likely to be targeted by denial-of-service attacks."
+              },
+              {
+                "uuid": "4fa1e2bb-e430-498a-bcd0-012a8ba9782f",
+                "control-id": "ism-0445",
+                "description": "Load balancer administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for load balancer administration."
+              },
+              {
+                "uuid": "f71d5ecc-9c95-411d-b6d8-7675b587a03a",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the load balancer's management interface."
+              },
+              {
+                "uuid": "9f80fb53-ed4e-4d77-8423-9889aedfb80d",
+                "control-id": "ism-1405",
+                "description": "Security-relevant load balancer events (configuration changes, failover events, administrative logon attempts) are centrally logged and forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

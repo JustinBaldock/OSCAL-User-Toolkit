@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "dce634cc-3cb5-41c0-a711-4d3c2f394063",
+    "metadata": {
+      "title": "policy - Physical Security Policy",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7d57e8cc-591a-4bc7-addb-abbbd86c49a6",
+        "type": "policy",
+        "title": "Physical Security Policy",
+        "description": "This policy sets the organisation's requirements for physically securing facilities, server rooms, communications rooms, and the IT equipment held within them, including access control to these areas, escort requirements for uncleared personnel undertaking maintenance, and requirements for equipment left unattended. It complements the IT Equipment Management Policy by focusing on the physical environment rather than the equipment lifecycle itself.",
+        "purpose": "Restrict physical access to facilities, server rooms, and IT equipment to authorised personnel only, and ensure equipment and media are appropriately secured when not in active use.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "d35b22ff-d021-45e6-be94-1a84d1830f23",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Physical Security Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "43da3340-a26c-4920-86b6-ecdaa5163e37",
+                "control-id": "ism-1973",
+                "description": "Non-classified systems are secured in suitably secure facilities, with physical access restricted to authorised personnel and monitored for unusual or suspicious activity."
+              },
+              {
+                "uuid": "0a584d12-6cae-4ca9-851f-8a71347a4bca",
+                "control-id": "ism-1974",
+                "description": "Non-classified servers, network devices, and cryptographic equipment are secured in suitably secure server rooms or communications rooms, rather than in general office space."
+              },
+              {
+                "uuid": "f5bb34cd-3dc2-4ea2-b121-9a5565b3ba44",
+                "control-id": "ism-0813",
+                "description": "Server rooms, communications rooms, and security containers are not left in an unsecured state — doors are closed and locked whenever the room is unattended."
+              },
+              {
+                "uuid": "0d36b92d-3fee-4502-8df4-5f63ecdcfa48",
+                "control-id": "ism-1074",
+                "description": "Keys, access cards, or equivalent access mechanisms to server rooms, communications rooms, and security containers are appropriately controlled, with a record maintained of who holds access and periodic review of that access list."
+              },
+              {
+                "uuid": "78576aea-6535-42d9-ad96-1cb7de35356e",
+                "control-id": "ism-0161",
+                "description": "IT equipment and media are secured when not in use, whether in a locked office, a locked cabinet, or a secured server room, rather than left accessible in an unattended, unsecured space."
+              },
+              {
+                "uuid": "764bfdf9-15c9-4574-8507-82eee27a8cf9",
+                "control-id": "ism-0306",
+                "description": "If an appropriately cleared or vetted technician is not available to undertake maintenance or repairs to IT equipment, the technician is escorted for the duration of the work by an authorised staff member."
+              },
+              {
+                "uuid": "4553b459-65ce-4bd5-86fd-1f316f5fece3",
+                "control-id": "ism-1296",
+                "description": "Physical security measures (secure enclosures, restricted-access cabinets, tamper-evident seals) are implemented to protect network devices located in public or semi-public areas from physical damage or unauthorised access."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

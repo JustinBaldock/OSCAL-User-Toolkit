@@ -1,0 +1,151 @@
+{
+  "component-definition": {
+    "uuid": "85a34fb7-dc9c-4b03-9609-66b85ce3b18a",
+    "metadata": {
+      "title": "service - Email Security Gateway",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "0e2a0655-3df4-461e-9883-23ec98bac244",
+        "type": "service",
+        "title": "Email Security Gateway",
+        "description": "Centralised email security gateway (e.g. Mimecast, Proofpoint, or Microsoft Defender for Office 365) that all inbound and outbound organisational email is routed through, providing anti-spam, anti-phishing, anti-malware attachment scanning (including sandboxed detonation), and URL rewriting/click-time protection. Sits in front of, and is complementary to, the mailbox service itself (e.g. Exchange Online).",
+        "purpose": "Filter inbound and outbound email for spam, phishing, and malicious attachments/links before delivery, reducing the volume of malicious email reaching end users' mailboxes.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Mimecast / Proofpoint / Microsoft Defender for Office 365"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Cloud-hosted email security gateway, all inbound/outbound mail routed via MX records pointing to the gateway"
+          },
+          {
+            "name": "attachment-scanning",
+            "value": "Sandboxed attachment detonation (safe attachments) before delivery"
+          },
+          {
+            "name": "url-protection",
+            "value": "URL rewriting with real-time click-time re-evaluation (safe links)"
+          },
+          {
+            "name": "anti-spoofing",
+            "value": "SPF, DKIM, and DMARC enforcement for the organisation's domains"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "fb12d097-c1a4-43b9-aac4-a8de6cfe8467",
+            "name": "https",
+            "title": "HTTPS — Management console and API integration",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "5166dda1-95ea-4755-ad06-4446e3042376",
+            "name": "smtp",
+            "title": "SMTP — Inbound/outbound mail relay via the gateway",
+            "port-ranges": [
+              {
+                "start": 25,
+                "end": 25,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "eebf4e95-ad43-4e90-8acc-4ec59f5d40ca",
+            "name": "smtp",
+            "title": "SMTPS — Submission with implicit TLS",
+            "port-ranges": [
+              {
+                "start": 587,
+                "end": 587,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "595fadeb-9939-4365-9724-bb4be673a294",
+            "name": "syslog",
+            "title": "Syslog — Mail flow and detection event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "0e4fce85-6bfd-4b8c-97bf-a45d0d1c3185",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Email Security Gateway.",
+            "implemented-requirements": [
+              {
+                "uuid": "a0c0490c-a731-4687-938d-264354804235",
+                "control-id": "ism-0569",
+                "description": "All organisational email is routed via the centralised email security gateway rather than direct mailbox-to-internet delivery, ensuring every message is subject to the same filtering policy regardless of which mailbox it is destined for or originates from."
+              },
+              {
+                "uuid": "359a5ea6-6810-4410-850c-d9aab8341b9e",
+                "control-id": "ism-0571",
+                "description": "Email is routed to and from the centralised email security gateway using an authenticated and encrypted channel (TLS), preventing interception or tampering of mail in transit between the organisation's mail infrastructure and the gateway."
+              },
+              {
+                "uuid": "8fa0b612-ae88-43bc-823e-6dd754e3d726",
+                "control-id": "ism-1502",
+                "description": "Inbound emails arriving via an external connection where the sender address uses the organisation's own internal domain (or a subdomain) are blocked at the email gateway, preventing a common email spoofing technique used in business email compromise."
+              },
+              {
+                "uuid": "7becc0ee-ee4d-4468-812d-8db18d33363e",
+                "control-id": "ism-0570",
+                "description": "Where a backup or alternative email gateway path exists, it is maintained at the same security standard (filtering policy, TLS enforcement, DMARC/DKIM/SPF checks) as the primary email gateway, so failover does not create a weaker inspection path."
+              },
+              {
+                "uuid": "1f52c017-3fc7-4016-9fec-ff7315b476e2",
+                "control-id": "ism-1234",
+                "description": "Email content filtering is implemented via the gateway's sandboxed attachment detonation and URL rewriting/click-time protection capabilities, blocking malicious attachments and links before they reach end users."
+              },
+              {
+                "uuid": "567343a1-afd0-4e10-b513-ce0895d69f64",
+                "control-id": "ism-1740",
+                "description": "Personnel who deal with banking details and payment requests are advised on business email compromise indicators and the reporting process, complementing the gateway's technical anti-spoofing controls with user awareness."
+              },
+              {
+                "uuid": "296116cb-6e40-4d09-a5a3-5da62c09c426",
+                "control-id": "ism-1405",
+                "description": "Email gateway mail flow and detection events (blocked malware, phishing detections, DMARC failures, quarantine actions) are centrally logged and forwarded to the SIEM."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

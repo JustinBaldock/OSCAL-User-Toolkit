@@ -1,0 +1,159 @@
+{
+  "component-definition": {
+    "uuid": "580b1504-c654-45d8-9e98-89252b522d70",
+    "metadata": {
+      "title": "hardware - Web Application Firewall (WAF)",
+      "last-modified": "2026-07-08T07:44:17Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "0e24c591-1ceb-46b4-b168-48fac8d2314f",
+        "type": "hardware",
+        "title": "Web Application Firewall (WAF)",
+        "description": "Inline web application firewall appliance protecting internet-facing web applications from common attacks (SQL injection, cross-site scripting, and other OWASP Top 10 classes) by inspecting and filtering HTTP/HTTPS traffic at the application layer before it reaches backend web servers. Deployed at the network perimeter, immediately inside the outermost firewall, in front of internet-facing web applications.",
+        "purpose": "Detect and block application-layer attacks against internet-facing web applications before they reach backend servers, complementing network-layer firewalling with application-aware inspection.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "F5 ASM / Cloudflare WAF / Imperva / equivalent"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Inline reverse-proxy appliance, positioned immediately inside the outermost perimeter firewall"
+          },
+          {
+            "name": "protection-mode",
+            "value": "Blocking mode (not detection/audit-only) for production traffic, based on an OWASP Core Rule Set baseline with application-specific tuning"
+          },
+          {
+            "name": "tls-inspection",
+            "value": "TLS termination and re-encryption to inspect encrypted application traffic"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "ab2abad9-881b-4fb5-8877-be60eeb2993e",
+            "name": "https",
+            "title": "HTTPS — Inspected inbound traffic to protected web applications",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2ab40838-bfbe-4a5c-9877-a142d0079415",
+            "name": "https",
+            "title": "HTTPS — Management interface",
+            "port-ranges": [
+              {
+                "start": 8443,
+                "end": 8443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "af64e7d3-031d-4934-bda5-9835d264e9b6",
+            "name": "ssh",
+            "title": "SSH — CLI administration",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "191fe09b-e2ee-453a-a4d5-887aaaa1929b",
+            "name": "syslog",
+            "title": "Syslog — Blocked/allowed request event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "0f9d71e1-8256-4898-9f1c-ffd9042c5f09",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "c1c3372e-209c-44a4-99d6-c7bd4095a2bb",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Web Application Firewall (WAF).",
+            "implemented-requirements": [
+              {
+                "uuid": "70397474-c34c-42f3-a853-d73f0281e579",
+                "control-id": "ism-1028",
+                "description": "A network intrusion detection or prevention capability, in the form of a Web Application Firewall, is deployed at the gateway between the organisation's internet-facing web applications and the internet."
+              },
+              {
+                "uuid": "24c26c15-6f1a-46f1-a612-1d95019492a9",
+                "control-id": "ism-1030",
+                "description": "The Web Application Firewall is located immediately inside the outermost perimeter firewall and is configured to generate event logs and alerts for suspicious or malicious web application traffic patterns, forwarded to the SIEM."
+              },
+              {
+                "uuid": "4a6f04c8-0794-4d9f-a924-734d0fd767f2",
+                "control-id": "ism-1192",
+                "description": "The Web Application Firewall inspects and filters HTTP/HTTPS data flows at the application layer, not just the transport layer, detecting attack patterns such as SQL injection, cross-site scripting, and other OWASP Top 10 attack classes."
+              },
+              {
+                "uuid": "a1c153a0-0b02-4912-882a-6a90f4a84158",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the WAF appliance, covering rule set tuning per protected application, restricting the management interface to the dedicated management VLAN, and keeping appliance firmware and rule set signatures current."
+              },
+              {
+                "uuid": "c760ff4e-0c13-4e15-8d29-ebec9fbf130b",
+                "control-id": "ism-0445",
+                "description": "WAF administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for WAF policy and appliance administration."
+              },
+              {
+                "uuid": "5ff3b098-59cc-4dc2-ad3c-6f012fce20cb",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the WAF management interface."
+              },
+              {
+                "uuid": "3f99c882-d19e-489d-b9d0-02404d43a34c",
+                "control-id": "ism-1405",
+                "description": "Blocked and allowed request events, along with WAF configuration changes, are centrally logged and forwarded to the SIEM to support detection of attack campaigns against protected web applications."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
