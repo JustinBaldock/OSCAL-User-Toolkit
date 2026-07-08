@@ -76,6 +76,18 @@ Roles referenced by stories below. Add to this list as new personas come up.
 - The SSP, Assessment Plan, and POA&M editors all pick up whatever components/capabilities exist in the current system's folder, so inherited coverage shows up without manual re-entry in each tab.
 - **Status: implemented.** Component Editor and Capability Editor have a "📚 Import from Library" button (`_import_from_library()` in `component_tab.py`/`capability_tab.py`) that copies a file from the configured Library folder into `<current system folder>/components/` or `.../capabilities/`, skipping any file already imported so local edits aren't clobbered, then loads the copy for editing. The "current system folder" is the folder containing the active workspace manifest (`app.get_system_folder()`) — a workspace must be open/saved first. The SSP Editor's Section 8 now has "🔄 Sync from System Folder" (`_sync_from_system_folder()`), which reads every file in that folder and imports it into the SSP — closing the loop from Library → system folder → SSP (see design document §10.15). Assessment Plan and POA&M both show read-only Components/Capabilities panes sourced from the referenced SSP file (see US-10), giving them visibility into whatever was inherited, without a write path of their own.
 
+### US-14: Maintain the Library's master components and capabilities
+
+**As an** Organisation User,
+**I want to** create and edit the component and capability definitions that live in the shared Library,
+**so that** Application Users and System Owners always have an up-to-date, correct set of building blocks to import into their own systems (see US-12) — the Library is only as useful as whoever maintains it.
+
+**Acceptance criteria:**
+- Can create a new component/capability directly in the Library's `components/`/`capabilities/` folders, or open an existing Library file and edit it, distinct from editing a copy already imported into a system.
+- Saving an edited Library master doesn't require it to be attached to any one system — it's a standalone, reusable definition.
+- There's a clear, discoverable way to tell whether the file currently open in Component/Capability Editor is the Library's shared master or a system's own local copy, so an Organisation User doesn't accidentally edit one when they meant the other.
+- **Status: partially implemented — possible, but not a dedicated workflow.** Component Editor and Capability Editor's existing "📂 Open File(s)"/"📁 Open Folder" and "💾 Save" actions are generic file operations with no restriction on *where* the file lives — so an Organisation User can already open a file straight from `library/components/`, edit it, and save it back in place, which technically satisfies "create and edit Library masters." What's missing: there's no Library-specific entry point for this (no "Browse Library" action distinct from "Import from Library," which deliberately copies *out* of the Library rather than editing it in place), and — flagged as a known gap in `todo.md` §5 — no visual indicator anywhere in Component/Capability Editor showing whether the currently open file is the Library's master or a system's local copy, so nothing stops an Organisation User from editing a Library master by mistake while thinking they're editing one system's copy, or vice versa.
+
 ---
 
 ## Multi-Network Dashboard (Large Organisations)
