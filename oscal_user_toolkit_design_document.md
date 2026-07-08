@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.9  
+**Version:** 4.0  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -965,7 +965,30 @@ Every per-file read is wrapped narrowly (`OSError, json.JSONDecodeError, KeyErro
 
 **A construction-order bug this surfaced:** `library_mode`'s auto-load calls `set_status()` synchronously during `ComponentTab.__init__()`, which runs during `app.py._build_notebook()` — but `_build_statusbar()` (which creates `self._status_lbl`, the target of every tab's `set_status` callback) previously ran *after* `_build_notebook()` in `OSCALApp.__init__()`. Nothing had ever called `set_status()` synchronously during construction before, so this ordering bug was latent until now. Fixed by building the status bar before the notebook — `pack()`'s `side="top"`/`side="bottom"` layout is unaffected by which is constructed first, only by pack call order relative to each other, which didn't change.
 
-**Component/capability versioning (`metadata.revisions[]`) is intentionally not part of this stage.** The brainstorm that led here also covered using OSCAL's native per-document revision history so a Library update is visible to whoever already imported an older copy — confirmed against `oscal_component_schema.json` that `metadata.revisions[]` exists (title/version/published/last-modified/remarks, documented reverse-chronological) but only at the document level, not per-component, and that a component's own `uuid` should stay stable across edits for this to work. That's deliberately deferred to a follow-up once these two editors have been used and tested.
+**Component/capability versioning (`metadata.revisions[]`) is intentionally not part of this stage.** The brainstorm that led here also covered using OSCAL's native per-document revision history so a Library update is visible to whoever already imported an older copy — confirmed against `oscal_component_schema.json` that `metadata.revisions[]` exists (title/version/published/last-modified/remarks, documented reverse-chronological) but only at the document level, not per-component, and that a component's own `uuid` should stay stable across edits for this to work. That work is designed in §10.21 below.
+
+### 10.21 Component version / revision / UUID metadata — planned, not yet implemented
+
+**Status: designed, not built.** This is the agreed design for the next feature — surfacing version, revision history, and stable UUIDs in the Component Editor (both `library_mode` and System Overview instances, since they share the `ComponentTab` class). It is groundwork for a later "compare version" function (which is *not* in scope here). Scoped to **components only** for now — capabilities are a separate follow-up and should not be started without an explicit request.
+
+**Use OSCAL's native `metadata.revisions[]`, don't invent a field.** Confirmed against `oscal_component_schema.json`:
+- The `defined-component` object has **no version field** — only its own `uuid`. Its properties are `uuid, type, title, description, purpose, props, links, responsible-roles, protocols, control-implementations, remarks`.
+- Versioning lives at the **document** level: `component-definition.metadata` has `version` (required) and `revisions[]`, where each revision is `{title, published, last-modified, version (required), oscal-version, props, links, remarks}`, documented as reverse-chronological (latest first).
+
+So the model is: each single-component file carries a stable document `uuid`, a stable component `uuid`, a current `version`, and an ordered `revisions[]` history — all round-tripping natively through OSCAL with no home-grown encoding.
+
+**The architectural blocker to fix first.** `ComponentTab` today stores `self._file_uuid` (set once via `new_uuid()`) and `self._file_version` (a single `tk.StringVar(value="1.0")`) as **shared, tab-level** state — reset only by `_new_file()`. `_build_single_component_oscal(comp)` uses these shared values for *every* component's `metadata.uuid`/`metadata.version` regardless of which component is selected. This is wrong for per-component tracking and **badly broken in `library_mode`**, where dozens of components share one `ComponentTab` instance and would therefore all be written with the same document UUID and version. The fix is to move this state per-component:
+- Store `file_uuid`, `version`, and `revisions` (a list mirroring OSCAL's `metadata.revisions[]` shape) as fields on each component's own internal dict.
+- Populate them on load in `_parse_single_component()` / `_load_component_from_path()` (read back `metadata.uuid`, `metadata.version`, `metadata.revisions`; default a fresh `file_uuid`/`version` for components that predate this and have none).
+- In `_build_single_component_oscal(comp)`, read `comp["file_uuid"]` / `comp["version"]` / `comp["revisions"]` instead of the shared `self._file_uuid` / `self._file_version`.
+
+**Planned UI** — a compact "Version & Revision History" block in the component detail form, placed to avoid renumbering the existing numbered sections (added within/after Section 1 "Basic Information"):
+- Component UUID (read-only) and document UUID (read-only) — visible for traceability but never hand-edited.
+- An editable Version field, replacing the old shared toolbar Version entry.
+- A read-only revision history list rendered from `revisions[]`.
+- A "Save New Version" action, distinct from a plain in-place save: it bumps `version` and prepends an entry to `revisions[]` (latest-first), whereas an ordinary save just rewrites the current version in place.
+
+**Verification when built:** instantiate `ComponentTab` in both modes and confirm version/revision/UUID round-trip through save→reload, and specifically that the `library_mode` many-components-one-tab case keeps each component's version and UUID independent.
 
 ---
 
@@ -1008,6 +1031,11 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 4.0 (July 2026)
+
+**Planned (designed, not yet implemented):**
+- **Component version / revision / UUID metadata** — surface OSCAL's native document-level `version`/`metadata.revisions[]` and stable UUIDs per component in the Component Editor, replacing the shared tab-level `_file_uuid`/`_file_version` with per-component storage (which is broken in `library_mode`, where many components share one tab). Groundwork for a future "compare version" function; components only. Full design in §10.21.
 
 ### Version 3.9 (July 2026)
 
