@@ -1,0 +1,160 @@
+{
+  "component-definition": {
+    "uuid": "057b3a0b-32a2-42e7-814f-a75c941fa14a",
+    "metadata": {
+      "title": "service - Container Orchestration Platform (Kubernetes)",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "a45ecb2f-b9cd-4fe9-8081-f7d422178b43",
+        "type": "service",
+        "title": "Container Orchestration Platform (Kubernetes)",
+        "description": "Managed Kubernetes cluster (e.g. AKS, EKS, or GKE — or self-managed) hosting containerised business applications. RBAC is enforced for cluster and namespace access, network policies restrict pod-to-pod traffic by default-deny, container images are scanned for vulnerabilities before deployment via an admission controller, and secrets are stored in an external secrets manager rather than plain Kubernetes Secrets. Cluster and workload audit logs are forwarded to the SIEM.",
+        "purpose": "Provide a scalable, resilient platform for deploying and running containerised business applications, with security controls appropriate to a shared multi-tenant compute environment.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Managed Kubernetes (Azure AKS / AWS EKS / Google GKE) or self-managed"
+          },
+          {
+            "name": "access-control",
+            "value": "Kubernetes RBAC integrated with organisation identity provider (OIDC)"
+          },
+          {
+            "name": "network-policy",
+            "value": "Default-deny network policies (Calico / Cilium), explicit allow rules per namespace"
+          },
+          {
+            "name": "image-security",
+            "value": "Container images scanned for vulnerabilities pre-deployment via admission controller (e.g. Trivy, Aqua, or cloud-native scanner); only images from an approved registry are permitted"
+          },
+          {
+            "name": "secrets-management",
+            "value": "External secrets manager (e.g. HashiCorp Vault, Azure Key Vault, AWS Secrets Manager) — not plain Kubernetes Secrets"
+          },
+          {
+            "name": "logging",
+            "value": "Cluster audit logs and workload logs forwarded to SIEM"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "5080a98c-b8ce-4130-88bf-6de2606ffa2f",
+            "name": "https",
+            "title": "HTTPS — Kubernetes API server access",
+            "port-ranges": [
+              {
+                "start": 6443,
+                "end": 6443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "e78aca83-cf4a-49f7-ab3b-48b7e395f9f8",
+            "name": "https",
+            "title": "HTTPS — Ingress traffic to hosted applications",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "780afc55-1ec5-4f4b-951c-35546bd5f1a6",
+            "name": "dns",
+            "title": "DNS — In-cluster service discovery (CoreDNS)",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "213b2dc0-08ad-4cd7-af20-aa7feb147392",
+            "name": "syslog",
+            "title": "Syslog — Cluster and workload log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f7b388b6-51ce-41c8-baf7-ddb7bfeb919f",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Container Orchestration Platform (Kubernetes).",
+            "implemented-requirements": [
+              {
+                "uuid": "f0bd269f-16a0-434c-b1a0-e755883f3492",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the Kubernetes cluster, covering: disabling anonymous API server access, enabling RBAC as the sole authorisation mode, restricting the API server to the management network or requiring authenticated access via the organisation's identity provider, and keeping the cluster control plane and node images current with vendor security patches (managed automatically on managed Kubernetes offerings)."
+              },
+              {
+                "uuid": "8de95932-4838-44ac-b6ae-6222383af16e",
+                "control-id": "ism-1852",
+                "description": "Network policies enforce default-deny pod-to-pod traffic within the cluster, with explicit allow rules scoped per namespace and application, so a compromised workload in one namespace cannot laterally access workloads in another namespace by default."
+              },
+              {
+                "uuid": "8f4fc43f-9297-421f-a9b4-771cc1a7394b",
+                "control-id": "ism-0955",
+                "description": "Only container images from an approved, scanned registry are permitted to run in the cluster, enforced via an admission controller (e.g. OPA Gatekeeper or Kyverno policy) that blocks deployment of unscanned or unapproved images — analogous to application control allowlisting on traditional hosts."
+              },
+              {
+                "uuid": "4bc78104-47ec-43ec-a240-74f43e3b4ffc",
+                "control-id": "ism-1402",
+                "description": "Application secrets (database credentials, API keys, certificates) are stored in an external secrets manager and injected into workloads at runtime, rather than stored as plain Kubernetes Secrets objects (which are only base64-encoded, not encrypted, by default)."
+              },
+              {
+                "uuid": "d6d4ed69-e015-49c0-b74a-b7af4816ff94",
+                "control-id": "ism-1405",
+                "description": "Kubernetes cluster audit logs (API server audit log) and workload logs are centrally collected and forwarded to the SIEM, capturing authentication events, RBAC authorization decisions, and resource creation/modification/deletion."
+              },
+              {
+                "uuid": "6b524dfc-e05a-4b88-9734-4038fecf7c2d",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for all users authenticating to the Kubernetes API server or cluster management console, enforced via OIDC integration with the organisation's identity provider (which itself enforces MFA)."
+              },
+              {
+                "uuid": "70abfeb9-a039-482b-a2d2-2fd2a157e286",
+                "control-id": "ism-1508",
+                "description": "RBAC role bindings in the Kubernetes cluster grant only the minimum permissions required for each user or service account's function (least privilege), with cluster-admin role bindings restricted to a small number of designated platform administrators."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

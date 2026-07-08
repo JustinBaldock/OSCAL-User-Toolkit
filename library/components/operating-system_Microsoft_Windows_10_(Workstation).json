@@ -1,0 +1,204 @@
+{
+  "component-definition": {
+    "uuid": "565e2c5a-2ab2-41d4-80ee-e6b310845ed7",
+    "metadata": {
+      "title": "operating-system - Microsoft Windows 10 (Workstation)",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "d63a62e5-f2be-4f61-921b-480d22e93324",
+        "type": "operating-system",
+        "title": "Microsoft Windows 10 (Workstation)",
+        "description": "Microsoft Windows 10 workstation operating system, deployed on legacy or transitional endpoints pending migration to Windows 11. Configured with BitLocker full-disk encryption, Microsoft Defender Antivirus with cloud-delivered protection, Windows Defender Application Control (WDAC) or AppLocker, and centralised patch management via Windows Update for Business / Microsoft Intune. Windows 10 reaches end-of-support on 14 October 2025; deployment is tracked against an active migration plan to Windows 11.",
+        "purpose": "Workstation operating system for organisation end-users performing day-to-day productivity tasks, used only where hardware or application compatibility currently prevents migration to Windows 11.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "product-name",
+            "value": "Microsoft Windows 10"
+          },
+          {
+            "name": "version",
+            "value": "Windows 10 22H2 (final feature update — end of support 14 Oct 2025)"
+          },
+          {
+            "name": "editions",
+            "value": "Enterprise (required for WDAC and full Intune management)"
+          },
+          {
+            "name": "architecture",
+            "value": "x86-64 (64-bit)"
+          },
+          {
+            "name": "management-tooling",
+            "value": "Microsoft Intune (MDM), Group Policy (hybrid-joined), Windows Update for Business"
+          },
+          {
+            "name": "endpoint-protection",
+            "value": "Microsoft Defender for Endpoint (EDR), Microsoft Defender Antivirus, WDAC/AppLocker"
+          },
+          {
+            "name": "identity-platform",
+            "value": "Microsoft Entra ID (hybrid-joined with Active Directory)"
+          },
+          {
+            "name": "lifecycle-status",
+            "value": "End of support 14 Oct 2025 — active migration plan to Windows 11 in place"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "2989a37e-2b53-429f-97e4-53c32dbba22b",
+            "name": "https",
+            "title": "HTTPS — Cloud services, web browsing, Windows Update, Intune MDM",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f9433748-7147-4ef9-86c3-f0bdbf1471ab",
+            "name": "kerberos",
+            "title": "Kerberos — Active Directory authentication",
+            "port-ranges": [
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "UDP"
+              },
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "d4b25fa1-5f09-49ad-8226-b525c1d12866",
+            "name": "ldap",
+            "title": "LDAP — Active Directory Group Policy and domain queries",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "9ffae77c-bf08-4dcc-8b95-b64ac70fe9c2",
+            "name": "smb",
+            "title": "SMB — File share access, Group Policy application, SYSVOL",
+            "port-ranges": [
+              {
+                "start": 445,
+                "end": 445,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "d29c3866-5fcc-4fe7-b1a0-739e7fed6849",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation with Active Directory domain controller",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "f538eef5-f195-481c-8bec-0510ef407594",
+            "name": "rdp",
+            "title": "RDP — Remote Desktop (inbound from approved jump server only)",
+            "port-ranges": [
+              {
+                "start": 3389,
+                "end": 3389,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "870b00b4-7ae5-4a43-9e70-0ba0df73982e",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Microsoft Windows 10 (Workstation).",
+            "implemented-requirements": [
+              {
+                "uuid": "9a8461e5-1dd7-4712-9836-42137874c3e0",
+                "control-id": "ism-1914",
+                "description": "Approved security configurations (hardening baselines) for Windows 10 are developed, documented, version-controlled, and maintained, referencing ASD's Hardening Windows 10 guidance and the Microsoft Security Baseline for Windows 10. Baselines are deployed via Group Policy Objects and Microsoft Intune configuration profiles."
+              },
+              {
+                "uuid": "f42eb398-97db-449a-9617-d9406738b884",
+                "control-id": "ism-1409",
+                "description": "Windows 10 workstations are hardened using ASD's Hardening Windows 10 guidance and Microsoft's Security Baseline for Windows 10. Hardening measures applied include disabling LLMNR and NetBIOS over TCP/IP, requiring NTLMv2 minimum, enabling SMB signing, disabling SMBv1, enabling Windows Defender Firewall with default-deny inbound, enabling Microsoft LAPS for the local Administrator account, and configuring UAC at the highest setting."
+              },
+              {
+                "uuid": "df8af486-0f5c-4e1c-aca0-5b2bc273a52e",
+                "control-id": "ism-0843",
+                "description": "Application control (Windows Defender Application Control or AppLocker) is implemented on all Windows 10 workstations in Block/Enforce mode, restricting execution to the organisation-approved application set."
+              },
+              {
+                "uuid": "7c5a2b7f-30ef-44b6-8e9b-1529ad5c4b3e",
+                "control-id": "ism-0459",
+                "description": "Full volume encryption using BitLocker Drive Encryption is implemented on all Windows 10 workstations for the OS volume and all data volumes, configured in XTS-AES-256 mode. Recovery keys are escrowed to Microsoft Entra ID or Active Directory."
+              },
+              {
+                "uuid": "a3d6c5e7-d7e3-4700-98b5-62486462d286",
+                "control-id": "ism-1696",
+                "description": "Security patches and updates for the Windows 10 operating system are applied within 48 hours of release when vulnerabilities are assessed as critical or when working exploits exist in the wild, delivered via an accelerated Intune update ring."
+              },
+              {
+                "uuid": "0305da4e-5f31-4f63-aa59-b7f7b2258bf5",
+                "control-id": "ism-1695",
+                "description": "Security patches and updates for the Windows 10 operating system are applied within one month of release for non-critical vulnerabilities, delivered via Windows Update for Business / Intune Update Rings."
+              },
+              {
+                "uuid": "49c01542-0121-480d-beb1-e0b71ce27a3f",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all standard users authenticating to Windows 10 workstations and organisational services, via Windows Hello for Business or Entra Conditional Access for cloud service sign-on."
+              },
+              {
+                "uuid": "5815c3d3-5f0e-47d6-8d80-9de055857499",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (SIEM) collects and retains security event logs from Windows 10 workstations via Windows Event Forwarding and/or EDR agent telemetry."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "component-definition": {
+    "uuid": "3e0c5ddf-5036-4682-9ebe-cdc50be800d9",
+    "metadata": {
+      "title": "software - GitLab (Source Code Management)",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f99d6be9-cf70-49db-94eb-ffd279346091",
+        "type": "software",
+        "title": "GitLab (Source Code Management)",
+        "description": "GitLab (self-managed or SaaS) providing source code version control, code review via merge requests, and CI/CD pipelines for the organisation's software development lifecycle. Branch protection rules require peer review and passing pipeline checks before merge to protected branches. CI/CD pipelines include automated static analysis (SAST), dependency vulnerability scanning, and secret scanning. Repository and pipeline audit events are forwarded to the SIEM.",
+        "purpose": "Provide a secure source code management and CI/CD platform supporting the organisation's secure software development lifecycle, from code review through to automated build and deployment.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "GitLab Inc."
+          },
+          {
+            "name": "deployment-model",
+            "value": "Self-managed (on-premises/cloud VM) or GitLab.com SaaS"
+          },
+          {
+            "name": "branch-protection",
+            "value": "Protected branches require merge request approval and passing pipeline before merge; force-push disabled"
+          },
+          {
+            "name": "pipeline-security-scanning",
+            "value": "SAST, dependency scanning, and secret detection enabled in CI/CD pipelines"
+          },
+          {
+            "name": "identity-platform",
+            "value": "SSO via SAML/OIDC integrated with organisation identity provider, MFA enforced"
+          },
+          {
+            "name": "artifact-signing",
+            "value": "Build artifacts and container images signed as part of the release pipeline"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "1a3d5369-8594-43d7-913d-9ecffc95d9b4",
+            "name": "https",
+            "title": "HTTPS — Web UI, Git-over-HTTPS, API, and CI/CD runner communication",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "fbbb89ae-2022-470e-bec2-18b3883cfaad",
+            "name": "ssh",
+            "title": "SSH — Git-over-SSH for developer clone/push/pull operations",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "7046fc89-b9b9-4a7b-8243-ad69f79b8f22",
+            "name": "syslog",
+            "title": "Syslog — Application and audit event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "c24b8d1c-40b6-437e-93db-338f9cd73e48",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for GitLab (Source Code Management).",
+            "implemented-requirements": [
+              {
+                "uuid": "3dd18e08-efd3-4628-abe1-1d62e1c6883d",
+                "control-id": "ism-1798",
+                "description": "Secure configuration guidance (a hardening/loosening guide) for GitLab instance configuration is produced and maintained, covering authentication settings, branch protection defaults, and CI/CD runner isolation, and made available to project maintainers as part of the organisation's secure development guidance."
+              },
+              {
+                "uuid": "c1272db3-7a88-471e-a90c-e0b3b7c568b9",
+                "control-id": "ism-1852",
+                "description": "Repository and project access in GitLab is restricted to only the developers and teams who require it for their work, using GitLab's project/group permission model (Guest through Owner roles), with access reviewed periodically to remove stale grants."
+              },
+              {
+                "uuid": "af2b5091-01ce-49c0-93cf-47e95fe2c569",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all users authenticating to GitLab, enforced via SSO integration with the organisation's identity provider (which enforces MFA) or GitLab's built-in two-factor authentication where SSO is not used."
+              },
+              {
+                "uuid": "ee295c3e-a3a9-40de-a119-8698e07b11fa",
+                "control-id": "ism-1402",
+                "description": "CI/CD pipeline credentials (deployment keys, cloud provider credentials, API tokens) are stored as masked, protected GitLab CI/CD variables or in an integrated external secrets manager, never committed in plaintext to the repository. Secret scanning in the CI/CD pipeline detects and blocks any credentials accidentally committed to code."
+              },
+              {
+                "uuid": "39afe05a-4911-44dc-8913-1fd6a1d55dff",
+                "control-id": "ism-1143",
+                "description": "Automated dependency vulnerability scanning is run on every pipeline execution, identifying known-vulnerable third-party libraries and packages before code is merged or deployed, with findings tracked through to remediation."
+              },
+              {
+                "uuid": "ea023e14-ffc6-4351-9584-85e8d893f540",
+                "control-id": "ism-1405",
+                "description": "GitLab audit events (project access changes, permission changes, protected branch changes, pipeline execution, failed authentication attempts) are centrally logged and forwarded to the SIEM."
+              },
+              {
+                "uuid": "1970ae34-528e-42df-b228-37187742cfdd",
+                "control-id": "ism-1730",
+                "description": "Where GitLab CI/CD is used to build software distributed to consumers, a software bill of materials (SBOM) is produced as part of the pipeline and made available to consumers of that software."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

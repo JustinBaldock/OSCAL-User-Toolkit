@@ -1,0 +1,200 @@
+{
+  "component-definition": {
+    "uuid": "c1423411-94c3-4533-96a2-29f720b65ab1",
+    "metadata": {
+      "title": "operating-system - Ubuntu Linux (Workstation)",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "c91a057e-a28f-41ca-b4ac-01815b52e600",
+        "type": "operating-system",
+        "title": "Ubuntu Linux (Workstation)",
+        "description": "Ubuntu Linux LTS release deployed as a workstation operating system for engineering and technical staff. Configured with full-disk encryption (LUKS), AppArmor mandatory access control profiles enforced, ufw host-based firewall enabled, unattended-upgrades for security patches, and centralised authentication via SSSD against Active Directory or an LDAP directory. Endpoint logging is forwarded to the SIEM via an agent (e.g. auditd + rsyslog, or an EDR agent with Linux support).",
+        "purpose": "Workstation operating system for engineering and technical staff requiring a Linux development or administration environment, with organisation-standard security controls equivalent to the Windows fleet.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Canonical"
+          },
+          {
+            "name": "product-name",
+            "value": "Ubuntu Desktop LTS"
+          },
+          {
+            "name": "version",
+            "value": "Ubuntu 24.04 LTS (or current supported LTS release)"
+          },
+          {
+            "name": "architecture",
+            "value": "x86-64 (64-bit)"
+          },
+          {
+            "name": "management-tooling",
+            "value": "Ansible / Landscape (Canonical) for fleet configuration management; unattended-upgrades for patching"
+          },
+          {
+            "name": "endpoint-protection",
+            "value": "AppArmor (mandatory access control), ufw host firewall, EDR agent with Linux support"
+          },
+          {
+            "name": "identity-platform",
+            "value": "SSSD integrated with Active Directory / LDAP for centralised authentication"
+          },
+          {
+            "name": "disk-encryption",
+            "value": "LUKS full-disk encryption (AES-256-XTS)"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "73b9e7b0-3358-48ca-80aa-dac3215de56b",
+            "name": "https",
+            "title": "HTTPS — Package repositories, web browsing, management tooling",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "eec23bc7-0231-43e2-bdde-328babb5314c",
+            "name": "ssh",
+            "title": "SSH — Remote administration and support (from approved jump host only)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "2c394126-abf1-4551-bef0-da846f79b5ba",
+            "name": "ldap",
+            "title": "LDAP — Directory lookups via SSSD for centralised authentication",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "6716d3dc-7b56-4301-9c30-04bb199253e5",
+            "name": "kerberos",
+            "title": "Kerberos — Active Directory authentication via SSSD",
+            "port-ranges": [
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "UDP"
+              },
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "334c4b7c-8da6-465d-bce3-ff1e28ad0b6c",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation (chrony)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "aac4bb1d-92f8-430a-bb64-1bfccf34adcb",
+            "name": "syslog",
+            "title": "Syslog — Event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "2926c2d1-58d1-4c6a-b165-10804f02816b",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Ubuntu Linux (Workstation).",
+            "implemented-requirements": [
+              {
+                "uuid": "ad720175-d806-4d12-8470-bf389c60c9de",
+                "control-id": "ism-1914",
+                "description": "Approved security configurations (hardening baselines) for Ubuntu Linux workstations are developed, documented, version-controlled, and maintained, referencing ASD's Linux hardening guidance and the CIS Ubuntu Linux Benchmark. Baselines are deployed and enforced via Ansible playbooks or an equivalent configuration management tool."
+              },
+              {
+                "uuid": "880d32f2-788f-4560-a87e-3bc9531cddd0",
+                "control-id": "ism-1409",
+                "description": "Ubuntu Linux workstations are hardened per the CIS Ubuntu Benchmark and ASD guidance: AppArmor is enforced (not complain mode) for all confined applications, unnecessary services are disabled, the ufw host firewall defaults to deny-inbound, and SSH is restricted to key-based authentication with root login disabled."
+              },
+              {
+                "uuid": "ec37aba3-1902-4c87-b6ae-5dea830b3a68",
+                "control-id": "ism-0843",
+                "description": "Application control is implemented on Ubuntu Linux workstations via AppArmor mandatory access control profiles restricting what confined applications can execute and access, combined with restricted sudo rules limiting which binaries unprivileged users can run with elevated privileges."
+              },
+              {
+                "uuid": "f051a489-2c10-4c62-be69-4fb910f443ae",
+                "control-id": "ism-0459",
+                "description": "Full disk encryption using LUKS (AES-256-XTS) is implemented on all Ubuntu Linux workstations, configured during initial provisioning as part of the standard build. Recovery/escrow keys are stored securely in the organisation's key management system."
+              },
+              {
+                "uuid": "3c0cc78c-407f-4f6f-ae71-48c9e84fcbbb",
+                "control-id": "ism-1143",
+                "description": "Patch management for Ubuntu Linux workstations is automated via unattended-upgrades for security updates, with a defined maintenance window for scheduled reboots. Patch compliance is monitored via the fleet configuration management tool and non-compliant hosts are flagged for remediation."
+              },
+              {
+                "uuid": "f5cd21f2-c8fc-4dd9-a987-95c53450a906",
+                "control-id": "ism-0488",
+                "description": "Where SSH access to Ubuntu Linux workstations does not use password authentication, key-based authentication is required and the forced-command option is used where SSH access is granted for a single specific automated purpose, limiting what command can be executed over that connection."
+              },
+              {
+                "uuid": "bb29a4c4-e31e-419c-a484-78d3325cc280",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all standard users authenticating to Ubuntu Linux workstations, enforced via SSSD/PAM integration with the organisation's identity provider supporting MFA (e.g. Entra ID with PAM-SSSD, or a dedicated MFA PAM module)."
+              },
+              {
+                "uuid": "5f19c3b9-1ceb-4f4c-b788-8bcd330ea4f0",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (SIEM) collects and retains security event logs from Ubuntu Linux workstations, forwarded via rsyslog/auditd or an EDR agent with Linux telemetry support."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

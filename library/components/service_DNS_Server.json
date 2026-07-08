@@ -1,0 +1,163 @@
+{
+  "component-definition": {
+    "uuid": "001a5d63-0929-458e-b2b0-6402bcc41b2f",
+    "metadata": {
+      "title": "service - DNS Server",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "64149ed6-8af7-4160-ab58-330f313191b6",
+        "type": "service",
+        "title": "DNS Server",
+        "description": "Internal authoritative and recursive DNS service (Microsoft DNS integrated with Active Directory, or BIND) providing name resolution for internal systems and controlled recursive resolution to the internet via a filtering forwarder. DNS query logging is enabled and forwarded to the SIEM to support detection of DNS tunnelling, DGA (domain generation algorithm) beaconing, and lookups of known-malicious domains.",
+        "purpose": "Provide reliable internal name resolution for organisational systems and controlled, logged, filtered recursive DNS resolution to the internet.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft DNS (AD-integrated) / ISC BIND / equivalent"
+          },
+          {
+            "name": "service-role",
+            "value": "Authoritative for internal zones; recursive resolver forwarding to a filtering upstream service"
+          },
+          {
+            "name": "redundancy",
+            "value": "Minimum two DNS servers per site, AD-integrated zone replication"
+          },
+          {
+            "name": "dns-filtering",
+            "value": "Recursive queries forwarded to a DNS security/filtering service blocking known-malicious and newly-observed domains"
+          },
+          {
+            "name": "logging",
+            "value": "Query logging enabled, forwarded to SIEM for DNS tunnelling and DGA beaconing detection"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "51a8ec98-0c05-4553-b275-d8105f5cf850",
+            "name": "dns",
+            "title": "DNS — Name resolution (client queries and zone transfers)",
+            "port-ranges": [
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "UDP"
+              },
+              {
+                "start": 53,
+                "end": 53,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "3e6364ec-703b-4893-a162-b22fdd16866e",
+            "name": "https",
+            "title": "HTTPS — DNS-over-HTTPS forwarding to filtering upstream (where used)",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "3e8fd079-91b4-471a-807a-2f9cf1c8766d",
+            "name": "ssh",
+            "title": "SSH — CLI administration (BIND) or RDP equivalent for Windows DNS",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f0d3a40f-eb3c-428c-80cf-97d8cf3ec96a",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "caa5d384-5635-4d93-94c3-293486e94dbf",
+            "name": "syslog",
+            "title": "Syslog — Query and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "efb7c7b6-aef3-404f-9df0-c04a2ccc6e3c",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the DNS Server.",
+            "implemented-requirements": [
+              {
+                "uuid": "e3eca965-e5a2-4d9f-8b5d-5a41875f1d63",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for DNS servers, covering: restricting zone transfers to authorised secondary servers only, disabling recursion on authoritative-only servers, restricting the administration interface to the management network, and keeping DNS server software current with vendor security updates."
+              },
+              {
+                "uuid": "a3651099-aed8-4d13-b634-5e3f6df2d550",
+                "control-id": "ism-1405",
+                "description": "DNS query logs and security-relevant events (zone transfer attempts, configuration changes, failed administrative logons) are centrally logged and forwarded to the SIEM, supporting detection of DNS tunnelling and domain generation algorithm (DGA) beaconing."
+              },
+              {
+                "uuid": "d5329077-78fe-41c1-a960-03558b255c23",
+                "control-id": "ism-1143",
+                "description": "Patch management processes ensure the DNS server software (Microsoft DNS, BIND, or equivalent) is kept current with vendor security patches, tracked through the organisation's patch management schedule."
+              },
+              {
+                "uuid": "5b688456-0bf4-46ec-84d4-64eaa6b2357c",
+                "control-id": "ism-0445",
+                "description": "DNS administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for DNS zone and configuration administration."
+              },
+              {
+                "uuid": "da1b887d-270d-428f-aa5c-d9406a7b7eac",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the DNS management interface or the underlying server operating system."
+              },
+              {
+                "uuid": "3f518809-5dd9-42fa-b0c6-589db7032ef8",
+                "control-id": "ism-1852",
+                "description": "Recursive DNS resolution to the internet is restricted to a controlled, filtered path (via a DNS security/filtering service or web proxy), rather than allowing internal hosts to query arbitrary internet DNS servers directly, reducing the risk of DNS-based data exfiltration and command-and-control."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

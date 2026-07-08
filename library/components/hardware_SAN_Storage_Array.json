@@ -1,0 +1,179 @@
+{
+  "component-definition": {
+    "uuid": "9f7a1cc1-5c33-41e9-b675-76bdd310f1c6",
+    "metadata": {
+      "title": "hardware - SAN Storage Array",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "bcd3ae40-12df-4596-888e-97a5243cefb1",
+        "type": "hardware",
+        "title": "SAN Storage Array",
+        "description": "Enterprise block-level storage array providing shared storage for virtualisation hosts and database servers over Fibre Channel and iSCSI. Configured with RAID-6 disk groups, thin provisioning, storage-based snapshots, and asynchronous replication to a secondary site for disaster recovery. Managed via a dedicated management LAN, isolated from production data paths.",
+        "purpose": "Provide highly available, high-performance shared block storage for the virtualisation and database tiers, with built-in snapshot and replication capability to support backup and disaster recovery objectives.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Dell EMC / NetApp / Pure Storage / equivalent"
+          },
+          {
+            "name": "protocols-served",
+            "value": "Fibre Channel (primary), iSCSI (secondary hosts)"
+          },
+          {
+            "name": "raid-configuration",
+            "value": "RAID-6 disk groups with hot spares"
+          },
+          {
+            "name": "replication",
+            "value": "Asynchronous replication to secondary site (DR)"
+          },
+          {
+            "name": "encryption",
+            "value": "Controller-based AES-256 encryption at rest (self-encrypting drives)"
+          },
+          {
+            "name": "management-network",
+            "value": "Dedicated out-of-band management VLAN, isolated from data paths"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "58ec3e0d-3c94-4626-8fd0-c806f78f1d3b",
+            "name": "https",
+            "title": "HTTPS — Web-based storage management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "e029fb33-fb3f-447e-9b3c-e1d646a3ea9a",
+            "name": "ssh",
+            "title": "SSH — CLI management and scripted administration",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b73f575c-b292-420e-a24e-b128a95b3f1e",
+            "name": "snmp",
+            "title": "SNMP — Capacity, health, and performance monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "b57f4944-789e-4aba-8046-e43050f5b6e3",
+            "name": "syslog",
+            "title": "Syslog — Event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "1fa87554-fb0a-420d-a8c8-638c7d9e7fd0",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "5937f163-d157-4582-8481-cc5d748be9e4",
+            "name": "ldaps",
+            "title": "LDAPS — Active Directory integration for management authentication",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "026c33fb-89ad-447f-ad6d-bca519d9454b",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the SAN Storage Array.",
+            "implemented-requirements": [
+              {
+                "uuid": "6a1a86e4-7aa7-4abf-ab35-08b25b3e5e53",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the SAN storage array controllers, covering: disabling unused management protocols (Telnet, HTTP, FTP), restricting the management interface to the dedicated management VLAN only, enabling role-based access control for named administrator accounts, and keeping array controller firmware current with vendor security releases."
+              },
+              {
+                "uuid": "40855a31-0580-4ea2-8373-72ddb0bc8a51",
+                "control-id": "ism-0459",
+                "description": "All disk groups on the SAN storage array are encrypted at rest using controller-based AES-256 encryption via self-encrypting drives (SEDs). Encryption keys are managed through the array's built-in key manager or an external KMIP-compliant key management server, never stored in plaintext on the array."
+              },
+              {
+                "uuid": "db426ebc-4116-40ef-a37b-e764c335be8c",
+                "control-id": "ism-1511",
+                "description": "Storage-based snapshots of critical volumes are taken on a scheduled basis per business continuity requirements, and asynchronous replication to the secondary site provides an offsite recoverable copy. Snapshot and replication job status is monitored and failures are alerted to the storage team."
+              },
+              {
+                "uuid": "e90b490b-6424-4191-a62a-cc6856df3a7d",
+                "control-id": "ism-1405",
+                "description": "Security-relevant array events (authentication failures, configuration changes, controller failover, RAID degradation, replication failures) are centrally logged and forwarded to the SIEM via syslog."
+              },
+              {
+                "uuid": "333d5cb3-5daf-4e20-be38-8dae55badc14",
+                "control-id": "ism-0445",
+                "description": "Storage administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for SAN array administration. Role-based access control on the array restricts unprivileged operator accounts to read-only monitoring."
+              },
+              {
+                "uuid": "d207827a-1c79-4334-bc5c-e4d7810684ec",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the SAN array's management interface, enforced via integration with the organisation's identity provider or a jump host requiring MFA."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "component-definition": {
+    "uuid": "d37524d8-882e-4a66-ab9f-026bcebee247",
+    "metadata": {
+      "title": "operating-system - RHEL Linux (Workstation)",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f05cbe16-6eaa-42d1-b1d6-89f5766407e3",
+        "type": "operating-system",
+        "title": "RHEL Linux (Workstation)",
+        "description": "Red Hat Enterprise Linux workstation deployed for engineering and technical staff requiring a vendor-supported enterprise Linux environment. Configured with LUKS full-disk encryption, SELinux enforcing mode, firewalld host-based firewall, centralised authentication via SSSD against Active Directory, and automated patching via Red Hat Satellite or dnf-automatic. Endpoint logging is forwarded to the SIEM via rsyslog/auditd or an EDR agent with Linux support.",
+        "purpose": "Workstation operating system for engineering and technical staff requiring a vendor-supported, enterprise-grade Linux environment with long-term support and SELinux mandatory access control.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Red Hat, Inc."
+          },
+          {
+            "name": "product-name",
+            "value": "Red Hat Enterprise Linux Workstation"
+          },
+          {
+            "name": "version",
+            "value": "RHEL 9.x (current minor release)"
+          },
+          {
+            "name": "architecture",
+            "value": "x86-64 (64-bit)"
+          },
+          {
+            "name": "management-tooling",
+            "value": "Red Hat Satellite / Ansible for fleet configuration management and patching"
+          },
+          {
+            "name": "endpoint-protection",
+            "value": "SELinux (enforcing), firewalld host firewall, EDR agent with Linux support"
+          },
+          {
+            "name": "identity-platform",
+            "value": "SSSD integrated with Active Directory for centralised authentication"
+          },
+          {
+            "name": "disk-encryption",
+            "value": "LUKS full-disk encryption (AES-256-XTS)"
+          },
+          {
+            "name": "support-entitlement",
+            "value": "Active Red Hat subscription providing vendor security patches"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "2495109e-5b68-40c0-a8a5-3958c937ef4b",
+            "name": "https",
+            "title": "HTTPS — Red Hat Satellite / subscription-manager, web browsing",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "0e3776d3-7dde-4dc4-ade2-5522a42ff7d0",
+            "name": "ssh",
+            "title": "SSH — Remote administration and support (from approved jump host only)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b29b76af-fe8a-47ef-a00b-91a8dc76bd07",
+            "name": "ldap",
+            "title": "LDAP — Directory lookups via SSSD for centralised authentication",
+            "port-ranges": [
+              {
+                "start": 389,
+                "end": 389,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "a43c31ef-14f4-48a0-bd7f-a1cf8c52d404",
+            "name": "kerberos",
+            "title": "Kerberos — Active Directory authentication via SSSD",
+            "port-ranges": [
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "UDP"
+              },
+              {
+                "start": 88,
+                "end": 88,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "52e2220f-4cf4-465f-b9f3-3d84fe0af1d6",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation (chronyd)",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "29e628f6-a378-4506-987e-8f9479910acd",
+            "name": "syslog",
+            "title": "Syslog — Event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "cc99fa68-ec9c-4237-94fa-7551634b9487",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for RHEL Linux (Workstation).",
+            "implemented-requirements": [
+              {
+                "uuid": "a5a84284-f5c2-4892-8ad1-4361140cbbf7",
+                "control-id": "ism-1914",
+                "description": "Approved security configurations (hardening baselines) for RHEL Linux workstations are developed, documented, version-controlled, and maintained, referencing ASD's Linux hardening guidance and the CIS Red Hat Enterprise Linux Benchmark. Baselines are deployed and enforced via Ansible playbooks or Red Hat Satellite content views."
+              },
+              {
+                "uuid": "8b716d5c-6a7c-4bde-8fdf-ae88c21930e4",
+                "control-id": "ism-1409",
+                "description": "RHEL Linux workstations are hardened per the CIS RHEL Benchmark and ASD guidance: SELinux is set to enforcing mode (not permissive), unnecessary services and packages are removed, firewalld defaults to deny-inbound, and SSH is restricted to key-based authentication with root login disabled."
+              },
+              {
+                "uuid": "d3bea2ca-b2d1-4d13-a6e0-fd1fd910349f",
+                "control-id": "ism-0843",
+                "description": "Application control is implemented on RHEL Linux workstations via SELinux mandatory access control policy restricting process and file access, combined with restricted sudo rules limiting which binaries unprivileged users can run with elevated privileges."
+              },
+              {
+                "uuid": "42fcbbfa-2ea7-47c5-9f87-a07ab34278b9",
+                "control-id": "ism-0459",
+                "description": "Full disk encryption using LUKS (AES-256-XTS) is implemented on all RHEL Linux workstations, configured during initial provisioning via the Kickstart/Anaconda installation profile. Recovery/escrow keys are stored securely in the organisation's key management system."
+              },
+              {
+                "uuid": "aa64095c-125b-4054-9820-69047a271ec6",
+                "control-id": "ism-1143",
+                "description": "Patch management for RHEL Linux workstations is managed via Red Hat Satellite content views and dnf-automatic for security errata, with a defined maintenance window for scheduled reboots. Patch compliance is monitored centrally and non-compliant hosts are flagged for remediation."
+              },
+              {
+                "uuid": "ac2c6b29-c1f9-4028-8709-5e3f9a632099",
+                "control-id": "ism-0488",
+                "description": "Where SSH access to RHEL Linux workstations does not use password authentication, key-based authentication is required and the forced-command option is used where SSH access is granted for a single specific automated purpose."
+              },
+              {
+                "uuid": "9f0920e1-3dd9-4ac3-882f-dca178b69609",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for all standard users authenticating to RHEL Linux workstations, enforced via SSSD/PAM integration with the organisation's identity provider."
+              },
+              {
+                "uuid": "4bf25712-5f8e-4beb-9ed1-386b5e17a754",
+                "control-id": "ism-1405",
+                "description": "A centralised event logging facility (SIEM) collects and retains security event logs from RHEL Linux workstations, forwarded via rsyslog/auditd or an EDR agent with Linux telemetry support."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

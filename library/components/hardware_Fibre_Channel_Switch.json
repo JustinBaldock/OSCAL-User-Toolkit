@@ -1,0 +1,163 @@
+{
+  "component-definition": {
+    "uuid": "c90c4988-5cd2-4003-8229-0df3590746cb",
+    "metadata": {
+      "title": "hardware - Fibre Channel Switch",
+      "last-modified": "2026-07-08T07:16:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "dec278d6-3224-42af-8aec-e873b94b533d",
+        "type": "hardware",
+        "title": "Fibre Channel Switch",
+        "description": "Fibre Channel fabric switch providing zoned, high-speed connectivity between virtualisation hosts and SAN storage arrays. Deployed in a redundant dual-fabric (A/B) configuration so that a single switch or path failure does not interrupt storage access. Zoning is configured at the WWN level to enforce least-privilege storage access between initiators and targets.",
+        "purpose": "Provide resilient, zoned Fibre Channel fabric connectivity between compute and storage, ensuring hosts can only see the storage volumes they are explicitly zoned to access.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Brocade / Cisco MDS / equivalent"
+          },
+          {
+            "name": "fabric-topology",
+            "value": "Dual redundant fabric (Fabric A / Fabric B), no single point of failure"
+          },
+          {
+            "name": "zoning-method",
+            "value": "WWN-based hard zoning, single-initiator single-target"
+          },
+          {
+            "name": "speed",
+            "value": "32 Gbps Fibre Channel (backward compatible to 16/8 Gbps)"
+          },
+          {
+            "name": "management-network",
+            "value": "Dedicated out-of-band management VLAN"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "c9103f88-64e0-430f-bccd-c4e12a19bdae",
+            "name": "https",
+            "title": "HTTPS — Web-based fabric management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "3b5c77c3-3c56-4478-8a39-427f28903368",
+            "name": "ssh",
+            "title": "SSH — CLI management and fabric zoning configuration",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "a427238d-35fb-45bc-9a4a-7b174686210f",
+            "name": "snmp",
+            "title": "SNMP — Fabric health and port utilisation monitoring",
+            "port-ranges": [
+              {
+                "start": 161,
+                "end": 161,
+                "transport": "UDP"
+              },
+              {
+                "start": 162,
+                "end": 162,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "0472fe49-e93e-4503-9718-463449a0a6f0",
+            "name": "syslog",
+            "title": "Syslog — Fabric event and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "cbdc42f1-cb0e-4b9c-bad7-7cfd498af70c",
+            "name": "ntp",
+            "title": "NTP — Time synchronisation across the fabric",
+            "port-ranges": [
+              {
+                "start": 123,
+                "end": 123,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "4d6e739d-1bbc-461f-ac13-d4309eca58d1",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for the Fibre Channel Switch.",
+            "implemented-requirements": [
+              {
+                "uuid": "e6c5ca79-1e01-4531-92d5-56ca3efb7c58",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for Fibre Channel switches, covering: disabling unused management protocols, restricting management access to the dedicated out-of-band VLAN, enabling role-based administrator accounts, and keeping switch firmware current with vendor security releases."
+              },
+              {
+                "uuid": "32195f03-ac93-47fe-9f42-9aa85d49a0a7",
+                "control-id": "ism-1852",
+                "description": "Fabric zoning restricts each host initiator to only the storage target ports and LUNs it requires (single-initiator, single-target hard zoning by WWN), so a compromised or misconfigured host cannot see storage volumes belonging to unrelated systems."
+              },
+              {
+                "uuid": "0f85148b-454f-4c4e-9879-ede4180da4b6",
+                "control-id": "ism-1405",
+                "description": "Security-relevant fabric events (zoning changes, port state changes, unauthorised device login attempts, configuration changes) are centrally logged and forwarded to the SIEM via syslog."
+              },
+              {
+                "uuid": "707c0cbf-234d-415b-8f15-02b59dd6b499",
+                "control-id": "ism-0445",
+                "description": "Fabric administrators are assigned dedicated privileged accounts, separate from their standard user accounts, used solely for SAN fabric administration."
+              },
+              {
+                "uuid": "236834dd-60a1-4ec7-aac8-37d657fd0288",
+                "control-id": "ism-1173",
+                "description": "Multi-factor authentication is required for administrators authenticating to the Fibre Channel switch management interface, enforced via integration with the organisation's identity provider."
+              },
+              {
+                "uuid": "e9fe9677-0f7f-4035-a89f-feb6782d25ac",
+                "control-id": "ism-0912",
+                "description": "A change and configuration management plan governs zoning changes on the Fibre Channel fabric: all zoning changes are submitted as a change request, peer-reviewed before activation, and the active zoneset configuration is version-controlled and backed up before and after each change."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
