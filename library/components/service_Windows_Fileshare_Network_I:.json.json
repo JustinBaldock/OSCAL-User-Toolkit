@@ -34,20 +34,17 @@
               {
                 "start": 139,
                 "end": 139,
-                "transport": "TCP",
-                "remarks": "Legacy"
+                "transport": "TCP"
               },
               {
                 "start": 137,
                 "end": 138,
-                "transport": "UDP",
-                "remarks": "Legacy"
+                "transport": "UDP"
               },
               {
                 "start": 443,
                 "end": 443,
-                "transport": "TCP",
-                "remarks": "SMB over QUIC"
+                "transport": "TCP"
               }
             ]
           }

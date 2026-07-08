@@ -39,20 +39,19 @@
           {
             "uuid": "c0ab5e7a-80da-46bc-8381-b7d2fd4ca7eb",
             "name": "http-proxy",
-            "title": "HTTP Proxy \u2014 Explicit proxy port for HTTP and CONNECT tunnelling",
+            "title": "HTTP Proxy — Explicit proxy port for HTTP and CONNECT tunnelling",
             "port-ranges": [
               {
                 "start": 3128,
                 "end": 3128,
-                "transport": "TCP",
-                "remarks": "Squid default; or 8080/8443 depending on configuration"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "bed24cfd-1fa5-4765-a6bb-47b5a3f8664d",
             "name": "https",
-            "title": "HTTPS \u2014 Proxy administration console",
+            "title": "HTTPS — Proxy administration console",
             "port-ranges": [
               {
                 "start": 443,
@@ -64,7 +63,7 @@
           {
             "uuid": "91a5b90b-86c0-47dc-a101-fca2343114cb",
             "name": "dns",
-            "title": "DNS \u2014 DNS filtering and resolution (forward and response inspection)",
+            "title": "DNS — DNS filtering and resolution (forward and response inspection)",
             "port-ranges": [
               {
                 "start": 53,
@@ -81,7 +80,7 @@
           {
             "uuid": "37c4bf33-43f9-4617-9b7c-cfe16981919b",
             "name": "syslog",
-            "title": "Syslog \u2014 Proxy access log forwarding to SIEM",
+            "title": "Syslog — Proxy access log forwarding to SIEM",
             "port-ranges": [
               {
                 "start": 514,
@@ -93,7 +92,7 @@
           {
             "uuid": "11426522-fc7a-4bff-b2e9-9bcc9fe0eea8",
             "name": "icap",
-            "title": "ICAP \u2014 Internet Content Adaptation Protocol for AV scanning integration",
+            "title": "ICAP — Internet Content Adaptation Protocol for AV scanning integration",
             "port-ranges": [
               {
                 "start": 1344,
@@ -112,7 +111,7 @@
               {
                 "uuid": "18a89e66-50cc-4398-8bc2-0a8ef6752e85",
                 "control-id": "ism-0963",
-                "description": "The web proxy enforces content filtering for all outbound web requests, blocking: known-malicious and phishing domains (via threat intelligence feeds); prohibited content categories (as defined in the acceptable use policy); and unapproved file types (e.g. executable downloads from non-approved sources). Users cannot bypass the proxy \u2014 all internet-bound HTTP/HTTPS traffic is directed through the proxy via PAC file or transparent interception."
+                "description": "The web proxy enforces content filtering for all outbound web requests, blocking: known-malicious and phishing domains (via threat intelligence feeds); prohibited content categories (as defined in the acceptable use policy); and unapproved file types (e.g. executable downloads from non-approved sources). Users cannot bypass the proxy — all internet-bound HTTP/HTTPS traffic is directed through the proxy via PAC file or transparent interception."
               },
               {
                 "uuid": "5ed85ac2-16d5-4da2-9293-948f9c1a3e40",

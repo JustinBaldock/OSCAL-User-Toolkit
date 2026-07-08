@@ -39,7 +39,7 @@
           {
             "uuid": "c6e79191-2cf7-48ef-aa57-258a94832778",
             "name": "https",
-            "title": "HTTPS \u2014 Cloud management controller or WLC web interface",
+            "title": "HTTPS — Cloud management controller or WLC web interface",
             "port-ranges": [
               {
                 "start": 443,
@@ -51,7 +51,7 @@
           {
             "uuid": "03a5c954-3146-4104-8d78-240d1ed6c08b",
             "name": "ssh",
-            "title": "SSH \u2014 Secure CLI management access to WLC",
+            "title": "SSH — Secure CLI management access to WLC",
             "port-ranges": [
               {
                 "start": 22,
@@ -63,26 +63,24 @@
           {
             "uuid": "1a761667-2290-4a57-a23f-271a9e03cc6b",
             "name": "capwap",
-            "title": "CAPWAP \u2014 AP-to-WLC control and data channel",
+            "title": "CAPWAP — AP-to-WLC control and data channel",
             "port-ranges": [
               {
                 "start": 5246,
                 "end": 5246,
-                "transport": "UDP",
-                "remarks": "CAPWAP control"
+                "transport": "UDP"
               },
               {
                 "start": 5247,
                 "end": 5247,
-                "transport": "UDP",
-                "remarks": "CAPWAP data"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "e30c953e-cbd3-4044-9db1-697d4ae9fe49",
             "name": "radius",
-            "title": "RADIUS \u2014 802.1X wireless authentication to NPS/RADIUS server",
+            "title": "RADIUS — 802.1X wireless authentication to NPS/RADIUS server",
             "port-ranges": [
               {
                 "start": 1812,
@@ -92,15 +90,14 @@
               {
                 "start": 1813,
                 "end": 1813,
-                "transport": "UDP",
-                "remarks": "RADIUS accounting"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "6c586c03-9611-4d56-8464-79478dd7ab8c",
             "name": "snmp",
-            "title": "SNMP \u2014 Network monitoring of AP and WLC status",
+            "title": "SNMP — Network monitoring of AP and WLC status",
             "port-ranges": [
               {
                 "start": 161,
@@ -110,15 +107,14 @@
               {
                 "start": 162,
                 "end": 162,
-                "transport": "UDP",
-                "remarks": "SNMP traps"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "7fe1ab9f-c842-4ec4-b53c-5d801c4ce2b0",
             "name": "syslog",
-            "title": "Syslog \u2014 Event forwarding to SIEM",
+            "title": "Syslog — Event forwarding to SIEM",
             "port-ranges": [
               {
                 "start": 514,
@@ -130,7 +126,7 @@
           {
             "uuid": "41390421-13f8-4e59-9734-5fd2af8df6a0",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation",
+            "title": "NTP — Time synchronisation",
             "port-ranges": [
               {
                 "start": 123,
@@ -142,7 +138,7 @@
           {
             "uuid": "bf5347b3-277d-4d8a-8258-b26763ba269d",
             "name": "dhcp",
-            "title": "DHCP \u2014 IP assignment for wireless clients",
+            "title": "DHCP — IP assignment for wireless clients",
             "port-ranges": [
               {
                 "start": 67,

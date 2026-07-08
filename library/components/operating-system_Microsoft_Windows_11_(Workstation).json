@@ -99,12 +99,12 @@
               {
                 "uuid": "e2c34b30-33ba-46b3-80f6-5426d5d99ac1",
                 "control-id": "ism-1743",
-                "description": "Windows 11 is selected as the workstation operating system on the basis that Microsoft has demonstrated commitment to Secure by Design and Secure by Default principles: the Microsoft Security Development Lifecycle (SDL), mandatory hardware security requirements (TPM 2.0, Secure Boot, UEFI, CPU virtualisation extensions), memory-safe features (Control Flow Guard, Hardware-enforced Stack Protection, CET), and a robust CVE disclosure and patching programme. Windows 11 enforces Secure Boot, TPM 2.0, and HVCI-compatible hardware as baseline requirements \u2014 controls that are optional in earlier Windows versions."
+                "description": "Windows 11 is selected as the workstation operating system on the basis that Microsoft has demonstrated commitment to Secure by Design and Secure by Default principles: the Microsoft Security Development Lifecycle (SDL), mandatory hardware security requirements (TPM 2.0, Secure Boot, UEFI, CPU virtualisation extensions), memory-safe features (Control Flow Guard, Hardware-enforced Stack Protection, CET), and a robust CVE disclosure and patching programme. Windows 11 enforces Secure Boot, TPM 2.0, and HVCI-compatible hardware as baseline requirements — controls that are optional in earlier Windows versions."
               },
               {
                 "uuid": "943ff32f-cdad-4772-8634-29886d7a3048",
                 "control-id": "ism-1407",
-                "description": "The latest release of Windows 11 (current annual feature update channel \u2014 Windows 11 23H2 or later) is used on all workstations within scope. Where a workstation cannot immediately upgrade to the latest release, the previous supported feature update (n-1) is permitted during a documented transition period not exceeding the Microsoft support end-date for that release. End-of-support dates for each Windows 11 release are tracked in the asset register and workstations on unsupported releases are flagged for immediate upgrade."
+                "description": "The latest release of Windows 11 (current annual feature update channel — Windows 11 23H2 or later) is used on all workstations within scope. Where a workstation cannot immediately upgrade to the latest release, the previous supported feature update (n-1) is permitted during a documented transition period not exceeding the Microsoft support end-date for that release. End-of-support dates for each Windows 11 release are tracked in the asset register and workstations on unsupported releases are flagged for immediate upgrade."
               },
               {
                 "uuid": "3bff1575-3fee-4fb2-9548-a977a9a6fa75",
@@ -134,7 +134,7 @@
               {
                 "uuid": "c3d39c3e-84a9-4d99-bcc8-2e8fbdf10011",
                 "control-id": "ism-1601",
-                "description": "Microsoft's Attack Surface Reduction (ASR) rules are implemented on all Windows 11 workstations via Microsoft Defender for Endpoint policy. ASR rules applied in Block mode include: Block all Office applications from creating child processes (d4f940ab\u2026), Block Office applications from creating executable content (3b576869\u2026), Block Office applications from injecting code into other processes (75668c1f\u2026), Block Win32 API calls from Office macros (92e97fa1\u2026), Block macros from running in Office files from the internet (e6db77e5\u2026), Block executable content from email client and webmail (be9ba2d9\u2026), Block JavaScript or VBScript from launching downloaded executable content (d3e037e1\u2026), Block execution of potentially obfuscated scripts (5beb7efe\u2026), Block credential stealing from LSASS (9e6c4e1f\u2026), Block untrusted and unsigned processes from USB (b2b3f03d\u2026), Block process creations originating from PSExec and WMI commands (d1e49aac\u2026), and Use advanced protection against ransomware (c1db55ab\u2026). ASR rules run in Block mode after a documented audit-mode testing period per workstation fleet segment."
+                "description": "Microsoft's Attack Surface Reduction (ASR) rules are implemented on all Windows 11 workstations via Microsoft Defender for Endpoint policy. ASR rules applied in Block mode include: Block all Office applications from creating child processes (d4f940ab…), Block Office applications from creating executable content (3b576869…), Block Office applications from injecting code into other processes (75668c1f…), Block Win32 API calls from Office macros (92e97fa1…), Block macros from running in Office files from the internet (e6db77e5…), Block executable content from email client and webmail (be9ba2d9…), Block JavaScript or VBScript from launching downloaded executable content (d3e037e1…), Block execution of potentially obfuscated scripts (5beb7efe…), Block credential stealing from LSASS (9e6c4e1f…), Block untrusted and unsigned processes from USB (b2b3f03d…), Block process creations originating from PSExec and WMI commands (d1e49aac…), and Use advanced protection against ransomware (c1db55ab…). ASR rules run in Block mode after a documented audit-mode testing period per workstation fleet segment."
               },
               {
                 "uuid": "2173763e-ff9f-4b2b-8d82-02eb69aaa3ba",
@@ -169,7 +169,7 @@
               {
                 "uuid": "e987cb44-6017-4427-93ed-60caa0bf9554",
                 "control-id": "ism-1745",
-                "description": "Boot integrity features are enabled on all Windows 11 workstations: Secure Boot (UEFI, preventing unsigned bootloaders/kernels from loading \u2014 enforced by Windows 11 hardware requirements), Trusted Boot (Windows bootloader verifies kernel integrity), Measured Boot (TPM 2.0 records boot component hashes \u2014 required by Windows 11), and Early Launch Antimalware (ELAM) which starts Windows Defender Antivirus before third-party drivers at boot. HVCI (Hypervisor-Protected Code Integrity / Memory Integrity) is also enabled via Virtualization-Based Security (VBS). Boot integrity status is verified via Intune device health attestation compliance policies."
+                "description": "Boot integrity features are enabled on all Windows 11 workstations: Secure Boot (UEFI, preventing unsigned bootloaders/kernels from loading — enforced by Windows 11 hardware requirements), Trusted Boot (Windows bootloader verifies kernel integrity), Measured Boot (TPM 2.0 records boot component hashes — required by Windows 11), and Early Launch Antimalware (ELAM) which starts Windows Defender Antivirus before third-party drivers at boot. HVCI (Hypervisor-Protected Code Integrity / Memory Integrity) is also enabled via Virtualization-Based Security (VBS). Boot integrity status is verified via Intune device health attestation compliance policies."
               },
               {
                 "uuid": "52717a81-718a-42bb-9e64-da264165dead",
@@ -199,7 +199,7 @@
               {
                 "uuid": "da8f5184-1f87-4dd3-b8a1-69617c8af6ed",
                 "control-id": "ism-1691",
-                "description": "Patches and updates for high-risk user-facing applications on Windows 11 workstations \u2014 including web browsers and their extensions, email clients, Microsoft Office, PDF readers, and security products \u2014 are applied within 48 hours of release when exploits exist in the wild. Deployment is automated via Microsoft Intune, Windows Update for Business, or vendor auto-update mechanisms configured to apply critical updates without user deferral."
+                "description": "Patches and updates for high-risk user-facing applications on Windows 11 workstations — including web browsers and their extensions, email clients, Microsoft Office, PDF readers, and security products — are applied within 48 hours of release when exploits exist in the wild. Deployment is automated via Microsoft Intune, Windows Update for Business, or vendor auto-update mechanisms configured to apply critical updates without user deferral."
               },
               {
                 "uuid": "a3c5edac-dfe8-4e1c-93eb-4f76f5631785",
@@ -264,7 +264,7 @@
               {
                 "uuid": "b18e3de6-7ad8-47bd-a119-ed73d151bbf9",
                 "control-id": "ism-1670",
-                "description": "PDF applications on Windows 11 workstations are blocked from creating child processes via Attack Surface Reduction rules and application control policy. For Adobe Acrobat/Reader: the Protected Mode and Protected View settings are enabled (sandboxed rendering), and the ASR rule 'Block Adobe Reader from creating child processes' (7674ba52\u2026) is enforced in Block mode via Microsoft Defender for Endpoint. For the Microsoft Edge PDF viewer, the browser sandbox provides equivalent child process isolation."
+                "description": "PDF applications on Windows 11 workstations are blocked from creating child processes via Attack Surface Reduction rules and application control policy. For Adobe Acrobat/Reader: the Protected Mode and Protected View settings are enabled (sandboxed rendering), and the ASR rule 'Block Adobe Reader from creating child processes' (7674ba52…) is enforced in Block mode via Microsoft Defender for Endpoint. For the Microsoft Edge PDF viewer, the browser sandbox provides equivalent child process isolation."
               },
               {
                 "uuid": "16f7e12e-fd81-4f4f-8c47-26ecb5811d85",
@@ -279,7 +279,7 @@
               {
                 "uuid": "6198d358-e064-4b01-acde-2a2f44ba4dde",
                 "control-id": "ism-0843",
-                "description": "Application control (Windows Defender Application Control \u2014 WDAC, or AppLocker) is implemented on all Windows 11 workstations in Block/Enforce mode. WDAC is the preferred solution as it is kernel-enforced and cannot be bypassed by user-mode processes, even those running as local administrator. The WDAC policy restricts execution to the organisation-approved application set using a combination of Microsoft-signed code trust, approved publisher rules, and hash rules for unsigned line-of-business applications."
+                "description": "Application control (Windows Defender Application Control — WDAC, or AppLocker) is implemented on all Windows 11 workstations in Block/Enforce mode. WDAC is the preferred solution as it is kernel-enforced and cannot be bypassed by user-mode processes, even those running as local administrator. The WDAC policy restricts execution to the organisation-approved application set using a combination of Microsoft-signed code trust, approved publisher rules, and hash rules for unsigned line-of-business applications."
               },
               {
                 "uuid": "686b7b67-7828-4832-99e3-3acf9739eaf1",
@@ -309,7 +309,7 @@
               {
                 "uuid": "9ce87f01-3ae5-4987-9b88-b65a35e3b295",
                 "control-id": "ism-1471",
-                "description": "Publisher certificate rules in the Windows 11 WDAC or AppLocker policy specify both the publisher name (signer certificate subject) and the product name (or file name) to prevent overly permissive rules. A rule that trusts 'Microsoft Corporation' with no product constraint is not used \u2014 instead, rules specify 'Microsoft Windows' for OS components and specific product names (e.g. 'Microsoft Edge') for applications."
+                "description": "Publisher certificate rules in the Windows 11 WDAC or AppLocker policy specify both the publisher name (signer certificate subject) and the product name (or file name) to prevent overly permissive rules. A rule that trusts 'Microsoft Corporation' with no product constraint is not used — instead, rules specify 'Microsoft Windows' for OS components and specific product names (e.g. 'Microsoft Edge') for applications."
               },
               {
                 "uuid": "dafc336e-e339-49ad-aa9f-26efc1e5d930",
@@ -339,7 +339,7 @@
               {
                 "uuid": "eed875c6-d016-4e5e-8ab9-3fac49b86c53",
                 "control-id": "ism-0846",
-                "description": "All users on Windows 11 workstations, except local administrator accounts and designated break glass accounts, cannot disable, bypass or be exempted from application control. WDAC kernel-enforced policies cannot be overridden by user-mode processes regardless of privilege level. No user accounts \u2014 including local admins \u2014 are placed in WDAC policy exemption groups in production. Break glass account usage is centrally logged and alerted."
+                "description": "All users on Windows 11 workstations, except local administrator accounts and designated break glass accounts, cannot disable, bypass or be exempted from application control. WDAC kernel-enforced policies cannot be overridden by user-mode processes regardless of privilege level. No user accounts — including local admins — are placed in WDAC policy exemption groups in production. Break glass account usage is centrally logged and alerted."
               },
               {
                 "uuid": "060e805e-da2b-4bbb-99d7-20bc08e454dd",
@@ -354,7 +354,7 @@
               {
                 "uuid": "f3dd7a22-69fb-4d86-8aaa-6f17bf836a64",
                 "control-id": "ism-1622",
-                "description": "PowerShell is configured to use Constrained Language Mode (CLM) for all standard user sessions on Windows 11 workstations. CLM is automatically enforced by WDAC when the policy is in enforcement mode \u2014 any PowerShell script or interactive session not signed by an approved publisher enters CLM, restricting use of .NET method calls, COM object creation, and other capabilities used by offensive PowerShell tools. CLM status is verified during application control ruleset validation."
+                "description": "PowerShell is configured to use Constrained Language Mode (CLM) for all standard user sessions on Windows 11 workstations. CLM is automatically enforced by WDAC when the policy is in enforcement mode — any PowerShell script or interactive session not signed by an approved publisher enters CLM, restricting use of .NET method calls, COM object creation, and other capabilities used by offensive PowerShell tools. CLM status is verified during application control ruleset validation."
               },
               {
                 "uuid": "abf8f50a-7106-4d2a-89b5-4fe32edc95cd",
@@ -374,12 +374,12 @@
               {
                 "uuid": "dd5f96fc-a06b-4a84-9a01-31999d79a4f8",
                 "control-id": "ism-1341",
-                "description": "A Host-based Intrusion Prevention System (HIPS) or Endpoint Detection and Response (EDR) solution \u2014 Microsoft Defender for Endpoint (MDE) or an equivalent approved product \u2014 is implemented on all Windows 11 workstations. MDE operates in active/block mode (not audit mode) to automatically block malicious processes and files. EDR telemetry (process, file, network, and registry events) is forwarded to the SIEM/XDR platform. The EDR console provides centralised visibility of all endpoints. EDR agent health and coverage is monitored daily, with coverage gaps alerted to the security operations team."
+                "description": "A Host-based Intrusion Prevention System (HIPS) or Endpoint Detection and Response (EDR) solution — Microsoft Defender for Endpoint (MDE) or an equivalent approved product — is implemented on all Windows 11 workstations. MDE operates in active/block mode (not audit mode) to automatically block malicious processes and files. EDR telemetry (process, file, network, and registry events) is forwarded to the SIEM/XDR platform. The EDR console provides centralised visibility of all endpoints. EDR agent health and coverage is monitored daily, with coverage gaps alerted to the security operations team."
               },
               {
                 "uuid": "5d2369d4-9daa-4052-bcb3-ac0396a91ca2",
                 "control-id": "ism-1416",
-                "description": "Windows Defender Firewall with Advanced Security is enforced on all Windows 11 workstations with: inbound connections set to Block (all profiles \u2014 Domain, Private, Public) unless explicitly allowed; outbound connections allowed by default with specific deny rules for prohibited protocols and destinations where required; firewall rules permit only organisation-approved inbound services (e.g. domain management, EDR agent, vulnerability scanner). Firewall configuration is deployed and enforced via Group Policy / Intune Firewall configuration profiles and cannot be disabled by standard users."
+                "description": "Windows Defender Firewall with Advanced Security is enforced on all Windows 11 workstations with: inbound connections set to Block (all profiles — Domain, Private, Public) unless explicitly allowed; outbound connections allowed by default with specific deny rules for prohibited protocols and destinations where required; firewall rules permit only organisation-approved inbound services (e.g. domain management, EDR agent, vulnerability scanner). Firewall configuration is deployed and enforced via Group Policy / Intune Firewall configuration profiles and cannot be disabled by standard users."
               },
               {
                 "uuid": "591e9de9-709b-4e5c-9a06-bb673efc049f",
@@ -394,7 +394,7 @@
               {
                 "uuid": "98d487dd-5523-4db0-8b07-64ab83528565",
                 "control-id": "ism-0961",
-                "description": "Client-side active content (JavaScript from external domains, Flash \u2014 already blocked by Windows 11, ActiveX \u2014 absent from Edge) is restricted by web content filtering and browser configuration to an organisation-approved list of domain names where required. Microsoft Edge's Enhanced Security Mode (ESM) is enabled for sites not in the trusted sites list, applying sandboxed JIT-less mode to reduce JavaScript engine attack surface on untrusted sites. The trusted sites list is managed via Group Policy and cannot be modified by standard users."
+                "description": "Client-side active content (JavaScript from external domains, Flash — already blocked by Windows 11, ActiveX — absent from Edge) is restricted by web content filtering and browser configuration to an organisation-approved list of domain names where required. Microsoft Edge's Enhanced Security Mode (ESM) is enabled for sites not in the trusted sites list, applying sandboxed JIT-less mode to reduce JavaScript engine attack surface on untrusted sites. The trusted sites list is managed via Group Policy and cannot be modified by standard users."
               },
               {
                 "uuid": "e1c8fbce-aa78-4420-962f-63d6415ef7bd",
@@ -414,7 +414,7 @@
               {
                 "uuid": "ea418f43-729b-4718-9fb4-5f8f2e6b8e66",
                 "control-id": "ism-0414",
-                "description": "All personnel granted access to Windows 11 workstations are uniquely identifiable. Each user account is tied to a specific named individual, provisioned and de-provisioned through the organisation's identity lifecycle management process (HR-triggered Joiner/Mover/Leaver). User accounts are assigned to individuals \u2014 no shared accounts are used for interactive workstation access. Accounts are created in Active Directory or Microsoft Entra ID and assigned to the relevant user via the organisation's access request process."
+                "description": "All personnel granted access to Windows 11 workstations are uniquely identifiable. Each user account is tied to a specific named individual, provisioned and de-provisioned through the organisation's identity lifecycle management process (HR-triggered Joiner/Mover/Leaver). User accounts are assigned to individuals — no shared accounts are used for interactive workstation access. Accounts are created in Active Directory or Microsoft Entra ID and assigned to the relevant user via the organisation's access request process."
               },
               {
                 "uuid": "29e1385b-95f6-4473-933c-6b5a2973d786",
@@ -469,7 +469,7 @@
               {
                 "uuid": "a6d067e2-6b6c-45fc-8a6f-b9e4510c899d",
                 "control-id": "ism-1405",
-                "description": "A centralised event logging facility (SIEM \u2014 Microsoft Sentinel, Splunk, Elastic SIEM, or equivalent) collects and retains security event logs from Windows 11 workstations. Log collection is via Windows Event Forwarding (WEF) using a subscription-based architecture (workstations forward to a WEF collector, which forwards to the SIEM) and/or agent-based collection (Sysmon, Microsoft Monitoring Agent, or AMA). EDR telemetry from Microsoft Defender for Endpoint is integrated with the SIEM/XDR platform. Log retention meets the organisation's minimum retention requirements."
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, Elastic SIEM, or equivalent) collects and retains security event logs from Windows 11 workstations. Log collection is via Windows Event Forwarding (WEF) using a subscription-based architecture (workstations forward to a WEF collector, which forwards to the SIEM) and/or agent-based collection (Sysmon, Microsoft Monitoring Agent, or AMA). EDR telemetry from Microsoft Defender for Endpoint is integrated with the SIEM/XDR platform. Log retention meets the organisation's minimum retention requirements."
               },
               {
                 "uuid": "407eafc1-cc0c-4ae5-ab91-9aeabe1fbcbb",
@@ -509,7 +509,7 @@
               {
                 "uuid": "c590f6cb-9aea-434c-a0e1-7b0ddd0426e2",
                 "control-id": "ism-2109",
-                "description": "Pre-boot authentication is implemented for Windows 11 workstations using BitLocker with TPM 2.0 + PIN. The TPM-only mode (which silently unlocks the drive on boot without user input) is not used for workstations with access to sensitive or classified data \u2014 a PIN is required in addition to TPM attestation. The BitLocker PIN complexity requirements (minimum 6-digit PIN or alphanumeric passphrase) are enforced via Intune BitLocker policy. Users are required to set their PIN during device enrolment."
+                "description": "Pre-boot authentication is implemented for Windows 11 workstations using BitLocker with TPM 2.0 + PIN. The TPM-only mode (which silently unlocks the drive on boot without user input) is not used for workstations with access to sensitive or classified data — a PIN is required in addition to TPM attestation. The BitLocker PIN complexity requirements (minimum 6-digit PIN or alphanumeric passphrase) are enforced via Intune BitLocker policy. Users are required to set their PIN during device enrolment."
               },
               {
                 "uuid": "a7e8dfeb-b5d7-4e16-a0b0-593855029d6c",
@@ -529,7 +529,7 @@
               {
                 "uuid": "10bd0def-2229-47ca-ab0b-e37ac9398e54",
                 "control-id": "ism-0917",
-                "description": "When malicious code is detected on a Windows 11 workstation (via Defender AV, EDR alert, SIEM detection, or user report), the following steps are taken: the affected workstation is isolated from the network (network access revoked via Intune device compliance conditional access \u2014 marking non-compliant, or via the Defender for Endpoint 'Isolate device' action); all recently-connected removable media is scanned; the source and scope of the infection is investigated; ASD's ACSC is notified if required by incident severity; the workstation is rebuilt from the SOE baseline (not cleaned in-place where possible); and post-incident findings are used to update detection rules and defences. The incident is documented in the cyber security incident register."
+                "description": "When malicious code is detected on a Windows 11 workstation (via Defender AV, EDR alert, SIEM detection, or user report), the following steps are taken: the affected workstation is isolated from the network (network access revoked via Intune device compliance conditional access — marking non-compliant, or via the Defender for Endpoint 'Isolate device' action); all recently-connected removable media is scanned; the source and scope of the infection is investigated; ASD's ACSC is notified if required by incident severity; the workstation is rebuilt from the SOE baseline (not cleaned in-place where possible); and post-incident findings are used to update detection rules and defences. The incident is documented in the cyber security incident register."
               }
             ]
           }
@@ -538,7 +538,7 @@
           {
             "uuid": "8fd1f8cb-d4fa-4b9a-9349-7bf6ce44977e",
             "name": "https",
-            "title": "HTTPS \u2014 Cloud services, web browsing, Windows Update, Intune MDM",
+            "title": "HTTPS — Cloud services, web browsing, Windows Update, Intune MDM",
             "port-ranges": [
               {
                 "start": 443,
@@ -550,7 +550,7 @@
           {
             "uuid": "f0128cb8-dd6c-4c3e-83cd-1d6070d33f45",
             "name": "http",
-            "title": "HTTP \u2014 Windows Update CRL/OCSP, redirect to HTTPS",
+            "title": "HTTP — Windows Update CRL/OCSP, redirect to HTTPS",
             "port-ranges": [
               {
                 "start": 80,
@@ -562,7 +562,7 @@
           {
             "uuid": "687a90d2-d9e8-4006-b990-a43172ccb8e5",
             "name": "dns",
-            "title": "DNS \u2014 Domain name resolution (AD DNS and public DNS via proxy)",
+            "title": "DNS — Domain name resolution (AD DNS and public DNS via proxy)",
             "port-ranges": [
               {
                 "start": 53,
@@ -572,15 +572,14 @@
               {
                 "start": 53,
                 "end": 53,
-                "transport": "TCP",
-                "remarks": "DNS over TCP / large responses"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "9867c813-e827-4860-849c-45f8d3767c77",
             "name": "kerberos",
-            "title": "Kerberos \u2014 Active Directory authentication",
+            "title": "Kerberos — Active Directory authentication",
             "port-ranges": [
               {
                 "start": 88,
@@ -597,7 +596,7 @@
           {
             "uuid": "6bf6bd49-b381-4cec-8789-466507571470",
             "name": "ldap",
-            "title": "LDAP \u2014 Active Directory Group Policy and domain queries",
+            "title": "LDAP — Active Directory Group Policy and domain queries",
             "port-ranges": [
               {
                 "start": 389,
@@ -614,7 +613,7 @@
           {
             "uuid": "013eb5d5-5294-4e1b-95ec-47c9d360370c",
             "name": "ldaps",
-            "title": "LDAPS \u2014 LDAP over TLS",
+            "title": "LDAPS — LDAP over TLS",
             "port-ranges": [
               {
                 "start": 636,
@@ -626,7 +625,7 @@
           {
             "uuid": "f80abe53-dd90-42f0-87e6-272b89aefc5b",
             "name": "smb",
-            "title": "SMB \u2014 File share access, Group Policy application, SYSVOL",
+            "title": "SMB — File share access, Group Policy application, SYSVOL",
             "port-ranges": [
               {
                 "start": 445,
@@ -638,7 +637,7 @@
           {
             "uuid": "a3fbaa7f-733b-4fbb-bfa9-8a456e6f485b",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation with Active Directory domain controller",
+            "title": "NTP — Time synchronisation with Active Directory domain controller",
             "port-ranges": [
               {
                 "start": 123,
@@ -650,7 +649,7 @@
           {
             "uuid": "f77fd3f4-4cec-4a9d-90d7-8a82bbeb1894",
             "name": "dhcp",
-            "title": "DHCP \u2014 Dynamic IP address assignment",
+            "title": "DHCP — Dynamic IP address assignment",
             "port-ranges": [
               {
                 "start": 67,
@@ -662,7 +661,7 @@
           {
             "uuid": "e3e3e28d-edfb-4896-9a7e-694932793f04",
             "name": "rdp",
-            "title": "RDP \u2014 Remote Desktop (inbound from approved jump server only)",
+            "title": "RDP — Remote Desktop (inbound from approved jump server only)",
             "port-ranges": [
               {
                 "start": 3389,
@@ -674,19 +673,17 @@
           {
             "uuid": "85ac84d8-e4d6-4d8b-ab40-58ccec6b6f92",
             "name": "winrm",
-            "title": "WinRM \u2014 Windows Remote Management for Intune and management tools",
+            "title": "WinRM — Windows Remote Management for Intune and management tools",
             "port-ranges": [
               {
                 "start": 5985,
                 "end": 5985,
-                "transport": "TCP",
-                "remarks": "HTTP (restricted to management network)"
+                "transport": "TCP"
               },
               {
                 "start": 5986,
                 "end": 5986,
-                "transport": "TCP",
-                "remarks": "HTTPS (preferred)"
+                "transport": "TCP"
               }
             ]
           }

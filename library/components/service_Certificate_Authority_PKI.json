@@ -35,7 +35,7 @@
           {
             "uuid": "4d32486c-c17b-4cb3-9acd-3582189bb57b",
             "name": "https",
-            "title": "HTTPS \u2014 CA web enrolment interface (if enabled) and CRL/OCSP publication",
+            "title": "HTTPS — CA web enrolment interface (if enabled) and CRL/OCSP publication",
             "port-ranges": [
               {
                 "start": 443,
@@ -47,7 +47,7 @@
           {
             "uuid": "76c217ca-b9ca-4992-a8f5-bfb01e8baba6",
             "name": "ldap",
-            "title": "LDAP \u2014 Certificate publication to Active Directory",
+            "title": "LDAP — Certificate publication to Active Directory",
             "port-ranges": [
               {
                 "start": 389,
@@ -59,33 +59,31 @@
           {
             "uuid": "e4012c2d-8c0b-489f-9a36-430ed816ca16",
             "name": "ocsp",
-            "title": "OCSP \u2014 Online Certificate Status Protocol (certificate revocation checking)",
+            "title": "OCSP — Online Certificate Status Protocol (certificate revocation checking)",
             "port-ranges": [
               {
                 "start": 80,
                 "end": 80,
-                "transport": "TCP",
-                "remarks": "OCSP responder served over HTTP per RFC 5019 recommendation"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "669d062c-6155-4375-bb8e-6cc8d4057615",
             "name": "crl-http",
-            "title": "CRL Distribution Point \u2014 Certificate Revocation List download",
+            "title": "CRL Distribution Point — Certificate Revocation List download",
             "port-ranges": [
               {
                 "start": 80,
                 "end": 80,
-                "transport": "TCP",
-                "remarks": "CRL download via HTTP \u2014 CDP URL embedded in issued certificates"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "70a23495-0805-4182-8714-683b923022d0",
             "name": "dcom-rpc",
-            "title": "DCOM/RPC \u2014 Certificate Authority MMC and certutil remote management",
+            "title": "DCOM/RPC — Certificate Authority MMC and certutil remote management",
             "port-ranges": [
               {
                 "start": 135,
@@ -97,13 +95,12 @@
           {
             "uuid": "70461f18-c34f-4435-b6a0-ff5e1ddbdc75",
             "name": "ms-cert-enroll",
-            "title": "DCOM Certificate Enrolment \u2014 Autoenrollment and manual enrolment",
+            "title": "DCOM Certificate Enrolment — Autoenrollment and manual enrolment",
             "port-ranges": [
               {
                 "start": 49152,
                 "end": 65535,
-                "transport": "TCP",
-                "remarks": "Dynamic RPC high ports for DCOM certificate enrolment"
+                "transport": "TCP"
               }
             ]
           }

@@ -39,7 +39,7 @@
           {
             "uuid": "87790bb6-430d-4c2d-83a2-8529c2079cbc",
             "name": "https",
-            "title": "HTTPS \u2014 Veeam ONE monitoring console and Veeam Backup Enterprise Manager",
+            "title": "HTTPS — Veeam ONE monitoring console and Veeam Backup Enterprise Manager",
             "port-ranges": [
               {
                 "start": 443,
@@ -51,7 +51,7 @@
           {
             "uuid": "ef808853-6ea1-4ddc-a96d-2675c7a38cfc",
             "name": "veeam-console",
-            "title": "Veeam Backup Console \u2014 Veeam Backup and Replication management console connection",
+            "title": "Veeam Backup Console — Veeam Backup and Replication management console connection",
             "port-ranges": [
               {
                 "start": 9392,
@@ -63,20 +63,19 @@
           {
             "uuid": "2f2979c9-e2eb-4924-8b39-7129d7053d69",
             "name": "veeam-transport",
-            "title": "Veeam Data Mover \u2014 Backup data transfer between Veeam components",
+            "title": "Veeam Data Mover — Backup data transfer between Veeam components",
             "port-ranges": [
               {
                 "start": 2500,
                 "end": 3300,
-                "transport": "TCP",
-                "remarks": "Default Veeam data mover range \u2014 restrict to Veeam infrastructure IPs"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "32b5c35a-54fa-44af-995f-6cde82fa5599",
             "name": "smb",
-            "title": "SMB \u2014 Backup file access and repository share (if SMB repository is used)",
+            "title": "SMB — Backup file access and repository share (if SMB repository is used)",
             "port-ranges": [
               {
                 "start": 445,
@@ -88,7 +87,7 @@
           {
             "uuid": "8592dc81-21f8-46c7-a1cb-04fce0b2781b",
             "name": "ssh",
-            "title": "SSH \u2014 Veeam Linux proxy and hardened repository management",
+            "title": "SSH — Veeam Linux proxy and hardened repository management",
             "port-ranges": [
               {
                 "start": 22,
@@ -100,7 +99,7 @@
           {
             "uuid": "8e550f81-64bb-46bd-b4fb-7f42f49b8b51",
             "name": "syslog",
-            "title": "Syslog \u2014 Veeam job and security event forwarding to SIEM",
+            "title": "Syslog — Veeam job and security event forwarding to SIEM",
             "port-ranges": [
               {
                 "start": 514,
@@ -112,13 +111,12 @@
           {
             "uuid": "42b12382-8bdd-4469-bd87-ee09f92cdfe8",
             "name": "vmware-vsphere",
-            "title": "VMware vSphere API \u2014 VM backup via vCenter and VADP",
+            "title": "VMware vSphere API — VM backup via vCenter and VADP",
             "port-ranges": [
               {
                 "start": 443,
                 "end": 443,
-                "transport": "TCP",
-                "remarks": "Veeam-to-vCenter HTTPS for VADP backup"
+                "transport": "TCP"
               }
             ]
           }

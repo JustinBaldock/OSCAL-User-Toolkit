@@ -35,7 +35,7 @@
           {
             "uuid": "97730118-08fa-4616-8f60-0bb396d2296e",
             "name": "ipsec-ike",
-            "title": "IKEv2 \u2014 IPsec key exchange and SA negotiation",
+            "title": "IKEv2 — IPsec key exchange and SA negotiation",
             "port-ranges": [
               {
                 "start": 500,
@@ -47,7 +47,7 @@
           {
             "uuid": "dc3dcf5b-dfc7-485b-bbb1-51112e237899",
             "name": "ipsec-nat-t",
-            "title": "IPsec NAT-T \u2014 IPsec encapsulation when NAT is present",
+            "title": "IPsec NAT-T — IPsec encapsulation when NAT is present",
             "port-ranges": [
               {
                 "start": 4500,
@@ -59,13 +59,12 @@
           {
             "uuid": "c86f3f95-d310-4704-bb15-8855f7939bba",
             "name": "ipsec-esp",
-            "title": "IPsec ESP \u2014 Encrypted data transport (IP protocol 50, not TCP/UDP)",
+            "title": "IPsec ESP — Encrypted data transport (IP protocol 50, not TCP/UDP)",
             "port-ranges": [
               {
                 "start": 0,
                 "end": 0,
-                "transport": "UDP",
-                "remarks": "ESP is IP protocol 50 \u2014 permit via firewall policy, not port-based rule"
+                "transport": "UDP"
               }
             ]
           }

@@ -31,26 +31,24 @@
           {
             "uuid": "ec4d01a9-7df0-4bf1-b2b3-440c229d69b4",
             "name": "dhcp",
-            "title": "DHCP \u2014 Dynamic IP address assignment to clients",
+            "title": "DHCP — Dynamic IP address assignment to clients",
             "port-ranges": [
               {
                 "start": 67,
                 "end": 67,
-                "transport": "UDP",
-                "remarks": "DHCP server listens on UDP 67"
+                "transport": "UDP"
               },
               {
                 "start": 68,
                 "end": 68,
-                "transport": "UDP",
-                "remarks": "DHCP client response port"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "c497ca64-cde0-47cc-b589-70e86d542400",
             "name": "dhcp-failover",
-            "title": "DHCP Failover \u2014 DHCP server-to-server replication and failover",
+            "title": "DHCP Failover — DHCP server-to-server replication and failover",
             "port-ranges": [
               {
                 "start": 647,
@@ -62,7 +60,7 @@
           {
             "uuid": "fba628f4-c60a-4c20-bcc9-2d206532c994",
             "name": "dns",
-            "title": "DNS \u2014 Dynamic DNS (DDNS) registration of DHCP leases",
+            "title": "DNS — Dynamic DNS (DDNS) registration of DHCP leases",
             "port-ranges": [
               {
                 "start": 53,
@@ -79,7 +77,7 @@
           {
             "uuid": "721be9ee-161d-404a-ad36-15a4684bfdbd",
             "name": "ldap",
-            "title": "LDAP \u2014 Active Directory integration for DHCP authorisation",
+            "title": "LDAP — Active Directory integration for DHCP authorisation",
             "port-ranges": [
               {
                 "start": 389,

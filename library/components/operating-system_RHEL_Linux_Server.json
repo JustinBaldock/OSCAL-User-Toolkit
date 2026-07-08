@@ -43,7 +43,7 @@
           {
             "uuid": "230526f5-b097-4c6b-ab39-572b02a751ec",
             "name": "ssh",
-            "title": "SSH \u2014 Primary secure remote management and file transfer (SCP/SFTP)",
+            "title": "SSH — Primary secure remote management and file transfer (SCP/SFTP)",
             "port-ranges": [
               {
                 "start": 22,
@@ -55,7 +55,7 @@
           {
             "uuid": "12d4fd3e-102a-4e46-85ab-65a2d0b7d5d4",
             "name": "https",
-            "title": "HTTPS \u2014 Red Hat Satellite / Ansible Tower management, package download",
+            "title": "HTTPS — Red Hat Satellite / Ansible Tower management, package download",
             "port-ranges": [
               {
                 "start": 443,
@@ -67,7 +67,7 @@
           {
             "uuid": "f45b8332-1080-4547-b2bd-c54cf29d9801",
             "name": "dns",
-            "title": "DNS \u2014 Domain name resolution",
+            "title": "DNS — Domain name resolution",
             "port-ranges": [
               {
                 "start": 53,
@@ -84,7 +84,7 @@
           {
             "uuid": "5c56c784-fdfd-40cf-b49d-a8eab0fb156d",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation via chrony",
+            "title": "NTP — Time synchronisation via chrony",
             "port-ranges": [
               {
                 "start": 123,
@@ -96,7 +96,7 @@
           {
             "uuid": "b58fc71f-1431-4df2-974c-5e2c2e903dda",
             "name": "kerberos",
-            "title": "Kerberos \u2014 Active Directory authentication (sssd/realmd AD integration)",
+            "title": "Kerberos — Active Directory authentication (sssd/realmd AD integration)",
             "port-ranges": [
               {
                 "start": 88,
@@ -113,7 +113,7 @@
           {
             "uuid": "67092f64-786d-46dd-8e0d-aa63aa88d8a0",
             "name": "ldap",
-            "title": "LDAP \u2014 Active Directory user/group lookups via sssd",
+            "title": "LDAP — Active Directory user/group lookups via sssd",
             "port-ranges": [
               {
                 "start": 389,
@@ -125,7 +125,7 @@
           {
             "uuid": "f7199726-336c-44bd-a83c-b36f2f5c4426",
             "name": "ldaps",
-            "title": "LDAPS \u2014 Secure LDAP for AD integration",
+            "title": "LDAPS — Secure LDAP for AD integration",
             "port-ranges": [
               {
                 "start": 636,
@@ -137,7 +137,7 @@
           {
             "uuid": "deaf85ab-9287-4ff9-a924-5c8f7343d4c6",
             "name": "syslog",
-            "title": "Syslog \u2014 Audit and security event forwarding to SIEM (rsyslog)",
+            "title": "Syslog — Audit and security event forwarding to SIEM (rsyslog)",
             "port-ranges": [
               {
                 "start": 514,
@@ -147,8 +147,7 @@
               {
                 "start": 6514,
                 "end": 6514,
-                "transport": "TCP",
-                "remarks": "Syslog over TLS"
+                "transport": "TCP"
               }
             ]
           }

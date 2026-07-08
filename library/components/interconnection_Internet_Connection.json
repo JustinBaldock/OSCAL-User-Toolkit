@@ -39,7 +39,7 @@
           {
             "uuid": "57902fa7-31a1-43bd-b04f-d15560c3e97b",
             "name": "https",
-            "title": "HTTPS \u2014 Permitted outbound cloud and web traffic (primary)",
+            "title": "HTTPS — Permitted outbound cloud and web traffic (primary)",
             "port-ranges": [
               {
                 "start": 443,
@@ -51,7 +51,7 @@
           {
             "uuid": "b97e57d0-8888-43dd-a8f6-9d0062ce76bd",
             "name": "http",
-            "title": "HTTP \u2014 Permitted for CRL/OCSP and HTTP-to-HTTPS redirects only",
+            "title": "HTTP — Permitted for CRL/OCSP and HTTP-to-HTTPS redirects only",
             "port-ranges": [
               {
                 "start": 80,
@@ -63,7 +63,7 @@
           {
             "uuid": "840018b3-4c56-49fd-a692-65836bbe261a",
             "name": "dns",
-            "title": "DNS \u2014 Outbound DNS resolution via approved secure DNS resolver",
+            "title": "DNS — Outbound DNS resolution via approved secure DNS resolver",
             "port-ranges": [
               {
                 "start": 53,
@@ -80,7 +80,7 @@
           {
             "uuid": "b0e26d62-f1f3-410d-9e93-3f0b6a03d78a",
             "name": "ntp",
-            "title": "NTP \u2014 Outbound NTP to approved internet time sources (if no internal stratum-1)",
+            "title": "NTP — Outbound NTP to approved internet time sources (if no internal stratum-1)",
             "port-ranges": [
               {
                 "start": 123,
@@ -92,13 +92,12 @@
           {
             "uuid": "c22acdcd-3a76-4aac-8b9d-ee702f70fb47",
             "name": "smtp",
-            "title": "SMTP \u2014 Outbound email delivery to Exchange Online (SMTP submission)",
+            "title": "SMTP — Outbound email delivery to Exchange Online (SMTP submission)",
             "port-ranges": [
               {
                 "start": 587,
                 "end": 587,
-                "transport": "TCP",
-                "remarks": "SMTP with STARTTLS \u2014 outbound email relay"
+                "transport": "TCP"
               }
             ]
           }

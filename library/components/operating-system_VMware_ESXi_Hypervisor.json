@@ -39,7 +39,7 @@
           {
             "uuid": "4423eba6-4f0f-4345-a248-3499793228ab",
             "name": "https",
-            "title": "HTTPS \u2014 vSphere Client (web UI via vCenter), ESXi Host Client",
+            "title": "HTTPS — vSphere Client (web UI via vCenter), ESXi Host Client",
             "port-ranges": [
               {
                 "start": 443,
@@ -51,33 +51,31 @@
           {
             "uuid": "dae8eb51-153c-4ea6-9112-6bebf56900ba",
             "name": "vmware-vsphere",
-            "title": "vSphere API \u2014 vCenter-to-ESXi management communication",
+            "title": "vSphere API — vCenter-to-ESXi management communication",
             "port-ranges": [
               {
                 "start": 443,
                 "end": 443,
-                "transport": "TCP",
-                "remarks": "Primary vCenter-to-ESXi API channel"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "65346649-1bb8-48e0-b316-671cf446c2f8",
             "name": "ssh",
-            "title": "SSH \u2014 ESXi SSH shell (disabled by default; enabled only during maintenance)",
+            "title": "SSH — ESXi SSH shell (disabled by default; enabled only during maintenance)",
             "port-ranges": [
               {
                 "start": 22,
                 "end": 22,
-                "transport": "TCP",
-                "remarks": "Disabled in production; enabled only for approved maintenance via change request"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "4c4dc1dc-18de-452d-bfcd-d1fbaba39484",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation (via vCenter or direct NTP)",
+            "title": "NTP — Time synchronisation (via vCenter or direct NTP)",
             "port-ranges": [
               {
                 "start": 123,
@@ -89,7 +87,7 @@
           {
             "uuid": "9846ab74-6546-4327-8435-fe8ef82936ec",
             "name": "snmp",
-            "title": "SNMP \u2014 ESXi host monitoring",
+            "title": "SNMP — ESXi host monitoring",
             "port-ranges": [
               {
                 "start": 161,
@@ -101,7 +99,7 @@
           {
             "uuid": "d4ba3742-2823-4817-a0af-64b177c513b0",
             "name": "syslog",
-            "title": "Syslog \u2014 ESXi security and audit event forwarding to SIEM",
+            "title": "Syslog — ESXi security and audit event forwarding to SIEM",
             "port-ranges": [
               {
                 "start": 514,
@@ -113,20 +111,19 @@
           {
             "uuid": "ded60c44-2a71-4cb5-b164-8ed475613ded",
             "name": "vmotion",
-            "title": "vMotion \u2014 Live VM migration between ESXi hosts",
+            "title": "vMotion — Live VM migration between ESXi hosts",
             "port-ranges": [
               {
                 "start": 8000,
                 "end": 8000,
-                "transport": "TCP",
-                "remarks": "vMotion traffic \u2014 restricted to vMotion VMkernel network"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "d809d744-a914-4e0b-99bc-c810e027b85a",
             "name": "vsphere-replication",
-            "title": "vSphere Replication \u2014 VM replication for DR",
+            "title": "vSphere Replication — VM replication for DR",
             "port-ranges": [
               {
                 "start": 31031,
@@ -165,7 +162,7 @@
               {
                 "uuid": "a60fa0b4-facb-462c-87b2-e1cc9561f2b9",
                 "control-id": "ism-0383",
-                "description": "The ESXi root account password is changed from any default or installation value and is managed in the organisation's PAM vault with a unique, randomly-generated high-entropy password. The root account is not used for routine administration \u2014 named vCenter administrator accounts are used for day-to-day ESXi management via vCenter. ESXi Lockdown Mode prevents direct root login except via DCUI."
+                "description": "The ESXi root account password is changed from any default or installation value and is managed in the organisation's PAM vault with a unique, randomly-generated high-entropy password. The root account is not used for routine administration — named vCenter administrator accounts are used for day-to-day ESXi management via vCenter. ESXi Lockdown Mode prevents direct root login except via DCUI."
               }
             ]
           }

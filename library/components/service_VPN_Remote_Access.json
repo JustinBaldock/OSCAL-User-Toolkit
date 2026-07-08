@@ -12,7 +12,7 @@
         "uuid": "e826efe5-568e-48c7-aee2-fd14ef3dd4d1",
         "type": "service",
         "title": "VPN Remote Access Service",
-        "description": "The VPN (Virtual Private Network) remote access service provides encrypted tunnelled connectivity for authorised personnel accessing organisational systems from outside the office network. Implemented using an SSL/IPsec VPN gateway (Cisco AnyConnect / Palo Alto GlobalProtect / Microsoft Always On VPN or equivalent). All remote access traffic is inspected by the organisation's security controls before reaching internal resources. Split tunnelling is disabled \u2014 all traffic from the VPN client routes through the organisation's security stack.",
+        "description": "The VPN (Virtual Private Network) remote access service provides encrypted tunnelled connectivity for authorised personnel accessing organisational systems from outside the office network. Implemented using an SSL/IPsec VPN gateway (Cisco AnyConnect / Palo Alto GlobalProtect / Microsoft Always On VPN or equivalent). All remote access traffic is inspected by the organisation's security controls before reaching internal resources. Split tunnelling is disabled — all traffic from the VPN client routes through the organisation's security stack.",
         "props": [
           {
             "name": "operational-status",
@@ -32,14 +32,14 @@
           },
           {
             "name": "split-tunnelling",
-            "value": "Disabled \u2014 all traffic routed through organisational security controls"
+            "value": "Disabled — all traffic routed through organisational security controls"
           }
         ],
         "protocols": [
           {
             "uuid": "5fe9d724-92fe-4f23-b1de-319dbdff3cb7",
             "name": "https",
-            "title": "HTTPS / DTLS \u2014 SSL VPN primary connection (AnyConnect/GlobalProtect)",
+            "title": "HTTPS / DTLS — SSL VPN primary connection (AnyConnect/GlobalProtect)",
             "port-ranges": [
               {
                 "start": 443,
@@ -49,15 +49,14 @@
               {
                 "start": 443,
                 "end": 443,
-                "transport": "UDP",
-                "remarks": "DTLS \u2014 UDP-based TLS for improved VPN performance"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "9b0cea7f-a4bd-491b-97e1-b59528b2322e",
             "name": "ipsec-ike",
-            "title": "IKEv2 \u2014 IPsec VPN key exchange (if IPsec mode is used)",
+            "title": "IKEv2 — IPsec VPN key exchange (if IPsec mode is used)",
             "port-ranges": [
               {
                 "start": 500,
@@ -69,7 +68,7 @@
           {
             "uuid": "2b3088c7-c3db-4982-bf8b-b20a82ca7fe0",
             "name": "ipsec-nat",
-            "title": "IPsec NAT-T \u2014 IPsec through NAT",
+            "title": "IPsec NAT-T — IPsec through NAT",
             "port-ranges": [
               {
                 "start": 4500,
@@ -81,7 +80,7 @@
           {
             "uuid": "25faaedf-20e6-4df8-ab86-ef119246683f",
             "name": "radius",
-            "title": "RADIUS \u2014 VPN authentication to NPS/RADIUS server",
+            "title": "RADIUS — VPN authentication to NPS/RADIUS server",
             "port-ranges": [
               {
                 "start": 1812,
@@ -91,15 +90,14 @@
               {
                 "start": 1813,
                 "end": 1813,
-                "transport": "UDP",
-                "remarks": "RADIUS accounting"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "bb042af0-eb9d-4940-89f3-a9faae7b73d8",
             "name": "ldaps",
-            "title": "LDAPS \u2014 Active Directory group membership check for access control",
+            "title": "LDAPS — Active Directory group membership check for access control",
             "port-ranges": [
               {
                 "start": 636,
@@ -111,7 +109,7 @@
           {
             "uuid": "1b375850-8a6c-4201-8687-12170812f69e",
             "name": "syslog",
-            "title": "Syslog \u2014 VPN connection and authentication event forwarding to SIEM",
+            "title": "Syslog — VPN connection and authentication event forwarding to SIEM",
             "port-ranges": [
               {
                 "start": 514,
@@ -140,7 +138,7 @@
               {
                 "uuid": "85700c38-617f-41e5-9aa9-7669837012f3",
                 "control-id": "ism-1508",
-                "description": "VPN access is granted on the principle of least privilege. Network access policies on the VPN gateway restrict which internal resources each user group can reach based on their role. Split tunnelling is disabled \u2014 all traffic from remote sessions is inspected by the organisation's firewall, proxy, and security controls."
+                "description": "VPN access is granted on the principle of least privilege. Network access policies on the VPN gateway restrict which internal resources each user group can reach based on their role. Split tunnelling is disabled — all traffic from remote sessions is inspected by the organisation's firewall, proxy, and security controls."
               },
               {
                 "uuid": "99fa4ae5-fe8d-4cac-be90-ba45f0585447",

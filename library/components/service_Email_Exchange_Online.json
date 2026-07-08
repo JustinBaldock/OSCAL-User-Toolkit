@@ -12,7 +12,7 @@
         "uuid": "a9fdc90e-9ab6-4f6b-90ff-709da4962d6c",
         "type": "service",
         "title": "Email Service (Microsoft Exchange Online)",
-        "description": "Microsoft Exchange Online (part of Microsoft 365) providing email, calendar, and contacts services for all organisation personnel. Exchange Online is accessed via Outlook (desktop client) and Outlook Web App (OWA). Microsoft Defender for Office 365 Plan 1 or Plan 2 provides email security \u2014 Safe Attachments, Safe Links, anti-phishing, and anti-malware. Legacy authentication protocols are disabled. All mailbox data is stored in Microsoft data centres in the Australia region.",
+        "description": "Microsoft Exchange Online (part of Microsoft 365) providing email, calendar, and contacts services for all organisation personnel. Exchange Online is accessed via Outlook (desktop client) and Outlook Web App (OWA). Microsoft Defender for Office 365 Plan 1 or Plan 2 provides email security — Safe Attachments, Safe Links, anti-phishing, and anti-malware. Legacy authentication protocols are disabled. All mailbox data is stored in Microsoft data centres in the Australia region.",
         "props": [
           {
             "name": "operational-status",
@@ -39,7 +39,7 @@
           {
             "uuid": "a079c6e5-b572-407a-86d9-a47e22d70caf",
             "name": "https",
-            "title": "HTTPS \u2014 Outlook Web App (OWA), Exchange Admin Centre, Exchange Web Services (EWS), REST API",
+            "title": "HTTPS — Outlook Web App (OWA), Exchange Admin Centre, Exchange Web Services (EWS), REST API",
             "port-ranges": [
               {
                 "start": 443,
@@ -51,39 +51,36 @@
           {
             "uuid": "1e08f761-b907-4d66-9624-2b04de72dca2",
             "name": "smtps",
-            "title": "SMTP STARTTLS \u2014 Inbound/outbound email delivery (Exchange Online MX)",
+            "title": "SMTP STARTTLS — Inbound/outbound email delivery (Exchange Online MX)",
             "port-ranges": [
               {
                 "start": 25,
                 "end": 25,
-                "transport": "TCP",
-                "remarks": "Inbound SMTP to Exchange Online MX \u2014 Microsoft-managed; outbound relay via Exchange Online"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "fb02a0b6-99df-4391-9d41-e37cc54cbacd",
             "name": "smtp-sub",
-            "title": "SMTP Submission \u2014 Authenticated SMTP submission from devices and applications",
+            "title": "SMTP Submission — Authenticated SMTP submission from devices and applications",
             "port-ranges": [
               {
                 "start": 587,
                 "end": 587,
-                "transport": "TCP",
-                "remarks": "SMTP with STARTTLS for authenticated submission from printers, scanners, applications"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "830b0fa1-252e-42d3-9684-1ecdc66db1dd",
             "name": "imap4s",
-            "title": "IMAP4S \u2014 Secure IMAP access (disabled by default; enabled only if required)",
+            "title": "IMAP4S — Secure IMAP access (disabled by default; enabled only if required)",
             "port-ranges": [
               {
                 "start": 993,
                 "end": 993,
-                "transport": "TCP",
-                "remarks": "Disabled at tenant level unless specifically approved"
+                "transport": "TCP"
               }
             ]
           }
@@ -97,7 +94,7 @@
               {
                 "uuid": "632e0b39-c210-4a4f-a74a-8844d2e8144e",
                 "control-id": "ism-1234",
-                "description": "Microsoft Defender for Office 365 Safe Attachments is enabled for all Exchange Online mailboxes \u2014 all email attachments are detonated in a sandbox before delivery. Safe Links rewrites URLs in emails and Office documents for real-time detonation checks at click-time. Anti-phishing policies are configured with impersonation protection and mailbox intelligence for all users. Anti-malware policies block dangerous attachment file types at the gateway level."
+                "description": "Microsoft Defender for Office 365 Safe Attachments is enabled for all Exchange Online mailboxes — all email attachments are detonated in a sandbox before delivery. Safe Links rewrites URLs in emails and Office documents for real-time detonation checks at click-time. Anti-phishing policies are configured with impersonation protection and mailbox intelligence for all users. Anti-malware policies block dangerous attachment file types at the gateway level."
               },
               {
                 "uuid": "c998c974-fb04-491a-940c-e933c132c804",

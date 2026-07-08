@@ -37,7 +37,7 @@
           },
           {
             "name": "version",
-            "value": "Windows Server 2022 (OS Build 20348 \u2014 Long-Term Servicing Channel)"
+            "value": "Windows Server 2022 (OS Build 20348 — Long-Term Servicing Channel)"
           },
           {
             "name": "editions",
@@ -134,7 +134,7 @@
               {
                 "uuid": "3175e83a-7f2e-4ab1-8ac0-5adcd7ec921b",
                 "control-id": "ism-1601",
-                "description": "Microsoft's Attack Surface Reduction (ASR) rules are implemented on Windows Server 2022 where the server roles support them, via Microsoft Defender for Endpoint policy. ASR rules enforced include: Block credential stealing from LSASS (rule ID: 9e6c4e1f\u2026), Block executable files from running unless they meet a prevalence, age, or trusted list criterion (rule ID: 01443614\u2026), Block execution of potentially obfuscated scripts (rule ID: 5beb7efe\u2026), Block process creations originating from PSExec and WMI commands (rule ID: d1e49aac\u2026), Block untrusted and unsigned processes that run from USB (rule ID: b2b3f03d\u2026), and Use advanced protection against ransomware (rule ID: c1db55ab\u2026). ASR rules are set to Block mode (not Audit) after a documented testing period."
+                "description": "Microsoft's Attack Surface Reduction (ASR) rules are implemented on Windows Server 2022 where the server roles support them, via Microsoft Defender for Endpoint policy. ASR rules enforced include: Block credential stealing from LSASS (rule ID: 9e6c4e1f…), Block executable files from running unless they meet a prevalence, age, or trusted list criterion (rule ID: 01443614…), Block execution of potentially obfuscated scripts (rule ID: 5beb7efe…), Block process creations originating from PSExec and WMI commands (rule ID: d1e49aac…), Block untrusted and unsigned processes that run from USB (rule ID: b2b3f03d…), and Use advanced protection against ransomware (rule ID: c1db55ab…). ASR rules are set to Block mode (not Audit) after a documented testing period."
               },
               {
                 "uuid": "605794fd-c659-42cf-a4fa-37842a0a4534",
@@ -189,7 +189,7 @@
               {
                 "uuid": "3fc3826f-69d1-4482-aa3e-69ec30d3c92f",
                 "control-id": "ism-1692",
-                "description": "Security patches and updates for Windows Server 2022 are applied within two weeks of release for vulnerabilities without confirmed active exploitation. Automated deployment via WSUS, SCCM or Intune is used with a patch ring approach (test ring \u2192 pilot ring \u2192 production ring) to balance patch velocity with stability. Compliance is verified at the two-week mark via vulnerability scanner and WSUS/SCCM reporting."
+                "description": "Security patches and updates for Windows Server 2022 are applied within two weeks of release for vulnerabilities without confirmed active exploitation. Automated deployment via WSUS, SCCM or Intune is used with a patch ring approach (test ring → pilot ring → production ring) to balance patch velocity with stability. Compliance is verified at the two-week mark via vulnerability scanner and WSUS/SCCM reporting."
               },
               {
                 "uuid": "9f235e54-b92f-43ca-a810-9dc2656f0fc7",
@@ -209,7 +209,7 @@
               {
                 "uuid": "dfad8606-f079-4fa9-990f-972a696c4cd0",
                 "control-id": "ism-1490",
-                "description": "Application control (Windows Defender Application Control \u2014 WDAC, or AppLocker) is implemented on all internet-facing Windows Server 2022 servers to restrict execution to an organisation-approved set. WDAC policies for internet-facing servers use a more restrictive ruleset (deny-by-default for unsigned or non-Microsoft code) than internal servers, given the elevated threat exposure."
+                "description": "Application control (Windows Defender Application Control — WDAC, or AppLocker) is implemented on all internet-facing Windows Server 2022 servers to restrict execution to an organisation-approved set. WDAC policies for internet-facing servers use a more restrictive ruleset (deny-by-default for unsigned or non-Microsoft code) than internal servers, given the elevated threat exposure."
               },
               {
                 "uuid": "83f49567-c4f8-458b-a126-7face149752e",
@@ -384,7 +384,7 @@
               {
                 "uuid": "b06dda6f-132e-4860-baff-6cb42ae52fdd",
                 "control-id": "ism-1405",
-                "description": "A centralised event logging facility (SIEM \u2014 Microsoft Sentinel, Splunk, Elastic SIEM, or equivalent) is implemented to collect, protect, and retain Windows Server 2022 event logs. Windows Event Forwarding (WEF) or agent-based log collection (Sysmon, Microsoft Monitoring Agent, or equivalent) is deployed on all Windows Server 2022 instances to forward logs to the SIEM. Log retention meets the minimum retention requirement (at least 7 years for ISM-classified systems, or as required by the organisation's data retention policy)."
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, Elastic SIEM, or equivalent) is implemented to collect, protect, and retain Windows Server 2022 event logs. Windows Event Forwarding (WEF) or agent-based log collection (Sysmon, Microsoft Monitoring Agent, or equivalent) is deployed on all Windows Server 2022 instances to forward logs to the SIEM. Log retention meets the minimum retention requirement (at least 7 years for ISM-classified systems, or as required by the organisation's data retention policy)."
               },
               {
                 "uuid": "0ac17a5e-5481-4c0d-8939-5182ed14ebe7",
@@ -438,7 +438,7 @@
           {
             "uuid": "7e555c83-809a-4e44-bc0b-f8111023182f",
             "name": "https",
-            "title": "HTTPS \u2014 Windows Admin Center, WinRM HTTPS, Windows Update, Intune",
+            "title": "HTTPS — Windows Admin Center, WinRM HTTPS, Windows Update, Intune",
             "port-ranges": [
               {
                 "start": 443,
@@ -450,7 +450,7 @@
           {
             "uuid": "71e7d566-bcb1-4b1d-a2ed-9de2dc860441",
             "name": "http",
-            "title": "HTTP \u2014 CRL/OCSP, WSUS (if configured on port 80), redirect",
+            "title": "HTTP — CRL/OCSP, WSUS (if configured on port 80), redirect",
             "port-ranges": [
               {
                 "start": 80,
@@ -462,7 +462,7 @@
           {
             "uuid": "8813cac9-fdaf-4f86-b68c-10d6b34f9179",
             "name": "dns",
-            "title": "DNS \u2014 Domain name resolution",
+            "title": "DNS — Domain name resolution",
             "port-ranges": [
               {
                 "start": 53,
@@ -479,7 +479,7 @@
           {
             "uuid": "210cfd89-2c3c-495c-9d6b-7ee182d72c4b",
             "name": "kerberos",
-            "title": "Kerberos \u2014 Active Directory authentication",
+            "title": "Kerberos — Active Directory authentication",
             "port-ranges": [
               {
                 "start": 88,
@@ -496,7 +496,7 @@
           {
             "uuid": "349a42e7-952e-482f-871c-1a5cbf482775",
             "name": "rpc-epmap",
-            "title": "RPC Endpoint Mapper \u2014 Windows RPC dynamic port assignment",
+            "title": "RPC Endpoint Mapper — Windows RPC dynamic port assignment",
             "port-ranges": [
               {
                 "start": 135,
@@ -508,7 +508,7 @@
           {
             "uuid": "1cf5276a-7c39-4d4a-b8ee-9f0fa1ed19ac",
             "name": "ldap",
-            "title": "LDAP \u2014 Active Directory queries and Group Policy",
+            "title": "LDAP — Active Directory queries and Group Policy",
             "port-ranges": [
               {
                 "start": 389,
@@ -525,7 +525,7 @@
           {
             "uuid": "194650be-1707-41c6-91db-859078de28a2",
             "name": "ldaps",
-            "title": "LDAPS \u2014 LDAP over TLS",
+            "title": "LDAPS — LDAP over TLS",
             "port-ranges": [
               {
                 "start": 636,
@@ -537,7 +537,7 @@
           {
             "uuid": "b93d4d0f-0515-4884-8d2f-62a0938544cb",
             "name": "smb",
-            "title": "SMB \u2014 Admin shares, Group Policy, SYSVOL, DFS",
+            "title": "SMB — Admin shares, Group Policy, SYSVOL, DFS",
             "port-ranges": [
               {
                 "start": 445,
@@ -549,7 +549,7 @@
           {
             "uuid": "bec21cd2-35a9-4dc4-a3b1-a087464e360c",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation with Active Directory domain controller",
+            "title": "NTP — Time synchronisation with Active Directory domain controller",
             "port-ranges": [
               {
                 "start": 123,
@@ -561,7 +561,7 @@
           {
             "uuid": "b5d564d4-c025-406c-837e-fb239d12199f",
             "name": "rdp",
-            "title": "RDP \u2014 Remote Desktop (inbound from approved jump server/PAW only)",
+            "title": "RDP — Remote Desktop (inbound from approved jump server/PAW only)",
             "port-ranges": [
               {
                 "start": 3389,
@@ -573,38 +573,34 @@
           {
             "uuid": "5769d3bb-0583-402f-bd69-46c92a03fb5c",
             "name": "winrm",
-            "title": "WinRM \u2014 Windows Remote Management (PowerShell remoting, Intune, SCCM)",
+            "title": "WinRM — Windows Remote Management (PowerShell remoting, Intune, SCCM)",
             "port-ranges": [
               {
                 "start": 5985,
                 "end": 5985,
-                "transport": "TCP",
-                "remarks": "HTTP (restricted to management subnet)"
+                "transport": "TCP"
               },
               {
                 "start": 5986,
                 "end": 5986,
-                "transport": "TCP",
-                "remarks": "HTTPS (preferred)"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "b17fc455-8d6e-49bf-a4a5-47eb7f475137",
             "name": "wsus",
-            "title": "WSUS \u2014 Windows Server Update Services patch download (if on-premises WSUS)",
+            "title": "WSUS — Windows Server Update Services patch download (if on-premises WSUS)",
             "port-ranges": [
               {
                 "start": 8530,
                 "end": 8530,
-                "transport": "TCP",
-                "remarks": "HTTP"
+                "transport": "TCP"
               },
               {
                 "start": 8531,
                 "end": 8531,
-                "transport": "TCP",
-                "remarks": "HTTPS"
+                "transport": "TCP"
               }
             ]
           }

@@ -57,7 +57,7 @@
           },
           {
             "name": "data-classification",
-            "value": "Data classification depends on hosted databases \u2014 may range from OFFICIAL to PROTECTED"
+            "value": "Data classification depends on hosted databases — may range from OFFICIAL to PROTECTED"
           },
           {
             "name": "encryption-at-rest",
@@ -125,7 +125,7 @@
               {
                 "uuid": "b4ae32c0-89e7-441b-9b89-65fa0358b487",
                 "control-id": "ism-1693",
-                "description": "Patches, Cumulative Updates (CUs), General Distribution Releases (GDRs), and security hotfixes for Microsoft SQL Server are applied within one month of release for non-critical vulnerabilities. For critical vulnerabilities (CVSS 7.0+ or any Microsoft-rated Critical / Important with a known exploit), patches are applied within 48 hours under the organisation's urgent change process. The Microsoft Security Update Guide (msrc.microsoft.com), the Microsoft SQL Server release blog, and the NVD CVE feed for 'Microsoft SQL Server' are monitored continuously by the security team. SQL Server service accounts are configured to not run Windows Update automatically \u2014 all patching is performed through the approved change process."
+                "description": "Patches, Cumulative Updates (CUs), General Distribution Releases (GDRs), and security hotfixes for Microsoft SQL Server are applied within one month of release for non-critical vulnerabilities. For critical vulnerabilities (CVSS 7.0+ or any Microsoft-rated Critical / Important with a known exploit), patches are applied within 48 hours under the organisation's urgent change process. The Microsoft Security Update Guide (msrc.microsoft.com), the Microsoft SQL Server release blog, and the NVD CVE feed for 'Microsoft SQL Server' are monitored continuously by the security team. SQL Server service accounts are configured to not run Windows Update automatically — all patching is performed through the approved change process."
               },
               {
                 "uuid": "b62a03f1-f1a2-4837-a838-2448ed114da2",
@@ -145,7 +145,7 @@
               {
                 "uuid": "9fb590ca-edff-481d-bc29-589ae3c9c5d2",
                 "control-id": "ism-1409",
-                "description": "The Windows Server 2022 host operating system is hardened per ASD Hardening Windows Server guidance and the Microsoft Security Baseline. SQL Server-specific host hardening includes: SQL Server running under a dedicated low-privilege virtual service account (NT SERVICE\\MSSQLSERVER or a dedicated domain service account with minimum required privileges \u2014 not LocalSystem or NT AUTHORITY\\NETWORK SERVICE); Windows Firewall permitting SQL Server traffic (TCP 1433) only from approved application server IP addresses; NTFS permissions on SQL Server data, log, and backup directories permitting only the SQL Server service account and DBA administrator accounts; and SQL Server Browser service disabled where dynamic ports are not used."
+                "description": "The Windows Server 2022 host operating system is hardened per ASD Hardening Windows Server guidance and the Microsoft Security Baseline. SQL Server-specific host hardening includes: SQL Server running under a dedicated low-privilege virtual service account (NT SERVICE\\MSSQLSERVER or a dedicated domain service account with minimum required privileges — not LocalSystem or NT AUTHORITY\\NETWORK SERVICE); Windows Firewall permitting SQL Server traffic (TCP 1433) only from approved application server IP addresses; NTFS permissions on SQL Server data, log, and backup directories permitting only the SQL Server service account and DBA administrator accounts; and SQL Server Browser service disabled where dynamic ports are not used."
               },
               {
                 "uuid": "bd94e953-ee82-47e5-b77b-f41413101e52",
@@ -160,12 +160,12 @@
               {
                 "uuid": "f298cba3-9f0e-4b55-8a60-f5786d11a3c5",
                 "control-id": "ism-1656",
-                "description": "Application control (Windows Defender Application Control \u2014 WDAC, or AppLocker) is implemented on the Windows Server 2022 host running SQL Server. The application control policy restricts execution on the SQL Server host to: the SQL Server binaries (Microsoft-signed), approved database administration tools (SQL Server Management Studio \u2014 SSMS, Azure Data Studio), approved monitoring and backup agents, and the OS management toolset. All unsigned or unapproved executables are blocked. Application control is enforced in Block mode (not Audit mode) in production."
+                "description": "Application control (Windows Defender Application Control — WDAC, or AppLocker) is implemented on the Windows Server 2022 host running SQL Server. The application control policy restricts execution on the SQL Server host to: the SQL Server binaries (Microsoft-signed), approved database administration tools (SQL Server Management Studio — SSMS, Azure Data Studio), approved monitoring and backup agents, and the OS management toolset. All unsigned or unapproved executables are blocked. Application control is enforced in Block mode (not Audit mode) in production."
               },
               {
                 "uuid": "d300e429-8e19-4dd8-beaf-551810132979",
                 "control-id": "ism-1657",
-                "description": "Application control on the SQL Server host restricts the execution of executables, dynamic-link libraries, scripts (.ps1, .bat, .cmd, .vbs, .js), Windows Installer packages, and HTML applications to the organisation-approved set. xp_cmdshell is disabled (preventing SQL Server from launching OS processes), and CLR execution is disabled, meaning the primary application control surface is the host OS \u2014 WDAC prevents any unauthorised executables from running on the host even if an attacker achieves SQL injection or RCE via a SQL Server vulnerability."
+                "description": "Application control on the SQL Server host restricts the execution of executables, dynamic-link libraries, scripts (.ps1, .bat, .cmd, .vbs, .js), Windows Installer packages, and HTML applications to the organisation-approved set. xp_cmdshell is disabled (preventing SQL Server from launching OS processes), and CLR execution is disabled, meaning the primary application control surface is the host OS — WDAC prevents any unauthorised executables from running on the host even if an attacker achieves SQL injection or RCE via a SQL Server vulnerability."
               },
               {
                 "uuid": "5cdd5e57-006d-4b08-b5dd-6fd98fdfad5b",
@@ -175,7 +175,7 @@
               {
                 "uuid": "a5f3db66-93a7-4e2b-b5ae-5766369ceaf5",
                 "control-id": "ism-1544",
-                "description": "Microsoft's recommended application blocklist (WDAC Recommended Block Rules) is implemented on the SQL Server host, blocking LOLBins that an attacker might use following SQL Server exploitation \u2014 including: msbuild.exe, cmstp.exe, wmic.exe (where not required for management), csi.exe, dbghost.exe, infdefaultinstall.exe, and other binaries in the current Microsoft recommended blocklist. xp_cmdshell is additionally disabled at the SQL Server level to prevent SQL-layer OS process launch."
+                "description": "Microsoft's recommended application blocklist (WDAC Recommended Block Rules) is implemented on the SQL Server host, blocking LOLBins that an attacker might use following SQL Server exploitation — including: msbuild.exe, cmstp.exe, wmic.exe (where not required for management), csi.exe, dbghost.exe, infdefaultinstall.exe, and other binaries in the current Microsoft recommended blocklist. xp_cmdshell is additionally disabled at the SQL Server level to prevent SQL-layer OS process launch."
               },
               {
                 "uuid": "00ba4d63-92de-4800-a09a-7b716e4d2dbe",
@@ -190,7 +190,7 @@
               {
                 "uuid": "52f71d9b-726c-4176-a417-b123bc5f3145",
                 "control-id": "ism-1660",
-                "description": "Allowed and blocked application control events on the SQL Server host are forwarded to the centralised SIEM. WDAC events in the Microsoft-Windows-CodeIntegrity/Operational event log are collected via Windows Event Forwarding or the EDR agent. Alerts are configured for any blocked execution attempt on the SQL Server host \u2014 any unexpected binary attempting to run may indicate post-exploitation activity."
+                "description": "Allowed and blocked application control events on the SQL Server host are forwarded to the centralised SIEM. WDAC events in the Microsoft-Windows-CodeIntegrity/Operational event log are collected via Windows Event Forwarding or the EDR agent. Alerts are configured for any blocked execution attempt on the SQL Server host — any unexpected binary attempting to run may indicate post-exploitation activity."
               },
               {
                 "uuid": "0effe766-67e3-46c9-8e93-9b8a485725fb",
@@ -205,7 +205,7 @@
               {
                 "uuid": "5b030c61-a992-42b4-988e-de111d5b2344",
                 "control-id": "ism-1276",
-                "description": "All application code that connects to SQL Server uses parameterised queries, prepared statements, or approved stored procedures \u2014 not dynamically constructed SQL strings containing user-supplied input. This requirement is enforced as a development standard, verified during code review and DAST scanning, and validated during annual penetration testing. On the SQL Server side, applications are granted EXECUTE permission on stored procedures only (not direct SELECT/INSERT/UPDATE/DELETE on base tables where stored procedure abstractions are available), further limiting the impact of any injection that bypasses the application-layer controls."
+                "description": "All application code that connects to SQL Server uses parameterised queries, prepared statements, or approved stored procedures — not dynamically constructed SQL strings containing user-supplied input. This requirement is enforced as a development standard, verified during code review and DAST scanning, and validated during annual penetration testing. On the SQL Server side, applications are granted EXECUTE permission on stored procedures only (not direct SELECT/INSERT/UPDATE/DELETE on base tables where stored procedure abstractions are available), further limiting the impact of any injection that bypasses the application-layer controls."
               },
               {
                 "uuid": "9e391b15-0d5e-4001-b2d6-0659022b0c16",
@@ -225,7 +225,7 @@
               {
                 "uuid": "b12e0f73-6349-4192-9b8e-6033cba58ced",
                 "control-id": "ism-0459",
-                "description": "Full volume encryption using BitLocker Drive Encryption (XTS-AES-256) is implemented on all volumes of the SQL Server host (OS volume, SQL Server data volumes, SQL Server log volumes, backup volumes). BitLocker provides an additional encryption layer complementary to SQL Server TDE \u2014 if physical media is removed from the server, it cannot be read without the BitLocker recovery key. BitLocker recovery keys are escrowed to Active Directory (via MBAM) or Microsoft Entra ID. Encryption status is monitored via Intune compliance policies or SCCM BitLocker Management reports."
+                "description": "Full volume encryption using BitLocker Drive Encryption (XTS-AES-256) is implemented on all volumes of the SQL Server host (OS volume, SQL Server data volumes, SQL Server log volumes, backup volumes). BitLocker provides an additional encryption layer complementary to SQL Server TDE — if physical media is removed from the server, it cannot be read without the BitLocker recovery key. BitLocker recovery keys are escrowed to Active Directory (via MBAM) or Microsoft Entra ID. Encryption status is monitored via Intune compliance policies or SCCM BitLocker Management reports."
               },
               {
                 "uuid": "3d55621d-a893-488a-b873-f26a46a63a73",
@@ -265,7 +265,7 @@
               {
                 "uuid": "4add85c0-030d-4463-9c91-2da8178524d0",
                 "control-id": "ism-1402",
-                "description": "Credentials stored in SQL Server databases are protected: application-level user passwords stored in SQL Server databases are salted and hashed using an approved algorithm (bcrypt, PBKDF2-SHA512, or Argon2id) before storage \u2014 plain-text or reversible-encrypted password storage is not used. SQL Server login passwords (for any SQL logins created in Mixed Mode) use SQL Server's built-in password hashing (SHA-512 with salt), but SQL logins are minimised and Windows Authentication is preferred. Service account credentials used by applications to connect to SQL Server are stored in a secrets manager (Azure Key Vault, Windows Credential Manager, or equivalent PAM vault) \u2014 not in plain-text application configuration files or connection strings in source code repositories."
+                "description": "Credentials stored in SQL Server databases are protected: application-level user passwords stored in SQL Server databases are salted and hashed using an approved algorithm (bcrypt, PBKDF2-SHA512, or Argon2id) before storage — plain-text or reversible-encrypted password storage is not used. SQL Server login passwords (for any SQL logins created in Mixed Mode) use SQL Server's built-in password hashing (SHA-512 with salt), but SQL logins are minimised and Windows Authentication is preferred. Service account credentials used by applications to connect to SQL Server are stored in a secrets manager (Azure Key Vault, Windows Credential Manager, or equivalent PAM vault) — not in plain-text application configuration files or connection strings in source code repositories."
               },
               {
                 "uuid": "26b5e35b-8c0c-4284-a462-dedadf33a5bb",
@@ -285,12 +285,12 @@
               {
                 "uuid": "a0fb2c94-e12c-4bb5-9e35-1b7619e14616",
                 "control-id": "ism-1872",
-                "description": "MFA for SQL Server management portal access (Azure Portal, Microsoft Entra admin centre for Entra-integrated SQL) uses phishing-resistant methods \u2014 FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication \u2014 enforced via Entra Conditional Access Authentication Strength policies. On-premises, DBA Windows logon uses Windows Hello for Business (hardware TPM-backed) or smartcard authentication."
+                "description": "MFA for SQL Server management portal access (Azure Portal, Microsoft Entra admin centre for Entra-integrated SQL) uses phishing-resistant methods — FIDO2 security keys, Windows Hello for Business, or Certificate-based Authentication — enforced via Entra Conditional Access Authentication Strength policies. On-premises, DBA Windows logon uses Windows Hello for Business (hardware TPM-backed) or smartcard authentication."
               },
               {
                 "uuid": "648e972a-af3f-44c5-a8a9-e3e98d44fcc3",
                 "control-id": "ism-1919",
-                "description": "All non-MFA-capable authentication methods for SQL Server management access are disabled. SQL logins (username + password without MFA) are disabled for all DBA interactive sessions. Where Mixed Mode is required for an application, the SQL login credentials are managed in a PAM vault, rotated regularly, and used only by the specific service account \u2014 they are not used for interactive DBA sessions. Legacy authentication protocols to management portals are blocked via Conditional Access 'Block legacy authentication' policy."
+                "description": "All non-MFA-capable authentication methods for SQL Server management access are disabled. SQL logins (username + password without MFA) are disabled for all DBA interactive sessions. Where Mixed Mode is required for an application, the SQL login credentials are managed in a PAM vault, rotated regularly, and used only by the specific service account — they are not used for interactive DBA sessions. Legacy authentication protocols to management portals are blocked via Conditional Access 'Block legacy authentication' policy."
               },
               {
                 "uuid": "2b02f812-4390-4b3c-96cc-7ed7d97ca43b",
@@ -330,7 +330,7 @@
               {
                 "uuid": "2234a49c-56d9-49dd-9594-bb39f10ba5af",
                 "control-id": "ism-1263",
-                "description": "Unique privileged accounts are used for distinct SQL Server administrative functions. Separation of duty is applied across SQL Server roles: the sysadmin-role account (for SQL Server instance-level administration \u2014 creating databases, managing logins, server configuration) is different from the db_owner account (for schema management within specific databases), which is different from the SQL Server Agent operator account. No single account holds sysadmin and db_owner across all databases. Monitoring and read-only reporting accounts are not granted sysadmin or db_owner."
+                "description": "Unique privileged accounts are used for distinct SQL Server administrative functions. Separation of duty is applied across SQL Server roles: the sysadmin-role account (for SQL Server instance-level administration — creating databases, managing logins, server configuration) is different from the db_owner account (for schema management within specific databases), which is different from the SQL Server Agent operator account. No single account holds sysadmin and db_owner across all databases. Monitoring and read-only reporting accounts are not granted sysadmin or db_owner."
               },
               {
                 "uuid": "b5d9e397-84fa-413a-8fcc-db7dbc45a940",
@@ -340,17 +340,17 @@
               {
                 "uuid": "80d4523a-e798-4b38-84ee-95d0394ad326",
                 "control-id": "ism-1508",
-                "description": "SQL Server access is configured on the principle of least privilege at every layer: service accounts connecting from applications are granted only the database permissions required (e.g. db_datareader + db_datawriter + EXECUTE on specific stored procedures \u2014 not db_owner or sysadmin); reporting/monitoring accounts are granted db_datareader or VIEW DEFINITION only; backup service accounts are granted db_backupoperator; DBA accounts are granted sysadmin only on instances where their role requires it. Row-level security (RLS) and column-level permissions are used where applications require data access segmentation within a database."
+                "description": "SQL Server access is configured on the principle of least privilege at every layer: service accounts connecting from applications are granted only the database permissions required (e.g. db_datareader + db_datawriter + EXECUTE on specific stored procedures — not db_owner or sysadmin); reporting/monitoring accounts are granted db_datareader or VIEW DEFINITION only; backup service accounts are granted db_backupoperator; DBA accounts are granted sysadmin only on instances where their role requires it. Row-level security (RLS) and column-level permissions are used where applications require data access segmentation within a database."
               },
               {
                 "uuid": "8d32fbb4-e2f4-4c8e-ae44-aeb120df1f13",
                 "control-id": "ism-1175",
-                "description": "DBA accounts with sysadmin-level SQL Server access are not used for internet browsing, email access, or non-administrative tasks. DBA administration of SQL Server is performed from a dedicated Privileged Access Workstation (PAW) or jump server with outbound internet access blocked. The DBA's privileged Active Directory account used for Windows Authentication to SQL Server cannot log on to general workstations \u2014 it is restricted to the PAW and jump server via logon workstation restriction in Active Directory."
+                "description": "DBA accounts with sysadmin-level SQL Server access are not used for internet browsing, email access, or non-administrative tasks. DBA administration of SQL Server is performed from a dedicated Privileged Access Workstation (PAW) or jump server with outbound internet access blocked. The DBA's privileged Active Directory account used for Windows Authentication to SQL Server cannot log on to general workstations — it is restricted to the PAW and jump server via logon workstation restriction in Active Directory."
               },
               {
                 "uuid": "fc280c40-db22-4391-87f2-e1ae51161f24",
                 "control-id": "ism-1509",
-                "description": "Privileged access events in SQL Server are centrally logged via SQL Server Audit (Server Audit Specification and Database Audit Specifications) and forwarded to the SIEM. SQL Server Audit is configured to capture: SUCCESSFUL_LOGIN_GROUP and FAILED_LOGIN_GROUP (login events); SERVER_ROLE_MEMBER_CHANGE_GROUP (sysadmin/serveradmin membership changes); DATABASE_ROLE_MEMBER_CHANGE_GROUP (db_owner/securityadmin changes); SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP (privilege changes on objects); SERVER_OBJECT_CHANGE_GROUP (linked server creation, server config changes); DATABASE_CHANGE_GROUP (database creation/deletion/modification); and AUDIT_CHANGE_GROUP (SQL Server Audit policy changes \u2014 any tampering with the audit configuration is itself audited). Privileged event alerts fire when sysadmin membership is modified or the audit policy is changed."
+                "description": "Privileged access events in SQL Server are centrally logged via SQL Server Audit (Server Audit Specification and Database Audit Specifications) and forwarded to the SIEM. SQL Server Audit is configured to capture: SUCCESSFUL_LOGIN_GROUP and FAILED_LOGIN_GROUP (login events); SERVER_ROLE_MEMBER_CHANGE_GROUP (sysadmin/serveradmin membership changes); DATABASE_ROLE_MEMBER_CHANGE_GROUP (db_owner/securityadmin changes); SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP (privilege changes on objects); SERVER_OBJECT_CHANGE_GROUP (linked server creation, server config changes); DATABASE_CHANGE_GROUP (database creation/deletion/modification); and AUDIT_CHANGE_GROUP (SQL Server Audit policy changes — any tampering with the audit configuration is itself audited). Privileged event alerts fire when sysadmin membership is modified or the audit policy is changed."
               },
               {
                 "uuid": "db5d8809-3d6a-46ff-b427-c7dcebe3cc31",
@@ -365,12 +365,12 @@
               {
                 "uuid": "c64d336b-b2e4-4d36-9964-5903668c9a2d",
                 "control-id": "ism-1537",
-                "description": "Security-relevant SQL Server database events are centrally logged to the SIEM via SQL Server Audit. All of the following event groups are captured: SUCCESSFUL_LOGIN_GROUP, FAILED_LOGIN_GROUP (all logon events); SERVER_ROLE_MEMBER_CHANGE_GROUP, DATABASE_ROLE_MEMBER_CHANGE_GROUP (user and role privilege changes); SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP (object permission changes); APPLICATION_ROLE_CHANGE_PASSWORD_GROUP (app role password changes); DATABASE_CHANGE_GROUP, DATABASE_OBJECT_CHANGE_GROUP (structural DDL changes \u2014 CREATE, ALTER, DROP on tables, procedures, etc.); DBCC_GROUP (DBCC command execution \u2014 often used by attackers for reconnaissance); USER_DEFINED_AUDIT_GROUP (xp_cmdshell calls, if enabled); AUDIT_CHANGE_GROUP. SQL Server Audit writes to the Windows Security event log target and is forwarded to the SIEM via WEF or agent."
+                "description": "Security-relevant SQL Server database events are centrally logged to the SIEM via SQL Server Audit. All of the following event groups are captured: SUCCESSFUL_LOGIN_GROUP, FAILED_LOGIN_GROUP (all logon events); SERVER_ROLE_MEMBER_CHANGE_GROUP, DATABASE_ROLE_MEMBER_CHANGE_GROUP (user and role privilege changes); SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP (object permission changes); APPLICATION_ROLE_CHANGE_PASSWORD_GROUP (app role password changes); DATABASE_CHANGE_GROUP, DATABASE_OBJECT_CHANGE_GROUP (structural DDL changes — CREATE, ALTER, DROP on tables, procedures, etc.); DBCC_GROUP (DBCC command execution — often used by attackers for reconnaissance); USER_DEFINED_AUDIT_GROUP (xp_cmdshell calls, if enabled); AUDIT_CHANGE_GROUP. SQL Server Audit writes to the Windows Security event log target and is forwarded to the SIEM via WEF or agent."
               },
               {
                 "uuid": "30d293f3-07fd-4793-8021-cdc8354086b8",
                 "control-id": "ism-1405",
-                "description": "A centralised event logging facility (SIEM \u2014 Microsoft Sentinel, Splunk, or equivalent) collects and retains logs from all SQL Server instances and their host infrastructure. Log sources: SQL Server Audit logs (via Windows Security event log target and/or SQL Server audit file target), Windows Server OS security event logs (logon/logoff, privilege use, process creation, object access), application logs from SQL Server-connected applications (user query activity tied to application user), host-level EDR telemetry (Microsoft Defender for Endpoint), and Windows Firewall logs (connection to TCP 1433). Log retention meets minimum requirements."
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, or equivalent) collects and retains logs from all SQL Server instances and their host infrastructure. Log sources: SQL Server Audit logs (via Windows Security event log target and/or SQL Server audit file target), Windows Server OS security event logs (logon/logoff, privilege use, process creation, object access), application logs from SQL Server-connected applications (user query activity tied to application user), host-level EDR telemetry (Microsoft Defender for Endpoint), and Windows Firewall logs (connection to TCP 1433). Log retention meets minimum requirements."
               },
               {
                 "uuid": "a3927284-c7e8-43fc-acb3-ad51d5e393ed",
@@ -380,7 +380,7 @@
               {
                 "uuid": "f4861fd1-b156-4915-bd84-c9da68bcd580",
                 "control-id": "ism-1863",
-                "description": "The SQL Server management interfaces \u2014 SQL Server Configuration Manager, SSMS remote connections (TCP 1433), SQL Server Management Data Warehouse, and the underlying Windows Server RDP \u2014 are not exposed to the internet. Network firewall rules permit TCP 1433 connections to the SQL Server only from: the approved application server network segment; the DBA jump server or PAW subnet; and approved monitoring tool servers. All other inbound connections to TCP 1433 from internet or untrusted network segments are blocked at the perimeter and internal firewall."
+                "description": "The SQL Server management interfaces — SQL Server Configuration Manager, SSMS remote connections (TCP 1433), SQL Server Management Data Warehouse, and the underlying Windows Server RDP — are not exposed to the internet. Network firewall rules permit TCP 1433 connections to the SQL Server only from: the approved application server network segment; the DBA jump server or PAW subnet; and approved monitoring tool servers. All other inbound connections to TCP 1433 from internet or untrusted network segments are blocked at the perimeter and internal firewall."
               },
               {
                 "uuid": "a4215066-732a-4ca6-af59-a16e8e34f983",
@@ -390,7 +390,7 @@
               {
                 "uuid": "80346d79-9f05-4ae3-9b24-bc047bd26e5d",
                 "control-id": "ism-1034",
-                "description": "Microsoft Defender for Endpoint (MDE) or an equivalent approved EDR solution is deployed on the SQL Server host as a critical/high-value server. MDE operates in active/block mode with Tamper Protection enabled. EDR telemetry \u2014 including SQL Server process activity, file creation in SQL Server directories, network connections from sqlservr.exe, and registry modifications to SQL Server keys \u2014 is forwarded to the SIEM/XDR platform. EDR exclusions for SQL Server data files (*.mdf, *.ldf, *.ndf, backup files *.bak) are limited to the minimum required to prevent I/O performance impact, and are documented with security rationale. Real-time protection remains active for all other paths."
+                "description": "Microsoft Defender for Endpoint (MDE) or an equivalent approved EDR solution is deployed on the SQL Server host as a critical/high-value server. MDE operates in active/block mode with Tamper Protection enabled. EDR telemetry — including SQL Server process activity, file creation in SQL Server directories, network connections from sqlservr.exe, and registry modifications to SQL Server keys — is forwarded to the SIEM/XDR platform. EDR exclusions for SQL Server data files (*.mdf, *.ldf, *.ndf, backup files *.bak) are limited to the minimum required to prevent I/O performance impact, and are documented with security rationale. Real-time protection remains active for all other paths."
               },
               {
                 "uuid": "f69a7176-d54e-4fad-8266-9090ec5750cc",
@@ -405,12 +405,12 @@
               {
                 "uuid": "f9735d75-298d-4d17-ac79-54171c42e4f0",
                 "control-id": "ism-1547",
-                "description": "SQL Server data backup processes and supporting procedures are developed, implemented, and maintained. The SQL Server backup procedure covers: backup types (full, differential, transaction log), frequency (full weekly, differential daily, transaction log every 15\u201360 minutes for critical databases), backup file locations (separate network share or cloud storage \u2014 not on the SQL Server host volume), backup encryption (SQL Server native backup encryption with AES-256 using a SQL Server Certificate or AES-256 via the backup solution), retention periods, and the restoration procedure (including estimated RTO and RPO per database). The procedure is tested at least annually via a full restoration exercise."
+                "description": "SQL Server data backup processes and supporting procedures are developed, implemented, and maintained. The SQL Server backup procedure covers: backup types (full, differential, transaction log), frequency (full weekly, differential daily, transaction log every 15–60 minutes for critical databases), backup file locations (separate network share or cloud storage — not on the SQL Server host volume), backup encryption (SQL Server native backup encryption with AES-256 using a SQL Server Certificate or AES-256 via the backup solution), retention periods, and the restoration procedure (including estimated RTO and RPO per database). The procedure is tested at least annually via a full restoration exercise."
               },
               {
                 "uuid": "76ecc0b6-a66d-4c59-874d-cb793611531e",
                 "control-id": "ism-1511",
-                "description": "Backups of all SQL Server databases, SQL Server configuration (linked servers, logins, SQL Agent jobs, maintenance plans), and SQL Server Audit configurations are performed and retained per business continuity requirements. At minimum: weekly full database backups; daily differential backups; transaction log backups every 15\u201360 minutes for critical OLTP databases. Full backups are retained for 13 weeks; transaction log backups for 30 days. SQL Agent jobs automate backup execution; SQL Server Maintenance Plan or a dedicated backup solution (Ola Hallengren scripts, Veeam, Commvault) monitors for backup job failures. Backup job alerts are sent to the DBA team and the operations monitoring system."
+                "description": "Backups of all SQL Server databases, SQL Server configuration (linked servers, logins, SQL Agent jobs, maintenance plans), and SQL Server Audit configurations are performed and retained per business continuity requirements. At minimum: weekly full database backups; daily differential backups; transaction log backups every 15–60 minutes for critical OLTP databases. Full backups are retained for 13 weeks; transaction log backups for 30 days. SQL Agent jobs automate backup execution; SQL Server Maintenance Plan or a dedicated backup solution (Ola Hallengren scripts, Veeam, Commvault) monitors for backup job failures. Backup job alerts are sent to the DBA team and the operations monitoring system."
               },
               {
                 "uuid": "80fc0a1c-c1c7-43cf-94a5-04900848e4b6",
@@ -420,7 +420,7 @@
               {
                 "uuid": "d41ede85-00eb-47ee-b743-5761ad46b81c",
                 "control-id": "ism-1621",
-                "description": "Windows PowerShell 2.0 is disabled on the SQL Server host. PowerShell 2.0 is disabled via 'Disable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root'. This prevents an attacker who has achieved code execution on the SQL Server host from downgrading to PowerShell 2.0 to bypass AMSI, script block logging, and Constrained Language Mode \u2014 controls that are present only in PowerShell 5.1+."
+                "description": "Windows PowerShell 2.0 is disabled on the SQL Server host. PowerShell 2.0 is disabled via 'Disable-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2Root'. This prevents an attacker who has achieved code execution on the SQL Server host from downgrading to PowerShell 2.0 to bypass AMSI, script block logging, and Constrained Language Mode — controls that are present only in PowerShell 5.1+."
               },
               {
                 "uuid": "a09d32ee-9db1-4784-81e2-9c1f8b564839",
@@ -430,7 +430,7 @@
               {
                 "uuid": "89bd2dce-d5ea-4f8b-932c-f2b13356e1a4",
                 "control-id": "ism-1623",
-                "description": "PowerShell module logging, script block logging, and transcription are enabled on the SQL Server host via Group Policy. All PowerShell activity on the SQL Server host \u2014 including SQL Server management scripts run by DBAs and any malicious PowerShell spawned by an exploit \u2014 is captured in script block logs and forwarded to the SIEM. On a SQL Server host where the only legitimate PowerShell use is DBA administration scripts, any unexpected PowerShell activity is a high-fidelity indicator of compromise and triggers an immediate alert."
+                "description": "PowerShell module logging, script block logging, and transcription are enabled on the SQL Server host via Group Policy. All PowerShell activity on the SQL Server host — including SQL Server management scripts run by DBAs and any malicious PowerShell spawned by an exploit — is captured in script block logs and forwarded to the SIEM. On a SQL Server host where the only legitimate PowerShell use is DBA administration scripts, any unexpected PowerShell activity is a high-fidelity indicator of compromise and triggers an immediate alert."
               },
               {
                 "uuid": "3ee1bb27-4e38-4f25-8bd4-f64bffa18d40",
@@ -440,7 +440,7 @@
               {
                 "uuid": "69637910-e49b-4fd0-9bfe-2a95ffefd854",
                 "control-id": "ism-1889",
-                "description": "Command line process creation events are centrally logged on the SQL Server host. Group Policy enables 'Include command line in process creation events' and Sysmon is deployed (Event ID 1 \u2014 process create with full command line, parent process, and hashes) on the SQL Server host. On a production SQL Server host, process creation events are high-fidelity indicators \u2014 sqlservr.exe should not be spawning cmd.exe, PowerShell, or other shells. Any process creation by the SQL Server process triggers an immediate SIEM alert as a potential exploitation of xp_cmdshell or similar."
+                "description": "Command line process creation events are centrally logged on the SQL Server host. Group Policy enables 'Include command line in process creation events' and Sysmon is deployed (Event ID 1 — process create with full command line, parent process, and hashes) on the SQL Server host. On a production SQL Server host, process creation events are high-fidelity indicators — sqlservr.exe should not be spawning cmd.exe, PowerShell, or other shells. Any process creation by the SQL Server process triggers an immediate SIEM alert as a potential exploitation of xp_cmdshell or similar."
               },
               {
                 "uuid": "c0aec901-9747-4a7b-a069-6aca58bd391c",
@@ -464,7 +464,7 @@
           {
             "uuid": "dc93b240-bba5-4b67-bc8b-e7c29842c08d",
             "name": "ms-sql-s",
-            "title": "SQL Server \u2014 Primary client connection port (default instance)",
+            "title": "SQL Server — Primary client connection port (default instance)",
             "port-ranges": [
               {
                 "start": 1433,
@@ -476,59 +476,55 @@
           {
             "uuid": "1a1f8571-4736-471d-95fc-52abc6248f30",
             "name": "ms-sql-m",
-            "title": "SQL Server Browser \u2014 Dynamic port discovery (DISABLED \u2014 static port 1433 used)",
+            "title": "SQL Server Browser — Dynamic port discovery (DISABLED — static port 1433 used)",
             "port-ranges": [
               {
                 "start": 1434,
                 "end": 1434,
-                "transport": "UDP",
-                "remarks": "SQL Server Browser service is DISABLED; this port is blocked at the firewall"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "083e8496-0da4-4fa7-a6b0-f3072da03ba1",
             "name": "ms-sql-dac",
-            "title": "SQL Server Dedicated Admin Connection \u2014 Emergency DBA access (local loopback only)",
+            "title": "SQL Server Dedicated Admin Connection — Emergency DBA access (local loopback only)",
             "port-ranges": [
               {
                 "start": 1434,
                 "end": 1434,
-                "transport": "TCP",
-                "remarks": "DAC \u2014 accessible only from localhost; blocked for remote access"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "9e443ace-800b-449a-b2d6-128116781d40",
             "name": "https",
-            "title": "HTTPS \u2014 Azure Arc management plane / Azure SQL management portal (if Azure-connected)",
+            "title": "HTTPS — Azure Arc management plane / Azure SQL management portal (if Azure-connected)",
             "port-ranges": [
               {
                 "start": 443,
                 "end": 443,
-                "transport": "TCP",
-                "remarks": "Outbound to Azure management endpoints only; only if Azure Arc / Azure AD auth is used"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "fa9ad9e0-8d2f-4ebd-9516-cf5d95cbfc4d",
             "name": "smb",
-            "title": "SMB \u2014 SQL Server backup files to network share (if network backup target is used)",
+            "title": "SMB — SQL Server backup files to network share (if network backup target is used)",
             "port-ranges": [
               {
                 "start": 445,
                 "end": 445,
-                "transport": "TCP",
-                "remarks": "Outbound to approved backup target share only"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "ca3902a6-45cd-456b-ac0d-7f41d92bb6f1",
             "name": "kerberos",
-            "title": "Kerberos \u2014 Windows Authentication for SQL Server (preferred over NTLM)",
+            "title": "Kerberos — Windows Authentication for SQL Server (preferred over NTLM)",
             "port-ranges": [
               {
                 "start": 88,
@@ -545,7 +541,7 @@
           {
             "uuid": "aaf0a0b9-94e6-43c7-8e36-05d6521d756a",
             "name": "ldap",
-            "title": "LDAP \u2014 Active Directory lookups for Windows Authentication SID resolution",
+            "title": "LDAP — Active Directory lookups for Windows Authentication SID resolution",
             "port-ranges": [
               {
                 "start": 389,
@@ -557,7 +553,7 @@
           {
             "uuid": "f2a1fc25-6747-4fcd-8842-6c64a3bf9468",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation (via domain controller W32tm)",
+            "title": "NTP — Time synchronisation (via domain controller W32tm)",
             "port-ranges": [
               {
                 "start": 123,

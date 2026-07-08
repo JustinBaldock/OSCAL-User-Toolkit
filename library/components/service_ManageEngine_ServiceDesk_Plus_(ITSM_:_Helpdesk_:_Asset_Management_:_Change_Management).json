@@ -12,7 +12,7 @@
         "uuid": "71e64518-ea86-4861-baaa-93f7c8198a0a",
         "type": "service",
         "title": "ManageEngine ServiceDesk Plus (ITSM / Helpdesk / Asset Management / Change Management)",
-        "description": "ManageEngine ServiceDesk Plus is an IT Service Management (ITSM) platform developed by ManageEngine (a division of Zoho Corporation). It provides an integrated suite of IT management capabilities: helpdesk ticketing (incident management, service request management, problem management), IT Asset Management (hardware inventory, software licence tracking, CMDB), change management (RFC workflow, CAB approval, post-implementation review), and a self-service portal for end users to log and track their own requests.\n\nServiceDesk Plus is a web-based application deployed on the organisation's on-premises infrastructure (or optionally as a cloud-hosted SaaS). The on-premises edition is built on Apache Tomcat (bundled), uses PostgreSQL (bundled) or Microsoft SQL Server as its database, and is available for Windows Server and Linux hosting. The application exposes HTTP/HTTPS web interfaces for technician and end-user access, and REST APIs for integration with other IT management tools (Active Directory, monitoring tools, patch management platforms).\n\nServiceDesk Plus stores sensitive organisational information including: hardware asset inventory (device details, serial numbers, location), software licence records, Active Directory integration credentials (for agent deployment), change records (planned maintenance, infrastructure changes), incident details, and user identity information \u2014 making it a high-value target for adversaries seeking to enumerate the organisation's IT environment. ManageEngine products have been exploited in multiple significant compromises (CVE-2021-44077, CVE-2022-47966); this component definition reflects the heightened security posture required.",
+        "description": "ManageEngine ServiceDesk Plus is an IT Service Management (ITSM) platform developed by ManageEngine (a division of Zoho Corporation). It provides an integrated suite of IT management capabilities: helpdesk ticketing (incident management, service request management, problem management), IT Asset Management (hardware inventory, software licence tracking, CMDB), change management (RFC workflow, CAB approval, post-implementation review), and a self-service portal for end users to log and track their own requests.\n\nServiceDesk Plus is a web-based application deployed on the organisation's on-premises infrastructure (or optionally as a cloud-hosted SaaS). The on-premises edition is built on Apache Tomcat (bundled), uses PostgreSQL (bundled) or Microsoft SQL Server as its database, and is available for Windows Server and Linux hosting. The application exposes HTTP/HTTPS web interfaces for technician and end-user access, and REST APIs for integration with other IT management tools (Active Directory, monitoring tools, patch management platforms).\n\nServiceDesk Plus stores sensitive organisational information including: hardware asset inventory (device details, serial numbers, location), software licence records, Active Directory integration credentials (for agent deployment), change records (planned maintenance, infrastructure changes), incident details, and user identity information — making it a high-value target for adversaries seeking to enumerate the organisation's IT environment. ManageEngine products have been exploited in multiple significant compromises (CVE-2021-44077, CVE-2022-47966); this component definition reflects the heightened security posture required.",
         "purpose": "IT Service Management platform providing: helpdesk ticket management for incidents and service requests; hardware and software asset inventory and lifecycle management; change management workflow and approval; problem management; self-service portal for end users; and CMDB integration for configuration item tracking.",
         "props": [
           {
@@ -41,7 +41,7 @@
           },
           {
             "name": "deployment-model",
-            "value": "On-premises (Windows Server 2022 or RHEL/CentOS) or Cloud (SaaS \u2014 ManageEngine-hosted)"
+            "value": "On-premises (Windows Server 2022 or RHEL/CentOS) or Cloud (SaaS — ManageEngine-hosted)"
           },
           {
             "name": "application-stack",
@@ -69,7 +69,7 @@
           },
           {
             "name": "known-high-risk-cves",
-            "value": "CVE-2021-44077 (RCE, unauthenticated), CVE-2022-47966 (RCE via SAML), CVE-2023-29084 (command injection) \u2014 priority patching required"
+            "value": "CVE-2021-44077 (RCE, unauthenticated), CVE-2022-47966 (RCE via SAML), CVE-2023-29084 (command injection) — priority patching required"
           }
         ],
         "responsible-roles": [
@@ -113,7 +113,7 @@
               {
                 "uuid": "9ec4c7f6-3868-4ae1-9a6f-19bffed0e901",
                 "control-id": "ism-1693",
-                "description": "Patches, updates, and vendor mitigations for ServiceDesk Plus are applied within one month of release for non-critical vulnerabilities. For critical vulnerabilities (CVSS 7.0+) or those with published proof-of-concept code, patches are applied within 48 hours under the organisation's urgent change process. ManageEngine security advisories and the NVD/CVE feed for 'ManageEngine ServiceDesk Plus' are monitored continuously by the security team. ServiceDesk Plus has been the target of active exploitation (e.g. CVE-2021-44077, CVE-2022-47966) \u2014 priority patching is mandatory for any advisories rated Critical."
+                "description": "Patches, updates, and vendor mitigations for ServiceDesk Plus are applied within one month of release for non-critical vulnerabilities. For critical vulnerabilities (CVSS 7.0+) or those with published proof-of-concept code, patches are applied within 48 hours under the organisation's urgent change process. ManageEngine security advisories and the NVD/CVE feed for 'ManageEngine ServiceDesk Plus' are monitored continuously by the security team. ServiceDesk Plus has been the target of active exploitation (e.g. CVE-2021-44077, CVE-2022-47966) — priority patching is mandatory for any advisories rated Critical."
               },
               {
                 "uuid": "7a4cbd04-4174-4132-9517-718285706e12",
@@ -123,7 +123,7 @@
               {
                 "uuid": "e76bb21c-83fe-4d84-bb85-815886d78f3e",
                 "control-id": "ism-1552",
-                "description": "All ServiceDesk Plus web application content \u2014 including the technician portal, end-user self-service portal, REST API endpoints, and mobile application backend \u2014 is served exclusively over HTTPS. HTTP on port 80 is disabled or redirected to HTTPS with a permanent (301) redirect. HTTP Strict Transport Security (HSTS) is configured with a max-age of at least 1 year and includeSubDomains. Mixed content (serving any resource over HTTP on an HTTPS page) is not permitted. SSL/TLS offloading at a reverse proxy or load balancer maintains HTTPS for all external connections."
+                "description": "All ServiceDesk Plus web application content — including the technician portal, end-user self-service portal, REST API endpoints, and mobile application backend — is served exclusively over HTTPS. HTTP on port 80 is disabled or redirected to HTTPS with a permanent (301) redirect. HTTP Strict Transport Security (HSTS) is configured with a max-age of at least 1 year and includeSubDomains. Mixed content (serving any resource over HTTP on an HTTPS page) is not permitted. SSL/TLS offloading at a reverse proxy or load balancer maintains HTTPS for all external connections."
               },
               {
                 "uuid": "c757cef9-1009-4f7c-beee-ed740b39aa70",
@@ -148,7 +148,7 @@
               {
                 "uuid": "825b40de-313a-4cd5-902d-402d9b02ce38",
                 "control-id": "ism-1448",
-                "description": "Ephemeral ECDHE (or DHE with a minimum 2048-bit DH parameter) key exchange is used for all TLS connections to ServiceDesk Plus. ECDHE key exchange ensures that each session uses a unique ephemeral key pair, providing perfect forward secrecy \u2014 compromise of the server's long-term private key does not compromise past session traffic. Non-ephemeral RSA key exchange is explicitly excluded from the cipher suite list."
+                "description": "Ephemeral ECDHE (or DHE with a minimum 2048-bit DH parameter) key exchange is used for all TLS connections to ServiceDesk Plus. ECDHE key exchange ensures that each session uses a unique ephemeral key pair, providing perfect forward secrecy — compromise of the server's long-term private key does not compromise past session traffic. Non-ephemeral RSA key exchange is explicitly excluded from the cipher suite list."
               },
               {
                 "uuid": "38824705-2709-4d2c-81e1-34df7d04811d",
@@ -198,7 +198,7 @@
               {
                 "uuid": "519b8b2e-8419-4bac-bc43-66a0925023d0",
                 "control-id": "ism-1402",
-                "description": "Credentials (user account passwords) stored in the ServiceDesk Plus database are protected using salted password hashing with a strong algorithm (bcrypt, PBKDF2-SHA512, or Argon2id). Plain-text or MD5/SHA-1 hashed credential storage is not used. The organisation verifies the vendor's credential storage implementation via security documentation review and vendor security questionnaire. Where ServiceDesk Plus is configured with Active Directory or LDAP authentication, user credentials are never stored by ServiceDesk Plus \u2014 authentication is delegated to Active Directory/Entra ID. Service account credentials used by ServiceDesk Plus (e.g. for LDAP bind, mail, API integrations) are stored in a secrets manager or encrypted configuration store, not in plain-text configuration files."
+                "description": "Credentials (user account passwords) stored in the ServiceDesk Plus database are protected using salted password hashing with a strong algorithm (bcrypt, PBKDF2-SHA512, or Argon2id). Plain-text or MD5/SHA-1 hashed credential storage is not used. The organisation verifies the vendor's credential storage implementation via security documentation review and vendor security questionnaire. Where ServiceDesk Plus is configured with Active Directory or LDAP authentication, user credentials are never stored by ServiceDesk Plus — authentication is delegated to Active Directory/Entra ID. Service account credentials used by ServiceDesk Plus (e.g. for LDAP bind, mail, API integrations) are stored in a secrets manager or encrypted configuration store, not in plain-text configuration files."
               },
               {
                 "uuid": "8e784ff3-4065-4fc7-a5b4-283c7ffa8f85",
@@ -233,7 +233,7 @@
               {
                 "uuid": "aa5afb80-d715-4d67-a22b-70a4f93b165a",
                 "control-id": "ism-0428",
-                "description": "ServiceDesk Plus is configured with an idle session timeout that: activates after a maximum of 15 minutes of user inactivity (configured in Admin > General > Login Settings > Session Timeout); blocks access to all session content; requires users to re-authenticate (via SSO MFA re-prompt) to resume the session; and cannot be disabled by standard users. Overall session lifetime is configured to a maximum of 12 hours after which re-authentication is required regardless of activity. Session tokens are invalidated server-side on logout \u2014 passive session token expiry alone is not relied upon."
+                "description": "ServiceDesk Plus is configured with an idle session timeout that: activates after a maximum of 15 minutes of user inactivity (configured in Admin > General > Login Settings > Session Timeout); blocks access to all session content; requires users to re-authenticate (via SSO MFA re-prompt) to resume the session; and cannot be disabled by standard users. Overall session lifetime is configured to a maximum of 12 hours after which re-authentication is required regardless of activity. Session tokens are invalidated server-side on logout — passive session token expiry alone is not relied upon."
               },
               {
                 "uuid": "7592aa71-647f-476a-924e-4f2200080154",
@@ -248,7 +248,7 @@
               {
                 "uuid": "0d752c58-89de-4348-88db-ce254a4db7fb",
                 "control-id": "ism-0414",
-                "description": "All personnel granted access to ServiceDesk Plus are uniquely identifiable. User accounts are provisioned via Active Directory / Entra ID synchronisation (LDAP import or automated Joiner/Mover/Leaver via the ServiceDesk Plus AD synchronisation feature). Each ServiceDesk Plus account maps to a named individual \u2014 generic or shared accounts are not used for interactive access. Accounts are de-provisioned automatically or within 24 hours of an employee offboarding event triggering the identity lifecycle management process."
+                "description": "All personnel granted access to ServiceDesk Plus are uniquely identifiable. User accounts are provisioned via Active Directory / Entra ID synchronisation (LDAP import or automated Joiner/Mover/Leaver via the ServiceDesk Plus AD synchronisation feature). Each ServiceDesk Plus account maps to a named individual — generic or shared accounts are not used for interactive access. Accounts are de-provisioned automatically or within 24 hours of an employee offboarding event triggering the identity lifecycle management process."
               },
               {
                 "uuid": "c2b6492d-e321-48e8-8910-f5d979b083b5",
@@ -288,7 +288,7 @@
               {
                 "uuid": "201c7db3-b84e-4074-a456-beaf60d1ca63",
                 "control-id": "ism-1913",
-                "description": "Approved configurations for the IT equipment hosting ServiceDesk Plus \u2014 the application server, database server, and reverse proxy/WAF \u2014 are developed, implemented, and maintained. These host configurations follow the organisation's Windows Server 2022 or Linux hardening baseline (ASD guidance + vendor guidance). ServiceDesk Plus-specific host configuration includes: removing default Tomcat manager applications, disabling Tomcat remote access from untrusted networks, restricting file system permissions on the ServiceDesk Plus installation directory, and removing sample web applications from the Tomcat webapps directory."
+                "description": "Approved configurations for the IT equipment hosting ServiceDesk Plus — the application server, database server, and reverse proxy/WAF — are developed, implemented, and maintained. These host configurations follow the organisation's Windows Server 2022 or Linux hardening baseline (ASD guidance + vendor guidance). ServiceDesk Plus-specific host configuration includes: removing default Tomcat manager applications, disabling Tomcat remote access from untrusted networks, restricting file system permissions on the ServiceDesk Plus installation directory, and removing sample web applications from the Tomcat webapps directory."
               },
               {
                 "uuid": "1885832c-74a6-44b1-b494-3aa8397a2344",
@@ -303,7 +303,7 @@
               {
                 "uuid": "88cb59da-8a47-4668-9201-4882892a3040",
                 "control-id": "ism-1405",
-                "description": "A centralised event logging facility (SIEM \u2014 Microsoft Sentinel, Splunk, or equivalent) collects and retains security-relevant logs from ServiceDesk Plus and its underlying infrastructure. Log sources include: ServiceDesk Plus application audit log (syslog or API-based export), underlying Windows Server or Linux OS security event logs, web server access logs (including WAF/reverse proxy logs), database audit logs, and Entra ID sign-in logs (for SSO authentication events). Log retention meets the organisation's minimum retention period (typically 7 years for ISM-classified systems)."
+                "description": "A centralised event logging facility (SIEM — Microsoft Sentinel, Splunk, or equivalent) collects and retains security-relevant logs from ServiceDesk Plus and its underlying infrastructure. Log sources include: ServiceDesk Plus application audit log (syslog or API-based export), underlying Windows Server or Linux OS security event logs, web server access logs (including WAF/reverse proxy logs), database audit logs, and Entra ID sign-in logs (for SSO authentication events). Log retention meets the organisation's minimum retention period (typically 7 years for ISM-classified systems)."
               },
               {
                 "uuid": "092b5914-6d8e-46b4-9e54-df9fc6ef767b",
@@ -313,7 +313,7 @@
               {
                 "uuid": "54603be7-5bf7-4e0c-bfaa-0ab3f0e17af2",
                 "control-id": "ism-1863",
-                "description": "The ServiceDesk Plus administrative interface (Admin module, database management console, and underlying server management interfaces \u2014 RDP, SSH, Windows Admin Center) is not directly exposed to the internet. Administrative access to ServiceDesk Plus and its hosting infrastructure is restricted to the organisation's internal management network or via an approved VPN/jump server solution. Direct external access to TCP port 8080/8443 (default ServiceDesk Plus ports) from the internet is blocked at the perimeter firewall. Only the WAF/reverse proxy endpoint is internet-reachable."
+                "description": "The ServiceDesk Plus administrative interface (Admin module, database management console, and underlying server management interfaces — RDP, SSH, Windows Admin Center) is not directly exposed to the internet. Administrative access to ServiceDesk Plus and its hosting infrastructure is restricted to the organisation's internal management network or via an approved VPN/jump server solution. Direct external access to TCP port 8080/8443 (default ServiceDesk Plus ports) from the internet is blocked at the perimeter firewall. Only the WAF/reverse proxy endpoint is internet-reachable."
               },
               {
                 "uuid": "29368f7b-485b-422e-b6af-69aafa9de791",
@@ -328,7 +328,7 @@
               {
                 "uuid": "cac78dda-27f2-44cb-bd5f-a345be09bb7d",
                 "control-id": "ism-1547",
-                "description": "Data backup processes and supporting procedures are developed, implemented, and maintained for ServiceDesk Plus. The backup procedure covers: frequency (daily incremental, weekly full), what is backed up (ServiceDesk Plus database, application data directory, configuration files, attachments store), backup storage location (separate server or cloud storage \u2014 not on the same server as the application), backup encryption requirements, retention period, and the restoration procedure including responsible personnel and estimated recovery time."
+                "description": "Data backup processes and supporting procedures are developed, implemented, and maintained for ServiceDesk Plus. The backup procedure covers: frequency (daily incremental, weekly full), what is backed up (ServiceDesk Plus database, application data directory, configuration files, attachments store), backup storage location (separate server or cloud storage — not on the same server as the application), backup encryption requirements, retention period, and the restoration procedure including responsible personnel and estimated recovery time."
               },
               {
                 "uuid": "07eec6bc-9faa-468e-8dd8-17088e39b85d",
@@ -372,7 +372,7 @@
           {
             "uuid": "868a5e3a-a519-42fc-bd0e-0f07f56409e1",
             "name": "https",
-            "title": "HTTPS \u2014 Technician portal, self-service portal, REST API (via WAF/reverse proxy)",
+            "title": "HTTPS — Technician portal, self-service portal, REST API (via WAF/reverse proxy)",
             "port-ranges": [
               {
                 "start": 443,
@@ -384,33 +384,31 @@
           {
             "uuid": "37987caa-1c79-4f5e-8967-61f986ee7ed1",
             "name": "http",
-            "title": "HTTP \u2014 Redirect to HTTPS only; direct HTTP access blocked",
+            "title": "HTTP — Redirect to HTTPS only; direct HTTP access blocked",
             "port-ranges": [
               {
                 "start": 8080,
                 "end": 8080,
-                "transport": "TCP",
-                "remarks": "Default SDP HTTP port \u2014 redirects to HTTPS; blocked at firewall for external access"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "839ba97d-74ea-41fd-a7f6-04b763dd5bdf",
             "name": "sdp-https",
-            "title": "HTTPS \u2014 ServiceDesk Plus native HTTPS listener (Tomcat)",
+            "title": "HTTPS — ServiceDesk Plus native HTTPS listener (Tomcat)",
             "port-ranges": [
               {
                 "start": 8443,
                 "end": 8443,
-                "transport": "TCP",
-                "remarks": "Default SDP HTTPS port \u2014 fronted by WAF/reverse proxy on port 443"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "2acf796b-4247-4aa5-b56a-30bb3af937f1",
             "name": "ldaps",
-            "title": "LDAPS \u2014 Active Directory / LDAP integration for user authentication and import",
+            "title": "LDAPS — Active Directory / LDAP integration for user authentication and import",
             "port-ranges": [
               {
                 "start": 636,
@@ -422,46 +420,43 @@
           {
             "uuid": "ae19a9ce-0aee-4fb6-ba9d-5c3b7b7b6eb5",
             "name": "ldap",
-            "title": "LDAP \u2014 Active Directory query (plaintext; use LDAPS in production)",
+            "title": "LDAP — Active Directory query (plaintext; use LDAPS in production)",
             "port-ranges": [
               {
                 "start": 389,
                 "end": 389,
-                "transport": "TCP",
-                "remarks": "Prefer LDAPS/636; plaintext LDAP only where legacy integration requires it"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "042b5612-0b60-45e3-8317-8e44b4a4738a",
             "name": "smtps",
-            "title": "SMTPS \u2014 Outbound email notifications via Exchange Online (SMTP with STARTTLS)",
+            "title": "SMTPS — Outbound email notifications via Exchange Online (SMTP with STARTTLS)",
             "port-ranges": [
               {
                 "start": 587,
                 "end": 587,
-                "transport": "TCP",
-                "remarks": "SMTP STARTTLS \u2014 preferred for Exchange Online and SMTP relay"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "33749d70-41d9-4d46-94f1-007ffa8c1c14",
             "name": "smtp-ssl",
-            "title": "SMTP over SSL \u2014 Outbound email notifications (implicit TLS)",
+            "title": "SMTP over SSL — Outbound email notifications (implicit TLS)",
             "port-ranges": [
               {
                 "start": 465,
                 "end": 465,
-                "transport": "TCP",
-                "remarks": "SMTP implicit TLS \u2014 use if STARTTLS on 587 is not supported by the relay"
+                "transport": "TCP"
               }
             ]
           },
           {
             "uuid": "b79bef37-31ea-4e78-a175-39014fc0689f",
             "name": "syslog",
-            "title": "Syslog \u2014 Security event forwarding to SIEM",
+            "title": "Syslog — Security event forwarding to SIEM",
             "port-ranges": [
               {
                 "start": 514,
@@ -473,26 +468,24 @@
           {
             "uuid": "aebb46f3-9da7-475c-964c-c8cea370c14f",
             "name": "snmp",
-            "title": "SNMP \u2014 Optional network discovery for IT asset inventory scanning",
+            "title": "SNMP — Optional network discovery for IT asset inventory scanning",
             "port-ranges": [
               {
                 "start": 161,
                 "end": 161,
-                "transport": "UDP",
-                "remarks": "Inbound on managed devices \u2014 ServiceDesk Plus polls for asset discovery"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "41b5758e-2e1e-4d56-b2a6-d8aa33bce9c9",
             "name": "wmi",
-            "title": "WMI \u2014 Windows Management Instrumentation for Windows asset discovery",
+            "title": "WMI — Windows Management Instrumentation for Windows asset discovery",
             "port-ranges": [
               {
                 "start": 135,
                 "end": 135,
-                "transport": "TCP",
-                "remarks": "RPC endpoint mapper for WMI-based asset inventory scanning"
+                "transport": "TCP"
               }
             ]
           }

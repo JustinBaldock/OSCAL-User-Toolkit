@@ -35,7 +35,7 @@
           {
             "uuid": "d471e94d-cf02-4024-a683-ff3e118a84ae",
             "name": "https",
-            "title": "HTTPS \u2014 Sentinel portal access and REST API (log ingestion, analytics)",
+            "title": "HTTPS — Sentinel portal access and REST API (log ingestion, analytics)",
             "port-ranges": [
               {
                 "start": 443,
@@ -47,7 +47,7 @@
           {
             "uuid": "a73dafc9-4ac9-4569-bbc9-3cab98337248",
             "name": "syslog",
-            "title": "Syslog \u2014 Log ingestion from Linux hosts, network devices, and appliances",
+            "title": "Syslog — Log ingestion from Linux hosts, network devices, and appliances",
             "port-ranges": [
               {
                 "start": 514,
@@ -64,19 +64,17 @@
           {
             "uuid": "00ffec5b-2b92-4842-bf5b-bdcf967ca0f1",
             "name": "wef",
-            "title": "Windows Event Forwarding \u2014 WEF collector ingestion of Windows event logs",
+            "title": "Windows Event Forwarding — WEF collector ingestion of Windows event logs",
             "port-ranges": [
               {
                 "start": 5985,
                 "end": 5985,
-                "transport": "TCP",
-                "remarks": "WEF over WinRM HTTP"
+                "transport": "TCP"
               },
               {
                 "start": 5986,
                 "end": 5986,
-                "transport": "TCP",
-                "remarks": "WEF over WinRM HTTPS (preferred)"
+                "transport": "TCP"
               }
             ]
           }

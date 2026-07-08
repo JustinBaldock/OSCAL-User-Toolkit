@@ -12,14 +12,13 @@
         "uuid": "9c9e3fc9-e57b-48a8-aaef-1d81d99ab959",
         "type": "policy",
         "title": "Data Classification and Handling Policy",
-        "description": "The data classification and handling policy defines how the organisation classifies, labels, and handles information based on its sensitivity. It establishes classification levels (aligned to the Australian Government Information Security Classification system \u2014 OFFICIAL, OFFICIAL: Sensitive, PROTECTED), the obligations that apply to each level for storage, transmission, access control, and disposal, and the responsibilities of all personnel for correctly classifying and protecting organisational data.",
+        "description": "The data classification and handling policy defines how the organisation classifies, labels, and handles information based on its sensitivity. It establishes classification levels (aligned to the Australian Government Information Security Classification system — OFFICIAL, OFFICIAL: Sensitive, PROTECTED), the obligations that apply to each level for storage, transmission, access control, and disposal, and the responsibilities of all personnel for correctly classifying and protecting organisational data.",
         "props": [
           {
             "name": "operational-status",
             "value": "operational"
           }
         ],
-        "protocols": [],
         "control-implementations": [
           {
             "uuid": "8dd478b0-1da4-4029-a93b-33ef6bfb3e06",

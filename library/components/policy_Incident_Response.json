@@ -19,7 +19,6 @@
             "value": "operational"
           }
         ],
-        "protocols": [],
         "control-implementations": [
           {
             "uuid": "d30ed09d-ba44-426c-90eb-76e7290e46b6",

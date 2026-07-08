@@ -35,7 +35,7 @@
           {
             "uuid": "f5122d03-6f99-45e7-a83f-da5c3047895e",
             "name": "snmp",
-            "title": "SNMP \u2014 UPS monitoring (battery status, load, power events, alerts)",
+            "title": "SNMP — UPS monitoring (battery status, load, power events, alerts)",
             "port-ranges": [
               {
                 "start": 161,
@@ -45,15 +45,14 @@
               {
                 "start": 162,
                 "end": 162,
-                "transport": "UDP",
-                "remarks": "SNMP traps to NMS on power events"
+                "transport": "UDP"
               }
             ]
           },
           {
             "uuid": "6f5de634-0860-4842-8f73-8a893e6b252b",
             "name": "https",
-            "title": "HTTPS \u2014 Web-based UPS management card interface",
+            "title": "HTTPS — Web-based UPS management card interface",
             "port-ranges": [
               {
                 "start": 443,
@@ -65,7 +64,7 @@
           {
             "uuid": "c7f9f547-45a1-4198-b996-cf607b49cdf9",
             "name": "ssh",
-            "title": "SSH \u2014 CLI access to UPS network management card",
+            "title": "SSH — CLI access to UPS network management card",
             "port-ranges": [
               {
                 "start": 22,
@@ -77,7 +76,7 @@
           {
             "uuid": "571cbf7b-f31e-4944-ab19-150be9e0b5cc",
             "name": "ntp",
-            "title": "NTP \u2014 Time synchronisation for UPS event log timestamps",
+            "title": "NTP — Time synchronisation for UPS event log timestamps",
             "port-ranges": [
               {
                 "start": 123,

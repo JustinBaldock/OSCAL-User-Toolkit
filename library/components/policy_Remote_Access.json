@@ -19,7 +19,6 @@
             "value": "operational"
           }
         ],
-        "protocols": [],
         "control-implementations": [
           {
             "uuid": "14eaaae9-8c98-4714-ac96-f2efc13666ea",
@@ -39,7 +38,7 @@
               {
                 "uuid": "88fc01f7-3c34-43a9-a97b-7e8526fdc83b",
                 "control-id": "ism-1508",
-                "description": "As defined in this policy, remote access is granted on the principle of least privilege. Users are granted remote access only to the specific systems and resources required for their role, not unrestricted access to the entire network. Split-tunnelling is configured so that all traffic \u2014 including internet-bound traffic \u2014 from remote sessions traverses the organisation's security controls."
+                "description": "As defined in this policy, remote access is granted on the principle of least privilege. Users are granted remote access only to the specific systems and resources required for their role, not unrestricted access to the entire network. Split-tunnelling is configured so that all traffic — including internet-bound traffic — from remote sessions traverses the organisation's security controls."
               },
               {
                 "uuid": "f57f5071-54ae-40ca-a15f-6e2f60610cb6",
