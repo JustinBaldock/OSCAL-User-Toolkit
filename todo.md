@@ -196,8 +196,8 @@ Most of what this feature wanted — a reusable, shareable component library sep
 
 ### ISM-Specific Considerations
 - ISM assessment methods map to component implementation: EXAMINE (policy/documentation components), TEST (software/hardware components), INTERVIEW (process/people components)
-- Australian Cyber Security Centre (ACSC) publishes hardening guides for common platforms — a pre-populated component library for Windows, Microsoft 365, and network devices aligned to ISM would be high value
-- Component definitions can be versioned and shared between agencies as a common baseline
+- Australian Cyber Security Centre (ACSC) publishes hardening guides for common platforms — a pre-populated component library for Windows, Microsoft 365, and network devices aligned to ISM would be high value. **Largely done**: the bundled Library now has 95 example components (see section 5 and design document §11) spanning hardware, hypervisors, workstation/server OSes, services, software, and policies, each with ISM control implementations using real, catalog-verified control IDs.
+- Component definitions can be versioned and shared between agencies as a common baseline — **done for components** (section 6 / design document §10.21)
 
 ---
 
@@ -321,6 +321,14 @@ A large organisation's shared, reusable components/capabilities now live in a **
 Implemented per the design in `oscal_user_toolkit_design_document.md` §10.21. `ComponentTab`'s components each carry their own `file_uuid`/`version`/`revisions[]`, a "Version & Revision History" card sits in Section 1 with an editable Version field and a "📌 Save New Version" action, and the previously shared/broken `_file_uuid`/`_file_version` tab-level state is gone. Verified functionally, including the `library_mode` many-components-one-tab case. This is groundwork for a later "compare version" function (not built).
 
 **Not done**: the same for `CapabilityTab` — capabilities still use shared tab-level `_file_version` and have no revision history. A separate task if wanted.
+
+## 7. Library content coverage — ✅ Done
+
+Grew the example Library from 64 to **95 components** (see design document §11 for the full type-by-type breakdown) and added **2 new capabilities** (Virtualisation (VMware), Virtualisation (Hyper-V)), bringing the Library to 11 capabilities total. Notably, every OSCAL `defined-component.type` schema value now has at least one example — including `physical` (4: Main Office Server Room, Remote Office Comms Room, Air Conditioning, Power Generator), `process-procedure`, `plan`, `guidance`, and `standard`, which previously had none. Every new component's ISM control implementations use real control IDs verified directly against the bundled catalog.
+
+Also fixed, library-wide: a schema violation (invalid `remarks` field on `port-ranges`) present in 29 pre-existing component files, and an empty `protocols: []` array in 6 policy components. All 95 files now validate cleanly against `oscal_component_schema.json`.
+
+**Known follow-up, not yet fixed**: `component_tab.py`'s `COMPONENT_TYPES` dropdown list splits the schema's single `process-procedure` type into two separate options, `"process"` and `"procedure"` — neither is the exact schema term (though all three, being free-form-string-compatible, are schema-valid). Doesn't break anything already saved (a `ttk.Combobox` in readonly mode still displays a preset value correctly even when absent from its own `values` list — confirmed directly), but a user picking a brand-new component's type from the dropdown can't select the literal `process-procedure` term today.
 
 ---
 

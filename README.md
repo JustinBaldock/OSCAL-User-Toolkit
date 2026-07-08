@@ -24,11 +24,11 @@ The result is a library of audited, reusable building blocks that grows over tim
 
 ## Features
 
-The tab bar is grouped: **Workspace** and **Dashboard**/**All Systems** stay top-level, while **Data** (Data Sources, Catalog Viewer), **System Overview** (Component, Capability, and SSP Editors), and **Audit** (Assessment Plan, Assessment Results, POA&M Editor) are each a group of sub-tabs.
+The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **Data** (Data Sources, Catalog Viewer), **Organisation** (Library Components, Library Capabilities, All Systems), **System Overview** (Component, Capability, and SSP Editors), and **Audit** (Assessment Plan, Assessment Results, POA&M Editor) are each a group of sub-tabs.
 
 ### Systems Folder & All Systems (new)
 - **Systems folder**: one subfolder per system — each holding its own workspace manifest, SSP, AP, AR, and POA&M — separate from the shared Library. Configure it via the **🗂 Systems Folder** toolbar button (persisted between launches; defaults to this repo's own `systems/` folder, which is where the bundled examples now live)
-- **🌐 All Systems tab**: scans every subfolder in the Systems folder and shows an organisation-wide rollup — one row per system (compliance %, open risks, overdue POA&M items) plus aggregate totals — without needing to open each system individually. Distinct from the Dashboard tab below, which only ever shows the one system currently open in the live editor tabs
+- **🌐 All Systems tab** (lives in the **Organisation** tab group): scans every subfolder in the Systems folder and shows an organisation-wide rollup — one row per system (compliance %, open risks, overdue POA&M items) plus aggregate totals — without needing to open each system individually. Distinct from the Dashboard tab, which only ever shows the one system currently open in the live editor tabs
 
 ### Data Sources & Library (new in v0.2)
 - **Library folder**: a shared, organisation-level `catalogs/`/`profiles/`/`components/`/`capabilities/` folder, separate from any one system's own workspace — configure it once via the **📚 Library Folder** toolbar button (persisted between launches; defaults to this repo's own `library/` folder)
@@ -36,6 +36,13 @@ The tab bar is grouped: **Workspace** and **Dashboard**/**All Systems** stay top
 - **Import from Library** (Component/Capability Editor): copy a Library component/capability into the current system's own folder as an independent, editable copy — never touches the Library source, never overwrites a copy you've already edited
 - **Sync from System Folder** (SSP Editor, Section 8): pull everything that's been imported for the current system straight into the SSP, with control responses auto-populated
 - Assessment Plan and POA&M both show read-only visibility into whatever components/capabilities the referenced SSP has, without needing write access
+- **95 example components** ship in `library/components/`, covering every OSCAL component type — hardware, software, services, operating systems, policies, and (less commonly represented in most toolkits) `physical`, `process-procedure`, `plan`, `guidance`, and `standard` — plus **11 example capabilities** in `library/capabilities/`. See [oscal_user_toolkit_design_document.md §11](oscal_user_toolkit_design_document.md) for the full breakdown
+
+### Organisation Tab — Library Component & Capability Editors (new)
+- **⚙ Library Components** and **🔗 Library Capabilities**: dedicated editors locked to `library/components/`/`library/capabilities/` — no Open File/Open Folder dialogs, no location prompt on save; they auto-load every file in the Library and save straight back to it, so there's no ambiguity about whether you're editing the Library's shared master or a system's local copy
+- **🔄 Refresh from Library** / **📥 Add File to Library** replace the removed Open/Import buttons — the only way files enter or update in this view
+- Use this tab to maintain the organisation's shared component/capability masters; use the regular Component/Capability Editor tabs (under **System Overview**) to import and adapt a copy for one specific system
+- **🌐 All Systems** also lives in this tab group, alongside the Library editors
 
 ### Workspace
 - **Landing tab** with per-tab guidance and **Open/Save Workspace** buttons that load or save an entire system's file set (SSP, components, capabilities, AP, AR, POA&M) in one action via a portable JSON manifest
@@ -61,7 +68,8 @@ The tab bar is grouped: **Workspace** and **Dashboard**/**All Systems** stay top
 
 ### Component Editor
 - Create OSCAL Component Definition files describing how a system component implements security controls
-- Supports all OSCAL 1.2.2 component types: `defined-system`, `system`, `interconnection`, `software`, `hardware`, `service`, `policy`, `process`, `procedure`, `plan`, `guidance`, `standard`, `validation`, `physical`
+- Supports all OSCAL 1.2.2 component types: `defined-system`, `system`, `interconnection`, `software`, `hardware`, `service`, `policy`, `process`, `procedure`, `plan`, `guidance`, `standard`, `validation`, `physical` (the schema's own single `process-procedure` value works too — it's just not yet one of the dropdown's preset options)
+- **Version & Revision History** (Section 1): each component carries its own stable UUID, editable version number, and revision history using OSCAL's native `metadata.revisions[]` — a **📌 Save New Version** action archives the current version with optional remarks before bumping, distinct from a plain in-place save. Tracked per component (not per file), so this stays correct even in the Library Component Editor where many components share one tab instance
 - **Live search and type filter** in the component list — find components instantly by name, description, or type even when hundreds are loaded
 - **Section 6 — Protocols**: document the TCP/UDP ports and protocols the component uses or exposes
 - **Section 7 — Links**: attach external references (vendor documentation, CVE advisories, configuration baselines, policy documents) with structured relationship types
