@@ -92,7 +92,8 @@ class CapabilityTab(tk.Frame):
     def __init__(self, parent, colors,
                  get_catalog, get_components, get_profile, set_status,
                  get_oscal_version=None, get_oscal_zip_path=None,
-                 add_component=None, get_library_path=None, get_system_folder=None):
+                 add_component=None, get_library_path=None, get_system_folder=None,
+                 library_mode=False):
         """
         Initialise the CapabilityTab.
 
@@ -114,6 +115,14 @@ class CapabilityTab(tk.Frame):
                                 system's folder Path, or None if no
                                 workspace is active. Used by "Import from
                                 Library" to know where to copy files to.
+            library_mode      - When True, this instance is the Organisation
+                                tab's "Library Capability Editor" (see
+                                user_stories.md US-14): only ever reads/
+                                writes library/capabilities/ — no Open
+                                File(s)/Open Folder/Import from Library, no
+                                save location prompt — mirrors ComponentTab's
+                                library_mode (see
+                                oscal_user_toolkit_design_document.md §10.20).
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -130,6 +139,7 @@ class CapabilityTab(tk.Frame):
         self._add_component       = add_component or (lambda comp: None)
         self._get_library_path    = get_library_path  or (lambda: None)
         self._get_system_folder   = get_system_folder or (lambda: None)
+        self._library_mode        = library_mode
 
         # ── File-level state ──────────────────────────────────────────────────
         # Each saved capability gets its own component-definition file.
@@ -157,12 +167,20 @@ class CapabilityTab(tk.Frame):
         # Paths of every capability file opened or saved, in load/save order.
         # Used by the Workspace tab to record which files this tab represents.
         self._loaded_paths       = []
+        # Maps capability uuid -> the file path it was loaded from/saved to.
+        # Only meaningful in library_mode — see ComponentTab._component_paths.
+        self._capability_paths   = {}
 
         # ── Control implementation state ──────────────────────────────────────
         self._ctrl_responses  = {}    # {control_id: description} for selected cap
         self._sel_ctrl_id     = None  # which control is currently shown in editor
 
         self._build()
+
+        # library_mode auto-loads every file in the Library's capabilities/
+        # folder right away — see ComponentTab.__init__ for why.
+        if self._library_mode:
+            self._load_library_folder()
 
     # =========================================================================
     # PUBLIC API — called by app.py
@@ -260,11 +278,19 @@ class CapabilityTab(tk.Frame):
     def _build_toolbar(self):
         """
         Top bar with Save and Clear buttons plus a version field and status.
+
+        In library_mode, this is a different, smaller set of actions — see
+        ComponentTab._build_toolbar() for the equivalent and rationale.
         """
         C  = self._colors
         tb = tk.Frame(self, bg=C["CARD_BG"], height=52)
         tb.pack(fill="x", side="top")
         tb.pack_propagate(False)   # Keep the bar at a fixed 52-pixel height
+
+        if self._library_mode:
+            self._build_library_toolbar(tb)
+            self._build_library_hint()
+            return
 
         # Open one or more capability JSON files
         tk.Button(
@@ -334,6 +360,44 @@ class CapabilityTab(tk.Frame):
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._status_lbl.pack(side="right", padx=12)
+
+    def _build_library_toolbar(self, tb):
+        """Toolbar contents for library_mode — see _build_toolbar()."""
+        C = self._colors
+        tk.Button(
+            tb, text="💾  Save to Library", command=self._save_capability,
+            bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=12, pady=8)
+        tk.Button(
+            tb, text="🔄  Refresh from Library", command=self._load_library_folder,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(0, 6), pady=8)
+        tk.Button(
+            tb, text="📥  Add File to Library", command=self._add_file_to_library,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(0, 12), pady=8)
+
+        self._status_lbl = tk.Label(
+            tb, text="", bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
+        )
+        self._status_lbl.pack(side="right", padx=12)
+
+    def _build_library_hint(self):
+        """Explanatory banner shown under the toolbar in library_mode."""
+        C = self._colors
+        hint = tk.Frame(self, bg=C["TEAL_BG"])
+        hint.pack(fill="x", side="top")
+        tk.Label(
+            hint,
+            text="✏️  Library Capability Editor — edits the shared master capabilities in "
+                 "your Library folder. Systems that already imported a copy will not "
+                 "automatically receive changes made here.",
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "italic"),
+            wraplength=900, justify="left",
+        ).pack(anchor="w", padx=12, pady=4)
 
     # =========================================================================
     # GATE PANEL — shown when guard conditions are not met
@@ -1735,14 +1799,19 @@ class CapabilityTab(tk.Frame):
         cap      = self._capabilities[self._sel_index]
         cap_name = cap.get("name", "capability").replace(" ", "_")
 
-        path = filedialog.asksaveasfilename(
-            title="Save OSCAL Capability Definition",
-            defaultextension=".json",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-            initialfile=f"capability_{cap_name}.json",
-        )
-        if not path:
-            return   # User cancelled the save dialog
+        if self._library_mode:
+            path = self._save_to_library_path(cap)
+            if path is None:
+                return
+        else:
+            path = filedialog.asksaveasfilename(
+                title="Save OSCAL Capability Definition",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+                initialfile=f"capability_{cap_name}.json",
+            )
+            if not path:
+                return   # User cancelled the save dialog
 
         doc, _ = self._build_oscal_document(cap)
 
@@ -1767,7 +1836,8 @@ class CapabilityTab(tk.Frame):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
-        self._loaded_paths.append(path)
+        self._loaded_paths.append(str(path))
+        self._capability_paths[cap["uuid"]] = str(path)
         self._dirty = False
         n_comps     = len(cap.get("member_uuids", []))
         n_inherited = len(cap.get("inherited_ctrl_responses", []))
@@ -1778,14 +1848,53 @@ class CapabilityTab(tk.Frame):
             text=f"Saved: {fname}", fg=self._colors["GREEN"]
         )
         self._set_status(f"Capability saved: {fname}")
-        messagebox.showinfo(
-            "Capability Saved",
-            f"Capability '{cap.get('name', '')}' saved.\n\n"
-            f"  Member components: {n_comps}\n"
-            f"  Inherited control responses: {n_inherited}\n"
-            f"  Capability-level responses: {n_cap_level}\n\n"
-            f"{path}"
-        )
+        if not self._library_mode:
+            messagebox.showinfo(
+                "Capability Saved",
+                f"Capability '{cap.get('name', '')}' saved.\n\n"
+                f"  Member components: {n_comps}\n"
+                f"  Inherited control responses: {n_inherited}\n"
+                f"  Capability-level responses: {n_cap_level}\n\n"
+                f"{path}"
+            )
+
+    def _save_to_library_path(self, cap):
+        """
+        Resolve where to save `cap` when in library_mode, with no dialog —
+        mirrors ComponentTab._save_to_library_path(). Returns the path, or
+        None if no Library folder is configured.
+        """
+        existing = self._capability_paths.get(cap["uuid"])
+        if existing:
+            return existing
+
+        library = self._get_library_path()
+        if not library:
+            messagebox.showerror(
+                "No Library folder set",
+                "Set a Library folder first, using the '📚 Library Folder' "
+                "button in the main toolbar.",
+            )
+            return None
+
+        cap_dir = Path(library) / "capabilities"
+        cap_dir.mkdir(parents=True, exist_ok=True)
+        cap_name = cap.get("name", "capability").strip().replace(" ", "_") or "untitled"
+
+        candidate = cap_dir / f"capability_{cap_name}.json"
+        if candidate.exists():
+            try:
+                with open(candidate, encoding="utf-8") as f:
+                    existing_doc = json.load(f)
+                existing_uuids = {
+                    c.get("uuid") for c in existing_doc.get("component-definition", {}).get("capabilities", [])
+                }
+            except (OSError, json.JSONDecodeError):
+                existing_uuids = set()
+            if cap["uuid"] not in existing_uuids:
+                candidate = cap_dir / f"capability_{cap_name}_{cap['uuid'][:8]}.json"
+
+        return str(candidate)
 
     def _load_capability_from_path(self, path):
         """
@@ -1886,6 +1995,7 @@ class CapabilityTab(tk.Frame):
 
         self._capabilities.append(cap)
         self._loaded_paths.append(str(path))
+        self._capability_paths[cap["uuid"]] = str(path)
         # Resolve source_component_title for inherited entries now that
         # bundled components have been added to the component list.
         self._resync_inherited_for_cap(cap)
@@ -2006,6 +2116,87 @@ class CapabilityTab(tk.Frame):
         if skipped_invalid:
             parts.append(f"{skipped_invalid} not valid capability files")
         self._set_status("Import from Library: " + ", ".join(parts))
+
+    def _load_library_folder(self):
+        """
+        library_mode only: clear the current list and reload every
+        capability file in the Library's capabilities/ folder from disk —
+        mirrors ComponentTab._load_library_folder(). The only way this
+        instance's list is ever populated; also the "🔄 Refresh from
+        Library" button's action.
+        """
+        self._capabilities     = []
+        self._loaded_paths     = []
+        self._capability_paths = {}
+        self._sel_index        = None
+
+        library = self._get_library_path()
+        added = skipped = 0
+        if library:
+            cap_dir = Path(library) / "capabilities"
+            if cap_dir.is_dir():
+                for path in sorted(cap_dir.glob("*.json")):
+                    if self._load_capability_from_path(path):
+                        added += 1
+                    else:
+                        skipped += 1
+
+        self._refresh_list()
+        if self._capabilities:
+            self._sel_index = 0
+            self._populate_from(0)
+        else:
+            self._show_placeholder()
+
+        msg = f"Loaded {added} capability(ies) from Library"
+        if skipped:
+            msg += f" ({skipped} skipped — invalid files)"
+        self._status_lbl.config(text=msg, fg=self._colors["TEXT"])
+        self._set_status(msg)
+
+    def _add_file_to_library(self):
+        """
+        library_mode only: copy an external capability file into the
+        Library's capabilities/ folder, then load the copy — mirrors
+        ComponentTab._add_file_to_library().
+        """
+        library = self._get_library_path()
+        if not library:
+            messagebox.showerror(
+                "No Library folder set",
+                "Set a Library folder first, using the '📚 Library Folder' "
+                "button in the main toolbar.",
+            )
+            return
+
+        paths = filedialog.askopenfilenames(
+            title="Add Capability File(s) to Library — Ctrl+click to select multiple",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not paths:
+            return
+
+        dest_folder = Path(library) / "capabilities"
+        dest_folder.mkdir(parents=True, exist_ok=True)
+
+        copied_paths = []
+        skipped_existing = 0
+        for src in paths:
+            dest = dest_folder / Path(src).name
+            if dest.exists():
+                skipped_existing += 1
+                continue
+            shutil.copy2(src, dest)
+            copied_paths.append(str(dest))
+
+        added, skipped_invalid = self.load_from_paths(copied_paths)
+
+        parts = [f"{added} added"]
+        if skipped_existing:
+            parts.append(f"{skipped_existing} already in the Library")
+        if skipped_invalid:
+            parts.append(f"{skipped_invalid} not valid capability files")
+        self._set_status("Add to Library: " + ", ".join(parts))
 
     def _after_open(self, added, skipped):
         """Shared cleanup after _open_files() or _open_folder() finishes."""

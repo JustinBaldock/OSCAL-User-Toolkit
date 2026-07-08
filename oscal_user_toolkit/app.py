@@ -213,8 +213,13 @@ class OSCALApp(tk.Tk):
         self._style_ttk()       # Apply custom colours to ttk widgets
         self._build_toolbar()   # Top bar with version selector, Library/Systems folder buttons
         self._build_info_panel()# Cards showing catalog and profile metadata
-        self._build_notebook()  # Tabbed area with CatalogTab and SSPTab
+        # Built before the notebook (not after, as the visual top-to-bottom
+        # order might suggest) because the Organisation tab's library_mode
+        # editors auto-load and call set_status() during construction —
+        # self._status_lbl must already exist by then. pack()'s side="top"/
+        # side="bottom" layout is unaffected by which is *constructed* first.
         self._build_statusbar() # Bottom bar with status message
+        self._build_notebook()  # Tabbed area with CatalogTab and SSPTab
 
         # Guard against closing the window with unsaved changes in any editor tab.
         # tkinter fires WM_DELETE_WINDOW when the user clicks the × button.
@@ -391,8 +396,9 @@ class OSCALApp(tk.Tk):
         # Order doesn't matter — each tab only touches its own children.
         for tab in (self._workspace_tab, self._data_sources_tab, self._dashboard_tab,
                     self._all_systems_tab, self._catalog_tab, self._component_tab,
-                    self._capability_tab, self._ssp_tab, self._ap_tab, self._ar_tab,
-                    self._poam_tab):
+                    self._capability_tab, self._library_component_tab,
+                    self._library_capability_tab, self._ssp_tab, self._ap_tab,
+                    self._ar_tab, self._poam_tab):
             tab.theme_refresh()
 
     # =========================================================================
@@ -628,9 +634,10 @@ class OSCALApp(tk.Tk):
         # added to (its "parent=" and ".add()" target) changed. Tabs don't
         # need to know whether their immediate parent is the outer Notebook
         # or one of these inner ones.
-        data_nb   = ttk.Notebook(nb)
-        system_nb = ttk.Notebook(nb)
-        audit_nb  = ttk.Notebook(nb)
+        data_nb         = ttk.Notebook(nb)
+        organisation_nb = ttk.Notebook(nb)
+        system_nb       = ttk.Notebook(nb)
+        audit_nb        = ttk.Notebook(nb)
 
         # ── Data Sources tab (Data group) ───────────────────────────────────────
         # Browses the Library's catalogs/profiles subfolders and is now the
@@ -660,6 +667,54 @@ class OSCALApp(tk.Tk):
             get_catalog= lambda: self._catalog,
         )
         data_nb.add(self._catalog_tab, text="📋  Catalog Viewer")
+
+        # ── Library Component Editor tab (Organisation group) ───────────────────
+        # library_mode=True locks this instance to library/components/ — no
+        # Open File(s)/Open Folder/Import from Library, no save-location
+        # prompt. This is the Organisation User's entry point for
+        # maintaining the shared masters that "📚 Import from Library"
+        # (System Overview's Component Editor) copies from — see
+        # user_stories.md US-14 and oscal_user_toolkit_design_document.md §10.20.
+        self._library_component_tab = ComponentTab(
+            parent            = organisation_nb,
+            colors            = COLORS,
+            get_catalog       = lambda: self._catalog,
+            get_profile       = lambda: self._profile,
+            set_status        = lambda msg: self._status_lbl.config(text=msg),
+            get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_library_path  = self.get_library_path,
+            library_mode      = True,
+        )
+        organisation_nb.add(self._library_component_tab, text="⚙  Library Components")
+
+        # ── Library Capability Editor tab (Organisation group) ──────────────────
+        # Its get_components/add_component point at the Library Component
+        # Editor above (not System Overview's), so Library capabilities
+        # bundle and reference Library components, entirely independent of
+        # whatever's currently loaded for one system.
+        self._library_capability_tab = CapabilityTab(
+            parent              = organisation_nb,
+            colors              = COLORS,
+            get_catalog         = lambda: self._catalog,
+            get_components      = lambda: self._library_component_tab._components,
+            get_profile         = lambda: self._profile,
+            set_status          = lambda msg: self._status_lbl.config(text=msg),
+            get_oscal_version   = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_oscal_zip_path  = lambda: self._oscal_version_paths.get(
+                self._oscal_version_var.get().lstrip("v")
+            ),
+            add_component       = self._library_component_tab.add_component,
+            get_library_path    = self.get_library_path,
+            library_mode        = True,
+        )
+        organisation_nb.add(self._library_capability_tab, text="🔗  Library Capabilities")
+
+        # Wire up the component-change notification the same way System
+        # Overview's pair does, so the Library Capability Editor re-evaluates
+        # its guard whenever the Library Component Editor's list changes.
+        self._library_component_tab.set_on_components_changed(
+            self._library_capability_tab.on_state_changed
+        )
 
         # ── Component Editor tab (System Overview group) ───────────────────────
         # It lets users create and save OSCAL Component Definition JSON files.
@@ -766,11 +821,26 @@ class OSCALApp(tk.Tk):
         # ── POA&M Editor tab (Audit group) ──────────────────────────────────────
         audit_nb.add(self._poam_tab, text="📋  POA&M Editor")
 
+        # ── All Systems tab (Organisation group) ─────────────────────────────────
+        # Organisation-wide rollup across every system in the Systems folder
+        # (settings.py) — distinct from Dashboard below, which only ever
+        # reads the one currently-open system from the live editor tabs.
+        # Lives in the Organisation group alongside the Library editors above,
+        # since all three are "organisation-wide," not "this system," concerns.
+        # See all_systems_tab.py and oscal_user_toolkit_design_document.md §10.19.
+        self._all_systems_tab = AllSystemsTab(
+            parent           = organisation_nb,
+            colors           = COLORS,
+            get_systems_path = self.get_systems_path,
+        )
+        organisation_nb.add(self._all_systems_tab, text="🌐  All Systems")
+
         # ── Group tabs go into the outer Notebook, between Workspace and
         # Dashboard ──────────────────────────────────────────────────────────
-        nb.add(data_nb,   text="🗂  Data")
-        nb.add(system_nb, text="⚙  System Overview")
-        nb.add(audit_nb,  text="🔍  Audit")
+        nb.add(data_nb,         text="🗂  Data")
+        nb.add(organisation_nb, text="🏢  Organisation")
+        nb.add(system_nb,       text="⚙  System Overview")
+        nb.add(audit_nb,        text="🔍  Audit")
 
         # ── Authorization Dashboard tab (top-level) ─────────────────────────────
         # Constructed last so all tab lambdas resolve, then added at the end
@@ -786,18 +856,6 @@ class OSCALApp(tk.Tk):
             get_poam_tab = lambda: self._poam_tab,
         )
         nb.add(self._dashboard_tab, text="📊  Dashboard")
-
-        # ── All Systems tab (top-level) ─────────────────────────────────────────
-        # Organisation-wide rollup across every system in the Systems folder
-        # (settings.py) — distinct from Dashboard above, which only ever
-        # reads the one currently-open system from the live editor tabs.
-        # See all_systems_tab.py and oscal_user_toolkit_design_document.md §10.19.
-        self._all_systems_tab = AllSystemsTab(
-            parent           = nb,
-            colors           = COLORS,
-            get_systems_path = self.get_systems_path,
-        )
-        nb.add(self._all_systems_tab, text="🌐  All Systems")
 
         # ── Workspace tab (top-level) ────────────────────────────────────────────
         # Inserted at index 0 so it appears first and is the tab shown when

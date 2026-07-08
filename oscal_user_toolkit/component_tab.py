@@ -132,7 +132,8 @@ class ComponentTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, get_catalog, get_profile, set_status,
-                 get_oscal_version=None, get_library_path=None, get_system_folder=None):
+                 get_oscal_version=None, get_library_path=None, get_system_folder=None,
+                 library_mode=False):
         """
         Initialise the ComponentTab.
 
@@ -153,6 +154,15 @@ class ComponentTab(tk.Frame):
                                 get_system_folder()), or None if no
                                 workspace is active. Used by "Import from
                                 Library" to know where to copy files to.
+            library_mode      - When True, this instance is the Organisation
+                                tab's "Library Component Editor" (see
+                                user_stories.md US-14): it only ever reads/
+                                writes library/components/ — no Open File(s)/
+                                Open Folder/Import from Library, no save
+                                location prompt (saves back to the file a
+                                component was loaded from, or auto-names a
+                                new one into the Library) — see
+                                oscal_user_toolkit_design_document.md §10.20.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -163,6 +173,7 @@ class ComponentTab(tk.Frame):
         self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
         self._get_library_path  = get_library_path  or (lambda: None)
         self._get_system_folder = get_system_folder or (lambda: None)
+        self._library_mode      = library_mode
 
         # ── File-level state ──────────────────────────────────────────────────
         self._file_uuid    = new_uuid()          # UUID for the whole file
@@ -175,6 +186,11 @@ class ComponentTab(tk.Frame):
         # Used by the Workspace tab to record which files this tab currently
         # represents. Deduplicated (order-preserving) whenever it is read.
         self._loaded_paths   = []
+        # Maps component uuid -> the file path it was loaded from/saved to.
+        # Only meaningful in library_mode, where Save has nowhere else to
+        # ask — a component with no entry here yet is new and gets an
+        # auto-generated path inside the Library on first save.
+        self._component_paths = {}
         self._selected_index  = None # Index into self._components (not listbox position)
         self._dirty           = False
         self._search_after_id = None  # debounce handle for component search
@@ -210,6 +226,13 @@ class ComponentTab(tk.Frame):
 
         # Build the GUI
         self._build()
+
+        # library_mode auto-loads every file in the Library's components/
+        # folder right away — there is no "Open" action to trigger this
+        # manually, since the whole point is that this editor only ever
+        # shows/edits what's actually in the Library (see class docstring).
+        if self._library_mode:
+            self._load_library_folder()
 
     # =========================================================================
     # PUBLIC API — called by app.py when catalog/profile state changes
@@ -344,11 +367,22 @@ class ComponentTab(tk.Frame):
     def _build_toolbar(self):
         """
         Top bar with Save / Open / New buttons and the auto-filename display.
+
+        In library_mode, this is a different, smaller set of actions (see
+        class docstring) — no Open File(s)/Open Folder/Import from Library/
+        Clear All, since this instance never touches anything outside the
+        Library, and a "🔄 Refresh from Library"/"📥 Add File to Library"
+        pair instead.
         """
         C  = self._colors
         tb = tk.Frame(self, bg=C["CARD_BG"], height=52)
         tb.pack(fill="x", side="top")
         tb.pack_propagate(False)
+
+        if self._library_mode:
+            self._build_library_toolbar(tb)
+            self._build_library_hint()
+            return
 
         tk.Button(
             tb, text="💾  Save Component", command=self._save_file,
@@ -421,6 +455,44 @@ class ComponentTab(tk.Frame):
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._status_lbl.pack(side="right", padx=12)
+
+    def _build_library_toolbar(self, tb):
+        """Toolbar contents for library_mode — see _build_toolbar()."""
+        C = self._colors
+        tk.Button(
+            tb, text="💾  Save to Library", command=self._save_file,
+            bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=12, pady=8)
+        tk.Button(
+            tb, text="🔄  Refresh from Library", command=self._load_library_folder,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(0, 6), pady=8)
+        tk.Button(
+            tb, text="📥  Add File to Library", command=self._add_file_to_library,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(0, 12), pady=8)
+
+        self._status_lbl = tk.Label(
+            tb, text="", bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
+        )
+        self._status_lbl.pack(side="right", padx=12)
+
+    def _build_library_hint(self):
+        """Explanatory banner shown under the toolbar in library_mode."""
+        C = self._colors
+        hint = tk.Frame(self, bg=C["TEAL_BG"])
+        hint.pack(fill="x", side="top")
+        tk.Label(
+            hint,
+            text="✏️  Library Component Editor — edits the shared master components in "
+                 "your Library folder. Systems that already imported a copy will not "
+                 "automatically receive changes made here.",
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "italic"),
+            wraplength=900, justify="left",
+        ).pack(anchor="w", padx=12, pady=4)
 
     # =========================================================================
     # GATE PANEL — shown when catalog or profile is not loaded
@@ -1219,32 +1291,37 @@ class ComponentTab(tk.Frame):
         or Component Type fields change.
 
         Does two things:
-          1. Updates the toolbar filename display label
+          1. Updates the toolbar filename display label (not built in
+             library_mode — see _build_library_toolbar())
           2. Renames the currently selected entry in the left component list
         """
         comp_type  = self._v_type.get().strip()  if hasattr(self, "_v_type")  else ""
         comp_title = self._v_title.get().strip() if hasattr(self, "_v_title") else ""
+        has_title_lbl = hasattr(self, "_file_title_lbl")
 
         if comp_type and comp_title:
             auto_title    = f"{comp_type} - {comp_title}"
             safe_title    = comp_title.replace(" ", "_")
             auto_filename = f"{comp_type}_{safe_title}.json"
-            self._file_title_lbl.config(
-                text=f"{auto_title}  →  {auto_filename}",
-                fg=self._colors["TEXT"], font=("Helvetica", 10),
-            )
+            if has_title_lbl:
+                self._file_title_lbl.config(
+                    text=f"{auto_title}  →  {auto_filename}",
+                    fg=self._colors["TEXT"], font=("Helvetica", 10),
+                )
             self._file_title.set(auto_title)
         elif comp_type or comp_title:
-            self._file_title_lbl.config(
-                text="(enter both type and title to generate filename)",
-                fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
-            )
+            if has_title_lbl:
+                self._file_title_lbl.config(
+                    text="(enter both type and title to generate filename)",
+                    fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
+                )
             self._file_title.set(comp_type or comp_title)
         else:
-            self._file_title_lbl.config(
-                text="(enter component type and title below)",
-                fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
-            )
+            if has_title_lbl:
+                self._file_title_lbl.config(
+                    text="(enter component type and title below)",
+                    fg=self._colors["SUBTEXT"], font=("Helvetica", 10, "italic"),
+                )
             self._file_title.set("")
 
         # ── Update the matching Listbox entry in real time ────────────────────
@@ -2698,6 +2775,7 @@ class ComponentTab(tk.Frame):
 
         self._components.append(comp)
         self._loaded_paths.append(str(path))
+        self._component_paths[comp["uuid"]] = str(path)
         return True
 
     def load_from_paths(self, paths):
@@ -2753,6 +2831,10 @@ class ComponentTab(tk.Frame):
 
         Each component is saved as a separate file — one component per file.
         The filename is auto-generated from the component type and title.
+
+        In library_mode there is no save-location dialog — see
+        _save_to_library_path() — since this editor only ever writes into
+        the Library's components/ folder.
         """
         if self._selected_index is not None:
             self._collect_into(self._selected_index)
@@ -2770,33 +2852,92 @@ class ComponentTab(tk.Frame):
         comp_type  = comp.get("type", "").strip()
         comp_title = comp.get("title", "").strip()
 
-        if comp_type and comp_title:
-            initial_file = f"{comp_type}_{comp_title.replace(' ', '_')}.json"
+        if self._library_mode:
+            path = self._save_to_library_path(comp)
+            if path is None:
+                return
         else:
-            initial_file = "component_definition.json"
+            if comp_type and comp_title:
+                initial_file = f"{comp_type}_{comp_title.replace(' ', '_')}.json"
+            else:
+                initial_file = "component_definition.json"
 
-        path = filedialog.asksaveasfilename(
-            title="Save OSCAL Component Definition",
-            defaultextension=".json",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-            initialfile=initial_file,
-        )
-        if not path:
-            return
+            path = filedialog.asksaveasfilename(
+                title="Save OSCAL Component Definition",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+                initialfile=initial_file,
+            )
+            if not path:
+                return
 
         doc = self._build_single_component_oscal(comp)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(doc, f, indent=2, ensure_ascii=False)
 
-        self._loaded_paths.append(path)
+        self._loaded_paths.append(str(path))
+        self._component_paths[comp["uuid"]] = str(path)
         self._dirty = False
         fname = Path(path).name
         self._status_lbl.config(text=f"Saved: {fname}", fg=self._colors["GREEN"])
         self._set_status(f"Component saved: {fname}")
-        messagebox.showinfo(
-            "Component Saved",
-            f"Component '{comp_title}' saved successfully:\n{path}"
-        )
+        if not self._library_mode:
+            messagebox.showinfo(
+                "Component Saved",
+                f"Component '{comp_title}' saved successfully:\n{path}"
+            )
+
+    def _save_to_library_path(self, comp):
+        """
+        Resolve where to save `comp` when in library_mode, with no dialog:
+        the path it was already loaded from/saved to if known, otherwise a
+        new auto-generated filename inside the Library's components/ folder
+        — the same naming convention as the normal Save dialog's default,
+        disambiguated with a short UUID suffix if that name is already
+        taken by a different component (rather than silently overwriting
+        an unrelated file with the same type+title).
+
+        Returns the path, or None if no Library folder is configured (the
+        caller should already have one, since library_mode instances are
+        always constructed with a real get_library_path — this is a
+        defensive fallback, not an expected path).
+        """
+        existing = self._component_paths.get(comp["uuid"])
+        if existing:
+            return existing
+
+        library = self._get_library_path()
+        if not library:
+            messagebox.showerror(
+                "No Library folder set",
+                "Set a Library folder first, using the '📚 Library Folder' "
+                "button in the main toolbar.",
+            )
+            return None
+
+        comp_dir  = Path(library) / "components"
+        comp_dir.mkdir(parents=True, exist_ok=True)
+        comp_type  = comp.get("type", "").strip() or "component"
+        comp_title = comp.get("title", "").strip().replace(" ", "_") or "untitled"
+
+        candidate = comp_dir / f"{comp_type}_{comp_title}.json"
+        if candidate.exists():
+            # Same generated name already on disk — only reuse it if it's
+            # actually this same component (re-saving after a rename that
+            # happens to produce the same filename); otherwise disambiguate
+            # rather than silently overwrite an unrelated file.
+            try:
+                with open(candidate, encoding="utf-8") as f:
+                    existing_doc = json.load(f)
+                existing_uuids = {
+                    c.get("uuid") for c in existing_doc.get("component-definition", {}).get("components", [])
+                }
+            except (OSError, json.JSONDecodeError):
+                existing_uuids = set()
+            if comp["uuid"] not in existing_uuids:
+                candidate = comp_dir / f"{comp_type}_{comp_title}_{comp['uuid'][:8]}.json"
+
+        return str(candidate)
 
     def _open_files(self):
         """
@@ -2924,6 +3065,97 @@ class ComponentTab(tk.Frame):
         if skipped_invalid:
             parts.append(f"{skipped_invalid} not valid component files")
         self._set_status("Import from Library: " + ", ".join(parts))
+
+    def _load_library_folder(self):
+        """
+        library_mode only: clear the current list and reload every
+        component file in the Library's components/ folder from disk.
+
+        This is the ONLY way this instance's list is ever populated — no
+        Open File(s)/Open Folder — so it doubles as both the initial load
+        (called once from __init__) and the "🔄 Refresh from Library"
+        button, in case files were added/changed on disk since the tab
+        was built (e.g. by another running instance, or externally).
+        """
+        self._components      = []
+        self._loaded_paths    = []
+        self._component_paths = {}
+        self._selected_index  = None
+
+        library = self._get_library_path()
+        added = skipped = 0
+        if library:
+            comp_dir = Path(library) / "components"
+            if comp_dir.is_dir():
+                for path in sorted(comp_dir.glob("*.json")):
+                    if self._load_component_from_path(path):
+                        added += 1
+                    else:
+                        skipped += 1
+
+        self._selected_index   = None
+        self._ctrl_responses   = {}
+        self._ctrl_impl_status = {}
+        if hasattr(self, "_comp_search_var"):
+            self._comp_search_var.set("")
+        if hasattr(self, "_comp_type_filter_var"):
+            self._comp_type_filter_var.set("all")
+        self._refresh_list()
+        self._show_form_placeholder()
+
+        msg = f"Loaded {added} component(s) from Library"
+        if skipped:
+            msg += f" ({skipped} skipped — invalid files)"
+        if hasattr(self, "_status_lbl"):
+            self._status_lbl.config(text=msg, fg=self._colors["TEXT"])
+        self._set_status(msg)
+        self._on_components_changed()
+
+    def _add_file_to_library(self):
+        """
+        library_mode only: copy an external component file into the
+        Library's components/ folder, then load the copy — the one
+        controlled way anything enters this editor from outside the
+        Library (e.g. a vendor-provided or another team's component file),
+        without ever letting this editor open or save anywhere else.
+        """
+        library = self._get_library_path()
+        if not library:
+            messagebox.showerror(
+                "No Library folder set",
+                "Set a Library folder first, using the '📚 Library Folder' "
+                "button in the main toolbar.",
+            )
+            return
+
+        paths = filedialog.askopenfilenames(
+            title="Add Component File(s) to Library — Ctrl+click to select multiple",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+        )
+        if not paths:
+            return
+
+        dest_folder = Path(library) / "components"
+        dest_folder.mkdir(parents=True, exist_ok=True)
+
+        copied_paths = []
+        skipped_existing = 0
+        for src in paths:
+            dest = dest_folder / Path(src).name
+            if dest.exists():
+                skipped_existing += 1
+                continue
+            shutil.copy2(src, dest)
+            copied_paths.append(str(dest))
+
+        added, skipped_invalid = self.load_from_paths(copied_paths)
+
+        parts = [f"{added} added"]
+        if skipped_existing:
+            parts.append(f"{skipped_existing} already in the Library")
+        if skipped_invalid:
+            parts.append(f"{skipped_invalid} not valid component files")
+        self._set_status("Add to Library: " + ", ".join(parts))
 
     def _after_open(self, added, skipped):
         """

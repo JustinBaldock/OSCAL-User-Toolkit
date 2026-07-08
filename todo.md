@@ -308,12 +308,13 @@ A large organisation's shared, reusable components/capabilities now live in a **
 - **Component/Capability Editor — "📚 Import from Library"**: copies a chosen library file into the current system's folder (the folder containing the active workspace manifest) as an independent, editable copy — never mutates the library source, and never overwrites an already-imported local copy.
 - **SSP Editor — "🔄 Sync from System Folder" (Section 8)**: reads every file in the current system's `components/`/`capabilities/` folders and imports it into the SSP, including auto-populated Section 9 control responses and Capabilities Used entries.
 - **AP/POA&M — read-only Components/Capabilities panes**: sourced from the referenced SSP file, so an auditor can see what's in the system without needing write access to it.
+- **Organisation tab — Library Component/Capability Editors** (`library_mode` on `ComponentTab`/`CapabilityTab`, see design document §10.20): dedicated, locked-to-the-Library editors, distinct from the System Overview instances — resolves the "no indicator whether you're editing the master or a copy" gap below by making them separate tabs entirely, plus "🌐 All Systems" moved in alongside them. See `user_stories.md` US-14.
 
 ### Known remaining gaps
 
 - Still only one active catalog/profile at a time (see section 3's still-open multi-catalog questions above — the Library made *picking* a catalog/profile easier, it didn't add multi-catalog support).
 - No dedicated standalone Component/Capability Definition document type — see the note at the end of section 2.
-- No UI-level indicator in Component/Capability Editor showing whether the currently-loaded file came from the Library vs. a system folder vs. neither — a user could plausibly edit and re-save a Library master file directly (via plain "Open File(s)"/"Save") without realising it's shared, since nothing currently warns them.
+- **Component/capability version history**: OSCAL's `metadata.revisions[]` (document-level, confirmed via `oscal_component_schema.json`) could let a normal user see whether the Library's copy of something has been updated since their system last imported it — brainstormed as part of US-14 but deliberately deferred until the new Library editors have been tested.
 
 ---
 

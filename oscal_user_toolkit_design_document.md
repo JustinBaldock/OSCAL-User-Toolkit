@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 3.8  
+**Version:** 3.9  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -948,6 +948,25 @@ The top-level tab bar had grown to ten flat tabs (Workspace, Data Sources, Catal
 
 Every per-file read is wrapped narrowly (`OSError, json.JSONDecodeError, KeyError`) and never propagates — a malformed or half-finished system folder just contributes a mostly-blank row rather than breaking the whole tab, since the point of an organisation-wide rollup is to work even when not every system is equally far along.
 
+### 10.20 Organisation tab — `library_mode` locks ComponentTab/CapabilityTab to the Library, by construction
+
+`user_stories.md` US-14 identified a real gap: an Organisation User maintaining the Library's shared components/capabilities had no dedicated place to do it — the existing Component/Capability Editor tabs (System Overview) are generic file editors with no restriction on *where* a file lives, so editing a Library master was already technically possible via plain Open File(s)/Save, just with no discoverable entry point and no way to tell "am I editing the Library's master or a system's local copy" from the UI alone.
+
+**Decision: reuse `ComponentTab`/`CapabilityTab`, don't build new editor classes.** Both already take their behaviour entirely from constructor callbacks, so a second instance of each, added to a new **Organisation** tab (a `ttk.Notebook` group like Data/System Overview/Audit — see §10.18 — placed between Data and System Overview), gets the full existing editing UI (protocols, control implementations, search, everything) for free. The alternative — a bespoke, cut-down editor just for the Library — would have meant re-implementing a large fraction of an already-mature editor for no real benefit.
+
+**The lock is structural, not a convention.** A brainstorm beforehand considered "default the Open/Save dialog's starting folder to the Library" as a softer option, but tkinter's file dialogs have no way to *restrict* browsing to one folder — a defaulted starting directory is just a suggestion the user can navigate away from. The actual lock implemented instead: a new `library_mode=True` constructor flag removes the "📂 Open File(s)", "📁 Open Folder", and "📚 Import from Library" buttons entirely (there is no dialog to escape from, because there is no dialog), and:
+
+- **Auto-load, not manual Open.** `_load_library_folder()` runs once from `__init__` (mirroring `_after_open()`'s cleanup) and again on demand via a "🔄 Refresh from Library" button — it's the *only* way either list is ever populated, scanning `library/components/*.json` or `library/capabilities/*.json` directly.
+- **Save writes back with no location prompt.** A new `_component_paths`/`_capability_paths` dict (`{uuid: path}`) records where each item was loaded from — populated in `_load_component_from_path()`/`_load_capability_from_path()` alongside the existing `_loaded_paths` list. `_save_to_library_path()` returns that recorded path if known, or auto-generates one inside the Library using the same `{type}_{title}.json` naming convention the normal Save dialog already defaults to, disambiguated with a short UUID suffix if that generated name collides with a *different* component/capability already on disk (checked by reading the candidate file's own UUID first, rather than either silently overwriting an unrelated file or refusing outright).
+- **One controlled way in from outside: "📥 Add File to Library".** Copies a chosen external file into `library/components/`(or `.../capabilities/`) and loads the copy — the same copy-then-load pattern `_import_from_library()` already uses in the opposite direction (Library → system folder), just reversed. This is the only code path that ever brings an outside file into scope, and it only ever copies *in*.
+- **A visible reminder, not just a lock.** A teal (`TEAL_BG` — the colour already associated with Library actions elsewhere) banner under the toolbar states plainly that this edits shared masters and that systems which already imported a copy won't automatically receive changes — since the copy-not-link design (§10.13) means Library edits never propagate on their own.
+
+**The Library Capability Editor's dependencies point at the Library Component Editor, not System Overview's.** `get_components`/`add_component` are wired to `self._library_component_tab` in `app.py`, so a Library capability's member components, and its guard condition (`_ready()` requires at least one component), are entirely about what's in the Library — never contaminated by, or dependent on, whatever happens to be loaded in System Overview for the current system.
+
+**A construction-order bug this surfaced:** `library_mode`'s auto-load calls `set_status()` synchronously during `ComponentTab.__init__()`, which runs during `app.py._build_notebook()` — but `_build_statusbar()` (which creates `self._status_lbl`, the target of every tab's `set_status` callback) previously ran *after* `_build_notebook()` in `OSCALApp.__init__()`. Nothing had ever called `set_status()` synchronously during construction before, so this ordering bug was latent until now. Fixed by building the status bar before the notebook — `pack()`'s `side="top"`/`side="bottom"` layout is unaffected by which is constructed first, only by pack call order relative to each other, which didn't change.
+
+**Component/capability versioning (`metadata.revisions[]`) is intentionally not part of this stage.** The brainstorm that led here also covered using OSCAL's native per-document revision history so a Library update is visible to whoever already imported an older copy — confirmed against `oscal_component_schema.json` that `metadata.revisions[]` exists (title/version/published/last-modified/remarks, documented reverse-chronological) but only at the document level, not per-component, and that a component's own `uuid` should stay stable across edits for this to work. That's deliberately deferred to a follow-up once these two editors have been used and tested.
+
 ---
 
 ## 11. Example Component Library
@@ -989,6 +1008,16 @@ The components span a realistic medium-to-large Australian government environmen
 ---
 
 ## 13. Changelog
+
+### Version 3.9 (July 2026)
+
+**New features:**
+- **Organisation tab** (`app.py`, new group between Data and System Overview): "⚙ Library Components", "🔗 Library Capabilities" (second instances of `ComponentTab`/`CapabilityTab` with the new `library_mode=True`), and "🌐 All Systems" (moved from top-level).
+- **`ComponentTab`/`CapabilityTab` `library_mode`**: locks an instance to `library/components/`/`library/capabilities/` — no Open File(s)/Open Folder/Import from Library, auto-loads on construction and via "🔄 Refresh from Library", saves back with no location prompt (new `_component_paths`/`_capability_paths` + `_save_to_library_path()`), and a new "📥 Add File to Library" for bringing in an external file. See §10.20.
+- Resolves `user_stories.md` US-14.
+
+**Fixes:**
+- `OSCALApp.__init__()` now builds the status bar before the notebook — `library_mode`'s auto-load calls `set_status()` during construction, which previously ran before `self._status_lbl` existed.
 
 ### Version 3.8 (July 2026)
 
