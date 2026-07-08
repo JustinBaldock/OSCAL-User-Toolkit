@@ -176,9 +176,12 @@ class ComponentTab(tk.Frame):
         self._library_mode      = library_mode
 
         # ── File-level state ──────────────────────────────────────────────────
-        self._file_uuid    = new_uuid()          # UUID for the whole file
+        # Per-component version/revision/UUID state (see design document
+        # §10.21) lives on each component's own dict — "file_uuid",
+        # "version", "revisions" — NOT here. A file's document uuid/version
+        # are just that component's own file_uuid/version at save time
+        # (see _build_single_component_oscal()).
         self._file_title   = tk.StringVar(value="")
-        self._file_version = tk.StringVar(value="1.0")
 
         # ── Component list state ──────────────────────────────────────────────
         self._components      = []   # List of component dicts
@@ -439,16 +442,6 @@ class ComponentTab(tk.Frame):
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._file_title_lbl.pack(side="left", padx=(0, 8))
-
-        tk.Label(tb, text="  Version:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
-                 font=("Helvetica", 10)).pack(side="left", padx=(8, 4))
-
-        tk.Entry(
-            tb, textvariable=self._file_version, width=8,
-            bg=C["SIDEBAR_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
-            relief="flat", font=("Helvetica", 10),
-            highlightthickness=1, highlightbackground=C["HEADER_BG"],
-        ).pack(side="left", ipady=3, pady=10)
 
         self._status_lbl = tk.Label(
             tb, text="Load a catalog to begin",
@@ -857,6 +850,58 @@ class ComponentTab(tk.Frame):
                  bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=20)
+
+        # ── Version & Revision History (§10.21) ─────────────────────────────
+        # Kept inside Section 1 rather than its own numbered section, to
+        # avoid renumbering every section below it. Each component carries
+        # its own document uuid/version/revisions — never shared tab-level
+        # state — so this stays correct even when many components share one
+        # tab instance (library_mode).
+        ver_card = tk.Frame(parent, bg=C["CARD_BG"], highlightthickness=1,
+                             highlightbackground=C["HEADER_BG"])
+        ver_card.pack(fill="x", **P, pady=(10, 4))
+
+        ver_row = tk.Frame(ver_card, bg=C["CARD_BG"])
+        ver_row.pack(fill="x", padx=10, pady=(8, 2))
+        tk.Label(ver_row, text="Version:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 10)).pack(side="left")
+        self._v_version = tk.StringVar(value="1.0")
+        tk.Entry(ver_row, textvariable=self._v_version, width=10,
+                 bg=C["SIDEBAR_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10),
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).pack(side="left", padx=(6, 16), ipady=2)
+        tk.Button(ver_row, text="📌  Save New Version",
+                  command=self._save_new_version,
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+
+        id_row = tk.Frame(ver_card, bg=C["CARD_BG"])
+        id_row.pack(fill="x", padx=10, pady=(0, 2))
+        self._v_component_uuid_lbl = tk.Label(
+            id_row, text="Component UUID: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 8),
+        )
+        self._v_component_uuid_lbl.pack(anchor="w")
+        self._v_file_uuid_lbl = tk.Label(
+            id_row, text="Document UUID: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 8),
+        )
+        self._v_file_uuid_lbl.pack(anchor="w")
+
+        tk.Label(ver_card, text="Revision History:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(4, 0))
+        hist_cols = ("version", "date", "remarks")
+        self._revision_tree = ttk.Treeview(
+            ver_card, columns=hist_cols, show="headings", height=3,
+        )
+        for col, label, width in [
+            ("version", "Version", 70), ("date", "Date", 150), ("remarks", "Remarks", 300),
+        ]:
+            self._revision_tree.heading(col, text=label)
+            self._revision_tree.column(col, width=width, anchor="w")
+        self._revision_tree.pack(fill="x", padx=10, pady=(2, 8))
 
         # =====================================================================
         # SECTION 2 — DESCRIPTION
@@ -1509,6 +1554,10 @@ class ComponentTab(tk.Frame):
             "links":           [],
             "ctrl_responses":   {},  # {control_id: description_string}
             "ctrl_impl_status": {},  # {control_id: implementation-status string}
+            # Per-component document identity/version — see §10.21.
+            "file_uuid":  new_uuid(),
+            "version":    "1.0",
+            "revisions":  [],  # [{version, date, remarks}], latest-first
         }
         self._components.append(new_comp)
         self._dirty = True
@@ -1624,6 +1673,16 @@ class ComponentTab(tk.Frame):
         self._v_status.set(comp.get("status", COMPONENT_STATUS[0]))
         self._v_remarks.set(comp.get("status_remarks", ""))
 
+        # ── Version & Revision History (§10.21) ─────────────────────────────
+        self._v_version.set(comp.get("version", "1.0"))
+        self._v_component_uuid_lbl.config(text=f"Component UUID: {comp.get('uuid', '—')}")
+        self._v_file_uuid_lbl.config(text=f"Document UUID: {comp.get('file_uuid', '—')}")
+        self._revision_tree.delete(*self._revision_tree.get_children())
+        for rev in comp.get("revisions", []):
+            self._revision_tree.insert("", "end", values=(
+                rev.get("version", ""), rev.get("date", ""), rev.get("remarks", "")
+            ))
+
         # ── Text areas ────────────────────────────────────────────────────────
         for widget, key in [
             (self._v_description,  "description"),
@@ -1714,6 +1773,7 @@ class ComponentTab(tk.Frame):
         comp["purpose"]        = self._v_purpose.get().strip()
         comp["status"]         = self._v_status.get()
         comp["status_remarks"] = self._v_remarks.get().strip()
+        comp["version"]        = self._v_version.get().strip() or "1.0"
         comp["description"]    = self._v_description.get("1.0", "end-1c").strip()
         comp["remarks"]        = self._v_remarks_text.get("1.0", "end-1c").strip()
 
@@ -1755,6 +1815,91 @@ class ComponentTab(tk.Frame):
             text="Component changes applied  (not yet saved to disk)",
             fg=self._colors["YELLOW"],
         )
+
+    def _save_new_version(self):
+        """
+        Archive the component's current version into its revision history,
+        then let the user set a new version number — see §10.21.
+
+        Distinct from a plain save: an ordinary save just rewrites the
+        current version in place, this records what the version *was*
+        (with optional remarks on what changed) before bumping it.
+        Does not itself write to disk — Apply/Save still do that.
+        """
+        if self._selected_index is None:
+            return
+        self._collect_into(self._selected_index)
+        comp = self._components[self._selected_index]
+        old_version = comp.get("version", "1.0")
+
+        C = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title("Save New Version")
+        dlg.configure(bg=C["BG"])
+        dlg.transient(self.winfo_toplevel())
+        dlg.grab_set()
+
+        tk.Label(dlg, text=f"Current version: {old_version}",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                 ).pack(anchor="w", padx=16, pady=(14, 4))
+
+        row = tk.Frame(dlg, bg=C["BG"])
+        row.pack(fill="x", padx=16, pady=4)
+        tk.Label(row, text="New version:", bg=C["BG"], fg=C["TEXT"],
+                 font=("Helvetica", 10), width=14, anchor="w").pack(side="left")
+        new_version_var = tk.StringVar(value=old_version)
+        tk.Entry(row, textvariable=new_version_var, width=14,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10),
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).pack(side="left", ipady=3)
+
+        tk.Label(dlg, text="What changed? (optional)", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(anchor="w", padx=16, pady=(10, 2))
+        remarks_text = tk.Text(dlg, width=44, height=3, bg=C["CARD_BG"], fg=C["TEXT"],
+                                insertbackground=C["TEXT"], relief="flat",
+                                font=("Helvetica", 10), wrap="word")
+        remarks_text.pack(padx=16, pady=(0, 10))
+
+        def do_save():
+            new_version = new_version_var.get().strip()
+            if not new_version:
+                messagebox.showwarning("Version required",
+                                        "Please enter a new version number.")
+                return
+            if new_version == old_version:
+                messagebox.showwarning(
+                    "Version unchanged",
+                    "The new version must be different from the current version."
+                )
+                return
+            remarks = remarks_text.get("1.0", "end-1c").strip()
+            revisions = comp.setdefault("revisions", [])
+            revisions.insert(0, {
+                "version": old_version,
+                "date":    now_iso(),
+                "remarks": remarks,
+            })
+            comp["version"] = new_version
+            self._dirty = True
+            dlg.destroy()
+            self._populate_from(self._selected_index)
+            self._refresh_list()
+            self._status_lbl.config(
+                text=f"Version {new_version} recorded  (not yet saved to disk)",
+                fg=C["YELLOW"],
+            )
+
+        btn_row = tk.Frame(dlg, bg=C["BG"])
+        btn_row.pack(fill="x", padx=16, pady=(0, 14))
+        tk.Button(btn_row, text="Save New Version", command=do_save,
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=10, pady=4, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(btn_row, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=4, cursor="hand2",
+                  ).pack(side="left", padx=(8, 0))
 
     # =========================================================================
     # CONTROL IMPLEMENTATION — Section 7
@@ -2620,15 +2765,34 @@ class ComponentTab(tk.Frame):
         # so the file is clearly identified without opening it.
         file_title = self._file_title.get().strip() or comp.get("title", "Component Definition")
 
+        # Document identity/version come from the component itself, not
+        # shared tab-level state — see §10.21. Every component keeps its
+        # own file_uuid/version/revisions so multiple components can be
+        # tracked independently in the same tab (essential in library_mode).
+        if not comp.get("file_uuid"):
+            comp["file_uuid"] = new_uuid()
+        metadata = {
+            "title":         file_title,
+            "last-modified": now,
+            "version":       comp.get("version", "").strip() or "1.0",
+            "oscal-version": self._get_oscal_version(),
+        }
+        revisions = comp.get("revisions") or []
+        if revisions:
+            metadata["revisions"] = [
+                {
+                    "title":         rev.get("title", "Previous version"),
+                    "version":       rev["version"],
+                    "last-modified": rev.get("date", now),
+                    **({"remarks": rev["remarks"]} if rev.get("remarks") else {}),
+                }
+                for rev in revisions
+            ]
+
         doc = {
             "component-definition": {
-                "uuid": self._file_uuid,
-                "metadata": {
-                    "title":         file_title,
-                    "last-modified": now,
-                    "version":       self._file_version.get().strip() or "1.0",
-                    "oscal-version": self._get_oscal_version(),
-                },
+                "uuid": comp["file_uuid"],
+                "metadata": metadata,
                 # The schema requires components to be in an array.
                 # We always write exactly one component per file.
                 "components": [c],
@@ -2661,6 +2825,20 @@ class ComponentTab(tk.Frame):
 
         # Take the first (normally only) component in the file
         c = raw[0]
+
+        # Document-level identity/version — see §10.21. Read back onto the
+        # component itself (not shared tab-level state) so each component
+        # keeps its own version/UUID history independent of any other
+        # component loaded into the same tab.
+        meta = root.get("metadata", {})
+        revisions = [
+            {
+                "version": rev.get("version", ""),
+                "date":    rev.get("last-modified", ""),
+                "remarks": rev.get("remarks", ""),
+            }
+            for rev in meta.get("revisions", [])
+        ]
 
         all_props   = c.get("props", [])
         status_prop = next(
@@ -2737,6 +2915,9 @@ class ComponentTab(tk.Frame):
             "links":            links,
             "ctrl_responses":   ctrl_responses,
             "ctrl_impl_status": ctrl_impl_status,
+            "file_uuid":        root.get("uuid") or new_uuid(),
+            "version":          meta.get("version", "1.0"),
+            "revisions":        revisions,
         }
 
     def _load_component_from_path(self, path):
@@ -3210,9 +3391,7 @@ class ComponentTab(tk.Frame):
             ):
                 return
 
-        self._file_uuid        = new_uuid()
         self._file_title.set("")
-        self._file_version.set("1.0")
         self._components       = []
         self._loaded_paths     = []
         self._filtered_indices = []

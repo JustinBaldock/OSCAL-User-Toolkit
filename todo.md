@@ -314,20 +314,13 @@ A large organisation's shared, reusable components/capabilities now live in a **
 
 - Still only one active catalog/profile at a time (see section 3's still-open multi-catalog questions above — the Library made *picking* a catalog/profile easier, it didn't add multi-catalog support).
 - No dedicated standalone Component/Capability Definition document type — see the note at the end of section 2.
-- **Component/capability version history**: OSCAL's `metadata.revisions[]` (document-level, confirmed via `oscal_component_schema.json`) could let a normal user see whether the Library's copy of something has been updated since their system last imported it — brainstormed as part of US-14. **Now designed in design doc §10.21** (components only; capabilities still deferred) and ready to build — checklist below.
+- **Component/capability version history**: OSCAL's `metadata.revisions[]` (document-level, confirmed via `oscal_component_schema.json`) lets a normal user see whether the Library's copy of something has been updated since their system last imported it — brainstormed as part of US-14. **Done for components** (design doc §10.21); **capabilities still not covered** — a separate follow-up, not yet scheduled.
 
-## 6. Component version / revision / UUID metadata — designed (§10.21), not yet built
+## 6. Component version / revision / UUID metadata — ✅ Done (components only)
 
-Next feature to implement. Full design in `oscal_user_toolkit_design_document.md` §10.21. Groundwork for a later "compare version" function (not in scope). **Components only** — capabilities are a separate follow-up.
+Implemented per the design in `oscal_user_toolkit_design_document.md` §10.21. `ComponentTab`'s components each carry their own `file_uuid`/`version`/`revisions[]`, a "Version & Revision History" card sits in Section 1 with an editable Version field and a "📌 Save New Version" action, and the previously shared/broken `_file_uuid`/`_file_version` tab-level state is gone. Verified functionally, including the `library_mode` many-components-one-tab case. This is groundwork for a later "compare version" function (not built).
 
-Checklist (pick up here in a fresh chat):
-
-1. **Fix the shared-state blocker first.** `ComponentTab._file_uuid` / `_file_version` are shared tab-level state used in `_build_single_component_oscal(comp)` for every component's `metadata.uuid`/`version` — broken in `library_mode` (many components, one tab). Move to per-component dict fields: `comp["file_uuid"]`, `comp["version"]`, `comp["revisions"]`.
-2. **Load side.** In `_parse_single_component()` / `_load_component_from_path()`, read back `metadata.uuid`, `metadata.version`, `metadata.revisions[]`; default a fresh `file_uuid`/`version` for older files that have none.
-3. **Save side.** `_build_single_component_oscal(comp)` reads `comp["file_uuid"]` / `comp["version"]` / `comp["revisions"]` instead of the shared `self._file_uuid` / `self._file_version`.
-4. **UI block** ("Version & Revision History") in the component detail form — placed within/after Section 1 to avoid renumbering: read-only component UUID + document UUID, editable Version field (replaces the shared toolbar Version entry), read-only revision history list, and a "Save New Version" action that bumps `version` and prepends to `revisions[]` (latest-first), distinct from plain save.
-5. **Verify functionally** in both modes; specifically confirm the `library_mode` many-components-one-tab case keeps each component's version/UUID independent through save→reload.
-6. **Update docs after building**: flip §10.21 / changelog v4.0 from "planned" to "done", and this section + the US-14 note in `user_stories.md`.
+**Not done**: the same for `CapabilityTab` — capabilities still use shared tab-level `_file_version` and have no revision history. A separate task if wanted.
 
 ---
 
