@@ -1,9 +1,9 @@
 {
   "component-definition": {
-    "uuid": "eadf1507-8106-41fd-8164-2d32aacaac02",
+    "uuid": "18318ae1-3826-4063-820e-9c0db3d534cd",
     "metadata": {
       "title": "Capability: Remote office",
-      "last-modified": "2026-06-26T01:30:52Z",
+      "last-modified": "2026-07-08T08:00:19Z",
       "version": "1.0",
       "oscal-version": "1.2.2"
     },
@@ -22,209 +22,24 @@
         ],
         "control-implementations": [
           {
-            "uuid": "512b8c1a-7ee2-4acd-b4b7-be3555eb72a6",
-            "source": "ISM_catalog.json",
+            "uuid": "5a9c7c0d-46da-457f-94b6-3a86d5705633",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
             "description": "Control implementations for Cabling Infrastrucutre.",
             "implemented-requirements": [
               {
-                "uuid": "4ab2bc3e-0bab-4cf6-95c6-ec2827af3986",
+                "uuid": "d8089036-a242-4c46-9660-2ff5a2988a51",
                 "control-id": "ism-0181",
                 "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards."
               },
               {
-                "uuid": "6ef005e4-0e47-4f9a-b2e5-b419cfa2ce7a",
+                "uuid": "b621896a-d597-4380-a86c-4f0c74fc3788",
                 "control-id": "ism-1111",
                 "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre."
               },
               {
-                "uuid": "6da16f6d-8569-44a6-8a75-f6dadeeec47e",
+                "uuid": "7bd2baea-2d8b-4931-b276-29c11b1154d0",
                 "control-id": "ism-1820",
                 "description": "All fibre-optic and copper cables use a consistent colour."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
-        "type": "hardware",
-        "title": "network encryptor ABC",
-        "description": "A hardware network encryptor that does abc.",
-        "purpose": "provide hardware based network encryption",
-        "props": [
-          {
-            "name": "operational-status",
-            "value": "operational"
-          }
-        ],
-        "control-implementations": [
-          {
-            "uuid": "072ff959-8c37-4fb5-9051-69f57d62c4a5",
-            "source": "ISM_catalog.json",
-            "description": "Control implementations for network encryptor ABC.",
-            "implemented-requirements": [
-              {
-                "uuid": "fd3ab5b7-4d69-49e3-849b-ce9520fddf59",
-                "control-id": "ism-0457",
-                "description": "This device means the cryptographic requirements."
-              },
-              {
-                "uuid": "1130a103-e154-4f22-a8a2-292b757a9907",
-                "control-id": "ism-0465",
-                "description": "The common criteria evaluation certificate is document abc"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
-        "type": "hardware",
-        "title": "VPN Hub (Main Office)",
-        "description": "A SonicWall TZ670 next-generation firewall deployed at the main office, sized to terminate site-to-site IPsec VPN tunnels from every remote office simultaneously in a hub-and-spoke topology. Acts as the gateway between the main office network and each remote office's security domain, routing traffic between spokes only via the hub and enforcing the organisation's firewall policy on all inter-site traffic.",
-        "props": [
-          {
-            "name": "operational-status",
-            "value": "operational"
-          },
-          {
-            "name": "vendor",
-            "value": "SonicWall"
-          },
-          {
-            "name": "model",
-            "value": "TZ670"
-          },
-          {
-            "name": "role",
-            "value": "vpn-hub"
-          },
-          {
-            "name": "site",
-            "value": "main-office"
-          },
-          {
-            "name": "topology",
-            "value": "hub-and-spoke (terminates all remote office tunnels)"
-          }
-        ],
-        "protocols": [
-          {
-            "uuid": "9d5ff566-cdfd-4f58-9e28-41f4cda49ccc",
-            "name": "ike",
-            "title": "IKEv2 — VPN tunnel negotiation with each remote office spoke",
-            "port-ranges": [
-              {
-                "start": 500,
-                "end": 500,
-                "transport": "UDP"
-              }
-            ]
-          },
-          {
-            "uuid": "46997fb9-7d5e-46f1-a121-079cfff82e4d",
-            "name": "ipsec-nat-t",
-            "title": "IPsec NAT-Traversal encapsulation",
-            "port-ranges": [
-              {
-                "start": 4500,
-                "end": 4500,
-                "transport": "UDP"
-              }
-            ]
-          },
-          {
-            "uuid": "914b0d18-fe27-4536-a267-d93635199538",
-            "name": "https",
-            "title": "HTTPS — SonicOS management interface",
-            "port-ranges": [
-              {
-                "start": 443,
-                "end": 443,
-                "transport": "TCP"
-              }
-            ]
-          },
-          {
-            "uuid": "7865ed75-72cb-4bd4-8ee7-d1e03937077a",
-            "name": "ssh",
-            "title": "SSH — CLI management access",
-            "port-ranges": [
-              {
-                "start": 22,
-                "end": 22,
-                "transport": "TCP"
-              }
-            ]
-          },
-          {
-            "uuid": "e32817cd-d985-4127-b6b2-68d73c01717f",
-            "name": "syslog",
-            "title": "Syslog — event forwarding to SIEM",
-            "port-ranges": [
-              {
-                "start": 514,
-                "end": 514,
-                "transport": "UDP"
-              }
-            ]
-          }
-        ],
-        "control-implementations": [
-          {
-            "uuid": "7fd64584-0777-4627-96bc-d9567534d39a",
-            "source": "ISM_catalog.json",
-            "description": "Control implementations for VPN Hub (Main Office).",
-            "implemented-requirements": [
-              {
-                "uuid": "e6278fd7-c232-48b0-bdbf-274af22acbe7",
-                "control-id": "ism-0628",
-                "description": "This gateway is implemented at the boundary between the main office network and each remote office's network, which are treated as separate security domains connected only via authenticated, encrypted site-to-site VPN tunnels."
-              },
-              {
-                "uuid": "2d5c18a1-930c-4b4a-836d-c1048691e196",
-                "control-id": "ism-0631",
-                "description": "The hub firewall policy only permits explicitly authorised data flows between the main office and each remote office spoke; all other inter-site traffic is denied by default."
-              },
-              {
-                "uuid": "871ff22c-07a9-48e9-8806-babea1cfa0a5",
-                "control-id": "ism-1192",
-                "description": "The hub inspects and filters all inter-site data flows at the transport layer and above, including deep packet inspection of decrypted VPN traffic before it is routed onward."
-              },
-              {
-                "uuid": "c26f7d3c-f98a-481b-a8d2-25fc33eec413",
-                "control-id": "ism-0494",
-                "description": "Tunnel mode is used for every IPsec site-to-site VPN connection between the hub and each remote office spoke."
-              },
-              {
-                "uuid": "6357e801-9cd2-4f7f-9be5-930973cb3d7e",
-                "control-id": "ism-0496",
-                "description": "The ESP protocol is used for authentication and encryption of all IPsec connections terminated at the hub."
-              },
-              {
-                "uuid": "bf3dc730-96ab-4b20-8531-d37318311e75",
-                "control-id": "ism-1233",
-                "description": "IKEv2 is used for key exchange when establishing every IPsec connection between the hub and each remote office spoke."
-              },
-              {
-                "uuid": "430a3ebb-391f-4a92-a21a-b1d40084d5ae",
-                "control-id": "ism-1771",
-                "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting all IPsec connections terminated at the hub."
-              },
-              {
-                "uuid": "68e45c86-7c24-44db-80b8-29ee91413af2",
-                "control-id": "ism-1000",
-                "description": "Perfect Forward Secrecy is enabled for every IPsec connection between the hub and each remote office spoke."
-              },
-              {
-                "uuid": "48ad7b11-60b0-4dda-8c8a-c79435dbf71f",
-                "control-id": "ism-0634",
-                "description": "Security-relevant events for the hub — permitted and denied data flows, tunnel establishment and teardown, and administrative access — are centrally logged to the SIEM."
-              },
-              {
-                "uuid": "42f42534-68d4-4559-bec0-c40825d50865",
-                "control-id": "ism-1774",
-                "description": "The hub is managed via a dedicated out-of-band management interface, isolated from every connected network including all remote office VPN tunnels."
               }
             ]
           }
@@ -263,7 +78,7 @@
         ],
         "protocols": [
           {
-            "uuid": "34e46dfe-2492-4670-aa63-188fdaee9fd3",
+            "uuid": "cf813440-fe99-481a-acc4-d3d0f00d4270",
             "name": "ike",
             "title": "IKEv2 — VPN tunnel negotiation with the main office hub",
             "port-ranges": [
@@ -275,7 +90,7 @@
             ]
           },
           {
-            "uuid": "4b6dd68d-feb0-4bb8-afd1-98b761a3d18d",
+            "uuid": "c0718336-3f3a-4eaa-bab1-164680dd2aa7",
             "name": "ipsec-nat-t",
             "title": "IPsec NAT-Traversal encapsulation",
             "port-ranges": [
@@ -287,7 +102,7 @@
             ]
           },
           {
-            "uuid": "83fa001d-a707-4d98-ac95-b6f0b8f41416",
+            "uuid": "40a79ef7-d7d4-491e-b42b-77463d8cc61d",
             "name": "https",
             "title": "HTTPS — SonicOS management interface",
             "port-ranges": [
@@ -299,7 +114,7 @@
             ]
           },
           {
-            "uuid": "36341a41-44d1-4556-aaaf-c81e674dd90f",
+            "uuid": "95ca127d-ba52-4db9-a4b5-15e851512516",
             "name": "syslog",
             "title": "Syslog — event forwarding to SIEM at the main office",
             "port-ranges": [
@@ -313,44 +128,338 @@
         ],
         "control-implementations": [
           {
-            "uuid": "77a0658f-114a-4b54-b110-7fa8d3f23ef2",
-            "source": "ISM_catalog.json",
+            "uuid": "dc0a0e20-279f-4888-bedd-dc2f8dc05a5b",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
             "description": "Control implementations for VPN Client (Remote Office).",
             "implemented-requirements": [
               {
-                "uuid": "3a9a9131-3605-4f1f-88ee-cf5849019592",
+                "uuid": "69201ca5-79f0-48ab-b532-e0d3d679576e",
                 "control-id": "ism-0705",
                 "description": "Split tunnelling is disabled on this device — all traffic from the remote office is routed through the single IPsec tunnel back to the main office hub, with no direct path to the internet."
               },
               {
-                "uuid": "a1e788d8-9482-4605-87b8-6d221b5de804",
+                "uuid": "a313ef65-eb74-461d-81fd-70328f586c9b",
                 "control-id": "ism-0622",
                 "description": "This device authenticates to the main office network using IKEv2 with certificate-based authentication before its site-to-site VPN tunnel is established."
               },
               {
-                "uuid": "6a5a1283-55ae-4b6f-add8-899350f17363",
+                "uuid": "e4f9eb3f-6738-44d2-a731-a0612aaca490",
                 "control-id": "ism-0494",
                 "description": "Tunnel mode is used for the IPsec site-to-site VPN connection back to the main office hub."
               },
               {
-                "uuid": "61769486-3711-41b6-a506-9137f655b3aa",
+                "uuid": "719a8657-e1eb-4d00-b34e-a30ce06f6083",
                 "control-id": "ism-0496",
                 "description": "The ESP protocol is used for authentication and encryption of the IPsec connection to the hub."
               },
               {
-                "uuid": "34aa0e12-67da-4a90-ae1e-ac6e3bc92f73",
+                "uuid": "d3ab205f-b22e-4f20-8f4f-90042c9b6065",
                 "control-id": "ism-1233",
                 "description": "IKEv2 is used for key exchange when establishing the IPsec connection to the main office hub."
               },
               {
-                "uuid": "a1ee5936-be15-408e-88a3-d7cbdc07c13b",
+                "uuid": "3324b314-2bc0-4bbe-bfaa-e561b0b7be72",
                 "control-id": "ism-1771",
                 "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting the IPsec connection to the main office hub."
               },
               {
-                "uuid": "e9c55dfa-62b3-4621-8526-f4362c5f8a72",
+                "uuid": "aa5812eb-a964-450c-bdfc-27d1fe1c5158",
                 "control-id": "ism-1000",
                 "description": "Perfect Forward Secrecy is enabled for the IPsec connection back to the main office hub."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "f2a871f9-5f9d-4fc7-926b-33e82fe5fa96",
+        "type": "hardware",
+        "title": "VPN Hub (Main Office)",
+        "description": "A SonicWall TZ670 next-generation firewall deployed at the main office, sized to terminate site-to-site IPsec VPN tunnels from every remote office simultaneously in a hub-and-spoke topology. Acts as the gateway between the main office network and each remote office's security domain, routing traffic between spokes only via the hub and enforcing the organisation's firewall policy on all inter-site traffic.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "SonicWall"
+          },
+          {
+            "name": "model",
+            "value": "TZ670"
+          },
+          {
+            "name": "role",
+            "value": "vpn-hub"
+          },
+          {
+            "name": "site",
+            "value": "main-office"
+          },
+          {
+            "name": "topology",
+            "value": "hub-and-spoke (terminates all remote office tunnels)"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "97dc0e67-45a5-436a-af0d-6b85acf8fe51",
+            "name": "ike",
+            "title": "IKEv2 — VPN tunnel negotiation with each remote office spoke",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "974b8905-e811-4183-8729-52cc17ae2933",
+            "name": "ipsec-nat-t",
+            "title": "IPsec NAT-Traversal encapsulation",
+            "port-ranges": [
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "aa7dfd9c-bf34-4705-840a-5b8386d16467",
+            "name": "https",
+            "title": "HTTPS — SonicOS management interface",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "f408ff11-f8d4-4df0-9e69-33333df34224",
+            "name": "ssh",
+            "title": "SSH — CLI management access",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "0d6e95b2-4c58-4f2f-a732-1370d4952a04",
+            "name": "syslog",
+            "title": "Syslog — event forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "546aa5f9-6757-4d83-a242-48c0f87c3754",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for VPN Hub (Main Office).",
+            "implemented-requirements": [
+              {
+                "uuid": "484448d5-ccab-498d-b9d0-99064ec249b0",
+                "control-id": "ism-0628",
+                "description": "This gateway is implemented at the boundary between the main office network and each remote office's network, which are treated as separate security domains connected only via authenticated, encrypted site-to-site VPN tunnels."
+              },
+              {
+                "uuid": "fa2a839d-8e89-4da7-88ed-1149cb535b10",
+                "control-id": "ism-0631",
+                "description": "The hub firewall policy only permits explicitly authorised data flows between the main office and each remote office spoke; all other inter-site traffic is denied by default."
+              },
+              {
+                "uuid": "03066437-2f62-424a-b082-cc5c10696b09",
+                "control-id": "ism-1192",
+                "description": "The hub inspects and filters all inter-site data flows at the transport layer and above, including deep packet inspection of decrypted VPN traffic before it is routed onward."
+              },
+              {
+                "uuid": "074081ca-9c1e-4ad8-b80f-c7660e73aecd",
+                "control-id": "ism-0494",
+                "description": "Tunnel mode is used for every IPsec site-to-site VPN connection between the hub and each remote office spoke."
+              },
+              {
+                "uuid": "885c9feb-831c-48d1-a2b1-3620624561b0",
+                "control-id": "ism-0496",
+                "description": "The ESP protocol is used for authentication and encryption of all IPsec connections terminated at the hub."
+              },
+              {
+                "uuid": "ce452b2e-0d9f-45ca-bcf0-825bf3e9561c",
+                "control-id": "ism-1233",
+                "description": "IKEv2 is used for key exchange when establishing every IPsec connection between the hub and each remote office spoke."
+              },
+              {
+                "uuid": "4098901a-20d5-4a16-8230-c9ee569d143d",
+                "control-id": "ism-1771",
+                "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting all IPsec connections terminated at the hub."
+              },
+              {
+                "uuid": "553e9983-3a53-4e91-add7-8726bd9d595a",
+                "control-id": "ism-1000",
+                "description": "Perfect Forward Secrecy is enabled for every IPsec connection between the hub and each remote office spoke."
+              },
+              {
+                "uuid": "5323cc3a-ad85-4cc3-b480-4efba99ee525",
+                "control-id": "ism-0634",
+                "description": "Security-relevant events for the hub — permitted and denied data flows, tunnel establishment and teardown, and administrative access — are centrally logged to the SIEM."
+              },
+              {
+                "uuid": "17dee83b-eb39-4d3b-a600-031280f2d47d",
+                "control-id": "ism-1774",
+                "description": "The hub is managed via a dedicated out-of-band management interface, isolated from every connected network including all remote office VPN tunnels."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "82722e6a-b942-4c39-b6ef-e1184642c62d",
+        "type": "hardware",
+        "title": "network encryptor ABC",
+        "description": "A hardware network encryptor that does abc.",
+        "purpose": "provide hardware based network encryption",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "e6e9727c-0caf-4ca2-bbe6-f48abaa9faec",
+            "name": "https",
+            "title": "Secure local management",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "ec39ed21-8675-4bcc-a410-ad5ce42a1154",
+            "name": "IKE",
+            "title": "Encrypted data transport",
+            "port-ranges": [
+              {
+                "start": 500,
+                "end": 500,
+                "transport": "UDP"
+              }
+            ]
+          },
+          {
+            "uuid": "c1fb8506-1fa1-45c8-a881-c14c63e79017",
+            "name": "NAT-T",
+            "title": "NAT Traversal",
+            "port-ranges": [
+              {
+                "start": 4500,
+                "end": 4500,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "117b4536-2bcf-4851-acf3-c6d67b3dcc1f",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for network encryptor ABC.",
+            "implemented-requirements": [
+              {
+                "uuid": "f3b5e60f-1374-4191-a082-eac161c3729d",
+                "control-id": "ism-0457",
+                "description": "This device means the cryptographic requirements."
+              },
+              {
+                "uuid": "5e2c1ea3-f6fa-4805-a7a9-55cddbdddc71",
+                "control-id": "ism-0465",
+                "description": "The common criteria evaluation certificate is document abc"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "0854a4b9-2b4b-4b58-93b4-b648e5137784",
+        "type": "physical",
+        "title": "Remote Office Comms Room",
+        "description": "A small communications room at the remote/branch office, housing the site's WAN router, network switch, wireless access point controller, and patch panel — no server or storage infrastructure is located at this site. The room is a locked, keyed closet (no proximity card system at this smaller site) with a shared key held by the site's designated local IT contact and the central IT team.",
+        "purpose": "Provide a physically secured space for the remote office's network termination and distribution equipment, appropriately scaled to a smaller site without on-premises servers.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "location",
+            "value": "Remote office, internal room adjoining reception, no external windows"
+          },
+          {
+            "name": "access-control",
+            "value": "Keyed lock; key held by the site's designated local IT contact and the central IT team"
+          },
+          {
+            "name": "environmental-monitoring",
+            "value": "Standalone temperature sensor with email alert (no dedicated precision cooling at this site)"
+          },
+          {
+            "name": "capacity",
+            "value": "Single 12U wall-mount rack"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "560c5b19-0977-493e-94b6-bd582fcf0be5",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
+            "description": "Control implementations for Remote Office Comms Room.",
+            "implemented-requirements": [
+              {
+                "uuid": "dce45c38-6f12-43a4-bfdd-f620e41cfbf2",
+                "control-id": "ism-1974",
+                "description": "The Remote Office Comms Room is a suitably secure communications room housing the site's network devices, scaled appropriately to a smaller branch office without on-premises servers."
+              },
+              {
+                "uuid": "b80f960c-f12c-4c8d-93de-fa6b5600c305",
+                "control-id": "ism-0813",
+                "description": "The Remote Office Comms Room is kept locked whenever unattended; it is not left in an unsecured state during or outside business hours."
+              },
+              {
+                "uuid": "bc6e8467-d8b3-4450-aba2-01a49f9cca97",
+                "control-id": "ism-1074",
+                "description": "The key to the Remote Office Comms Room is appropriately controlled: a record is kept of who holds a copy, and the key is not left unsecured at reception or another publicly accessible location."
+              },
+              {
+                "uuid": "3cc37f22-f3fa-42d1-8535-e786beb90de0",
+                "control-id": "ism-1296",
+                "description": "Physical security measures (a locked, enclosed wall-mount rack in addition to the room lock) protect the network devices in the Remote Office Comms Room from physical damage or unauthorised access by other building occupants or visitors."
+              },
+              {
+                "uuid": "665420ce-5075-4de7-90fd-c03cac64810b",
+                "control-id": "ism-0306",
+                "description": "Vendor technicians or contractors who are not appropriately cleared are escorted by the site's designated local IT contact for the duration of any work performed in the Remote Office Comms Room."
               }
             ]
           }
@@ -378,16 +487,20 @@
           {
             "component-uuid": "3a7201b0-1f93-4803-9031-94d64a6a2251",
             "description": "Establishes the remote office's site-to-site VPN tunnel back to the main office hub."
+          },
+          {
+            "component-uuid": "0854a4b9-2b4b-4b58-93b4-b648e5137784",
+            "description": "All physical cabling terminates in the comms room. All network equipment will be stored in this room."
           }
         ],
         "control-implementations": [
           {
-            "uuid": "69d4274f-5817-4e83-b15f-93ab3bf089f0",
-            "source": "ISM_catalog.json",
+            "uuid": "7a646bbf-4a14-40b7-a850-959ec9181a97",
+            "source": "ISM_NON_CLASSIFIED-baseline_profile_2026-06.json",
             "description": "Control implementations for capability: Remote office. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
             "implemented-requirements": [
               {
-                "uuid": "1bf1e0d5-0e59-4401-98e2-0579f809eb70",
+                "uuid": "fb57bae6-6d1f-41fe-a54b-7677971e525d",
                 "control-id": "ism-0457",
                 "description": "This device means the cryptographic requirements.",
                 "props": [
@@ -398,7 +511,7 @@
                 ]
               },
               {
-                "uuid": "65f285c6-cdae-4788-a603-2bee338ab41e",
+                "uuid": "5e464d84-19ec-4b1e-a4bb-dbb9832ea27a",
                 "control-id": "ism-0465",
                 "description": "The common criteria evaluation certificate is document abc",
                 "props": [
@@ -409,7 +522,7 @@
                 ]
               },
               {
-                "uuid": "6a6ac69d-6d43-4da6-ad17-0ba1a30f1b5a",
+                "uuid": "44718dd9-04d7-4d8e-969f-ec8d1a756103",
                 "control-id": "ism-0181",
                 "description": "All fibre optic wall outlets and server rack patch panels have been installed by professional cabling service companies and meet relevant Australian Standards.",
                 "props": [
@@ -420,7 +533,7 @@
                 ]
               },
               {
-                "uuid": "fa313a8a-daf9-4811-acc8-23ffba874689",
+                "uuid": "243d0040-7960-45f9-8cd0-08bcbf1bb974",
                 "control-id": "ism-1111",
                 "description": "All field outlets and server rack patch panels use fibre-optic cables. All in building fibre optic is multi-mode fibre. All long distance / between building fibre optic is single-mode fibre.",
                 "props": [
@@ -431,7 +544,7 @@
                 ]
               },
               {
-                "uuid": "eb68f99a-e156-4a02-85d5-f7f87a8219bc",
+                "uuid": "36c3a619-787b-4880-93de-0fa66b2c0cad",
                 "control-id": "ism-1820",
                 "description": "All fibre-optic and copper cables use a consistent colour.",
                 "props": [
@@ -442,7 +555,7 @@
                 ]
               },
               {
-                "uuid": "2c3a709d-4443-46c9-931e-8161388de073",
+                "uuid": "9642e9ca-ca3c-430d-91bd-728d05fe7d3d",
                 "control-id": "ism-0628",
                 "description": "This gateway is implemented at the boundary between the main office network and each remote office's network, which are treated as separate security domains connected only via authenticated, encrypted site-to-site VPN tunnels.",
                 "props": [
@@ -453,7 +566,7 @@
                 ]
               },
               {
-                "uuid": "b66a4f68-4453-4b6c-87eb-8f576f7cfb2a",
+                "uuid": "4f9a0c41-0e0b-46ad-a145-54573ee3cda9",
                 "control-id": "ism-0631",
                 "description": "The hub firewall policy only permits explicitly authorised data flows between the main office and each remote office spoke; all other inter-site traffic is denied by default.",
                 "props": [
@@ -464,7 +577,7 @@
                 ]
               },
               {
-                "uuid": "4613a3f1-5035-47db-8f5e-5ff867496c3e",
+                "uuid": "cf54ea88-66c1-4828-90bd-ec04c6c845b6",
                 "control-id": "ism-1192",
                 "description": "The hub inspects and filters all inter-site data flows at the transport layer and above, including deep packet inspection of decrypted VPN traffic before it is routed onward.",
                 "props": [
@@ -475,7 +588,7 @@
                 ]
               },
               {
-                "uuid": "7ad82f2b-b177-4be0-83ff-4f79a406f006",
+                "uuid": "65bd609c-c55b-4fd6-bdee-038e26eb213e",
                 "control-id": "ism-0494",
                 "description": "Tunnel mode is used for every IPsec site-to-site VPN connection between the hub and each remote office spoke.",
                 "props": [
@@ -486,7 +599,7 @@
                 ]
               },
               {
-                "uuid": "84881711-b31f-4431-9e71-9d16d451a4ff",
+                "uuid": "312e61f8-47b1-479d-958d-59b1244eb833",
                 "control-id": "ism-0496",
                 "description": "The ESP protocol is used for authentication and encryption of all IPsec connections terminated at the hub.",
                 "props": [
@@ -497,7 +610,7 @@
                 ]
               },
               {
-                "uuid": "b49b1094-2bd0-492e-9ca5-85b2a26011d8",
+                "uuid": "775897c7-fd31-4d9d-a501-3be3603bbbed",
                 "control-id": "ism-1233",
                 "description": "IKEv2 is used for key exchange when establishing every IPsec connection between the hub and each remote office spoke.",
                 "props": [
@@ -508,7 +621,7 @@
                 ]
               },
               {
-                "uuid": "1afb0e4f-df16-41b9-93d0-730abf4edb44",
+                "uuid": "609db035-345d-4e63-927b-b0f575aa27ae",
                 "control-id": "ism-1771",
                 "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting all IPsec connections terminated at the hub.",
                 "props": [
@@ -519,7 +632,7 @@
                 ]
               },
               {
-                "uuid": "6f30b14d-715e-443b-844e-75f15952e194",
+                "uuid": "6c128463-cd8b-4698-b417-040c3115bc99",
                 "control-id": "ism-1000",
                 "description": "Perfect Forward Secrecy is enabled for every IPsec connection between the hub and each remote office spoke.",
                 "props": [
@@ -530,7 +643,7 @@
                 ]
               },
               {
-                "uuid": "a33f352f-f4e0-43de-8551-938815934872",
+                "uuid": "e000367d-4dd3-4beb-a482-942fba02b245",
                 "control-id": "ism-0634",
                 "description": "Security-relevant events for the hub — permitted and denied data flows, tunnel establishment and teardown, and administrative access — are centrally logged to the SIEM.",
                 "props": [
@@ -541,7 +654,7 @@
                 ]
               },
               {
-                "uuid": "f27a571b-1778-4f66-b4a4-b12e506edb3f",
+                "uuid": "d3c8e2a1-2c80-4b3d-a7a0-71fd10dd89e5",
                 "control-id": "ism-1774",
                 "description": "The hub is managed via a dedicated out-of-band management interface, isolated from every connected network including all remote office VPN tunnels.",
                 "props": [
@@ -552,7 +665,7 @@
                 ]
               },
               {
-                "uuid": "75b698a8-6511-4fb2-a1e6-5cb92a4957dc",
+                "uuid": "3be066a1-947f-44b8-81d4-e4d9d384aefc",
                 "control-id": "ism-0705",
                 "description": "Split tunnelling is disabled on this device — all traffic from the remote office is routed through the single IPsec tunnel back to the main office hub, with no direct path to the internet.",
                 "props": [
@@ -563,7 +676,7 @@
                 ]
               },
               {
-                "uuid": "69e0a913-b4ad-40ea-b507-bcc6e5f5e9bb",
+                "uuid": "69dc5899-beb7-44b2-9f15-b45e42cd4259",
                 "control-id": "ism-0622",
                 "description": "This device authenticates to the main office network using IKEv2 with certificate-based authentication before its site-to-site VPN tunnel is established.",
                 "props": [
@@ -574,7 +687,7 @@
                 ]
               },
               {
-                "uuid": "a1b5282c-94ea-4c9b-9274-0366701deab7",
+                "uuid": "f11d24e6-14d7-454c-a1c4-d2eae7c51f18",
                 "control-id": "ism-0494",
                 "description": "Tunnel mode is used for the IPsec site-to-site VPN connection back to the main office hub.",
                 "props": [
@@ -585,7 +698,7 @@
                 ]
               },
               {
-                "uuid": "c7a7d2a1-c5e8-4f36-b301-6c5c7d80b9c0",
+                "uuid": "4a6476dc-7fe6-4ac7-bdcd-bfa4a9e0b187",
                 "control-id": "ism-0496",
                 "description": "The ESP protocol is used for authentication and encryption of the IPsec connection to the hub.",
                 "props": [
@@ -596,7 +709,7 @@
                 ]
               },
               {
-                "uuid": "8725144d-54c5-467e-9a1c-4fd1ef884633",
+                "uuid": "221dbe5c-d255-40b1-b2e7-f45a3594fc62",
                 "control-id": "ism-1233",
                 "description": "IKEv2 is used for key exchange when establishing the IPsec connection to the main office hub.",
                 "props": [
@@ -607,7 +720,7 @@
                 ]
               },
               {
-                "uuid": "c9f67a64-875f-4538-9603-e8989164cdfc",
+                "uuid": "ff119c2a-a2df-4565-8a1e-d7201c2585c2",
                 "control-id": "ism-1771",
                 "description": "AES (ENCR_AES_GCM_16 preferred) is used for encrypting the IPsec connection to the main office hub.",
                 "props": [
@@ -618,13 +731,68 @@
                 ]
               },
               {
-                "uuid": "fd8e4a40-c55b-4b10-8836-d3a12328eaba",
+                "uuid": "7bdf9da3-9d85-4d74-8482-eef68173b356",
                 "control-id": "ism-1000",
                 "description": "Perfect Forward Secrecy is enabled for the IPsec connection back to the main office hub.",
                 "props": [
                   {
                     "name": "source-component-uuid",
                     "value": "3a7201b0-1f93-4803-9031-94d64a6a2251"
+                  }
+                ]
+              },
+              {
+                "uuid": "a31861d6-4ce0-475e-9a5a-a048dfa72ca3",
+                "control-id": "ism-1974",
+                "description": "The Remote Office Comms Room is a suitably secure communications room housing the site's network devices, scaled appropriately to a smaller branch office without on-premises servers.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0854a4b9-2b4b-4b58-93b4-b648e5137784"
+                  }
+                ]
+              },
+              {
+                "uuid": "3e2e804b-135c-49a8-96bb-375875bed1ee",
+                "control-id": "ism-0813",
+                "description": "The Remote Office Comms Room is kept locked whenever unattended; it is not left in an unsecured state during or outside business hours.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0854a4b9-2b4b-4b58-93b4-b648e5137784"
+                  }
+                ]
+              },
+              {
+                "uuid": "f8b3c0fa-9b53-40ae-a7e1-1ee137b9920b",
+                "control-id": "ism-1074",
+                "description": "The key to the Remote Office Comms Room is appropriately controlled: a record is kept of who holds a copy, and the key is not left unsecured at reception or another publicly accessible location.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0854a4b9-2b4b-4b58-93b4-b648e5137784"
+                  }
+                ]
+              },
+              {
+                "uuid": "7de20cee-f97d-4334-a91f-c31726dc613d",
+                "control-id": "ism-1296",
+                "description": "Physical security measures (a locked, enclosed wall-mount rack in addition to the room lock) protect the network devices in the Remote Office Comms Room from physical damage or unauthorised access by other building occupants or visitors.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0854a4b9-2b4b-4b58-93b4-b648e5137784"
+                  }
+                ]
+              },
+              {
+                "uuid": "057c19f5-3373-46ba-8604-f13afc34cb62",
+                "control-id": "ism-0306",
+                "description": "Vendor technicians or contractors who are not appropriately cleared are escorted by the site's designated local IT contact for the duration of any work performed in the Remote Office Comms Room.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "0854a4b9-2b4b-4b58-93b4-b648e5137784"
                   }
                 ]
               }
