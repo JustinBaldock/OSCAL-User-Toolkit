@@ -1,0 +1,167 @@
+{
+  "component-definition": {
+    "uuid": "a743acdf-f70a-4ff6-83f6-d4bf430d3c2d",
+    "metadata": {
+      "title": "software - Subversion (Source Code Management)",
+      "last-modified": "2026-07-08T07:22:34Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "3d044bd2-11f8-48bc-a423-0cf77e08f650",
+        "type": "software",
+        "title": "Subversion (Source Code Management)",
+        "description": "Apache Subversion (SVN) providing centralised source code version control for legacy projects and teams standardised on a centralised (rather than distributed) version control workflow. Hosted via a hardened Apache httpd (mod_dav_svn) or VisualSVN Server front end, with per-repository access control lists restricting read/write/write-svn-access by user and path. Commit hooks enforce pre-commit checks (no committed secrets, mandatory commit message format) and post-commit hooks trigger CI build pipelines. Repository access and administrative events are logged and forwarded to the SIEM.",
+        "purpose": "Provide centralised source code version control for projects and teams using Subversion, with access control and audit logging equivalent to the organisation's Git-based source code management platform.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Apache Software Foundation / VisualSVN"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Self-managed (on-premises VM) — VisualSVN Server (Windows) or Apache httpd + mod_dav_svn (Linux)"
+          },
+          {
+            "name": "access-control",
+            "value": "Per-repository authz file (or VisualSVN Server Manager) restricting read/write access by user/group and repository path"
+          },
+          {
+            "name": "commit-hooks",
+            "value": "Pre-commit hook blocks commits containing secrets/credentials and enforces commit message format; post-commit hook triggers CI build pipeline"
+          },
+          {
+            "name": "identity-platform",
+            "value": "Active Directory / LDAP authentication (Apache mod_authnz_ldap, or VisualSVN Server AD integration)"
+          },
+          {
+            "name": "transport-security",
+            "value": "HTTPS (svn+https) enforced; plain HTTP and unencrypted svnserve protocol disabled"
+          },
+          {
+            "name": "backup",
+            "value": "Nightly repository dump (svnadmin dump / hotcopy) backed up per organisation backup policy"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "asset-owner"
+          },
+          {
+            "role-id": "asset-administrator"
+          },
+          {
+            "role-id": "security-operations"
+          },
+          {
+            "role-id": "end-user"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "dd971dae-e28a-4074-aca5-8e78ccaf6a76",
+            "name": "https",
+            "title": "HTTPS — svn+https repository access (checkout/commit/update) and web UI",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "97668b6a-a9c4-4525-b8a4-02d8005be567",
+            "name": "ssh",
+            "title": "SSH — svn+ssh repository access for administrators (where enabled)",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "b2765146-2508-4136-91f7-a74e7142cb4f",
+            "name": "ldaps",
+            "title": "LDAPS — Active Directory authentication for repository access",
+            "port-ranges": [
+              {
+                "start": 636,
+                "end": 636,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "91777851-887e-4ca2-bd5a-c5ff06488eb8",
+            "name": "syslog",
+            "title": "Syslog — Apache/VisualSVN access and audit log forwarding to SIEM",
+            "port-ranges": [
+              {
+                "start": 514,
+                "end": 514,
+                "transport": "UDP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "860a7d7e-f29b-4a12-a11c-4e0585fdca76",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Subversion (Source Code Management).",
+            "implemented-requirements": [
+              {
+                "uuid": "fae70454-6ee6-4df6-8bbc-404e9d43e34d",
+                "control-id": "ism-1798",
+                "description": "Secure configuration guidance (a hardening/loosening guide) for the Subversion server is produced and maintained, covering Apache/VisualSVN TLS configuration, authentication method, and per-repository access control defaults, made available to project maintainers as part of the organisation's secure development guidance."
+              },
+              {
+                "uuid": "653a50e9-8bc5-4c7d-b7d8-af8c46897093",
+                "control-id": "ism-1913",
+                "description": "An approved hardening configuration is maintained for the Subversion server: plain HTTP and the unencrypted svnserve protocol are disabled (HTTPS/svn+https only), directory listing is disabled on the web-facing Apache/VisualSVN instance, and the underlying host operating system and Apache/VisualSVN Server software are kept current with vendor security updates."
+              },
+              {
+                "uuid": "f39daf3b-bdb3-41cc-b019-2451e4a04fe1",
+                "control-id": "ism-1852",
+                "description": "Repository access in Subversion is restricted to only the developers and teams who require it, enforced via per-repository authz rules (or VisualSVN Server Manager permissions) mapping Active Directory/LDAP groups to read/write/none access at the repository and path level. Access is reviewed periodically to remove stale grants."
+              },
+              {
+                "uuid": "87097738-281e-4989-82db-95d971ea8c0b",
+                "control-id": "ism-0974",
+                "description": "Multi-factor authentication is required for users authenticating to the Subversion server, enforced via the organisation's identity provider (Active Directory / LDAP integrated with an MFA-enforcing conditional access layer, or a VPN/jump host requiring MFA in front of the SVN server)."
+              },
+              {
+                "uuid": "9efe0799-7acb-4777-887f-1343b9028347",
+                "control-id": "ism-1402",
+                "description": "Repository commit hooks include a pre-commit check that scans incoming commits for accidentally-included credentials and secrets, blocking the commit before it is accepted into the repository. Any credentials required by build automation are stored in an external secrets manager, never committed to the repository."
+              },
+              {
+                "uuid": "2a89cc4c-31ea-4d5c-b3ec-5e046612cc16",
+                "control-id": "ism-1405",
+                "description": "Subversion server access and administrative events (authentication failures, repository creation/deletion, permission changes) are centrally logged via Apache/VisualSVN audit logging and forwarded to the SIEM."
+              },
+              {
+                "uuid": "5f2c37be-163d-4ab7-b834-296ceeddb9e3",
+                "control-id": "ism-0445",
+                "description": "Subversion server administrators are assigned dedicated privileged accounts, separate from their standard developer accounts, used solely for repository server administration (creating repositories, managing authz files, server configuration)."
+              },
+              {
+                "uuid": "3bde003d-8683-4235-8350-1ecb44329b52",
+                "control-id": "ism-1511",
+                "description": "Subversion repositories are backed up nightly via scheduled svnadmin dump or hotcopy jobs, retained per the organisation's backup and business continuity requirements, with restore capability periodically tested."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
