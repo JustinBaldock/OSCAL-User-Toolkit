@@ -44,7 +44,8 @@ from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
-                     refresh_ctrl_list, get_source_href, get_profile_controls)
+                     refresh_ctrl_list, get_source_href, get_profile_controls,
+                     safe_filename_component)
 from .tab_utils import is_tab_active
 
 # =============================================================================
@@ -1366,7 +1367,7 @@ class ComponentTab(tk.Frame):
 
         if comp_type and comp_title:
             auto_title    = f"{comp_type} - {comp_title}"
-            safe_title    = comp_title.replace(" ", "_")
+            safe_title    = safe_filename_component(comp_title)
             auto_filename = f"{comp_type}_{safe_title}.json"
             if has_title_lbl:
                 self._file_title_lbl.config(
@@ -3059,7 +3060,7 @@ class ComponentTab(tk.Frame):
                 return
         else:
             if comp_type and comp_title:
-                initial_file = f"{comp_type}_{comp_title.replace(' ', '_')}.json"
+                initial_file = f"{comp_type}_{safe_filename_component(comp_title)}.json"
             else:
                 initial_file = "component_definition.json"
 
@@ -3119,7 +3120,7 @@ class ComponentTab(tk.Frame):
         comp_dir  = Path(library) / "components"
         comp_dir.mkdir(parents=True, exist_ok=True)
         comp_type  = comp.get("type", "").strip() or "component"
-        comp_title = comp.get("title", "").strip().replace(" ", "_") or "untitled"
+        comp_title = safe_filename_component(comp.get("title", "").strip()) or "untitled"
 
         candidate = comp_dir / f"{comp_type}_{comp_title}.json"
         if candidate.exists():

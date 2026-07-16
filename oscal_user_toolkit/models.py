@@ -1617,6 +1617,27 @@ def new_uuid():
     return str(uuid.uuid4())
 
 
+def safe_filename_component(text):
+    """
+    Turn a title/name into a string safe to use inside a filename on
+    Windows, macOS, and Linux alike.
+
+    Windows forbids `\\ / : * ? " < > |` in filenames (macOS/Linux only
+    forbid `/`, so a title with a colon or parentheses saved fine on a
+    Mac but broke on Windows). Replaces spaces with underscores, strips
+    the Windows-reserved characters, and collapses repeated underscores
+    left behind so "ManageEngine ServiceDesk Plus (ITSM : Helpdesk)"
+    becomes "ManageEngine_ServiceDesk_Plus_ITSM_Helpdesk" rather than
+    silently keeping a colon that only fails on one platform.
+    """
+    text = text.replace(" ", "_")
+    for ch in '\\/:*?"<>|()':
+        text = text.replace(ch, "_")
+    while "__" in text:
+        text = text.replace("__", "_")
+    return text.strip("_")
+
+
 def _make_oscal_validator(schema):
     """
     Build a jsonschema Draft7Validator that tolerates ECMA-262 regex patterns.

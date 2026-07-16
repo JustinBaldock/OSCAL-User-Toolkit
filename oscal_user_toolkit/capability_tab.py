@@ -62,7 +62,8 @@ from pathlib import Path
 
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, validate_oscal_file,
-                     get_source_href, get_profile_controls)
+                     get_source_href, get_profile_controls,
+                     safe_filename_component)
 from .tab_utils import is_tab_active
 
 # ── Dot indicators for the control implementation list ────────────────────────
@@ -1716,7 +1717,7 @@ class CapabilityTab(tk.Frame):
         if cap.get("remarks"):
             oscal_cap["remarks"] = cap["remarks"]
 
-        cap_name   = cap.get("name", "capability").replace(" ", "_")
+        cap_name   = safe_filename_component(cap.get("name", "capability"))
         file_title = f"Capability: {cap.get('name', 'Unnamed Capability')}"
 
         doc = {
@@ -1797,7 +1798,7 @@ class CapabilityTab(tk.Frame):
             return
 
         cap      = self._capabilities[self._sel_index]
-        cap_name = cap.get("name", "capability").replace(" ", "_")
+        cap_name = safe_filename_component(cap.get("name", "capability"))
 
         if self._library_mode:
             path = self._save_to_library_path(cap)
@@ -1879,7 +1880,7 @@ class CapabilityTab(tk.Frame):
 
         cap_dir = Path(library) / "capabilities"
         cap_dir.mkdir(parents=True, exist_ok=True)
-        cap_name = cap.get("name", "capability").strip().replace(" ", "_") or "untitled"
+        cap_name = safe_filename_component(cap.get("name", "capability").strip()) or "untitled"
 
         candidate = cap_dir / f"capability_{cap_name}.json"
         if candidate.exists():
