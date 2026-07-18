@@ -1635,7 +1635,7 @@ class SSPTab(tk.Frame):
                 "description":       live.get("description", ""),
                 "purpose":           live.get("purpose", ""),
                 "status":            live.get("status", "operational"),
-                "status_remarks":    "",
+                "status_remarks":    live.get("status_remarks", ""),
                 "responsible_roles": [r.get("role_id", "") for r in live.get("roles", []) if r.get("role_id")],
                 "protocols":         live.get("protocols", []),
                 "remarks":           live.get("remarks", ""),
