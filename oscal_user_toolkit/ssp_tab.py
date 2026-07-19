@@ -1558,12 +1558,14 @@ class SSPTab(tk.Frame):
 
         btn = tk.Frame(dlg, bg=C["BG"])
         btn.pack(pady=12)
-        tk.Button(btn, text="  Add  ", command=_ok,
+        tk.Button(btn, text="  OK  ", command=_ok,
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
-                  relief="flat", padx=10).pack(side="left", padx=8)
+                  relief="flat", padx=10, pady=2, cursor="hand2",
+                  activebackground=C["ACCENT_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
-                  relief="flat", padx=10).pack(side="left")
+                  relief="flat", padx=10, pady=2, cursor="hand2",
+                  activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left")
         dlg.wait_window()
 
         if "cap" not in result:
@@ -2436,7 +2438,7 @@ class SSPTab(tk.Frame):
         v_status = tk.StringVar(value=e.get("impl_status", IMPL_STATUS_VALUES[0]))
         ttk.Combobox(labelled("Implementation Status *"), textvariable=v_status,
                      values=IMPL_STATUS_VALUES, state="readonly",
-                     width=30).pack(side="left")
+                     width=30, font=("Helvetica", 11)).pack(side="left")
 
         # Description (multi-line)
         tk.Label(dlg, text="Description *", bg=C["BG"], fg=C["SUBTEXT"],

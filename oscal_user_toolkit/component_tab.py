@@ -392,7 +392,7 @@ class ComponentTab(tk.Frame):
             tb, text="💾  Save Component", command=self._save_file,
             bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#8cd39a", activeforeground=C["BUTTON_TEXT"],
+            activebackground=C["GREEN_BG"], activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=12, pady=8)
 
         # "Open File(s)" lets the user pick one or more files at once.
@@ -401,16 +401,16 @@ class ComponentTab(tk.Frame):
             tb, text="📂  Open File(s)", command=self._open_files,
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
+            activebackground=C["BLUE_BG"], activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 6), pady=8)
 
         # "Open Folder" loads every component JSON file in a chosen folder.
         # Also appends to the list.
         tk.Button(
-            tb, text="📁  Open Folder", command=self._open_folder,
-            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+            tb, text="🗑  Clear All", command=self._new_file,
+            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground="#6a9fd8", activeforeground=C["BUTTON_TEXT"],
+            activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         # "Import from Library" copies component file(s) from the shared
@@ -421,6 +421,7 @@ class ComponentTab(tk.Frame):
             tb, text="📚  Import from Library", command=self._import_from_library,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
+            activebackground=C["TEAL_BG"], activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         tk.Button(
@@ -1289,6 +1290,7 @@ class ComponentTab(tk.Frame):
             textvariable=self._ctrl_impl_status_var,
             values=self._IMPL_STATUS_VALUES,
             state="readonly", width=20,
+            font=("Helvetica", 11),
         )
         status_menu.pack(side="left", padx=(8, 0))
 
@@ -2155,7 +2157,8 @@ class ComponentTab(tk.Frame):
             vars_[key] = v
             if choices:
                 ttk.Combobox(row, textvariable=v, values=choices,
-                             state="readonly", width=28).pack(side="left")
+                             state="readonly", width=28, font=("Helvetica", 11),
+                             ).pack(side="left")
             else:
                 tk.Entry(row, textvariable=v, bg=C["CARD_BG"], fg=C["TEXT"],
                          insertbackground=C["TEXT"], relief="flat",
@@ -2743,13 +2746,15 @@ class ComponentTab(tk.Frame):
             dlg.destroy()
 
         btn = tk.Frame(dlg, bg=C["BG"])
-        btn.pack(pady=14)
+        btn.pack(pady=12)
         tk.Button(btn, text="  OK  ", command=_ok,
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
-                  relief="flat", padx=10).pack(side="left", padx=8)
+                  relief="flat", padx=10, pady=2, cursor="hand2",
+                  activebackground=C["ACCENT_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
-                  relief="flat", padx=10).pack(side="left")
+                  relief="flat", padx=10, pady=2, cursor="hand2",
+                  activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left")
         dlg.wait_window()
         return result if result else None
 
