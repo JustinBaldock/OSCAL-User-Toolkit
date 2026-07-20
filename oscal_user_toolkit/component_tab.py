@@ -46,7 +46,7 @@ from pathlib import Path
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, get_source_href, get_profile_controls,
                      safe_filename_component)
-from .tab_utils import is_tab_active
+from .tab_utils import is_tab_active, attach_tooltip
 
 # =============================================================================
 # CONSTANTS — Allowed values from the OSCAL Component schema
@@ -454,21 +454,37 @@ class ComponentTab(tk.Frame):
     def _build_library_toolbar(self, tb):
         """Toolbar contents for library_mode — see _build_toolbar()."""
         C = self._colors
-        tk.Button(
+        save_btn = tk.Button(
             tb, text="💾  Save to Library", command=self._save_file,
             bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=12, pady=8)
-        tk.Button(
+        )
+        save_btn.pack(side="left", padx=12, pady=8)
+        attach_tooltip(save_btn, "Save the selected component back to the Library", C)
+
+        refresh_btn = tk.Button(
             tb, text="🔄  Refresh from Library", command=self._load_library_folder,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=(0, 6), pady=8)
-        tk.Button(
+        )
+        refresh_btn.pack(side="left", padx=(0, 6), pady=8)
+        attach_tooltip(
+            refresh_btn,
+            "Reload every component from disk — discards any unsaved edits in this tab",
+            C,
+        )
+
+        add_file_btn = tk.Button(
             tb, text="📥  Add File to Library", command=self._add_file_to_library,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=(0, 12), pady=8)
+        )
+        add_file_btn.pack(side="left", padx=(0, 12), pady=8)
+        attach_tooltip(
+            add_file_btn,
+            "Copy an external component file into the Library, then load it",
+            C,
+        )
 
         self._status_lbl = tk.Label(
             tb, text="", bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
@@ -893,11 +909,17 @@ class ComponentTab(tk.Frame):
                  relief="flat", font=("Helvetica", 10),
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", padx=(6, 16), ipady=2)
-        tk.Button(ver_row, text="📌  Save New Version",
+        save_version_btn = tk.Button(ver_row, text="📌  Save New Version",
                   command=self._save_new_version,
                   bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2",
-                  ).pack(side="left")
+                  )
+        save_version_btn.pack(side="left")
+        attach_tooltip(
+            save_version_btn,
+            "Archive the current version into history, then set a new version number",
+            C,
+        )
 
         id_row = tk.Frame(ver_card, bg=C["CARD_BG"])
         id_row.pack(fill="x", padx=10, pady=(6, 2))

@@ -64,7 +64,7 @@ from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, validate_oscal_file,
                      get_source_href, get_profile_controls,
                      safe_filename_component)
-from .tab_utils import is_tab_active
+from .tab_utils import is_tab_active, attach_tooltip
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -365,21 +365,37 @@ class CapabilityTab(tk.Frame):
     def _build_library_toolbar(self, tb):
         """Toolbar contents for library_mode — see _build_toolbar()."""
         C = self._colors
-        tk.Button(
+        save_btn = tk.Button(
             tb, text="💾  Save to Library", command=self._save_capability,
             bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=12, pady=8)
-        tk.Button(
+        )
+        save_btn.pack(side="left", padx=12, pady=8)
+        attach_tooltip(save_btn, "Save the selected capability back to the Library", C)
+
+        refresh_btn = tk.Button(
             tb, text="🔄  Refresh from Library", command=self._load_library_folder,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=(0, 6), pady=8)
-        tk.Button(
+        )
+        refresh_btn.pack(side="left", padx=(0, 6), pady=8)
+        attach_tooltip(
+            refresh_btn,
+            "Reload every capability from disk — discards any unsaved edits in this tab",
+            C,
+        )
+
+        add_file_btn = tk.Button(
             tb, text="📥  Add File to Library", command=self._add_file_to_library,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=(0, 12), pady=8)
+        )
+        add_file_btn.pack(side="left", padx=(0, 12), pady=8)
+        attach_tooltip(
+            add_file_btn,
+            "Copy an external capability file into the Library, then load it",
+            C,
+        )
 
         self._status_lbl = tk.Label(
             tb, text="", bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),

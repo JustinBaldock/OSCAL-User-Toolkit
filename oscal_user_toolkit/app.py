@@ -50,6 +50,7 @@ from .ar_tab import ARTab
 from .dashboard_tab import DashboardTab
 from .workspace_tab import WorkspaceTab
 from .data_sources_tab import DataSourcesTab
+from .tab_utils import attach_tooltip
 from .all_systems_tab import AllSystemsTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
@@ -457,11 +458,17 @@ class OSCALApp(tk.Tk):
 
         # Library Folder button — sets/changes the persisted library path
         # (settings.py) that Component/Capability Editor import from.
-        tk.Button(
+        library_folder_btn = tk.Button(
             tb, text="📚  Library Folder", command=self._set_library_folder,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
             relief="flat", padx=14, pady=6, cursor="hand2",
-        ).pack(side="left", padx=(8, 8), pady=10)
+        )
+        library_folder_btn.pack(side="left", padx=(8, 8), pady=10)
+        attach_tooltip(
+            library_folder_btn,
+            "Choose which folder is the shared Library — persists between launches",
+            C,
+        )
 
         self._library_path_lbl = tk.Label(
             tb, text=self._library_path_display(),
@@ -471,11 +478,17 @@ class OSCALApp(tk.Tk):
 
         # Systems Folder button — sets/changes the persisted systems path
         # (settings.py) that the "🌐 All Systems" tab scans.
-        tk.Button(
+        systems_folder_btn = tk.Button(
             tb, text="🗂  Systems Folder", command=self._set_systems_folder,
             bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
             relief="flat", padx=14, pady=6, cursor="hand2",
-        ).pack(side="left", padx=(0, 8), pady=10)
+        )
+        systems_folder_btn.pack(side="left", padx=(0, 8), pady=10)
+        attach_tooltip(
+            systems_folder_btn,
+            "Choose which folder holds each system's own workspace — persists between launches",
+            C,
+        )
 
         self._systems_path_lbl = tk.Label(
             tb, text=self._systems_path_display(),
@@ -871,6 +884,135 @@ class OSCALApp(tk.Tk):
         )
         nb.insert(0, self._workspace_tab, text="🗂  Workspace")
         nb.select(0)
+
+        # ── Unsaved-changes indicator (usability_review.md §1) ──────────────────
+        # Every editor tab already tracks its own `_dirty` bool (used by
+        # _on_close()'s exit confirmation) but never surfaced it while the
+        # app was open — you could only discover unsaved work by trying to
+        # close the window. Snapshot each tab's original label now (once,
+        # while every .add()/.insert() call above is still fresh) so
+        # _refresh_dirty_indicators() can append/remove a "*" marker without
+        # needing to duplicate every label string a second time.
+        self._tab_base_labels = {}
+
+        def _snapshot_labels(notebook):
+            for child_path in notebook.tabs():
+                child = notebook.nametowidget(child_path)
+                self._tab_base_labels[child] = notebook.tab(child, "text")
+                if isinstance(child, ttk.Notebook):
+                    _snapshot_labels(child)
+
+        _snapshot_labels(nb)
+        self._refresh_dirty_indicators()
+
+        # ── Keyboard shortcuts (usability_review.md §7) ─────────────────────────
+        # Ctrl+S saves whichever editor tab is currently active — every editor
+        # already has its own "Save"/"Save to Library" button, this just gives
+        # it the accelerator every other desktop app trains you to reach for
+        # (Nielsen #2 match real-world conventions, #7 flexibility/efficiency).
+        # Ctrl+O opens files, but only wired where "open" is unambiguous — the
+        # System Overview Component/Capability Editors' own Open File(s). The
+        # Library editors deliberately have no Open File(s) at all (locked to
+        # the Library folder — see §10.20), so Ctrl+O there, and on tabs with
+        # no save/open concept (Dashboard, All Systems, Data Sources, Catalog
+        # Viewer), is intentionally a harmless no-op rather than an error.
+        self._SAVE_ACTIONS = {
+            self._library_component_tab:  self._library_component_tab._save_file,
+            self._library_capability_tab: self._library_capability_tab._save_capability,
+            self._component_tab:  self._component_tab._save_file,
+            self._capability_tab: self._capability_tab._save_capability,
+            self._ssp_tab:   self._ssp_tab._save,
+            self._ap_tab:    self._ap_tab._save,
+            self._ar_tab:    self._ar_tab._save,
+            self._poam_tab:  self._poam_tab._save,
+        }
+        self._OPEN_ACTIONS = {
+            self._component_tab:  self._component_tab._open_files,
+            self._capability_tab: self._capability_tab._open_files,
+        }
+        self.bind_all("<Control-s>", self._on_ctrl_s)
+        self.bind_all("<Control-o>", self._on_ctrl_o)
+
+    def _get_active_leaf_tab(self):
+        """
+        Walk down through however many levels of nested Notebook are
+        currently selected (see _build_notebook()'s Data/Organisation/
+        System Overview/Audit groups) and return the actual editor tab
+        widget the user is looking at right now.
+        """
+        widget = self._notebook.nametowidget(self._notebook.select())
+        while isinstance(widget, ttk.Notebook) and widget.tabs():
+            widget = widget.nametowidget(widget.select())
+        return widget
+
+    def _on_ctrl_s(self, _event=None):
+        save_fn = self._SAVE_ACTIONS.get(self._get_active_leaf_tab())
+        if save_fn:
+            save_fn()
+        return "break"
+
+    def _on_ctrl_o(self, _event=None):
+        # Tk's Text widget (unlike Entry) has its own default <Control-o>
+        # binding — an Emacs-style "open line" that inserts a newline — and
+        # that widget-level binding fires BEFORE this bind_all handler, so
+        # returning "break" here can't undo it. Rather than have every
+        # multi-line description field get a stray newline every time this
+        # shortcut is used, skip while a Text widget has focus (Nielsen #5
+        # error prevention) — Ctrl+O opening a file dialog while the user is
+        # mid-sentence in a description box would be a surprising, unwanted
+        # side effect either way.
+        if isinstance(self.focus_get(), tk.Text):
+            return None
+        open_fn = self._OPEN_ACTIONS.get(self._get_active_leaf_tab())
+        if open_fn:
+            open_fn()
+        return "break"
+
+    def _tab_is_dirty(self, widget):
+        """
+        True if `widget` (or, for a group notebook, any tab nested inside
+        it) has unsaved changes.
+
+        Recurses into nested notebooks (Data/Organisation/System Overview/
+        Audit are each a ttk.Notebook of "real" editor tabs — see
+        _build_notebook()) so a group tab like "⚙ System Overview" shows
+        the marker whenever ANY tab inside it is dirty, not just whichever
+        one happens to be currently selected.
+        """
+        if getattr(widget, "_dirty", False):
+            return True
+        if isinstance(widget, ttk.Notebook):
+            return any(
+                self._tab_is_dirty(widget.nametowidget(p))
+                for p in widget.tabs()
+            )
+        return False
+
+    def _refresh_dirty_indicators(self):
+        """
+        Append/remove a "*" marker on every tab label whose underlying
+        widget (or, for a group, any tab nested inside it) has unsaved
+        changes — the same "*" convention most text editors and IDEs use,
+        so it needs no explanation (Nielsen #1 Visibility of system status,
+        #2 Match with real-world conventions).
+
+        No tab exposes a "dirty changed" event to hook into, so this polls
+        every 500ms instead — frequent enough that the marker feels live,
+        infrequent enough to be free performance-wise for ~15 tabs.
+        """
+        def update(notebook):
+            for child_path in notebook.tabs():
+                child = notebook.nametowidget(child_path)
+                base  = self._tab_base_labels.get(child)
+                if base is None:
+                    continue
+                marker = "  *" if self._tab_is_dirty(child) else ""
+                notebook.tab(child, text=base + marker)
+                if isinstance(child, ttk.Notebook):
+                    update(child)
+
+        update(self._notebook)
+        self.after(500, self._refresh_dirty_indicators)
 
     # =========================================================================
     # STATUS BAR

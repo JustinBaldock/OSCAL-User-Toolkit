@@ -18,6 +18,8 @@ import json
 import tkinter as tk
 from tkinter import ttk
 
+from .tab_utils import attach_tooltip
+
 
 class DataSourcesTab(tk.Frame):
     """Browses the Library's catalogs/profiles and manages the active selection."""
@@ -160,11 +162,13 @@ class DataSourcesTab(tk.Frame):
             bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
-        tk.Button(
+        refresh_btn = tk.Button(
             btn_row, text="🔄", command=self.refresh,
             bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="left")
+        )
+        refresh_btn.pack(side="left")
+        attach_tooltip(refresh_btn, "Refresh this list from disk", C)
 
         tree_frame = tk.Frame(pane, bg=C["CARD_BG"])
         tree_frame.pack(fill="both", expand=True, padx=8, pady=(0, 8))
