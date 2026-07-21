@@ -73,6 +73,71 @@ def attach_tooltip(widget, text, colors=None, delay_ms=500):
     widget.bind("<ButtonPress>", hide, add="+")
 
 
+def make_collapsible(parent, title, colors, start_expanded=True):
+    """
+    Build a collapsible section: a clickable header bar (▼/▶ + title) and
+    a body frame that's shown/hidden by clicking it.
+
+    Addresses usability_review.md #2/#8: sections with no visual cue that
+    they're collapsible, and — for the metadata cards this was built for —
+    reducing how much vertical space document-metadata fields (version,
+    UUIDs, revision history, creator, links) take up by default, since
+    they're consulted far less often than the fields below them.
+
+    Parameters:
+        parent         - Widget to pack this section into.
+        title          - Header text, shown after the ▼/▶ arrow.
+        colors         - The app's colour dict (COLORS/DARK_COLORS/etc.).
+        start_expanded - Whether the body starts visible (default True,
+                          so existing behaviour/layout doesn't change for
+                          anyone who hasn't collapsed anything yet).
+
+    Returns:
+        The body Frame — pack whatever content belongs in this section
+        into it, exactly as if it were `parent`.
+
+    Usage:
+        body = make_collapsible(parent, "Document Metadata", C)
+        tk.Label(body, text="...").pack(...)
+    """
+    state = {"expanded": start_expanded}
+
+    section = tk.Frame(parent, bg=colors["CARD_BG"], highlightthickness=1,
+                        highlightbackground=colors["HEADER_BG"])
+    section.pack(fill="x", padx=20, pady=(10, 4))
+
+    header = tk.Frame(section, bg=colors["HEADER_BG"], cursor="hand2")
+    header.pack(fill="x")
+    arrow_lbl = tk.Label(
+        header, text="▼" if start_expanded else "▶",
+        bg=colors["HEADER_BG"], fg=colors["ACCENT"], font=("Helvetica", 10, "bold"),
+    )
+    arrow_lbl.pack(side="left", padx=(10, 4), pady=4)
+    tk.Label(
+        header, text=title, bg=colors["HEADER_BG"], fg=colors["ACCENT"],
+        font=("Helvetica", 10, "bold"),
+    ).pack(side="left", pady=4)
+
+    body = tk.Frame(section, bg=colors["CARD_BG"])
+    if start_expanded:
+        body.pack(fill="x")
+
+    def toggle(_event=None):
+        state["expanded"] = not state["expanded"]
+        if state["expanded"]:
+            body.pack(fill="x")
+            arrow_lbl.config(text="▼")
+        else:
+            body.pack_forget()
+            arrow_lbl.config(text="▶")
+
+    header.bind("<Button-1>", toggle)
+    for child in header.winfo_children():
+        child.bind("<Button-1>", toggle)
+
+    return body
+
+
 def is_tab_active(widget):
     """
     Return True if `widget` is currently visible: it is the selected tab

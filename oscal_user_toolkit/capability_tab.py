@@ -64,7 +64,7 @@ from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, validate_oscal_file,
                      get_source_href, get_profile_controls,
                      safe_filename_component)
-from .tab_utils import is_tab_active, attach_tooltip
+from .tab_utils import is_tab_active, attach_tooltip, make_collapsible
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -821,6 +821,54 @@ class CapabilityTab(tk.Frame):
                  font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=20)
 
+        # ── Document Metadata (creator/links) ───────────────────────────────
+        # Kept inside Section 1 rather than its own numbered section, to
+        # avoid renumbering every section below it — same reasoning as
+        # ComponentTab's equivalent card. Per-capability, not shared
+        # tab-level state, so this stays correct even when many
+        # capabilities share one tab instance (library_mode). Collapsible
+        # since it's consulted far less often than the fields below it —
+        # see usability_review.md #2/#8 and tab_utils.make_collapsible().
+        meta_card = make_collapsible(parent, "🗂  Document Metadata", C, start_expanded=True)
+
+        tk.Label(meta_card, text="Creator / Organisation:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(6, 0))
+        creator_row = tk.Frame(meta_card, bg=C["CARD_BG"])
+        creator_row.pack(fill="x", padx=10, pady=(2, 6))
+        self._v_creator = tk.StringVar()
+        tk.Entry(creator_row, textvariable=self._v_creator, width=40,
+                 bg=C["SIDEBAR_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10),
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).pack(side="left", ipady=3)
+
+        # Distinct from any per-component links (each member component's
+        # own Section 7) — this describes the capability *file* itself,
+        # e.g. a "latest-version" link back to where it's published.
+        tk.Label(meta_card, text="Document Links:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(0, 0))
+        doc_link_btn_row = tk.Frame(meta_card, bg=C["CARD_BG"])
+        doc_link_btn_row.pack(fill="x", padx=10, pady=(2, 2))
+        tk.Button(doc_link_btn_row, text="＋  Add Link", command=self._add_doc_link,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(doc_link_btn_row, text="✕  Remove Selected", command=self._remove_doc_link,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left", padx=6)
+        self._doc_link_tree = ttk.Treeview(
+            meta_card, columns=("rel", "href", "text"), show="headings", height=2,
+        )
+        for col, heading, w, stretch in [
+            ("rel",  "Relationship", 140, False),
+            ("href", "URL / Reference", 260, False),
+            ("text", "Label",         160, True),
+        ]:
+            self._doc_link_tree.heading(col, text=heading, anchor="w")
+            self._doc_link_tree.column(col, width=w, anchor="w", stretch=stretch)
+        self._doc_link_tree.pack(fill="x", padx=10, pady=(0, 8))
+
         # =====================================================================
         # SECTION 2 — MEMBER COMPONENTS
         # =====================================================================
@@ -1155,6 +1203,10 @@ class CapabilityTab(tk.Frame):
             "member_descriptions":      {},
             "ctrl_responses":           {},
             "inherited_ctrl_responses": [],
+            # Document-level metadata.parties/links — e.g. the CivicActions
+            # attribution on the Library's aws.json/django.json/etc.
+            "doc_creator":              "",
+            "doc_links":                [],  # [{rel, href, text}]
         }
         self._capabilities.append(new_cap)
         self._dirty = True
@@ -1241,6 +1293,14 @@ class CapabilityTab(tk.Frame):
         if desc:
             self._v_desc.insert("1.0", desc)
 
+        # Document Metadata — creator/links
+        self._v_creator.set(cap.get("doc_creator", ""))
+        self._doc_link_tree.delete(*self._doc_link_tree.get_children())
+        for link in cap.get("doc_links", []):
+            self._doc_link_tree.insert("", "end", values=(
+                link.get("rel", ""), link.get("href", ""), link.get("text", "")
+            ))
+
         # Member components table
         self._mem_tree.delete(*self._mem_tree.get_children())
         mem_descs = cap.get("member_descriptions", {})
@@ -1281,6 +1341,7 @@ class CapabilityTab(tk.Frame):
         cap["name"]        = self._v_name.get().strip()
         cap["description"] = self._v_desc.get("1.0", "end-1c").strip()
         cap["remarks"]     = self._v_remarks.get().strip()
+        cap["doc_creator"] = self._v_creator.get().strip()
 
         # Save any pending control response before collecting
         if self._sel_ctrl_id:
@@ -1483,6 +1544,107 @@ class CapabilityTab(tk.Frame):
         dlg.grab_set()
         dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
         return dlg
+
+    _LINK_REL_VALUES = [
+        "latest-version", "reference", "vendor-documentation",
+        "security-advisory", "policy", "homepage", "related",
+    ]
+
+    def _add_doc_link(self):
+        """
+        Add a metadata.links entry to the current capability's Document
+        Metadata card — see ComponentTab._add_doc_link() for the equivalent
+        and what this represents (the file itself, e.g. CivicActions'
+        "latest-version" links on the Library's aws.json/etc examples).
+        """
+        if self._sel_index is None:
+            messagebox.showinfo("No capability", "Please select or add a capability first.")
+            return
+        result = self._doc_link_dialog()
+        if not result:
+            return
+        cap = self._capabilities[self._sel_index]
+        cap.setdefault("doc_links", []).append(result)
+        self._doc_link_tree.insert("", "end", values=(
+            result["rel"], result["href"], result.get("text", "")
+        ))
+        self._dirty = True
+
+    def _remove_doc_link(self):
+        """Remove the selected document-link row — see _add_doc_link()."""
+        if self._sel_index is None:
+            return
+        sel = self._doc_link_tree.selection()
+        if not sel:
+            return
+        idx = self._doc_link_tree.index(sel[0])
+        cap = self._capabilities[self._sel_index]
+        doc_links = cap.setdefault("doc_links", [])
+        if 0 <= idx < len(doc_links):
+            doc_links.pop(idx)
+        self._doc_link_tree.delete(sel[0])
+        self._dirty = True
+
+    def _doc_link_dialog(self, existing=None):
+        """
+        Show a modal dialog for adding a document-level link.
+        Returns a link dict {rel, href, text} or None if cancelled.
+        """
+        C   = self._colors
+        dlg = self._make_dialog("Add Document Link", width=480)
+
+        row1 = tk.Frame(dlg, bg=C["BG"])
+        row1.pack(fill="x", padx=20, pady=(14, 4))
+        tk.Label(row1, text="Relationship *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
+        v_rel = tk.StringVar(value=(existing or {}).get("rel", self._LINK_REL_VALUES[0]))
+        ttk.Combobox(row1, textvariable=v_rel, values=self._LINK_REL_VALUES,
+                     state="normal", width=26).pack(side="left")
+
+        row2 = tk.Frame(dlg, bg=C["BG"])
+        row2.pack(fill="x", padx=20, pady=4)
+        tk.Label(row2, text="URL / Reference *", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
+        v_href = tk.StringVar(value=(existing or {}).get("href", ""))
+        tk.Entry(row2, textvariable=v_href, width=40,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        row3 = tk.Frame(dlg, bg=C["BG"])
+        row3.pack(fill="x", padx=20, pady=4)
+        tk.Label(row3, text="Label", bg=C["BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
+        v_text = tk.StringVar(value=(existing or {}).get("text", ""))
+        tk.Entry(row3, textvariable=v_text, width=40,
+                 bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 11), highlightthickness=1,
+                 highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        result = {}
+
+        def _ok():
+            href = v_href.get().strip()
+            if not href:
+                messagebox.showwarning("Required", "URL / Reference is required.")
+                return
+            result["value"] = {
+                "rel": v_rel.get().strip() or self._LINK_REL_VALUES[0],
+                "href": href, "text": v_text.get().strip(),
+            }
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  Add  ", command=_ok,
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+
+        dlg.wait_window()
+        return result.get("value")
 
     def _member_dialog(self, available):
         """
@@ -1818,15 +1980,37 @@ class CapabilityTab(tk.Frame):
         cap_name   = safe_filename_component(cap.get("name", "capability"))
         file_title = f"Capability: {cap.get('name', 'Unnamed Capability')}"
 
+        metadata = {
+            "title":         file_title,
+            "last-modified": now,
+            "version":       self._file_version.get().strip() or "1.0",
+            "oscal-version": oscal_ver,
+        }
+        # Document-level metadata.parties/links — e.g. the CivicActions
+        # attribution seen on the Library's aws.json/django.json/etc — see
+        # ComponentTab._build_single_component_oscal() for the equivalent.
+        if cap.get("doc_creator"):
+            party_uuid = new_uuid()
+            metadata["roles"] = [{"id": "creator", "title": "Creator"}]
+            metadata["parties"] = [{
+                "uuid": party_uuid, "type": "organization", "name": cap["doc_creator"],
+            }]
+            metadata["responsible-parties"] = [{
+                "role-id": "creator", "party-uuids": [party_uuid],
+            }]
+        if cap.get("doc_links"):
+            metadata["links"] = [
+                {
+                    "rel": link["rel"], "href": link["href"],
+                    **({"text": link["text"]} if link.get("text") else {}),
+                }
+                for link in cap["doc_links"]
+            ]
+
         doc = {
             "component-definition": {
                 "uuid": new_uuid(),
-                "metadata": {
-                    "title":         file_title,
-                    "last-modified": now,
-                    "version":       self._file_version.get().strip() or "1.0",
-                    "oscal-version": oscal_ver,
-                },
+                "metadata": metadata,
                 **({"components": oscal_components} if oscal_components else {}),
                 "capabilities": [oscal_cap],
             }
@@ -2055,6 +2239,30 @@ class CapabilityTab(tk.Frame):
                 else:
                     ctrl_responses[ctrl_id] = desc
 
+        # Document-level metadata.parties/links — see _build_oscal_document()
+        # for the build side and what this represents.
+        meta = cd.get("metadata", {})
+        parties = meta.get("parties", [])
+        doc_creator = ""
+        if parties:
+            creator_party_uuid = next(
+                (rp["party-uuids"][0]
+                 for rp in meta.get("responsible-parties", [])
+                 if rp.get("role-id") == "creator" and rp.get("party-uuids")),
+                None,
+            )
+            if creator_party_uuid:
+                doc_creator = next(
+                    (p.get("name", "") for p in parties if p.get("uuid") == creator_party_uuid),
+                    "",
+                )
+            else:
+                doc_creator = parties[0].get("name", "")
+        doc_links = [
+            {"rel": link.get("rel", ""), "href": link.get("href", ""), "text": link.get("text", "")}
+            for link in meta.get("links", [])
+        ]
+
         cap = {
             "uuid":                    oscal_cap.get("uuid", new_uuid()),
             "name":                    oscal_cap.get("name", ""),
@@ -2064,6 +2272,8 @@ class CapabilityTab(tk.Frame):
             "member_descriptions":     member_descs,
             "ctrl_responses":          ctrl_responses,
             "inherited_ctrl_responses": inherited,
+            "doc_creator":             doc_creator,
+            "doc_links":               doc_links,
         }
 
         # ── Import bundled components into the Component Editor ───────────────

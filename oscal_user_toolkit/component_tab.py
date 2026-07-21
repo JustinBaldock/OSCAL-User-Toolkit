@@ -46,7 +46,7 @@ from pathlib import Path
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, get_source_href, get_profile_controls,
                      safe_filename_component)
-from .tab_utils import is_tab_active, attach_tooltip
+from .tab_utils import is_tab_active, attach_tooltip, make_collapsible
 
 # =============================================================================
 # CONSTANTS — Allowed values from the OSCAL Component schema
@@ -912,24 +912,17 @@ class ComponentTab(tk.Frame):
                  font=("Helvetica", 9, "italic"),
                  ).pack(anchor="w", padx=20)
 
-        # ── Metadata: Version & Revision History (§10.21) ───────────────────
+        # ── Metadata: Document Metadata (§10.21, extended) ──────────────────
         # Kept inside Section 1 rather than its own numbered section, to
         # avoid renumbering every section below it. Each component carries
-        # its own document uuid/version/revisions — never shared tab-level
-        # state — so this stays correct even when many components share one
-        # tab instance (library_mode). Rendered as its own clearly-bounded
-        # box, with a header and hint text explaining the two workflows
-        # (plain edit-in-place vs. "Save New Version"), so it doesn't read
-        # as just more Basic Information fields.
-        ver_card = tk.Frame(parent, bg=C["CARD_BG"], highlightthickness=1,
-                             highlightbackground=C["HEADER_BG"])
-        ver_card.pack(fill="x", **P, pady=(10, 4))
-
-        ver_hdr = tk.Frame(ver_card, bg=C["HEADER_BG"])
-        ver_hdr.pack(fill="x")
-        tk.Label(ver_hdr, text="🗂  Metadata — Version & Revision History",
-                  bg=C["HEADER_BG"], fg=C["ACCENT"], font=("Helvetica", 10, "bold"),
-                  anchor="w").pack(side="left", padx=10, pady=4)
+        # its own document uuid/version/revisions/creator/links — never
+        # shared tab-level state — so this stays correct even when many
+        # components share one tab instance (library_mode). Collapsible
+        # (make_collapsible(), tab_utils.py) since it's consulted far less
+        # often than the fields below it, especially in library_mode where
+        # dozens of these cards would otherwise all sit expanded at once —
+        # see usability_review.md #2/#8.
+        ver_card = make_collapsible(parent, "🗂  Document Metadata", C, start_expanded=True)
 
         tk.Label(
             ver_card,
@@ -989,6 +982,50 @@ class ComponentTab(tk.Frame):
             self._revision_tree.heading(col, text=label)
             self._revision_tree.column(col, width=width, anchor="w")
         self._revision_tree.pack(fill="x", padx=10, pady=(2, 8))
+
+        # ── Creator / Organisation (metadata.parties, role=creator) ────────
+        # e.g. the CivicActions attribution seen on the aws.json/django.json/
+        # etc. Library examples: metadata.parties + responsible-parties +
+        # a role, all standard OSCAL — see this feature's design discussion.
+        tk.Label(ver_card, text="Creator / Organisation:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(6, 0))
+        creator_row = tk.Frame(ver_card, bg=C["CARD_BG"])
+        creator_row.pack(fill="x", padx=10, pady=(2, 6))
+        self._v_creator = tk.StringVar()
+        tk.Entry(creator_row, textvariable=self._v_creator, width=40,
+                 bg=C["SIDEBAR_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+                 relief="flat", font=("Helvetica", 10),
+                 highlightthickness=1, highlightbackground=C["HEADER_BG"],
+                 ).pack(side="left", ipady=3)
+
+        # ── Document Links (metadata.links) ─────────────────────────────────
+        # Distinct from Section 7's per-component links below (vendor docs,
+        # CVE advisories about the *component*) — these describe the *file*
+        # itself, e.g. a "latest-version" link back to where it's published.
+        # Reuses the same _link_dialog()/_LINK_REL_VALUES as Section 7.
+        tk.Label(ver_card, text="Document Links:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+                 font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(0, 0))
+        doc_link_btn_row = tk.Frame(ver_card, bg=C["CARD_BG"])
+        doc_link_btn_row.pack(fill="x", padx=10, pady=(2, 2))
+        tk.Button(doc_link_btn_row, text="＋  Add Link", command=self._add_doc_link,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(doc_link_btn_row, text="✕  Remove Selected", command=self._remove_doc_link,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left", padx=6)
+        self._doc_link_tree = ttk.Treeview(
+            ver_card, columns=("rel", "href", "text"), show="headings", height=2,
+        )
+        for col, heading, w, stretch in [
+            ("rel",  "Relationship", 140, False),
+            ("href", "URL / Reference", 260, False),
+            ("text", "Label",         160, True),
+        ]:
+            self._doc_link_tree.heading(col, text=heading, anchor="w")
+            self._doc_link_tree.column(col, width=w, anchor="w", stretch=stretch)
+        self._doc_link_tree.pack(fill="x", padx=10, pady=(0, 8))
 
         # =====================================================================
         # SECTION 2 — DESCRIPTION
@@ -1648,6 +1685,10 @@ class ComponentTab(tk.Frame):
             "file_uuid":  new_uuid(),
             "version":    "1.0",
             "revisions":  [],  # [{version, date, remarks}], latest-first
+            # Document-level metadata.parties/links — e.g. the CivicActions
+            # attribution on the Library's aws.json/django.json/etc.
+            "doc_creator": "",
+            "doc_links":   [],  # [{rel, href, text}]
         }
         self._components.append(new_comp)
         self._dirty = True
@@ -1772,6 +1813,12 @@ class ComponentTab(tk.Frame):
             self._revision_tree.insert("", "end", values=(
                 rev.get("version", ""), rev.get("date", ""), rev.get("remarks", "")
             ))
+        self._v_creator.set(comp.get("doc_creator", ""))
+        self._doc_link_tree.delete(*self._doc_link_tree.get_children())
+        for link in comp.get("doc_links", []):
+            self._doc_link_tree.insert("", "end", values=(
+                link.get("rel", ""), link.get("href", ""), link.get("text", "")
+            ))
 
         # ── Text areas ────────────────────────────────────────────────────────
         for widget, key in [
@@ -1864,6 +1911,7 @@ class ComponentTab(tk.Frame):
         comp["status"]         = self._v_status.get()
         comp["status_remarks"] = self._v_remarks.get().strip()
         comp["version"]        = self._v_version.get().strip() or "1.0"
+        comp["doc_creator"]    = self._v_creator.get().strip()
         comp["description"]    = self._v_description.get("1.0", "end-1c").strip()
         comp["remarks"]        = self._v_remarks_text.get("1.0", "end-1c").strip()
 
@@ -2739,6 +2787,38 @@ class ComponentTab(tk.Frame):
         self._link_tree.delete(sel[0])
         self._dirty = True
 
+    def _add_doc_link(self):
+        """
+        Same as _add_link(), but for the Document Metadata card's
+        metadata.links — describes the file itself, not the component.
+        """
+        if self._selected_index is None:
+            messagebox.showinfo("No component",
+                                "Please select or add a component first.")
+            return
+        result = self._link_dialog()
+        if not result:
+            return
+        self._components[self._selected_index].setdefault("doc_links", []).append(result)
+        self._doc_link_tree.insert("", "end", values=(
+            result["rel"], result["href"], result.get("text", "")
+        ))
+        self._dirty = True
+
+    def _remove_doc_link(self):
+        """Remove the selected document-link row — see _add_doc_link()."""
+        if self._selected_index is None:
+            return
+        sel = self._doc_link_tree.selection()
+        if not sel:
+            return
+        idx = self._doc_link_tree.index(sel[0])
+        doc_links = self._components[self._selected_index].setdefault("doc_links", [])
+        if 0 <= idx < len(doc_links):
+            doc_links.pop(idx)
+        self._doc_link_tree.delete(sel[0])
+        self._dirty = True
+
     def _link_dialog(self, existing=None):
         """
         Show a modal dialog for adding or editing a link.
@@ -2900,6 +2980,29 @@ class ComponentTab(tk.Frame):
                 for rev in revisions
             ]
 
+        # Document-level metadata.parties/links — e.g. the CivicActions
+        # attribution seen on the Library's aws.json/django.json/etc. All
+        # standard OSCAL: a party with a "creator" role via responsible-
+        # parties, and a links[] array describing the file itself (not the
+        # component — that's Section 7's per-component links, kept separate).
+        if comp.get("doc_creator"):
+            party_uuid = new_uuid()
+            metadata["roles"] = [{"id": "creator", "title": "Creator"}]
+            metadata["parties"] = [{
+                "uuid": party_uuid, "type": "organization", "name": comp["doc_creator"],
+            }]
+            metadata["responsible-parties"] = [{
+                "role-id": "creator", "party-uuids": [party_uuid],
+            }]
+        if comp.get("doc_links"):
+            metadata["links"] = [
+                {
+                    "rel": link["rel"], "href": link["href"],
+                    **({"text": link["text"]} if link.get("text") else {}),
+                }
+                for link in comp["doc_links"]
+            ]
+
         doc = {
             "component-definition": {
                 "uuid": comp["file_uuid"],
@@ -2949,6 +3052,32 @@ class ComponentTab(tk.Frame):
                 "remarks": rev.get("remarks", ""),
             }
             for rev in meta.get("revisions", [])
+        ]
+
+        # Document-level metadata.parties/links — see the matching build
+        # side in _build_single_component_oscal() for what these represent.
+        # Prefer the party tied to a "creator" role (responsible-parties);
+        # fall back to the first party if the file has one but no explicit
+        # creator role (still schema-valid, just less specific attribution).
+        parties = meta.get("parties", [])
+        doc_creator = ""
+        if parties:
+            creator_party_uuid = next(
+                (rp["party-uuids"][0]
+                 for rp in meta.get("responsible-parties", [])
+                 if rp.get("role-id") == "creator" and rp.get("party-uuids")),
+                None,
+            )
+            if creator_party_uuid:
+                doc_creator = next(
+                    (p.get("name", "") for p in parties if p.get("uuid") == creator_party_uuid),
+                    "",
+                )
+            else:
+                doc_creator = parties[0].get("name", "")
+        doc_links = [
+            {"rel": link.get("rel", ""), "href": link.get("href", ""), "text": link.get("text", "")}
+            for link in meta.get("links", [])
         ]
 
         all_props   = c.get("props", [])
@@ -3029,6 +3158,8 @@ class ComponentTab(tk.Frame):
             "file_uuid":        root.get("uuid") or new_uuid(),
             "version":          meta.get("version", "1.0"),
             "revisions":        revisions,
+            "doc_creator":      doc_creator,
+            "doc_links":        doc_links,
         }
 
     def _load_component_from_path(self, path):
