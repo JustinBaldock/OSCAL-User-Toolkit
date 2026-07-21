@@ -1,0 +1,110 @@
+{
+  "component-definition": {
+    "uuid": "681baacc-c48d-47d7-bc17-0da321ec471b",
+    "metadata": {
+      "title": "Amazon Web Services Component",
+      "last-modified": "2026-07-21T13:43:06Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7334624e-948e-4dc3-a6ca-56e48be08d21",
+        "type": "service",
+        "title": "Amazon Web Services",
+        "description": "Amazon Web Services (AWS) is the cloud infrastructure provider hosting the organisation's compute (EC2), storage (S3), and identity/access management (IAM) resources. Under the shared responsibility model, AWS secures the underlying cloud infrastructure and physical facilities; the organisation is responsible for configuring identity, access, encryption, logging, and patching for everything it deploys on top of that infrastructure.",
+        "purpose": "Provide cloud compute, storage, and identity infrastructure, with security responsibilities shared between AWS and the organisation.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Amazon Web Services"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Public cloud — IaaS/PaaS"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "bed94166-9809-457d-b927-5015d954f53e",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Amazon Web Services.",
+            "implemented-requirements": [
+              {
+                "uuid": "0b89b776-8650-428d-af68-a277f35971e3",
+                "control-id": "ism-principle-pro-08",
+                "description": "Data at rest in Amazon S3 and EBS volumes is encrypted using AWS KMS-managed keys; data in transit to and between AWS services uses TLS. Encryption is enabled by default on all new storage resources via an organisational AWS Config rule."
+              },
+              {
+                "uuid": "d628d3c0-fce0-4f5d-ad95-c814e4f0a54e",
+                "control-id": "ism-1569",
+                "description": "A shared responsibility model documenting which security responsibilities AWS retains (physical security, host infrastructure, hypervisor) and which the organisation retains (IAM configuration, data encryption, network configuration, patching of guest operating systems) is documented and made available to relevant personnel."
+              },
+              {
+                "uuid": "fd7796f9-364c-4557-9181-747d392c9a01",
+                "control-id": "ism-1638",
+                "description": "The organisation's outsourced cloud service register records AWS as a cloud service provider, the specific AWS services in use (EC2, S3, IAM, CloudTrail), the purpose and data sensitivity of each, the next scheduled security assessment date, and a point of contact for users of the service."
+              },
+              {
+                "uuid": "4f067a02-e99b-4fcb-a1d4-ae9b6ea58941",
+                "control-id": "ism-1570",
+                "description": "AWS, as an outsourced cloud service provider handling non-classified and OFFICIAL: Sensitive data, undergoes an IRAP assessment at least every 24 months against the current ISM."
+              },
+              {
+                "uuid": "6844de60-c97f-4b51-a858-3d91ba0eb03f",
+                "control-id": "ism-1405",
+                "description": "AWS CloudTrail is enabled across all in-use AWS accounts and regions, and its logs (API calls, IAM actions, resource changes) are forwarded to the organisation's centralised event logging facility for retention and analysis."
+              }
+            ]
+          },
+          {
+            "uuid": "a293476b-65a4-4779-b56a-0efa919a2cbf",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for Amazon Web Services.",
+            "implemented-requirements": [
+              {
+                "uuid": "87a8039f-0c08-4947-8858-b768f503b5ad",
+                "control-id": "ac-2",
+                "description": "AWS Identity and Access Management (IAM) is the account management system for all AWS access. IAM users and roles are provisioned per individual or per workload, granted only the permissions their function requires via IAM policies, and reviewed periodically for accounts that are no longer required."
+              },
+              {
+                "uuid": "6c8c53b0-167f-4cf1-9360-11cde6cb877c",
+                "control-id": "ac-3",
+                "description": "Logical access to AWS resources (S3 buckets, EC2 instances, IAM-managed secrets) is enforced through IAM policies and, for S3, bucket policies — a request is only permitted if an explicit IAM or resource policy statement allows it; access is denied by default."
+              },
+              {
+                "uuid": "b87fccd6-7885-4f93-a0c5-a4d666393cac",
+                "control-id": "au-2",
+                "description": "AWS CloudTrail is configured to log management and data-plane API events across all accounts and regions, capturing authentication events, IAM policy changes, and resource creation/modification/deletion sufficient to reconstruct who did what and when."
+              },
+              {
+                "uuid": "cf88bf89-47e8-4635-bc5a-eb720f648cfc",
+                "control-id": "au-9",
+                "description": "Access to CloudTrail logs (stored in a dedicated Amazon S3 bucket) is restricted via IAM and S3 bucket policy to the security team's IAM role; the bucket has S3 Object Lock enabled in compliance mode so log objects cannot be deleted or overwritten, including by an account administrator, until their retention period expires."
+              },
+              {
+                "uuid": "62335397-5577-42df-a836-ea9a7614fd2d",
+                "control-id": "ia-2",
+                "description": "AWS IAM provides unique identification and authentication for every organisational user of the AWS console and API — each IAM user or federated identity is individually attributable, and root account credentials are not used for day-to-day access."
+              },
+              {
+                "uuid": "d7ffda44-ea12-4cc2-b228-a34dbc4e5505",
+                "control-id": "sc-7",
+                "description": "Amazon VPC security groups and network ACLs enforce boundary protection between the organisation's AWS resources and the internet, and between tiers within the VPC (e.g. restricting direct internet access to database subnets); only explicitly required ports and sources are permitted."
+              },
+              {
+                "uuid": "7302b2d0-2cd5-4312-80d4-fcf345084c74",
+                "control-id": "sc-28",
+                "description": "Data at rest in Amazon S3, EBS, and RDS is encrypted using AWS KMS-managed customer keys. Key usage is logged via CloudTrail, and key rotation is enabled for all customer-managed keys."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
