@@ -263,7 +263,7 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 A [GitHub Actions](.github/workflows/ci.yml) workflow runs on every push and pull request against `main`, with two jobs:
 
 - **Lint** — [Ruff](https://docs.astral.sh/ruff/) checks for real correctness issues (unused imports/variables, undefined names, multi-statement lines) — not full pycodestyle style/line-length rules, since this codebase's existing style runs longer lines than pycodestyle's defaults allow.
-- **Unit tests** — [pytest](https://docs.pytest.org/) runs everything in `tests/`, currently covering `models.py`'s data layer: prop/UUID/filename helpers, `CatalogResolver`, the multi-catalog `control-implementations` grouping (see the design document §10.24), and the VLAN/data-flow-link prop round-trips.
+- **Unit tests** — [pytest](https://docs.pytest.org/) runs everything in `tests/`, currently covering `models.py`'s data layer: prop/UUID/filename helpers, `CatalogResolver`, the multi-catalog `control-implementations` grouping (see the design document §10.24), the VLAN/data-flow-link prop round-trips, and full save/load round-trips for SSP, Assessment Plan, Assessment Results, and POA&M (§10.28) — 48% line coverage of `models.py` as of this writing.
 
 To run either locally:
 
@@ -349,7 +349,8 @@ OSCAL-User-Toolkit/
 │   └── workflows/
 │       └── ci.yml                   # Lint (ruff) + unit tests (pytest) on every push/PR
 ├── tests/
-│   └── test_models.py               # Unit tests for models.py's data layer
+│   ├── test_models.py                # Unit tests for models.py's data layer
+│   └── test_roundtrip.py             # Save/load round-trip tests for SSP/AP/AR/POA&M
 ├── pyproject.toml                   # Ruff lint config, pytest config
 ├── requirements-dev.txt             # Dev/CI-only dependencies (ruff, pytest)
 ├── oscal_user_toolkit/

@@ -194,6 +194,23 @@ From the `usability_review.md` pass (see design document §10.22 for what was al
 
 ---
 
+## 8. Enable GitHub code scanning (CodeQL)
+
+Turn on GitHub's default CodeQL code scanning setup for this repo. Free for public repos, and complementary to the existing CI (`.github/workflows/ci.yml`) rather than redundant: Ruff catches style/correctness issues, CodeQL does deeper security-focused taint analysis (path traversal, unsafe deserialization, etc.) — relevant here since the app's whole job is parsing JSON files a user picked off disk, which `SECURE_CODING.md` already treats as untrusted input.
+
+Use GitHub's **"Default" setup** (one click, auto-configured) rather than the "Advanced" custom-workflow option — this is a straightforward Python codebase with no unusual build steps. Expect some initial noise on the first scan (findings to triage — accept as safe, or fix — not all necessarily real bugs).
+
+---
+
+## 9. Two bugs found while writing SSP/AP/AR/POA&M round-trip tests (`tests/test_roundtrip.py`)
+
+Found by building real fixtures and reading the actual output before writing assertions (see design document §10.28) — not yet fixed, deliberately, since fixing them wasn't the point of that task:
+
+- **`build_oscal_ar()` drops an AR observation's `assessed_by` value on save.** `build_oscal_poam()` writes this to an `assessed-by` prop for the identical internal field name; `build_oscal_ar()` never does, even though `parse_ar_file()` reads it back via the same shared `_parse_oscal_observation()` helper both document types use. Low real-world impact today — `ar_tab.py`'s own UI never collects or displays `assessed_by` for AR observations — but a file from another OSCAL tool with that prop set would silently lose it on the first save through this app. Fix: add the same `if o.get("assessed_by"): entry["props"] = [...]` block `build_oscal_poam()` already has, to `build_oscal_ar()`'s observation loop.
+- **README.md and the design document's own feature list overstate AR's risk fields.** Both claim AR risks carry "CIA impact characterizations... stored as OSCAL facets" — that's only true for POA&M risks. `build_oscal_ar()`/`parse_ar_file()` have no CIA handling for risks at all, and `ar_tab.py` never collects `cia_c`/`cia_i`/`cia_a` from the user. Either fix the docs to stop claiming this for AR, or (bigger) actually add CIA characterization support to AR risks to match POA&M's.
+
+---
+
 ## Implementation Priority
 
 | Feature | Priority | Effort | Notes |
@@ -206,3 +223,4 @@ From the `usability_review.md` pass (see design document §10.22 for what was al
 | `COMPONENT_TYPES` dropdown fix | Low | Low | Cosmetic — nothing currently saved is broken — see §6 |
 | Batch operations / multi-select | Low | High | No existing Treeview supports multi-select — see §7 |
 | Undo/redo | Low | High | Needs a real change-tracking layer — see §7 |
+| Enable GitHub code scanning (CodeQL) | Low | Low | One-click "Default" setup, free for public repos — see §8 |
