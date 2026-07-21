@@ -1,0 +1,114 @@
+{
+  "system-security-plan": {
+    "uuid": "a217cee0-3321-44d7-aa3b-401f64a1bc67",
+    "metadata": {
+      "title": "SSP Example Network - NIST",
+      "last-modified": "2026-07-21T07:42:35Z",
+      "version": "1.0",
+      "oscal-version": "1.2.2"
+    },
+    "import-profile": {
+      "href": "#5fa04550-1274-450f-8be8-42ab6ca507ef"
+    },
+    "system-characteristics": {
+      "system-ids": [
+        {
+          "id": "a217cee0-3321-44d7-aa3b-401f64a1bc67",
+          "identifier-type": "https://ietf.org/rfc/rfc4122"
+        }
+      ],
+      "system-name": "Example Network 2",
+      "system-name-short": "EN2",
+      "description": "This is a example SSP using NIST as the catalogue.",
+      "security-sensitivity-level": "fips-199-moderate",
+      "security-impact-level": {
+        "security-objective-confidentiality": "",
+        "security-objective-integrity": "",
+        "security-objective-availability": ""
+      },
+      "system-information": {
+        "information-types": [
+          {
+            "uuid": "3bd76bbf-7b51-4de2-87d2-f6936fd6058c",
+            "title": "Personnel Records",
+            "description": "The system stored personnel records.",
+            "confidentiality-impact": {
+              "base": "fips-199-moderate"
+            },
+            "integrity-impact": {
+              "base": "fips-199-moderate"
+            },
+            "availability-impact": {
+              "base": "fips-199-moderate"
+            }
+          }
+        ]
+      },
+      "status": {
+        "state": "under-development"
+      },
+      "authorization-boundary": {
+        "description": "The boundary for this system is \nA\nB\nand C"
+      }
+    },
+    "system-implementation": {
+      "users": [
+        {
+          "uuid": "2a0bde56-df54-4d08-94ca-1ca3f21166d0",
+          "title": "system-owner",
+          "short-name": "system-owner",
+          "description": "This person is the system-owner.",
+          "role-ids": [
+            "system-owner"
+          ]
+        }
+      ],
+      "components": [
+        {
+          "uuid": "45436f0f-ee0e-4911-8f03-4a515a9e7ee7",
+          "type": "this-system",
+          "title": "Example Network 2",
+          "description": "This is a example SSP using NIST as the catalogue.",
+          "status": {
+            "state": "under-development"
+          }
+        }
+      ]
+    },
+    "control-implementation": {
+      "description": "Control implementation statements for this system.",
+      "implemented-requirements": []
+    },
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "5fa04550-1274-450f-8be8-42ab6ca507ef",
+          "title": "Electronic (OSCAL) Version of NIST Special Publication 800-53 Revision 5.2.0 LOW IMPACT BASELINE",
+          "props": [
+            {
+              "name": "type",
+              "value": "profile"
+            },
+            {
+              "name": "version",
+              "value": "5.2.0"
+            },
+            {
+              "name": "oscal-version",
+              "value": "1.2.2"
+            },
+            {
+              "name": "last-modified",
+              "value": "2026-05-11T16:10:16.00000-00:00"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": "NIST_SP-800-53_rev5_LOW-baseline_profile.json"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

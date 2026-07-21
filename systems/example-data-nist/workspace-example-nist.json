@@ -1,0 +1,7 @@
+{
+  "workspace": {
+    "title": "workspace-example-nist",
+    "catalog": "NIST_SP-800-53_rev5_catalog.json",
+    "profile": "NIST_SP-800-53_rev5_LOW-baseline_profile.json"
+  }
+}
