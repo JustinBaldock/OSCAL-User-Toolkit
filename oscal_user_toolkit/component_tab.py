@@ -758,8 +758,8 @@ class ComponentTab(tk.Frame):
                 self._detail_canvas.yview_scroll(
                     int(-1 * (event.delta / 120)), "units"
                 )
-        except Exception:
-            pass
+        except tk.TclError:
+            pass   # Canvas destroyed/not ready — see SECURE_CODING.md #2
 
     # =========================================================================
     # FORM WIDGET CONSTRUCTION
@@ -1441,8 +1441,8 @@ class ComponentTab(tk.Frame):
         if hasattr(self, "_search_after_id") and self._search_after_id:
             try:
                 self.after_cancel(self._search_after_id)
-            except Exception:
-                pass
+            except tk.TclError:
+                pass   # Timer id already invalid/fired — see SECURE_CODING.md #2
         self._search_after_id = self.after(250, self._refresh_list)
 
     def _toggle_sort(self):
@@ -2098,7 +2098,7 @@ class ComponentTab(tk.Frame):
         try:
             active_tree.selection_set(self._selected_ctrl_id)
             active_tree.see(self._selected_ctrl_id)
-        except Exception:
+        except tk.TclError:
             pass   # Row may not exist in Applied tab if response was cleared
 
         self._dirty = True

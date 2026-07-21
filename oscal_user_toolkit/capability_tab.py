@@ -628,8 +628,8 @@ class CapabilityTab(tk.Frame):
         try:
             if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        except Exception:
-            pass
+        except tk.TclError:
+            pass   # Canvas destroyed/not ready — see SECURE_CODING.md #2
 
     # =========================================================================
     # FORM WIDGETS
@@ -1621,8 +1621,8 @@ class CapabilityTab(tk.Frame):
         try:
             active_tree.selection_set(self._sel_ctrl_id)
             active_tree.see(self._sel_ctrl_id)
-        except Exception:
-            pass
+        except tk.TclError:
+            pass   # Row no longer exists in this tab — see SECURE_CODING.md #2
 
         self._dirty = True
         self._status_lbl.config(

@@ -381,8 +381,8 @@ class SSPTab(tk.Frame):
         try:
             if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        except Exception:
-            pass   # Silently ignore any errors (e.g. during startup)
+        except tk.TclError:
+            pass   # Canvas destroyed/not ready — see SECURE_CODING.md #2
 
     # =========================================================================
     # FORM BUILDING
@@ -2373,7 +2373,7 @@ class SSPTab(tk.Frame):
         try:
             tree.selection_set(ctrl_id)
             tree.see(ctrl_id)
-        except Exception:
+        except tk.TclError:
             pass   # Row may not exist in the Applied tab after a removal
 
     def _bycomp_dialog(self, existing=None):

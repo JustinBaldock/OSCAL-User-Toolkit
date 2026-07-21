@@ -1150,10 +1150,12 @@ class OSCALApp(tk.Tk):
                 return   # User cancelled — do nothing
 
         # Try to parse the raw JSON first so we can validate it before loading.
+        # OSError covers the file being deleted/permission-denied/unreadable
+        # between the dialog and this read — see SECURE_CODING.md #1.
         try:
             with open(path, encoding="utf-8") as f:
                 raw = json.load(f)
-        except json.JSONDecodeError as exc:
+        except (json.JSONDecodeError, OSError) as exc:
             messagebox.showerror("Failed to load catalog", str(exc))
             return
 
@@ -1178,9 +1180,12 @@ class OSCALApp(tk.Tk):
                     return
 
         # Try to load the file. If it fails, show an error message.
+        # OSError covers the file being deleted/permission-denied/unreadable
+        # between the dialog and this read — json.JSONDecodeError is a
+        # ValueError subclass so it's already covered — see SECURE_CODING.md #1.
         try:
             catalog = load_catalog(path)
-        except (KeyError, ValueError) as exc:
+        except (KeyError, ValueError, OSError) as exc:
             messagebox.showerror("Failed to load catalog", str(exc))
             return
 
@@ -1250,9 +1255,11 @@ class OSCALApp(tk.Tk):
             if not path:
                 return
 
+        # OSError covers the file being deleted/permission-denied/unreadable
+        # between the dialog and this read — see SECURE_CODING.md #1.
         try:
             profile = load_profile(path)
-        except (json.JSONDecodeError, KeyError, ValueError) as exc:
+        except (json.JSONDecodeError, KeyError, ValueError, OSError) as exc:
             messagebox.showerror("Failed to load profile", str(exc))
             return
 

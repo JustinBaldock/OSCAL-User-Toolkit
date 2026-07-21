@@ -152,8 +152,8 @@ class APTab(tk.Frame):
         try:
             if is_tab_active(self):
                 self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        except Exception:
-            pass
+        except tk.TclError:
+            pass   # Canvas destroyed/not ready — see SECURE_CODING.md #2
 
     # =========================================================================
     # FORM

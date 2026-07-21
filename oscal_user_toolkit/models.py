@@ -1795,6 +1795,12 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
         notebook.tab(0, text=f"All Controls ({len(filtered)})")
         notebook.tab(1, text=f"Applied Controls ({applied_count})")
     except Exception:
+        # The specific expected failure here is tkinter.TclError (stale tab
+        # index), but this file deliberately never imports tkinter to keep
+        # the data/UI layer boundary intact even though this one function
+        # takes a live notebook widget — see SECURE_CODING.md #2. Left
+        # broad here on purpose; don't "fix" by importing tkinter into the
+        # data layer just to narrow this one except clause.
         pass
 
     if total > 0:
