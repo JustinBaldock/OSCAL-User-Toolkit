@@ -353,10 +353,13 @@ OSCAL-User-Toolkit/
 ├── user_stories.md                  # Role-based user stories driving design decisions
 ├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
 ├── oscal_user_toolkit_design_document.md  # Technical design document and changelog
+├── SECURE_CODING.md                 # Project rules derived from the OpenSSF Secure Coding Guide for Python
 └── README.md
 ```
 
 The codebase follows a strict two-layer separation: `models.py` contains all data parsing, serialisation, and validation logic with no GUI code; the tab files contain all GUI code with no direct JSON manipulation.
+
+Contributors (human or AI) should read [SECURE_CODING.md](SECURE_CODING.md) before touching file-loading or exception-handling code — this app constantly parses OSCAL JSON files a user picked from disk, which the OpenSSF guide treats as untrusted input regardless of it being "just a local file."
 
 ---
 
