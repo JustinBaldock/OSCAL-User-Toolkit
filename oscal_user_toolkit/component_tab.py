@@ -407,10 +407,10 @@ class ComponentTab(tk.Frame):
         # "Open Folder" loads every component JSON file in a chosen folder.
         # Also appends to the list.
         tk.Button(
-            tb, text="🗑  Clear All", command=self._new_file,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            tb, text="📁  Open Folder", command=self._open_folder,
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-            activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"],
+            activebackground=C["BLUE_BG"], activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
 
         # "Import from Library" copies component file(s) from the shared
@@ -450,6 +450,49 @@ class ComponentTab(tk.Frame):
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
         )
         self._status_lbl.pack(side="right", padx=12)
+
+        self._build_folder_hint()
+
+    def _build_folder_hint(self):
+        """
+        Explanatory banner under the toolbar (non-library-mode only)
+        naming where the components shown in this tab actually live on
+        disk — the current system's own folder, not the shared Library.
+        Nielsen #1 (visibility of status) / #2 (match the real world):
+        without this, there's nothing in the tab itself indicating that
+        "the list you're looking at" corresponds to a specific folder.
+
+        The folder can change during a session (opening or saving a
+        different workspace), so the label is refreshed every time
+        _refresh_list() runs, not just once at construction.
+        """
+        C = self._colors
+        hint = tk.Frame(self, bg=C["HEADER_BG"])
+        hint.pack(fill="x", side="top")
+        self._folder_hint_lbl = tk.Label(
+            hint, text="", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9, "italic"), wraplength=900, justify="left",
+        )
+        self._folder_hint_lbl.pack(anchor="w", padx=12, pady=4)
+        self._update_folder_hint()
+
+    def _update_folder_hint(self):
+        """Refresh _build_folder_hint()'s label text — see its docstring."""
+        if not hasattr(self, "_folder_hint_lbl"):
+            return   # library_mode has no such label
+        system_folder = self._get_system_folder()
+        if system_folder:
+            text = (
+                "ℹ️  The components listed here are the ones currently loaded for "
+                f"this system — saved to and loaded from: {Path(system_folder) / 'components'}"
+            )
+        else:
+            text = (
+                "ℹ️  The components listed here are the ones currently loaded for "
+                "this system. Open or save a workspace first to fix a system folder "
+                "for them — until then, they're wherever you last opened/saved each file."
+            )
+        self._folder_hint_lbl.config(text=text)
 
     def _build_library_toolbar(self, tb):
         """Toolbar contents for library_mode — see _build_toolbar()."""
@@ -1552,6 +1595,8 @@ class ComponentTab(tk.Frame):
             pos = self._filtered_indices.index(self._selected_index)
             self._comp_listbox.selection_set(pos)
             self._comp_listbox.see(pos)
+
+        self._update_folder_hint()
 
     def _on_list_select(self, _event=None):
         """

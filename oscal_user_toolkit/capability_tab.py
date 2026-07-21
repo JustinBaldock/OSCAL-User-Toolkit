@@ -362,6 +362,43 @@ class CapabilityTab(tk.Frame):
         )
         self._status_lbl.pack(side="right", padx=12)
 
+        self._build_folder_hint()
+
+    def _build_folder_hint(self):
+        """
+        Explanatory banner under the toolbar (non-library-mode only)
+        naming where the capabilities shown in this tab actually live on
+        disk — see ComponentTab._build_folder_hint() for the equivalent
+        and rationale (Nielsen #1/#2).
+        """
+        C = self._colors
+        hint = tk.Frame(self, bg=C["HEADER_BG"])
+        hint.pack(fill="x", side="top")
+        self._folder_hint_lbl = tk.Label(
+            hint, text="", bg=C["HEADER_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 9, "italic"), wraplength=900, justify="left",
+        )
+        self._folder_hint_lbl.pack(anchor="w", padx=12, pady=4)
+        self._update_folder_hint()
+
+    def _update_folder_hint(self):
+        """Refresh _build_folder_hint()'s label text — see its docstring."""
+        if not hasattr(self, "_folder_hint_lbl"):
+            return   # library_mode has no such label
+        system_folder = self._get_system_folder()
+        if system_folder:
+            text = (
+                "ℹ️  The capabilities listed here are the ones currently loaded for "
+                f"this system — saved to and loaded from: {Path(system_folder) / 'capabilities'}"
+            )
+        else:
+            text = (
+                "ℹ️  The capabilities listed here are the ones currently loaded for "
+                "this system. Open or save a workspace first to fix a system folder "
+                "for them — until then, they're wherever you last opened/saved each file."
+            )
+        self._folder_hint_lbl.config(text=text)
+
     def _build_library_toolbar(self, tb):
         """Toolbar contents for library_mode — see _build_toolbar()."""
         C = self._colors
@@ -1042,6 +1079,7 @@ class CapabilityTab(tk.Frame):
             n     = len(cap.get("member_uuids", []))
             label = f"{name}  [{n} component{'s' if n != 1 else ''}]"
             self._cap_listbox.insert("end", label)
+        self._update_folder_hint()
 
     def _on_list_select(self, _event=None):
         """
