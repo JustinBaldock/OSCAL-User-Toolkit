@@ -1,51 +1,49 @@
 {
   "component-definition": {
-    "uuid": "a533cbe2-d00f-450d-b2c9-442086c39ac3",
+    "uuid": "95d2c182-a72c-4d00-8dfc-803fd1481c8b",
     "metadata": {
       "title": "Capability: Patch Management",
-      "last-modified": "2026-06-30T10:00:00Z",
+      "last-modified": "2026-07-21T13:14:24Z",
       "version": "1.0",
-      "oscal-version": "1.2.2"
+      "oscal-version": "1.1.2"
     },
     "components": [
       {
-        "uuid": "72947d21-b5ac-45ca-ac24-a83926ce23e4",
+        "uuid": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e",
         "type": "policy",
         "title": "Patch Management Policy",
-        "description": "The patch management policy defines organisational requirements and timeframes for applying security patches to all systems, including operating systems, applications, and firmware. It mandates vulnerability scanning to verify patch compliance.",
-        "purpose": "Define and enforce patch management requirements across the organisation.",
+        "description": "The patch management policy defines the organisation's requirements and processes for identifying, testing, approving, and applying security patches and updates to all IT systems, including operating systems, applications, firmware, and network devices. The policy establishes timeframes for applying patches based on severity and exploitability, and mandates vulnerability scanning to verify patch compliance.",
         "props": [
           {
             "name": "operational-status",
             "value": "operational"
           }
         ],
-        "responsible-roles": [
-          {
-            "role-id": "maintainer",
-            "remarks": "IT Operations Team"
-          }
-        ],
         "control-implementations": [
           {
-            "uuid": "884dc5c0-b203-4e1b-8a32-edf3aa66b7ac",
-            "source": "ISM_catalog.json",
+            "uuid": "7342e4cc-7c60-43e5-afef-68e61b1244ea",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
             "description": "Control implementations for Patch Management Policy.",
             "implemented-requirements": [
               {
-                "uuid": "aa43fb40-bd18-4de2-a037-b24c4f7dcd74",
+                "uuid": "f42a93c9-a6f1-4bfd-9390-ae824f6e90cf",
                 "control-id": "ism-1696",
-                "description": "The patch management policy requires that patches for operating systems are applied within 48 hours when assessed as critical or when working exploits exist in the wild."
+                "description": "As defined in this policy, patches for operating systems of workstations are applied within 48 hours of release when assessed as critical by the vendor or when working exploits exist. The patch management policy specifies the roles, tools, and processes for achieving this timeframe, including automated deployment via Intune or WSUS and an emergency change process for out-of-cycle critical patches."
               },
               {
-                "uuid": "e30cf8f6-737a-4d89-8a6a-d8c0b4207498",
+                "uuid": "71f0ebaf-c395-465e-b14e-a99cde7379a7",
                 "control-id": "ism-1693",
-                "description": "The patch management policy requires that patches for standard applications (non-high-risk) are applied within one month of release."
+                "description": "As defined in this policy, patches for applications (other than the high-risk application set) are applied within one month of release. The patch management policy specifies the application inventory review process, patch identification via vendor advisories and vulnerability scanning, and the standard change process for monthly patching cycles."
               },
               {
-                "uuid": "bb10f1ed-fef8-4140-b450-c4cc9477afcf",
+                "uuid": "18c6848b-a0b4-45bc-83d1-b120dba22071",
+                "control-id": "ism-1699",
+                "description": "As defined in this policy, a vulnerability scanner is used at least weekly to identify missing patches for high-risk applications (browsers, email clients, Microsoft Office, PDF readers, security products). The policy specifies the scanning tool, scan schedule, responsible team, and the escalation process for patch compliance failures."
+              },
+              {
+                "uuid": "1baaecf7-db01-4f1e-8133-cf1eb964d3c2",
                 "control-id": "ism-1702",
-                "description": "The patch management policy mandates fortnightly vulnerability scanning to identify missing operating system patches across all endpoints."
+                "description": "As defined in this policy, a vulnerability scanner is used at least fortnightly to identify missing operating system patches on workstations and non-internet-facing servers. The policy mandates scan coverage targets and a process for reporting on and remediating patch compliance gaps."
               }
             ]
           }
@@ -65,27 +63,27 @@
         ],
         "control-implementations": [
           {
-            "uuid": "83ef25d3-5093-44bb-883e-219dcc53df73",
+            "uuid": "f520e024-d604-4b79-96d2-27efb2fe9d9f",
             "source": "ISM_catalog.json",
             "description": "Control implementations for Windows 11 \u2014 Patch Management.",
             "implemented-requirements": [
               {
-                "uuid": "7fb6e33b-7956-4437-b1f0-672ca46eefe0",
+                "uuid": "8dd1af57-d600-4e84-924d-2ae8856117cb",
                 "control-id": "ism-1696",
                 "description": "Security patches assessed as critical, or where working exploits exist, are deployed to Windows 11 workstations within 48 hours via Windows Update for Business configured in the Semi-Annual Channel with accelerated deadline policy."
               },
               {
-                "uuid": "6b47c236-6d96-461d-bcbd-e2d00df80001",
+                "uuid": "6d88b4cb-0433-48f2-b9ce-020e8763a0ee",
                 "control-id": "ism-1693",
                 "description": "All other security patches for the Windows 11 operating system are deployed within one month via the standard monthly Patch Tuesday deployment ring."
               },
               {
-                "uuid": "d681c7aa-1098-4101-ac9d-5812deb8fbaa",
+                "uuid": "1893fa18-bb15-496d-80d0-27563937edcc",
                 "control-id": "ism-1699",
                 "description": "A vulnerability scanner (Tenable Nessus) is used at least weekly to identify missing patches for high-risk applications on Windows 11 workstations, including web browsers, Microsoft Office, and PDF readers."
               },
               {
-                "uuid": "4d04b428-7b64-4f75-a75b-694820fe2afa",
+                "uuid": "832f23fb-3e84-4546-b477-a60983cbb995",
                 "control-id": "ism-1702",
                 "description": "A vulnerability scanner is run at least fortnightly to identify missing OS-level patches on Windows 11 workstations. Results are reviewed by the security team and outstanding patches are escalated within 5 business days."
               }
@@ -107,22 +105,22 @@
         ],
         "control-implementations": [
           {
-            "uuid": "a3fd5300-40d2-4df2-a0d2-36db68efd850",
+            "uuid": "05b4b684-4305-4e41-b3b7-e7e9fd7483f6",
             "source": "ISM_catalog.json",
             "description": "Control implementations for Vulnerability Scanner \u2014 Tenable Nessus.",
             "implemented-requirements": [
               {
-                "uuid": "a576a13c-74ad-4e39-bd3f-0f72f63a535f",
+                "uuid": "2ef841bc-3b54-4a87-af9f-a0db774e9328",
                 "control-id": "ism-1699",
                 "description": "Nessus performs authenticated weekly scans targeting high-risk applications (browsers, email clients, Microsoft Office, PDF readers) on all workstations. Critical findings are reviewed within 24 hours."
               },
               {
-                "uuid": "aa147c65-48e7-4176-9155-fb3f915485c9",
+                "uuid": "539e4495-e5c8-4f75-817a-05e766a7b244",
                 "control-id": "ism-1702",
                 "description": "Nessus performs authenticated fortnightly scans of all workstation and server operating systems to identify missing patches. Scan results are exported to the SIEM and summarised in the monthly patch compliance report."
               },
               {
-                "uuid": "846040d1-4d23-4671-a332-04af9893cbf9",
+                "uuid": "e74b04e5-d40c-4d04-9538-2c099d185dd8",
                 "control-id": "ism-1704",
                 "description": "Nessus scan results include end-of-life (EOL) detection. Applications and operating systems flagged as no longer receiving vendor security support are escalated to the system owner for removal or exception approval."
               }
@@ -138,7 +136,7 @@
         "description": "The organisation's patch management capability combines policy, automated patch deployment, and vulnerability scanning to ensure security patches are applied within required timeframes. Windows Update for Business delivers patches to workstations while Tenable Nessus verifies compliance across all endpoints.",
         "incorporates-components": [
           {
-            "component-uuid": "72947d21-b5ac-45ca-ac24-a83926ce23e4",
+            "component-uuid": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e",
             "description": "Defines the patch management policy and required timeframes."
           },
           {
@@ -152,14 +150,65 @@
         ],
         "control-implementations": [
           {
-            "uuid": "0154525d-9554-41de-8433-dd439db84fa4",
+            "uuid": "a7f4cbe5-46ac-4397-9ca2-465fe9b3c0d6",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for capability: Patch Management. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "7621d342-3027-417c-a781-e5860a237435",
+                "control-id": "ism-1696",
+                "description": "As defined in this policy, patches for operating systems of workstations are applied within 48 hours of release when assessed as critical by the vendor or when working exploits exist. The patch management policy specifies the roles, tools, and processes for achieving this timeframe, including automated deployment via Intune or WSUS and an emergency change process for out-of-cycle critical patches.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e"
+                  }
+                ]
+              },
+              {
+                "uuid": "4c3bf4f6-b638-45fb-855f-a76aa5b3c4a0",
+                "control-id": "ism-1693",
+                "description": "As defined in this policy, patches for applications (other than the high-risk application set) are applied within one month of release. The patch management policy specifies the application inventory review process, patch identification via vendor advisories and vulnerability scanning, and the standard change process for monthly patching cycles.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e"
+                  }
+                ]
+              },
+              {
+                "uuid": "85b0cfa3-119f-49ce-8788-a8008590b5ad",
+                "control-id": "ism-1699",
+                "description": "As defined in this policy, a vulnerability scanner is used at least weekly to identify missing patches for high-risk applications (browsers, email clients, Microsoft Office, PDF readers, security products). The policy specifies the scanning tool, scan schedule, responsible team, and the escalation process for patch compliance failures.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e"
+                  }
+                ]
+              },
+              {
+                "uuid": "750508fe-a9fa-48fc-b948-7ff042a55fff",
+                "control-id": "ism-1702",
+                "description": "As defined in this policy, a vulnerability scanner is used at least fortnightly to identify missing operating system patches on workstations and non-internet-facing servers. The policy mandates scan coverage targets and a process for reporting on and remediating patch compliance gaps.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "1b01602a-5aa1-4aa1-82a9-c4fa4aee6d9e"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "c05611f6-8fe6-4770-a83d-e59b9063984f",
             "source": "ISM_catalog.json",
             "description": "Control implementations for capability: Patch Management. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
             "implemented-requirements": [
               {
-                "uuid": "8458749e-57fa-4278-9545-b70ae3c0f08e",
+                "uuid": "7155f99e-2228-412a-baf6-1dc112858a02",
                 "control-id": "ism-1696",
-                "description": "The patch management policy sets 48-hour deployment targets for critical patches; Windows 11 WUfB enforces the deployment deadline; Nessus verifies compliance.",
+                "description": "Security patches assessed as critical, or where working exploits exist, are deployed to Windows 11 workstations within 48 hours via Windows Update for Business configured in the Semi-Annual Channel with accelerated deadline policy.",
                 "props": [
                   {
                     "name": "source-component-uuid",
@@ -168,31 +217,42 @@
                 ]
               },
               {
-                "uuid": "1506b38e-5447-4c71-ab64-359af31452a0",
+                "uuid": "cb2111ad-d3e9-4825-9b51-626bb34fb46c",
                 "control-id": "ism-1693",
-                "description": "The patch management policy sets one-month targets for standard patches; Windows Update for Business manages monthly deployment rings.",
+                "description": "All other security patches for the Windows 11 operating system are deployed within one month via the standard monthly Patch Tuesday deployment ring.",
                 "props": [
                   {
                     "name": "source-component-uuid",
-                    "value": "72947d21-b5ac-45ca-ac24-a83926ce23e4"
+                    "value": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb"
                   }
                 ]
               },
               {
-                "uuid": "0c68a98b-364d-4f42-ba33-4fac17a37460",
+                "uuid": "34d45b9e-6595-4dda-b064-f92bb2f700fa",
                 "control-id": "ism-1699",
-                "description": "Tenable Nessus performs weekly scans for missing patches on high-risk user-facing applications on all workstations.",
+                "description": "A vulnerability scanner (Tenable Nessus) is used at least weekly to identify missing patches for high-risk applications on Windows 11 workstations, including web browsers, Microsoft Office, and PDF readers.",
                 "props": [
                   {
                     "name": "source-component-uuid",
-                    "value": "a081ecb0-27fb-4018-948a-1d7cd8fe6a28"
+                    "value": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb"
                   }
                 ]
               },
               {
-                "uuid": "a2a55fb6-46ea-4cc1-b4e2-d8086ec55a27",
+                "uuid": "9070944b-42f5-4af9-86ab-c3cc59586085",
                 "control-id": "ism-1702",
-                "description": "Tenable Nessus performs fortnightly scans to identify missing OS patches across all endpoints; results are tracked in the monthly patch compliance report.",
+                "description": "A vulnerability scanner is run at least fortnightly to identify missing OS-level patches on Windows 11 workstations. Results are reviewed by the security team and outstanding patches are escalated within 5 business days.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb"
+                  }
+                ]
+              },
+              {
+                "uuid": "610f98ca-669b-43d6-a8e0-d55e02f2c9ca",
+                "control-id": "ism-1699",
+                "description": "Nessus performs authenticated weekly scans targeting high-risk applications (browsers, email clients, Microsoft Office, PDF readers) on all workstations. Critical findings are reviewed within 24 hours.",
                 "props": [
                   {
                     "name": "source-component-uuid",
@@ -201,9 +261,20 @@
                 ]
               },
               {
-                "uuid": "7abd9371-eec4-4b26-b9cc-5f9367bdeaaa",
+                "uuid": "2d13c399-942f-4eeb-9510-6f39d167fb91",
+                "control-id": "ism-1702",
+                "description": "Nessus performs authenticated fortnightly scans of all workstation and server operating systems to identify missing patches. Scan results are exported to the SIEM and summarised in the monthly patch compliance report.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "a081ecb0-27fb-4018-948a-1d7cd8fe6a28"
+                  }
+                ]
+              },
+              {
+                "uuid": "8f32e683-6e3e-429c-9820-a63ed7bad2f5",
                 "control-id": "ism-1704",
-                "description": "Nessus EOL detection identifies unsupported software; the patch management policy defines the process for removal or exception approval.",
+                "description": "Nessus scan results include end-of-life (EOL) detection. Applications and operating systems flagged as no longer receiving vendor security support are escalated to the system owner for removal or exception approval.",
                 "props": [
                   {
                     "name": "source-component-uuid",

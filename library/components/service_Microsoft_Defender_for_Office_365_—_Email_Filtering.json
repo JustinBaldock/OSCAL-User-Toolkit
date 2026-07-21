@@ -1,0 +1,76 @@
+{
+  "component-definition": {
+    "uuid": "74bec560-02ed-4e05-afac-fa01101e2d35",
+    "metadata": {
+      "title": "Microsoft Defender for Office 365 \u2014 Email Filtering",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "74bec560-02ed-4e05-afac-fa01101e2d35",
+        "type": "service",
+        "title": "Microsoft Defender for Office 365 \u2014 Email Filtering",
+        "description": "Microsoft Defender for Office 365 Plan 2 provides advanced email threat protection for the Microsoft 365 Exchange Online tenant. Provides Safe Attachments (sandbox detonation), Safe Links (URL rewriting and click-time scanning), anti-phishing (impersonation detection), and anti-spam policies. Configured for the Australian Government Community Cloud tenant.",
+        "purpose": "Scan and filter inbound and outbound email for malware, phishing, and malicious links.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "994c9c1e-b93f-478e-a224-3e5cd0025d8e",
+            "name": "smtp",
+            "title": "SMTP \u2014 Inbound/outbound mail (TLS enforced)",
+            "port-ranges": [
+              {
+                "start": 25,
+                "end": 25,
+                "transport": "TCP"
+              }
+            ]
+          },
+          {
+            "uuid": "d9d08dfd-0f7c-4676-83aa-bb85bc3c0b90",
+            "name": "https",
+            "title": "HTTPS \u2014 Admin portal and EWS",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "c26b1646-f899-4d36-8010-d0c2c0545670",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Defender for Office 365 \u2014 Email Filtering.",
+            "implemented-requirements": [
+              {
+                "uuid": "7beabeea-46ac-450b-bf46-1855d800a432",
+                "control-id": "ism-1234",
+                "description": "Defender for Office 365 Safe Attachments detonates all email attachments in a cloud sandbox before delivery. Malicious attachments are blocked and quarantined. Zero-hour auto purge (ZAP) retroactively removes malware delivered before signature updates were available."
+              },
+              {
+                "uuid": "009166ac-f2bc-4f87-b17c-6812328997db",
+                "control-id": "ism-0961",
+                "description": "Safe Links rewrites and re-checks all URLs in emails at time of click, blocking navigation to known malicious sites even if the link was clean at delivery time. URL detonation analyses suspicious links in a sandbox before the user's browser opens them."
+              },
+              {
+                "uuid": "ace924f0-368f-4595-83f8-08ac20f1bd2c",
+                "control-id": "ism-1748",
+                "description": "Defender for Office 365 anti-phishing policy uses mailbox intelligence, impersonation protection for executive accounts, and spoof intelligence to detect and quarantine phishing attempts. DMARC, DKIM, and SPF are enforced for all outbound sending domains."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

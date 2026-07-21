@@ -1,0 +1,45 @@
+{
+  "component-definition": {
+    "uuid": "f64d3f45-1b04-408a-8dfd-ac0950e72020",
+    "metadata": {
+      "title": "Offsite Backup Storage \u2014 AWS S3",
+      "last-modified": "2026-07-21T13:14:24Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "f64d3f45-1b04-408a-8dfd-ac0950e72020",
+        "type": "service",
+        "title": "Offsite Backup Storage \u2014 AWS S3",
+        "description": "Amazon Web Services S3 (Simple Storage Service) is used as the immutable offsite backup repository for Veeam backups. The S3 bucket is in a different AWS region from the primary workload. S3 Object Lock is enabled in Compliance mode to prevent modification or deletion of backup objects during the retention period.",
+        "purpose": "Provide geographically separated, immutable cloud storage for backup data.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6918780b-7764-4780-b7ac-850714c36ec9",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Offsite Backup Storage \u2014 AWS S3.",
+            "implemented-requirements": [
+              {
+                "uuid": "fc5d21dc-a328-4c54-9d58-baab42e958ae",
+                "control-id": "ism-1960",
+                "description": "AWS S3 stores all Veeam backup data in a geographically separated region (Sydney primary, Melbourne replica). The S3 bucket is access-controlled via IAM policy \u2014 only the Veeam backup server service account can write objects; no account can delete objects within the Object Lock retention window."
+              },
+              {
+                "uuid": "96d2055d-1e24-46d5-8c53-ae9254724f56",
+                "control-id": "ism-1111",
+                "description": "Veeam client-side AES-256 encryption is applied before backup data is uploaded to S3. S3 server-side encryption (SSE-S3) is also enabled as a secondary layer. The S3 bucket policy enforces HTTPS-only access (denies HTTP puts and gets)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "34922b84-a480-4301-9687-1d9676396901",
+    "metadata": {
+      "title": "Veeam Backup and Replication",
+      "last-modified": "2026-07-21T13:14:24Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "34922b84-a480-4301-9687-1d9676396901",
+        "type": "software",
+        "title": "Veeam Backup and Replication",
+        "description": "Veeam Backup and Replication is deployed as the primary backup solution for all on-premises virtual machines (VMware vSphere) and physical servers. Performs daily incremental and weekly full backups to local backup storage with replication to an immutable cloud repository (AWS S3 with Object Lock). Backup encryption is enforced via AES-256.",
+        "purpose": "Perform automated, encrypted, tested backups of all production systems.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1d546b2d-3d01-4db0-8efa-221b9e4137dc",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Veeam Backup and Replication.",
+            "implemented-requirements": [
+              {
+                "uuid": "fda58140-da57-4333-b7f8-ac48425304f3",
+                "control-id": "ism-1111",
+                "description": "Veeam Backup and Replication encrypts all backup files at rest using AES-256 with a per-job encryption key managed by the Veeam key management service. Backup traffic to the cloud repository uses TLS 1.2 in transit."
+              },
+              {
+                "uuid": "6a175a4a-28ec-4e99-b4da-4f8dedfae38f",
+                "control-id": "ism-1960",
+                "description": "Veeam replicates all backup data nightly to an AWS S3 bucket in a different region from the primary data centre. AWS S3 Object Lock (WORM) is enabled with a 30-day immutability period to prevent ransomware from deleting offsite backups."
+              },
+              {
+                "uuid": "90f610fb-143e-48ce-adc9-d7d0e5fde212",
+                "control-id": "ism-1118",
+                "description": "Veeam SureBackup performs automated recovery verification: after each backup job completes, it boots the backed-up VM in an isolated virtual lab environment and runs application-specific heartbeat tests to verify recoverability. Test results are emailed to the IT operations team and logged in Veeam ONE."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "component-definition": {
+    "uuid": "c31f7a64-8e0b-5d9b-2f6g-0e1a2b3c4d5e",
+    "metadata": {
+      "title": "EDR (SentinelOne) Component",
+      "last-modified": "2026-07-16T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "d42f8b75-9f1c-6e0c-3g7h-1f2a3b4c5d6e",
+        "type": "software",
+        "title": "EDR (SentinelOne)",
+        "description": "SentinelOne is an AI-powered Endpoint Detection and Response (EDR) platform with autonomous threat prevention capabilities. The SentinelOne agent provides real-time behavioral analysis, static AI-based malware detection, exploit prevention, and automated remediation across workstations and servers. Unlike signature-based solutions, SentinelOne's AI engine analyzes file behavior at execution time to detect known and unknown threats.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "SentinelOne Inc."
+          },
+          {
+            "name": "platform",
+            "value": "SentinelOne Platform (ActiveEDR or Singularity XDR)"
+          },
+          {
+            "name": "ai-engine",
+            "value": "Singularity AI and Machine Learning engine"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "e53g9c86-0a2d-7f1d-4h8i-2a3b4c5d6e7f",
+            "name": "https",
+            "title": "HTTPS — Agent-to-cloud communication and console access",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f64h0d97-1b3e-8g2e-5i9j-3b4c5d6e7f8g",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for EDR (SentinelOne).",
+            "implemented-requirements": [
+              {
+                "uuid": "075i1e08-2c4f-9h3f-6j0k-4c5d6e7f8g9h",
+                "control-id": "ism-1405",
+                "description": "SentinelOne provides centralised endpoint monitoring through its cloud-native platform. The agent continuously monitors process behavior, file modifications, and network connections, streaming telemetry to the SentinelOne cloud for analysis. Historical forensics data is retained according to the organisation's retention policy."
+              },
+              {
+                "uuid": "186j2f19-3d5g-0i4g-7k1l-5d6e7f8g9h0i",
+                "control-id": "ism-0585",
+                "description": "SentinelOne's AI engine identifies security-relevant events by analyzing process behavior, detecting malicious patterns and anomalies. The platform generates alerts based on behavioral analysis rather than signatures, enabling detection of previously unknown threats and zero-day exploits."
+              },
+              {
+                "uuid": "297k3g2a-4e6h-1j5h-8l2m-6e7f8g9h0i1j",
+                "control-id": "ism-1509",
+                "description": "SentinelOne alerts are accessible via the SentinelOne management console and can be integrated with SIEM platforms including Microsoft Sentinel. Automated response actions (isolation, rollback) are available for high-confidence incidents, enabling rapid containment of threats."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

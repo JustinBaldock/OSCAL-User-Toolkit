@@ -1725,7 +1725,8 @@ def validate_oscal_file(data, schema_name, zip_path):
 
 
 def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
-                      ctrl_tree, applied_tree, notebook, progress_lbl):
+                      ctrl_tree, applied_tree, notebook, progress_lbl,
+                      source_labels=None):
     """
     Rebuild the All Controls and Applied Controls Treeview tabs.
 
@@ -1744,6 +1745,13 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
         notebook       - ttk.Notebook holding both tabs (tab labels are updated
                          to show the current count, e.g. "Applied Controls (3)")
         progress_lbl   - Label widget showing "N of M controls have responses"
+        source_labels  - Optional dict {control_id: source_filename}. When
+                         given and non-empty for a control, that control's
+                         label gets a "[source_filename]" tag so a
+                         multi-catalog list (see ComponentTab._get_profile_controls())
+                         shows which catalog each control came from. Omitted
+                         entirely (no column/tag added anywhere) when None
+                         or empty, so single-catalog callers are unaffected.
     """
     DOT_DONE  = "●"
     DOT_EMPTY = "○"
@@ -1771,12 +1779,17 @@ def refresh_ctrl_list(ctrl_responses, all_controls, search_term,
         has_resp = bool(ctrl_responses.get(ctrl["id"], "").strip())
         dot = DOT_DONE  if has_resp else DOT_EMPTY
         tag = "done"    if has_resp else "empty"
+        label = ctrl["label"]
+        if source_labels:
+            src = source_labels.get(ctrl["id"], "")
+            if src:
+                label = f"{label}  [{src}]"
         # iid is the item's internal ID in the Treeview — we use the control
         # ID so we can later look up the selected control directly with
         # tree.selection()[0] instead of having to map row index → control.
         tree.insert(
             "", "end", iid=ctrl["id"],
-            values=(dot, ctrl["label"], ctrl["statement"] or ctrl["title"]),
+            values=(dot, label, ctrl["statement"] or ctrl["title"]),
             tags=(tag,),
         )
 
@@ -2134,25 +2147,41 @@ def build_component_oscal_entry(comp, source_href):
     # "implemented / partial / planned" describes how a specific system
     # deploys a component — not a property of the reusable component
     # definition itself.
-    implemented = [
-        {
+    # Group responses by source catalog/profile, not just source_href, so a
+    # component whose controls come from more than one catalog (e.g. an ISM
+    # response and a NIST response on the same component) gets one
+    # control-implementations block per source — the schema's own model for
+    # this (control-implementations is an array; each entry has its own
+    # required "source"), confirmed directly against
+    # oscal_component_schema.json rather than assumed. comp["ctrl_response_sources"]
+    # (added alongside ctrl_responses — see component_tab.py's Section 9 for
+    # where it's populated) maps a control ID to the specific catalog it came
+    # from; a control with no recorded source falls back to source_href, so
+    # existing single-catalog components are unaffected.
+    response_sources = comp.get("ctrl_response_sources", {})
+    implemented_by_source = {}
+    for ctrl_id, desc in comp.get("ctrl_responses", {}).items():
+        if not desc.strip():
+            continue
+        src = response_sources.get(ctrl_id) or source_href
+        implemented_by_source.setdefault(src, []).append({
             "uuid":        new_uuid(),
             "control-id":  ctrl_id,
             "description": desc.strip(),
-        }
-        for ctrl_id, desc in comp.get("ctrl_responses", {}).items()
-        if desc.strip()
-    ]
-    if implemented:
-        c["control-implementations"] = [{
-            "uuid":        new_uuid(),
-            "source":      source_href,
-            "description": (
-                f"Control implementations for "
-                f"{comp.get('title', 'this component')}."
-            ),
-            "implemented-requirements": implemented,
-        }]
+        })
+    if implemented_by_source:
+        c["control-implementations"] = [
+            {
+                "uuid":        new_uuid(),
+                "source":      src,
+                "description": (
+                    f"Control implementations for "
+                    f"{comp.get('title', 'this component')}."
+                ),
+                "implemented-requirements": items,
+            }
+            for src, items in implemented_by_source.items()
+        ]
 
     if comp.get("remarks"):
         c["remarks"] = comp["remarks"]

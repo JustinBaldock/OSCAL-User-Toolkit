@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "5c0380e2-df77-4fb3-b1f4-0ffbb6621186",
+    "metadata": {
+      "title": "Microsoft Outlook \u2014 Email Client",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "5c0380e2-df77-4fb3-b1f4-0ffbb6621186",
+        "type": "software",
+        "title": "Microsoft Outlook \u2014 Email Client",
+        "description": "Microsoft Outlook (as part of Microsoft 365 Apps for Enterprise) is the approved email client on all Windows 11 workstations. Security settings are locked via Group Policy and Intune: macros are disabled, external content loading is blocked, and automatic preview of potentially dangerous attachment types is disabled.",
+        "purpose": "Provide a secure, hardened email client for all organisational users.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "e3fd886e-7849-4ab5-b6ac-c115b689de66",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Outlook \u2014 Email Client.",
+            "implemented-requirements": [
+              {
+                "uuid": "d97a65ff-e1d4-4082-a9a5-7d3dbdda5163",
+                "control-id": "ism-1748",
+                "description": "Outlook security settings are enforced via Group Policy (ADMX templates): external image loading requires user confirmation, automatic download of external content in HTML email is disabled, attachment preview for executable file types is disabled, and S/MIME is configured for encrypted and digitally signed email where required."
+              },
+              {
+                "uuid": "92b27b05-4068-4676-8a6a-bad789a7c64e",
+                "control-id": "ism-0961",
+                "description": "Outlook is configured to block active content in email: macros embedded in Office documents attached to email are blocked; JavaScript and VBScript execution in Outlook forms is disabled; automatic execution of email-delivered scripts is prevented via restricted attachment type rules."
+              },
+              {
+                "uuid": "bd3d5c93-6f54-45a5-84e7-4672c6187a65",
+                "control-id": "ism-1234",
+                "description": "Outlook is integrated with Defender for Office 365: the Report Message add-in is deployed to all users for user-reported phishing; Defender protection applies to all mail rendered in Outlook clients via the Microsoft 365 ATP connector."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

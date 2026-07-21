@@ -1,0 +1,82 @@
+{
+  "component-definition": {
+    "uuid": "caa78ba3-67d5-40be-8136-e4127de19f36",
+    "metadata": {
+      "title": "SSH Component",
+      "last-modified": "2026-07-21T13:21:16Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "43aa5e0a-ad24-4c06-9fae-28860d7a1a6b",
+        "type": "service",
+        "title": "SSH",
+        "description": "Secure Shell (SSH) provides encrypted remote command-line access and administration for servers, network devices, and virtualisation hosts. Public-key authentication is enforced organisation-wide; the SSH daemon is centrally hardened via configuration management.",
+        "purpose": "Provide encrypted, authenticated remote administrative access to organisational systems.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "OpenSSH"
+          },
+          {
+            "name": "authentication",
+            "value": "Public-key only — password authentication disabled"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "374c92ba-a61c-43c6-9e6a-d4b0a4aa9974",
+            "name": "ssh",
+            "title": "SSH — encrypted remote administrative access",
+            "port-ranges": [
+              {
+                "start": 22,
+                "end": 22,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "032bd28a-9145-4d9a-831c-1915666664e7",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for SSH.",
+            "implemented-requirements": [
+              {
+                "uuid": "e26c1615-0872-4435-97cd-32a24032091d",
+                "control-id": "ism-1506",
+                "description": "The SSH daemon is configured with Protocol 2 only — SSH version 1 is disabled organisation-wide via centrally managed configuration, removing the weaker legacy protocol's known cryptographic vulnerabilities."
+              },
+              {
+                "uuid": "6a59d3f0-6655-477a-9dbf-5f7c32c3d403",
+                "control-id": "ism-0484",
+                "description": "The SSH daemon configuration (managed centrally via configuration management) sets ListenAddress to only the required management interface, a login banner, LoginGraceTime 60, HostbasedAuthentication no, IgnoreRhosts yes, PermitRootLogin no, PermitEmptyPasswords no, AllowTcpForwarding no, GatewayPorts no, and X11Forwarding no."
+              },
+              {
+                "uuid": "a3bd355e-a66b-4740-8db3-974404fe1d7a",
+                "control-id": "ism-0485",
+                "description": "All SSH connections use public key-based authentication. Password authentication is disabled in the SSH daemon configuration (PasswordAuthentication no); only holders of an authorised, registered public key can connect."
+              },
+              {
+                "uuid": "041b3e05-51a6-45f3-9740-3729ebdf6236",
+                "control-id": "ism-1449",
+                "description": "SSH private keys are protected with a passphrase (key encryption key) before being issued to users. Unencrypted private keys are not permitted on any endpoint."
+              },
+              {
+                "uuid": "3492fc73-e5de-481d-8f9e-3a1dd6eda9f7",
+                "control-id": "ism-0489",
+                "description": "Where ssh-agent key caching is used, it is limited to workstations and servers with a screen lock, and the cached key is configured to expire after no more than four hours of inactivity."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

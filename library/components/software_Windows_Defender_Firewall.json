@@ -1,0 +1,45 @@
+{
+  "component-definition": {
+    "uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+    "metadata": {
+      "title": "Windows Defender Firewall",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "869ae705-c6f7-481c-a617-01d309ef9757",
+        "type": "software",
+        "title": "Windows Defender Firewall",
+        "description": "Windows Defender Firewall with Advanced Security is enforced on all Windows 11 workstations and Windows Server 2022 systems via Group Policy and Microsoft Intune. All three firewall profiles (Domain, Private, Public) are enabled with a default-deny inbound posture.",
+        "purpose": "Enforce host-based network access control on all endpoints.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "941d208c-9d51-469a-b625-72ffa25923d8",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Windows Defender Firewall.",
+            "implemented-requirements": [
+              {
+                "uuid": "b49fb649-d35c-46ee-827d-8a395fefd7de",
+                "control-id": "ism-1416",
+                "description": "Windows Defender Firewall is enforced in all three network profiles on all workstations via Intune Firewall policy. Default inbound posture: block all unsolicited inbound connections. Only management traffic (WMI, RPC) from designated management subnets is permitted inbound."
+              },
+              {
+                "uuid": "15da0de2-95d0-430d-a208-44416b0977b7",
+                "control-id": "ism-1417",
+                "description": "Windows Defender Firewall works in conjunction with Defender AV to block network access for detected malware \u2014 Defender AV can automatically block outbound connections from quarantined processes."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

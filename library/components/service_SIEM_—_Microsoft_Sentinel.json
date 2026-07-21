@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+    "metadata": {
+      "title": "SIEM \u2014 Microsoft Sentinel",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "3eae4f19-abed-4036-b321-ada4688a2056",
+        "type": "service",
+        "title": "SIEM \u2014 Microsoft Sentinel",
+        "description": "Microsoft Sentinel is the cloud-native SIEM and SOAR platform collecting security telemetry from all in-scope systems. Data connectors ingest Windows events via Windows Event Forwarding (WEF), Defender for Endpoint events, Entra ID sign-in and audit logs, and Microsoft 365 activity logs. Analytics Rules detect threats; Playbooks automate initial response.",
+        "purpose": "Centralise security event collection, threat detection, and automated incident response.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "f9149f42-f3c3-4c94-a12f-2c909bdefae8",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for SIEM \u2014 Microsoft Sentinel.",
+            "implemented-requirements": [
+              {
+                "uuid": "e7b8b9a1-167c-4977-ad21-7b6ecc117529",
+                "control-id": "ism-1405",
+                "description": "Microsoft Sentinel is the centralised event logging facility. Log Analytics Workspace retains hot data for 90 days and archive data for 1 year. Write access to the workspace is restricted to the Sentinel service principal and authorised security administrators. Log purging requires two authorised approvals."
+              },
+              {
+                "uuid": "241b470b-4da3-47b9-98f6-b1116a3a4366",
+                "control-id": "ism-0585",
+                "description": "Sentinel Analytics Rules require structured log fields: timestamp, source host, user identity, action performed, and outcome. Custom parsers (KQL functions) normalise unstructured logs into this schema before alerting rules operate on them."
+              },
+              {
+                "uuid": "10ba1ee4-0883-43d5-8d7a-3c10eff1f7c1",
+                "control-id": "ism-1509",
+                "description": "Sentinel Analytics Rules detect privileged access events in real time: new Domain Admin additions, failed privileged logons, privileged account use outside business hours. Alerts are triaged by the SOC within 15 minutes (P1) or 4 hours (P2/P3)."
+              },
+              {
+                "uuid": "08dea4cc-7195-4c2c-bb5d-0e772adcc6dd",
+                "control-id": "ism-1566",
+                "description": "Sentinel detects anomalous standard user behaviour via Analytics Rules and Microsoft Entra ID Protection: impossible travel, atypical locations, mass file access (ransomware indicator), and sign-in risk detections generate alerts for SOC review."
+              },
+              {
+                "uuid": "657927fb-81d4-4ab8-88a7-63261ee6f97f",
+                "control-id": "ism-1683",
+                "description": "Sentinel ingests Entra ID Sign-In logs via the Entra ID data connector. MFA authentication events (success and failure) are available for analysis. MFA bypass attempts trigger a P1 alert with automated account review."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

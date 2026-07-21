@@ -1,0 +1,55 @@
+{
+  "component-definition": {
+    "uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+    "metadata": {
+      "title": "Microsoft Defender for Endpoint",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "a4df898d-600e-4a1a-9369-38db32b0c153",
+        "type": "software",
+        "title": "Microsoft Defender for Endpoint",
+        "description": "Microsoft Defender for Endpoint (MDE) Plan 2 provides next-generation antivirus (AV), endpoint detection and response (EDR), attack surface reduction (ASR) rules, and threat and vulnerability management (TVM). Deployed on all Windows 11 workstations and Windows Server 2022 systems via Microsoft Intune.",
+        "purpose": "Detect, prevent, and respond to malware and advanced threats on all endpoints.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6b84622b-e7df-469b-8d3f-0097e8a1b4ab",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Microsoft Defender for Endpoint.",
+            "implemented-requirements": [
+              {
+                "uuid": "d9e78e48-811d-437c-9ccd-716dd3b8d884",
+                "control-id": "ism-1417",
+                "description": "Microsoft Defender Antivirus operates in active mode with real-time protection, cloud-delivered protection (MAPS), and automatic sample submission enabled. Definitions are updated every 4 hours. Scheduled full scan runs weekly on Sundays."
+              },
+              {
+                "uuid": "540cf901-ee5a-44d2-aa1b-c57157deca1f",
+                "control-id": "ism-1341",
+                "description": "MDE EDR provides behaviour-based detection of threats not caught by signature AV, including process injection, credential harvesting, and LOLBin abuse. Automated Investigation and Response (AIR) automatically contains confirmed malware."
+              },
+              {
+                "uuid": "0548a677-cef0-4ab3-8534-563bc36bb643",
+                "control-id": "ism-0843",
+                "description": "MDE Attack Surface Reduction (ASR) rules are enforced in block mode: Office applications cannot create child processes, LSASS credential access is blocked, untrusted executables from USB are blocked, and obfuscated script execution is blocked."
+              },
+              {
+                "uuid": "891f060d-e471-4938-bc82-ff074075b6f0",
+                "control-id": "ism-1492",
+                "description": "Windows Defender Exploit Protection (WDEP) is enforced on all workstations: DEP, ASLR, CFG, and stack pivot protection are enabled for all processes. Settings are deployed via Intune Exploit Protection configuration profile."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

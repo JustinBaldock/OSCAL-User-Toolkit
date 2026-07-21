@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+    "metadata": {
+      "title": "Active Directory \u2014 Privileged Access",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "0895c7db-d76c-4d59-bf72-82b0cbdd23cd",
+        "type": "service",
+        "title": "Active Directory \u2014 Privileged Access",
+        "description": "Active Directory implements the technical controls for privileged access management. Privileged groups (Domain Admins, Server Admins, Workstation Admins) are tightly controlled. LAPS manages unique local administrator passwords per device. PAM tooling enforces just-in-time privileged access with session recording.",
+        "purpose": "Enforce privileged account separation and least-privilege access in the directory.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "c68d6452-d0f3-41e7-b064-aad664a98945",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Active Directory \u2014 Privileged Access.",
+            "implemented-requirements": [
+              {
+                "uuid": "e2591f57-f553-4c88-a14d-5e9f353170b0",
+                "control-id": "ism-1175",
+                "description": "Privileged AD accounts (Domain Admin, Server Admin) are not used for email or web browsing. All privileged users have a separate standard user account for daily productivity tasks."
+              },
+              {
+                "uuid": "3b2b1a69-29c0-469a-a09e-e8f061294060",
+                "control-id": "ism-0445",
+                "description": "Membership of privileged AD groups is reviewed quarterly. Any additions to Domain Admins, Enterprise Admins, or Schema Admins require written approval from the CISO."
+              },
+              {
+                "uuid": "a4b902d7-c8ef-4439-ba47-1aefabadf25f",
+                "control-id": "ism-1508",
+                "description": "AD group nesting and role assignments are reviewed to ensure no account holds more privileges than required. LAPS generates unique 20-character local admin passwords per workstation."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

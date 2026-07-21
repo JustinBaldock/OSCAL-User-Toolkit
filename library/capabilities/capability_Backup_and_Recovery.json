@@ -1,55 +1,49 @@
 {
   "component-definition": {
-    "uuid": "767ee662-90db-4989-a7ae-6f4857b3d93f",
+    "uuid": "e222cc1a-4aa5-42c8-9ab6-e2a1f622312c",
     "metadata": {
       "title": "Capability: Backup and Recovery",
-      "last-modified": "2026-06-30T10:00:00Z",
+      "last-modified": "2026-07-21T13:14:24Z",
       "version": "1.0",
-      "oscal-version": "1.2.2"
+      "oscal-version": "1.1.2"
     },
     "components": [
       {
-        "uuid": "664b2cda-94b5-4642-9a3d-942c3c916575",
+        "uuid": "ea20768b-9b4c-44c8-8d48-b102972f48b0",
         "type": "policy",
         "title": "Backup and Recovery Policy",
-        "description": "Defines requirements for backing up all organisational information and systems to support recovery from data loss, ransomware, hardware failure, and disaster events. Mandates backup frequency, retention periods, encryption, offsite storage, and mandatory restoration testing.",
-        "purpose": "Establish and enforce backup and recovery requirements across all critical systems.",
+        "description": "The backup and recovery policy defines the organisation's requirements for backing up critical systems, applications, and data to ensure business continuity and resilience against ransomware, hardware failure, or disaster. The policy establishes backup frequency, retention periods, offsite storage requirements, encryption of backup data, and the process for testing and validating backups through regular restoration exercises.",
         "props": [
           {
             "name": "operational-status",
             "value": "operational"
           }
         ],
-        "responsible-roles": [
-          {
-            "role-id": "system-owner",
-            "remarks": "IT Manager \u2014 responsible for policy approval and recovery test sign-off"
-          },
-          {
-            "role-id": "maintainer",
-            "remarks": "IT Operations \u2014 responsible for backup job management and restoration testing"
-          }
-        ],
         "control-implementations": [
           {
-            "uuid": "7cc24090-0e3a-4913-b1f8-f3da17dc1ae8",
-            "source": "ISM_catalog.json",
+            "uuid": "78999900-cecb-4550-af3a-9bb814731d9f",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
             "description": "Control implementations for Backup and Recovery Policy.",
             "implemented-requirements": [
               {
-                "uuid": "cd8b6741-33fc-4d85-ac33-74ab411779f7",
-                "control-id": "ism-1960",
-                "description": "The backup and recovery policy requires that backups of all production systems are stored in a separate location from the primary system. Offsite backup storage must be geographically separated to protect against site-level disaster."
+                "uuid": "078c6ce2-aa7c-459a-9bfd-4ba33290937c",
+                "control-id": "ism-1547",
+                "description": "As defined in this policy, backup processes and supporting procedures are developed, implemented and maintained for all systems classified as critical or high business impact. The policy specifies the backup schedule per system tier, backup owner responsibilities, procedures for monitoring backup job success and failure, and the process for escalating failed backups."
               },
               {
-                "uuid": "58b00132-61de-4716-86f0-11e79a5a587d",
-                "control-id": "ism-1111",
-                "description": "The backup and recovery policy mandates that backups are encrypted at rest and in transit using AES-256. Backup encryption keys are stored separately from the backed-up data and backed up to secure offline storage."
+                "uuid": "5cece7dc-aeac-453d-98ad-b22bbd6410fd",
+                "control-id": "ism-1511",
+                "description": "As defined in this policy, backups of critical data, applications and settings are performed and retained in accordance with business criticality. The policy defines retention tiers (e.g. 14 daily, 13 weekly, 12 monthly snapshots), mandates offsite or cloud-based backup storage, requires backup encryption (AES-256), and prohibits backups being stored only on the same system as the primary data."
               },
               {
-                "uuid": "d4dc0707-1b40-4ac3-a91d-f50a84dc2515",
-                "control-id": "ism-1118",
-                "description": "The backup and recovery policy requires that backup restoration is tested at least quarterly. Restoration test results are documented and reviewed by the system owner to confirm recovery objectives can be met."
+                "uuid": "e9f61d3c-69af-40d7-9545-eed87cadce39",
+                "control-id": "ism-1810",
+                "description": "As defined in this policy, backups are synchronised to enable restoration to a common point in time. For systems where data and configuration are stored separately, the policy requires coordinated backup jobs. Restoration testing validates that data and configuration backups can be restored together to a consistent state."
+              },
+              {
+                "uuid": "8bb495b5-6431-4ab3-8e78-8427fca11c09",
+                "control-id": "ism-0912",
+                "description": "Backup system changes (backup schedule modifications, retention policy changes, backup destination changes) are governed by the organisation's change and configuration management process. This backup and recovery policy is itself reviewed as part of the configuration management plan at least annually."
               }
             ]
           }
@@ -69,22 +63,22 @@
         ],
         "control-implementations": [
           {
-            "uuid": "86f09455-50e2-44bd-8c8a-06a0206b17e6",
+            "uuid": "5235dc25-d47e-4293-8fac-76b169dedcf5",
             "source": "ISM_catalog.json",
             "description": "Control implementations for Veeam Backup and Replication.",
             "implemented-requirements": [
               {
-                "uuid": "8891f898-c648-4ea6-8387-c322b15ff1dd",
+                "uuid": "29c9fc78-0995-474b-9184-58ea7d0267ca",
                 "control-id": "ism-1111",
                 "description": "Veeam Backup and Replication encrypts all backup files at rest using AES-256 with a per-job encryption key managed by the Veeam key management service. Backup traffic to the cloud repository uses TLS 1.2 in transit."
               },
               {
-                "uuid": "edd01877-c071-4f30-ae90-20341c2b6c00",
+                "uuid": "1bd4e3a6-3386-47ef-b852-7a3d7cfb766a",
                 "control-id": "ism-1960",
                 "description": "Veeam replicates all backup data nightly to an AWS S3 bucket in a different region from the primary data centre. AWS S3 Object Lock (WORM) is enabled with a 30-day immutability period to prevent ransomware from deleting offsite backups."
               },
               {
-                "uuid": "dd2029cc-ab52-482f-844f-9cb6107b0cf0",
+                "uuid": "f9634c4f-9333-4eb3-a8e8-c7ccbf9c7dc5",
                 "control-id": "ism-1118",
                 "description": "Veeam SureBackup performs automated recovery verification: after each backup job completes, it boots the backed-up VM in an isolated virtual lab environment and runs application-specific heartbeat tests to verify recoverability. Test results are emailed to the IT operations team and logged in Veeam ONE."
               }
@@ -106,17 +100,17 @@
         ],
         "control-implementations": [
           {
-            "uuid": "c94e07bd-6088-4f1e-b29e-dfca55a796aa",
+            "uuid": "9971f548-aae9-4d0c-bbe1-2bec071482b0",
             "source": "ISM_catalog.json",
             "description": "Control implementations for Offsite Backup Storage \u2014 AWS S3.",
             "implemented-requirements": [
               {
-                "uuid": "f0131767-3078-4d85-8f6e-5d443fdd0e7a",
+                "uuid": "3a7d6057-cf07-40ef-bfaa-f40f46f73b06",
                 "control-id": "ism-1960",
                 "description": "AWS S3 stores all Veeam backup data in a geographically separated region (Sydney primary, Melbourne replica). The S3 bucket is access-controlled via IAM policy \u2014 only the Veeam backup server service account can write objects; no account can delete objects within the Object Lock retention window."
               },
               {
-                "uuid": "691e027a-0190-4853-900e-077ad6e1b0cd",
+                "uuid": "cb95d83d-149f-4d31-9ce7-6eb090c13840",
                 "control-id": "ism-1111",
                 "description": "Veeam client-side AES-256 encryption is applied before backup data is uploaded to S3. S3 server-side encryption (SSE-S3) is also enabled as a secondary layer. The S3 bucket policy enforces HTTPS-only access (denies HTTP puts and gets)."
               }
@@ -132,7 +126,7 @@
         "description": "The backup and recovery capability combines policy, automated backup software, and immutable offsite cloud storage to protect organisational data and ensure recoverability. Veeam Backup and Replication performs daily encrypted backups and automated restoration testing; AWS S3 with Object Lock provides immutable offsite storage protected against ransomware; the backup policy governs requirements and review obligations.",
         "incorporates-components": [
           {
-            "component-uuid": "664b2cda-94b5-4642-9a3d-942c3c916575",
+            "component-uuid": "ea20768b-9b4c-44c8-8d48-b102972f48b0",
             "description": "Defines backup frequency, retention, encryption, and restoration testing requirements."
           },
           {
@@ -146,14 +140,65 @@
         ],
         "control-implementations": [
           {
-            "uuid": "65c93c54-c93e-4bf3-a9ff-097744ed051b",
+            "uuid": "5fb70e9f-ac45-447f-9d18-ebb80546e107",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for capability: Backup and Recovery. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
+            "implemented-requirements": [
+              {
+                "uuid": "8907d081-a6ae-4d83-bb35-d7301ac17b51",
+                "control-id": "ism-1547",
+                "description": "As defined in this policy, backup processes and supporting procedures are developed, implemented and maintained for all systems classified as critical or high business impact. The policy specifies the backup schedule per system tier, backup owner responsibilities, procedures for monitoring backup job success and failure, and the process for escalating failed backups.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea20768b-9b4c-44c8-8d48-b102972f48b0"
+                  }
+                ]
+              },
+              {
+                "uuid": "93acaa27-cf08-45c5-aaef-4493afc1a928",
+                "control-id": "ism-1511",
+                "description": "As defined in this policy, backups of critical data, applications and settings are performed and retained in accordance with business criticality. The policy defines retention tiers (e.g. 14 daily, 13 weekly, 12 monthly snapshots), mandates offsite or cloud-based backup storage, requires backup encryption (AES-256), and prohibits backups being stored only on the same system as the primary data.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea20768b-9b4c-44c8-8d48-b102972f48b0"
+                  }
+                ]
+              },
+              {
+                "uuid": "6e22966d-20df-41ca-94a0-f6632c1c5197",
+                "control-id": "ism-1810",
+                "description": "As defined in this policy, backups are synchronised to enable restoration to a common point in time. For systems where data and configuration are stored separately, the policy requires coordinated backup jobs. Restoration testing validates that data and configuration backups can be restored together to a consistent state.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea20768b-9b4c-44c8-8d48-b102972f48b0"
+                  }
+                ]
+              },
+              {
+                "uuid": "b8bc5980-4816-4706-9253-032a36de9b66",
+                "control-id": "ism-0912",
+                "description": "Backup system changes (backup schedule modifications, retention policy changes, backup destination changes) are governed by the organisation's change and configuration management process. This backup and recovery policy is itself reviewed as part of the configuration management plan at least annually.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "ea20768b-9b4c-44c8-8d48-b102972f48b0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "50df0d66-e3d0-4122-9b3c-d0231c6c48b4",
             "source": "ISM_catalog.json",
             "description": "Control implementations for capability: Backup and Recovery. Includes contributions from member components (identified by source-component-uuid prop) and capability-level synthesis where present.",
             "implemented-requirements": [
               {
-                "uuid": "3e9048c0-e313-4d90-a6be-936679373ef4",
+                "uuid": "b551422e-a266-480d-8183-31ee73bc4f7b",
                 "control-id": "ism-1111",
-                "description": "Veeam enforces AES-256 encryption on all backup data at rest and TLS in transit; AWS S3 SSE adds a secondary encryption layer; the backup policy mandates encryption as a baseline requirement.",
+                "description": "Veeam Backup and Replication encrypts all backup files at rest using AES-256 with a per-job encryption key managed by the Veeam key management service. Backup traffic to the cloud repository uses TLS 1.2 in transit.",
                 "props": [
                   {
                     "name": "source-component-uuid",
@@ -162,9 +207,31 @@
                 ]
               },
               {
-                "uuid": "103b8036-a000-46f8-a149-a4ab5798a712",
+                "uuid": "3785df37-8add-4950-b07b-877577cc77e5",
                 "control-id": "ism-1960",
-                "description": "Veeam replicates backup data to AWS S3 in a geographically separate region; S3 Object Lock ensures backups cannot be deleted or modified during the retention period.",
+                "description": "Veeam replicates all backup data nightly to an AWS S3 bucket in a different region from the primary data centre. AWS S3 Object Lock (WORM) is enabled with a 30-day immutability period to prevent ransomware from deleting offsite backups.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "34922b84-a480-4301-9687-1d9676396901"
+                  }
+                ]
+              },
+              {
+                "uuid": "cff4d456-bcf7-4028-a24a-03d51b227b96",
+                "control-id": "ism-1118",
+                "description": "Veeam SureBackup performs automated recovery verification: after each backup job completes, it boots the backed-up VM in an isolated virtual lab environment and runs application-specific heartbeat tests to verify recoverability. Test results are emailed to the IT operations team and logged in Veeam ONE.",
+                "props": [
+                  {
+                    "name": "source-component-uuid",
+                    "value": "34922b84-a480-4301-9687-1d9676396901"
+                  }
+                ]
+              },
+              {
+                "uuid": "b47de186-f568-4ffc-b563-8af441e0b97d",
+                "control-id": "ism-1960",
+                "description": "AWS S3 stores all Veeam backup data in a geographically separated region (Sydney primary, Melbourne replica). The S3 bucket is access-controlled via IAM policy \u2014 only the Veeam backup server service account can write objects; no account can delete objects within the Object Lock retention window.",
                 "props": [
                   {
                     "name": "source-component-uuid",
@@ -173,13 +240,13 @@
                 ]
               },
               {
-                "uuid": "b842dd73-e07e-48bd-8a47-54bf6ba73ef5",
-                "control-id": "ism-1118",
-                "description": "Veeam SureBackup automatically verifies recoverability after each backup job; the backup policy mandates quarterly manual restoration tests with documented results.",
+                "uuid": "da34cc1a-2c68-4336-96a2-c46105588977",
+                "control-id": "ism-1111",
+                "description": "Veeam client-side AES-256 encryption is applied before backup data is uploaded to S3. S3 server-side encryption (SSE-S3) is also enabled as a secondary layer. The S3 bucket policy enforces HTTPS-only access (denies HTTP puts and gets).",
                 "props": [
                   {
                     "name": "source-component-uuid",
-                    "value": "34922b84-a480-4301-9687-1d9676396901"
+                    "value": "f64d3f45-1b04-408a-8dfd-ac0950e72020"
                   }
                 ]
               }

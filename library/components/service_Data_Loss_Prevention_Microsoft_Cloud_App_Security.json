@@ -1,0 +1,76 @@
+{
+  "component-definition": {
+    "uuid": "5f2s1q0i-3p4t-9u2v-6w8x-0n1o2p3q4r5s",
+    "metadata": {
+      "title": "Data Loss Prevention Service Component",
+      "last-modified": "2026-07-16T10:00:00Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "6g3t2r1j-4u5v-0w3x-7y9z-1o2p3q4r5s6t",
+        "type": "service",
+        "title": "Data Loss Prevention Service (Microsoft Cloud App Security)",
+        "description": "Microsoft Defender for Cloud Apps (formerly Microsoft Cloud App Security) provides Data Loss Prevention (DLP) capabilities across SaaS applications including Microsoft 365, Salesforce, Box, Slack, and Google Workspace. The service monitors file activities, identifies sensitive information using predefined detection rules, and enforces policy actions such as blocking transfers or requiring encryption when sensitive data is identified inappropriately shared.",
+        "purpose": "Provide comprehensive DLP coverage across cloud SaaS applications to prevent unauthorized sharing of sensitive organizational data while enabling legitimate business collaboration workflows.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Microsoft Corporation"
+          },
+          {
+            "name": "product",
+            "value": "Microsoft Defender for Cloud Apps"
+          },
+          {
+            "name": "detection-methods",
+            "value": "Sensitive info types, custom info types, file attributes, conditional access app control"
+          }
+        ],
+        "protocols": [
+          {
+            "uuid": "7h4u3s2k-5v6w-1x4y-8z0a-2p3q4r5s6t7u",
+            "name": "https",
+            "title": "HTTPS — Cloud App Security portal and API access",
+            "port-ranges": [
+              {
+                "start": 443,
+                "end": 443,
+                "transport": "TCP"
+              }
+            ]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "8i5v4t3l-6w7x-2y5z-9a1b-3q4r5s6t7u8v",
+            "source": "example-data/ISM_NON_CLASSIFIED-baseline_profile.json",
+            "description": "Control implementations for Data Loss Prevention Service (Microsoft Cloud App Security).",
+            "implemented-requirements": [
+              {
+                "uuid": "9j6w5u4m-7x8y-3z6a-0b2c-4r5s6t7u8v9w",
+                "control-id": "ism-1487",
+                "description": "Microsoft Cloud App Security monitors file activities across SaaS applications for DLP policy violations including credit card numbers, Australian Business Number (ABN), and organisational sensitive data classifications. Activities that violate established policies trigger automated actions such as blocking downloads or notifying the security team."
+              },
+              {
+                "uuid": "0k7x6v3n-8y9z-4a7b-1c3d-5s6t7u8v9w0x",
+                "control-id": "ism-1482",
+                "description": "Conditional Access App Control (sandboxing) is configured for high-risk user groups, ensuring that any file download from SaaS applications to unmanaged devices or consumer cloud services is blocked. Users attempting to bypass DLP controls are blocked with an explanation of the policy violation."
+              },
+              {
+                "uuid": "1l8y7w4p-9z0a-5b8c-2d4e-6t7u8v9w0x1y",
+                "control-id": "ism-1313",
+                "description": "DLP policies are configured based on the organisation's data classification scheme and aligned with regulatory requirements. Policy exceptions require documented approval from the Data Protection Officer or Security Manager, and a review of the exception justification is conducted quarterly."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

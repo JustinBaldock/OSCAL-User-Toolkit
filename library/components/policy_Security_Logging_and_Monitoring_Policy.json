@@ -1,0 +1,65 @@
+{
+  "component-definition": {
+    "uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+    "metadata": {
+      "title": "Security Logging and Monitoring Policy",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "c928b44a-7acb-4eab-b18f-cf434052b830",
+        "type": "policy",
+        "title": "Security Logging and Monitoring Policy",
+        "description": "Defines requirements for capturing, protecting, retaining, and reviewing security event logs from all organisational systems. Mandates centralised log collection, minimum event types to be logged, log retention periods, and alert response timeframes.",
+        "purpose": "Establish and enforce centralised security logging and monitoring requirements.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "CISO \u2014 responsible for policy approval and log review oversight"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Security Operations Centre (SOC) \u2014 responsible for daily log review"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "21a5da9b-881b-4106-b680-19be15895600",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Security Logging and Monitoring Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "1535274f-5b0e-4b81-9f17-7f40182ea138",
+                "control-id": "ism-1405",
+                "description": "The logging policy requires a centralised event logging facility (SIEM) to collect security events from all in-scope systems. Log data must be protected from unauthorised access and deletion."
+              },
+              {
+                "uuid": "c0a56b91-fd91-4ff8-b83a-017c67191eb1",
+                "control-id": "ism-0585",
+                "description": "The logging policy mandates that each logged security event includes: date and time of the event, the user or service account that performed the action, the source and destination of the event, and the outcome (success or failure)."
+              },
+              {
+                "uuid": "33a06bc4-bcf3-4c12-9cf8-40a3a3e5e1ff",
+                "control-id": "ism-1509",
+                "description": "The logging policy requires that privileged access events (logon, logoff, account management, group policy changes, security policy changes) are centrally logged and reviewed by the security team within each business day."
+              },
+              {
+                "uuid": "6d2ede1d-4de5-4de9-8696-e26cf6858f26",
+                "control-id": "ism-1566",
+                "description": "The logging policy requires that standard user access events are centrally logged. Anomalous user activity (after-hours access, impossible travel, bulk data access) is flagged for security team review."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

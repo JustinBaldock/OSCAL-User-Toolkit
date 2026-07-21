@@ -1,0 +1,60 @@
+{
+  "component-definition": {
+    "uuid": "1cb0533d-d819-4a83-9134-9a2e84ff82c9",
+    "metadata": {
+      "title": "Email Security Policy",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "1cb0533d-d819-4a83-9134-9a2e84ff82c9",
+        "type": "policy",
+        "title": "Email Security Policy",
+        "description": "Defines requirements for securing email communications, including anti-phishing controls, attachment and link scanning, email encryption, and acceptable use obligations for all email system users. Mandates SPF, DKIM, and DMARC configuration for all sending domains.",
+        "purpose": "Establish and enforce email security controls to protect against phishing and malware.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "CISO \u2014 responsible for policy approval"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "IT Operations \u2014 Microsoft 365 administrators"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "1dd5922e-d4f8-4b22-87f5-3a57e176bb0e",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Email Security Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "ec55f9a0-7df1-48de-9fd7-68993c6faf76",
+                "control-id": "ism-1234",
+                "description": "The email security policy requires email content filtering capable of detecting and blocking malicious attachments and links, including sandbox detonation of attachments before delivery to end users."
+              },
+              {
+                "uuid": "6b3e6350-9328-413c-88ff-66becf88cc88",
+                "control-id": "ism-0961",
+                "description": "The email security policy restricts execution of active content (scripts, macros) delivered via email. Attachments containing active content must be evaluated by an email scanning solution before delivery."
+              },
+              {
+                "uuid": "de2fbbcc-7f98-480f-b360-5f4ec0d408e7",
+                "control-id": "ism-1748",
+                "description": "The email security policy requires that email client security settings are hardened and locked, preventing users from bypassing scanning or enabling unsafe content rendering in email messages."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

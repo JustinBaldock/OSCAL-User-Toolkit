@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+    "metadata": {
+      "title": "Multi-Factor Authentication \u2014 Microsoft Entra ID",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7f575bb9-8468-488f-8cd7-9134be145986",
+        "type": "software",
+        "title": "Multi-Factor Authentication \u2014 Microsoft Entra ID",
+        "description": "Microsoft Entra ID (formerly Azure AD) enforces MFA for all user and privileged access. Conditional Access policies require MFA for all cloud services, VPN, and privileged administrative actions. Microsoft Authenticator is the primary MFA method; FIDO2 hardware tokens are required for privileged accounts.",
+        "purpose": "Enforce multi-factor authentication for all privileged and standard user access.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "bddc76b2-e01e-4769-831b-37db41a4cafe",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Multi-Factor Authentication \u2014 Microsoft Entra ID.",
+            "implemented-requirements": [
+              {
+                "uuid": "cf129b77-3028-49e6-a903-07735f2384af",
+                "control-id": "ism-1173",
+                "description": "MFA is enforced for all privileged users authenticating to domain resources and cloud services via Entra ID Conditional Access policy. FIDO2 hardware tokens are required for accounts with Domain Admin or equivalent privileges."
+              },
+              {
+                "uuid": "8a97807b-de37-42aa-835f-e185496d53d4",
+                "control-id": "ism-0974",
+                "description": "MFA is enforced for all standard users accessing organisational systems via the corporate VPN, Microsoft 365, and web-based applications through Entra ID Conditional Access policies."
+              },
+              {
+                "uuid": "7d4104f2-b973-4fb5-adff-4ac80ab41e42",
+                "control-id": "ism-2012",
+                "description": "MFA is enforced for all remote access to organisational systems. The VPN gateway integrates with Entra ID MFA via RADIUS/NPS extension. SMS OTP is not permitted; only app-based OTP, push notification, and FIDO2 are accepted."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

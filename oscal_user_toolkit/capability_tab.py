@@ -95,7 +95,7 @@ class CapabilityTab(tk.Frame):
                  get_oscal_version=None, get_oscal_zip_path=None,
                  get_oscal_versions=None, get_oscal_version_paths=None,
                  add_component=None, get_library_path=None, get_system_folder=None,
-                 library_mode=False):
+                 library_mode=False, get_resolver=None):
         """
         Initialise the CapabilityTab.
 
@@ -131,6 +131,12 @@ class CapabilityTab(tk.Frame):
                                 save location prompt — mirrors ComponentTab's
                                 library_mode (see
                                 oscal_user_toolkit_design_document.md §10.20).
+            get_resolver      - Optional callback returning the app's
+                                CatalogResolver — mirrors
+                                ComponentTab.get_resolver; see that
+                                docstring. Lets a capability's own
+                                (non-inherited) control responses reference
+                                controls from more than one loaded catalog.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -150,6 +156,7 @@ class CapabilityTab(tk.Frame):
         self._get_library_path    = get_library_path  or (lambda: None)
         self._get_system_folder   = get_system_folder or (lambda: None)
         self._library_mode        = library_mode
+        self._get_resolver        = get_resolver or (lambda: None)
 
         # ── File-level state ──────────────────────────────────────────────────
         # Each saved capability gets its own component-definition file.
@@ -183,6 +190,13 @@ class CapabilityTab(tk.Frame):
 
         # ── Control implementation state ──────────────────────────────────────
         self._ctrl_responses  = {}    # {control_id: description} for selected cap
+        # {control_id: source catalog filename} for capability-level
+        # responses — mirrors ComponentTab._ctrl_response_sources; only
+        # meaningful when get_resolver() has more than one catalog loaded.
+        self._ctrl_response_sources = {}
+        # {control_id: source filename} for EVERY control currently listed —
+        # mirrors ComponentTab._ctrl_source_map, rebuilt each refresh.
+        self._ctrl_source_map = {}
         self._sel_ctrl_id     = None  # which control is currently shown in editor
 
         self._build()
@@ -1282,6 +1296,7 @@ class CapabilityTab(tk.Frame):
         self._capabilities.pop(self._sel_index)
         self._sel_index      = None
         self._ctrl_responses = {}
+        self._ctrl_response_sources = {}
         self._dirty          = True
         self._refresh_list()
         self._show_placeholder()
@@ -1357,6 +1372,7 @@ class CapabilityTab(tk.Frame):
 
         # Control responses
         self._ctrl_responses = dict(cap.get("ctrl_responses", {}))
+        self._ctrl_response_sources = dict(cap.get("ctrl_response_sources", {}))
         self._sel_ctrl_id    = None
         self._response_text.delete("1.0", "end")
         self._stmt_lbl.config(
@@ -1388,10 +1404,14 @@ class CapabilityTab(tk.Frame):
             text = self._response_text.get("1.0", "end-1c").strip()
             if text:
                 self._ctrl_responses[self._sel_ctrl_id] = text
+                src = self._ctrl_source_map.get(self._sel_ctrl_id)
+                if src:
+                    self._ctrl_response_sources[self._sel_ctrl_id] = src
             else:
                 self._ctrl_responses.pop(self._sel_ctrl_id, None)
 
         cap["ctrl_responses"] = dict(self._ctrl_responses)
+        cap["ctrl_response_sources"] = dict(self._ctrl_response_sources)
 
         # Preserve member_descriptions from the table rows
         if "member_descriptions" not in cap:
@@ -1446,6 +1466,7 @@ class CapabilityTab(tk.Frame):
             comp = self._find_component(comp_uuid)
             if not comp:
                 continue
+            comp_ctrl_sources = comp.get("ctrl_response_sources", {})
             for ctrl_id, desc in comp.get("ctrl_responses", {}).items():
                 if desc.strip():
                     inherited.append({
@@ -1453,6 +1474,11 @@ class CapabilityTab(tk.Frame):
                         "description":            desc.strip(),
                         "source_component_uuid":  comp["uuid"],
                         "source_component_title": comp.get("title", ""),
+                        # The member component's own per-control catalog
+                        # source (see ComponentTab._ctrl_response_sources) —
+                        # carried through so this response lands in the
+                        # right control-implementations block on save.
+                        "catalog_source":         comp_ctrl_sources.get(ctrl_id, ""),
                     })
         cap["inherited_ctrl_responses"] = inherited
 
@@ -1894,8 +1920,35 @@ class CapabilityTab(tk.Frame):
     # =========================================================================
 
     def _get_controls(self):
-        """Return the controls to show in Section 3 (shared logic in models.py)."""
-        return get_profile_controls(self._get_catalog(), self._get_profile())
+        """
+        Return the controls to show in Section 3.
+
+        Mirrors ComponentTab._get_profile_controls() — see that docstring
+        for the full design. When get_resolver() holds more than one loaded
+        catalog, combines controls from all of them and rebuilds
+        self._ctrl_source_map; otherwise behaves exactly as before.
+        """
+        resolver = self._get_resolver()
+        catalogs = resolver.catalogs() if resolver else {}
+        if len(catalogs) <= 1:
+            self._ctrl_source_map = {}
+            return get_profile_controls(self._get_catalog(), self._get_profile())
+
+        profile     = self._get_profile()
+        profile_ids = profile["ids"] if profile else None
+        combined    = []
+        source_map  = {}
+        seen_ids    = set()
+        for path, ctrl in resolver.all_controls():
+            if profile_ids is not None and ctrl["id"] not in profile_ids:
+                continue
+            if ctrl["id"] in seen_ids:
+                continue
+            seen_ids.add(ctrl["id"])
+            combined.append(ctrl)
+            source_map[ctrl["id"]] = Path(path).name
+        self._ctrl_source_map = source_map
+        return combined
 
     def _refresh_ctrl_list(self, search_term=""):
         """Rebuild both control list tabs from the current catalog/profile controls.
@@ -1903,14 +1956,16 @@ class CapabilityTab(tk.Frame):
         Uses a merged dict so controls are marked ● when ANY response exists —
         whether inherited from a member component or written at capability level.
         """
+        all_controls = self._get_controls()   # also rebuilds _ctrl_source_map
         refresh_ctrl_list(
             ctrl_responses=self._merged_ctrl_responses(),
-            all_controls=self._get_controls(),
+            all_controls=all_controls,
             search_term=search_term,
             ctrl_tree=self._ctrl_tree,
             applied_tree=self._applied_ctrl_tree,
             notebook=self._ctrl_nb,
             progress_lbl=self._progress_lbl,
+            source_labels=self._ctrl_source_map,
         )
 
     def _on_ctrl_tab_changed(self, _event=None):
@@ -1949,15 +2004,26 @@ class CapabilityTab(tk.Frame):
             text = self._response_text.get("1.0", "end-1c").strip()
             if text:
                 self._ctrl_responses[self._sel_ctrl_id] = text
+                src = self._ctrl_source_map.get(self._sel_ctrl_id)
+                if src:
+                    self._ctrl_response_sources[self._sel_ctrl_id] = src
             else:
                 self._ctrl_responses.pop(self._sel_ctrl_id, None)
 
         self._sel_ctrl_id = ctrl_id
 
-        # Find the control dict so we can show its statement
+        # Find the control dict so we can show its statement. Multi-catalog
+        # capabilities (_ctrl_source_map non-empty) may have a selected
+        # control that isn't in the single self._get_catalog() — check the
+        # resolver's combined catalogs first in that case.
         catalog   = self._get_catalog()
         ctrl_dict = None
-        if catalog:
+        resolver  = self._get_resolver()
+        if self._ctrl_source_map and resolver:
+            ctrl_dict = next(
+                (c for _p, c in resolver.all_controls() if c["id"] == ctrl_id), None
+            )
+        if ctrl_dict is None and catalog:
             ctrl_dict = next(
                 (c for c in catalog["controls"] if c["id"] == ctrl_id), None
             )
@@ -2020,6 +2086,9 @@ class CapabilityTab(tk.Frame):
         text = self._response_text.get("1.0", "end-1c").strip()
         if text:
             self._ctrl_responses[self._sel_ctrl_id] = text
+            src = self._ctrl_source_map.get(self._sel_ctrl_id)
+            if src:
+                self._ctrl_response_sources[self._sel_ctrl_id] = src
         else:
             # Empty text — remove the entry so the dot clears
             self._ctrl_responses.pop(self._sel_ctrl_id, None)
@@ -2098,11 +2167,18 @@ class CapabilityTab(tk.Frame):
             for uid in cap.get("member_uuids", [])
         ]
 
-        # ── implemented-requirements ──────────────────────────────────────────
+        # ── implemented-requirements, grouped by source catalog ───────────────
+        # Mirrors build_component_oscal_entry()'s grouping in models.py — a
+        # capability that inherits an ISM response from one member and a
+        # NIST response from another (or writes its own responses against
+        # different catalogs) needs one control-implementations block per
+        # source, not one block claiming a single "source" for everything.
         # 1. One entry per component-control pair (inherited responses)
-        cap_implemented = []
+        cap_response_sources = cap.get("ctrl_response_sources", {})
+        implemented_by_source = {}
         for entry in cap.get("inherited_ctrl_responses", []):
-            cap_implemented.append({
+            src = entry.get("catalog_source") or source_href
+            implemented_by_source.setdefault(src, []).append({
                 "uuid":       new_uuid(),
                 "control-id": entry["ctrl_id"],
                 "description": entry["description"],
@@ -2115,7 +2191,8 @@ class CapabilityTab(tk.Frame):
         # 2. One entry per capability-level response (no source-component prop)
         for ctrl_id, desc in cap.get("ctrl_responses", {}).items():
             if desc.strip():
-                cap_implemented.append({
+                src = cap_response_sources.get(ctrl_id) or source_href
+                implemented_by_source.setdefault(src, []).append({
                     "uuid":        new_uuid(),
                     "control-id":  ctrl_id,
                     "description": desc.strip(),
@@ -2129,19 +2206,22 @@ class CapabilityTab(tk.Frame):
         }
         if incorporates:
             oscal_cap["incorporates-components"] = incorporates
-        if cap_implemented:
-            oscal_cap["control-implementations"] = [{
-                "uuid":        new_uuid(),
-                "source":      source_href,
-                "description": (
-                    f"Control implementations for capability: "
-                    f"{cap.get('name', 'this capability')}. "
-                    f"Includes contributions from member components "
-                    f"(identified by source-component-uuid prop) and "
-                    f"capability-level synthesis where present."
-                ),
-                "implemented-requirements": cap_implemented,
-            }]
+        if implemented_by_source:
+            oscal_cap["control-implementations"] = [
+                {
+                    "uuid":        new_uuid(),
+                    "source":      src,
+                    "description": (
+                        f"Control implementations for capability: "
+                        f"{cap.get('name', 'this capability')}. "
+                        f"Includes contributions from member components "
+                        f"(identified by source-component-uuid prop) and "
+                        f"capability-level synthesis where present."
+                    ),
+                    "implemented-requirements": items,
+                }
+                for src, items in implemented_by_source.items()
+            ]
         if cap.get("remarks"):
             oscal_cap["remarks"] = cap["remarks"]
 
@@ -2389,10 +2469,17 @@ class CapabilityTab(tk.Frame):
                 member_uuids.append(uid)
                 member_descs[uid] = inc.get("description", "")
 
-        # Separate inherited (has source-component-uuid prop) from capability-level
-        ctrl_responses  = {}
+        # Separate inherited (has source-component-uuid prop) from capability-level.
+        # Each block's own "source" is recorded per control-id into
+        # ctrl_response_sources for capability-level responses — mirrors
+        # ComponentTab._parse_single_component(). Inherited entries' source
+        # gets re-derived from the member component itself by
+        # _resync_inherited_for_cap() below, so it isn't tracked here.
+        ctrl_responses        = {}
+        ctrl_response_sources = {}
         inherited       = []
         for impl in oscal_cap.get("control-implementations", []):
+            block_src = impl.get("source", "")
             for req in impl.get("implemented-requirements", []):
                 ctrl_id = req.get("control-id", "")
                 desc    = req.get("description", "")
@@ -2410,6 +2497,8 @@ class CapabilityTab(tk.Frame):
                     })
                 else:
                     ctrl_responses[ctrl_id] = desc
+                    if block_src:
+                        ctrl_response_sources[ctrl_id] = block_src
 
         # Document-level metadata.parties/links — see _build_oscal_document()
         # for the build side and what this represents.
@@ -2443,6 +2532,7 @@ class CapabilityTab(tk.Frame):
             "member_uuids":            member_uuids,
             "member_descriptions":     member_descs,
             "ctrl_responses":          ctrl_responses,
+            "ctrl_response_sources":   ctrl_response_sources,
             "inherited_ctrl_responses": inherited,
             "doc_creator":             doc_creator,
             "doc_links":               doc_links,
@@ -2460,19 +2550,24 @@ class CapabilityTab(tk.Frame):
             uid = oscal_comp.get("uuid", "")
             if not uid:
                 continue
-            ctrl_resps = {}
+            ctrl_resps   = {}
+            ctrl_sources = {}
             for impl in oscal_comp.get("control-implementations", []):
+                block_src = impl.get("source", "")
                 for req in impl.get("implemented-requirements", []):
                     cid  = req.get("control-id", "")
                     cdsc = req.get("description", "")
                     if cid:
                         ctrl_resps[cid] = cdsc
+                        if block_src:
+                            ctrl_sources[cid] = block_src
             self._add_component({
                 "uuid":           uid,
                 "title":          oscal_comp.get("title", ""),
                 "description":    oscal_comp.get("description", ""),
                 "type":           oscal_comp.get("type", "software"),
                 "ctrl_responses": ctrl_resps,
+                "ctrl_response_sources": ctrl_sources,
             })
 
         self._capabilities.append(cap)
@@ -2707,6 +2802,7 @@ class CapabilityTab(tk.Frame):
         self._loaded_paths   = []
         self._sel_index      = None
         self._ctrl_responses = {}
+        self._ctrl_response_sources = {}
         self._sel_ctrl_id    = None
         self._dirty          = False
 

@@ -135,7 +135,7 @@ class ComponentTab(tk.Frame):
     def __init__(self, parent, colors, get_catalog, get_profile, set_status,
                  get_oscal_version=None, get_oscal_versions=None,
                  get_oscal_version_paths=None, get_library_path=None,
-                 get_system_folder=None, library_mode=False):
+                 get_system_folder=None, library_mode=False, get_resolver=None):
         """
         Initialise the ComponentTab.
 
@@ -173,6 +173,20 @@ class ComponentTab(tk.Frame):
                                 component was loaded from, or auto-names a
                                 new one into the Library) — see
                                 oscal_user_toolkit_design_document.md §10.20.
+            get_resolver      - Optional callback returning the app's
+                                CatalogResolver (see models.py), which holds
+                                every catalog a loaded profile's imports[]
+                                pulled in — not just the single toolbar
+                                catalog. When it holds more than one catalog,
+                                Section 9's control list combines all of
+                                them (with a "[source]" tag per control) so
+                                a component can hold responses against
+                                controls from different catalogs, e.g. an
+                                ISM response and a NIST response on the same
+                                component. Only wired up for the Library
+                                Component Editor (see app.py) — the System
+                                Overview instance still shows a single
+                                catalog's controls.
         """
         super().__init__(parent, bg=colors["BG"])
 
@@ -186,6 +200,7 @@ class ComponentTab(tk.Frame):
         self._get_library_path  = get_library_path  or (lambda: None)
         self._get_system_folder = get_system_folder or (lambda: None)
         self._library_mode      = library_mode
+        self._get_resolver      = get_resolver or (lambda: None)
 
         # ── File-level state ──────────────────────────────────────────────────
         # Per-component version/revision/UUID state (see design document
@@ -223,6 +238,15 @@ class ComponentTab(tk.Frame):
         # or click Apply.
         self._ctrl_responses    = {}   # {control_id: description_string}
         self._ctrl_impl_status  = {}   # {control_id: implementation-status string}
+        # {control_id: source catalog/profile filename} — only meaningful
+        # when get_resolver has more than one catalog loaded; see
+        # _get_profile_controls()/_ctrl_source_map below.
+        self._ctrl_response_sources = {}
+        # {control_id: source filename} for EVERY control currently listed
+        # (not just ones with a response) — rebuilt by _get_profile_controls()
+        # each time the control list refreshes, used to look up which
+        # catalog the currently selected control actually came from.
+        self._ctrl_source_map  = {}
         self._selected_ctrl_id  = None # ID of the control row currently shown
 
         # Valid OSCAL implementation-status values (schema enum)
@@ -1717,6 +1741,7 @@ class ComponentTab(tk.Frame):
             "links":           [],
             "ctrl_responses":   {},  # {control_id: description_string}
             "ctrl_impl_status": {},  # {control_id: implementation-status string}
+            "ctrl_response_sources": {},  # {control_id: source catalog filename}
             # Per-component document identity/version — see §10.21.
             "file_uuid":  new_uuid(),
             "version":    "1.0",
@@ -1772,6 +1797,7 @@ class ComponentTab(tk.Frame):
         self._components.pop(self._selected_index)
         self._selected_index = None
         self._ctrl_responses  = {}
+        self._ctrl_response_sources = {}
         self._dirty = True
         self._refresh_list()
         self._show_form_placeholder()
@@ -1907,6 +1933,7 @@ class ComponentTab(tk.Frame):
         # Load the saved responses and implementation statuses for this component.
         self._ctrl_responses   = dict(comp.get("ctrl_responses", {}))
         self._ctrl_impl_status = dict(comp.get("ctrl_impl_status", {}))
+        self._ctrl_response_sources = dict(comp.get("ctrl_response_sources", {}))
         self._selected_ctrl_id = None
 
         # Clear the response editor and reset status to default
@@ -1960,6 +1987,9 @@ class ComponentTab(tk.Frame):
             text = self._ctrl_response_text.get("1.0", "end-1c").strip()
             if text:
                 self._ctrl_responses[self._selected_ctrl_id] = text
+                src = self._ctrl_source_map.get(self._selected_ctrl_id)
+                if src:
+                    self._ctrl_response_sources[self._selected_ctrl_id] = src
             else:
                 # If the user cleared the response, remove it
                 self._ctrl_responses.pop(self._selected_ctrl_id, None)
@@ -1967,9 +1997,10 @@ class ComponentTab(tk.Frame):
             self._ctrl_impl_status[self._selected_ctrl_id] = \
                 self._ctrl_impl_status_var.get() or "implemented"
 
-        # Write both dicts back into the component
+        # Write all three dicts back into the component
         comp["ctrl_responses"]   = dict(self._ctrl_responses)
         comp["ctrl_impl_status"] = dict(self._ctrl_impl_status)
+        comp["ctrl_response_sources"] = dict(self._ctrl_response_sources)
         self._dirty = True
 
     def _apply_component(self):
@@ -2232,8 +2263,45 @@ class ComponentTab(tk.Frame):
     # =========================================================================
 
     def _get_profile_controls(self):
-        """Return the controls to show in Section 7 (shared logic in models.py)."""
-        return get_profile_controls(self._get_catalog(), self._get_profile())
+        """
+        Return the controls to show in Section 9.
+
+        Normally just delegates to the shared single-catalog logic in
+        models.py. But when get_resolver() holds more than one loaded
+        catalog — a profile whose imports[] pulled in e.g. both an ISM and
+        a NIST catalog, see CatalogResolver.load_from_profile() — combines
+        controls from every loaded catalog instead, and rebuilds
+        self._ctrl_source_map (control_id -> source catalog filename) so
+        the control list can tag each row with its catalog and a saved
+        response can record which one it came from.
+        """
+        resolver = self._get_resolver()
+        catalogs = resolver.catalogs() if resolver else {}
+        if len(catalogs) <= 1:
+            # Common case: no resolver wired up, or only one catalog
+            # loaded — behave exactly as before, no source tracking.
+            self._ctrl_source_map = {}
+            return get_profile_controls(self._get_catalog(), self._get_profile())
+
+        profile = self._get_profile()
+        profile_ids = profile["ids"] if profile else None
+        combined    = []
+        source_map  = {}
+        seen_ids    = set()
+        for path, ctrl in resolver.all_controls():
+            if profile_ids is not None and ctrl["id"] not in profile_ids:
+                continue
+            if ctrl["id"] in seen_ids:
+                # Two loaded catalogs happen to share a control ID (see
+                # todo.md §3's "Control ID Namespace Awareness") — keep
+                # whichever we saw first rather than crashing the Treeview
+                # on a duplicate row iid.
+                continue
+            seen_ids.add(ctrl["id"])
+            combined.append(ctrl)
+            source_map[ctrl["id"]] = Path(path).name
+        self._ctrl_source_map = source_map
+        return combined
 
     def _on_ctrl_tab_changed(self, _event=None):
         """
@@ -2251,14 +2319,16 @@ class ComponentTab(tk.Frame):
 
     def _refresh_control_list(self, search_term=""):
         """Rebuild both control list tabs from the current profile controls."""
+        all_controls = self._get_profile_controls()   # also rebuilds _ctrl_source_map
         refresh_ctrl_list(
             ctrl_responses=self._ctrl_responses,
-            all_controls=self._get_profile_controls(),
+            all_controls=all_controls,
             search_term=search_term,
             ctrl_tree=self._ctrl_tree,
             applied_tree=self._applied_ctrl_tree,
             notebook=self._ctrl_notebook,
             progress_lbl=self._ctrl_progress_lbl,
+            source_labels=self._ctrl_source_map,
         )
 
     def _on_ctrl_search(self, *_args):
@@ -2304,6 +2374,16 @@ class ComponentTab(tk.Frame):
             current_text = self._ctrl_response_text.get("1.0", "end-1c").strip()
             if current_text:
                 self._ctrl_responses[self._selected_ctrl_id] = current_text
+                # Record which catalog this response's control came from —
+                # see _get_profile_controls()'s _ctrl_source_map — so
+                # build_component_oscal_entry() can group it into the
+                # right control-implementations block on save. Only
+                # meaningful when more than one catalog is loaded; empty
+                # otherwise, and models.py falls back to the single
+                # source_href when nothing's recorded.
+                src = self._ctrl_source_map.get(self._selected_ctrl_id)
+                if src:
+                    self._ctrl_response_sources[self._selected_ctrl_id] = src
             else:
                 self._ctrl_responses.pop(self._selected_ctrl_id, None)
             # Persist the implementation status for the control we're leaving
@@ -2313,9 +2393,17 @@ class ComponentTab(tk.Frame):
         self._selected_ctrl_id = ctrl_id
 
         # ── Find this control's full details from the catalog ─────────────────
+        # Multi-catalog components (_ctrl_source_map non-empty) may have a
+        # selected control that isn't in the single self._get_catalog() —
+        # look it up via the resolver's combined catalogs first in that case.
         catalog   = self._get_catalog()
         ctrl_dict = None
-        if catalog:
+        resolver  = self._get_resolver()
+        if self._ctrl_source_map and resolver:
+            ctrl_dict = next(
+                (c for _p, c in resolver.all_controls() if c["id"] == ctrl_id), None
+            )
+        if ctrl_dict is None and catalog:
             ctrl_dict = next(
                 (c for c in catalog["controls"] if c["id"] == ctrl_id), None
             )
@@ -2361,6 +2449,9 @@ class ComponentTab(tk.Frame):
         text = self._ctrl_response_text.get("1.0", "end-1c").strip()
         if text:
             self._ctrl_responses[self._selected_ctrl_id] = text
+            src = self._ctrl_source_map.get(self._selected_ctrl_id)
+            if src:
+                self._ctrl_response_sources[self._selected_ctrl_id] = src
         else:
             # Empty response — remove the entry so the dot clears
             self._ctrl_responses.pop(self._selected_ctrl_id, None)
@@ -3333,15 +3424,23 @@ class ComponentTab(tk.Frame):
             if lnk.get("href", "").strip()
         ]
 
-        # Flatten OSCAL control-implementations back to internal dicts
-        ctrl_responses   = {}
-        ctrl_impl_status = {}
+        # Flatten OSCAL control-implementations back to internal dicts.
+        # A component may have more than one control-implementations block
+        # (see build_component_oscal_entry() in models.py) — each one's own
+        # "source" is recorded per control-id into ctrl_response_sources so
+        # a re-save groups responses back into the same per-catalog blocks.
+        ctrl_responses        = {}
+        ctrl_impl_status      = {}
+        ctrl_response_sources = {}
         for ci in c.get("control-implementations", []):
+            src = ci.get("source", "")
             for req in ci.get("implemented-requirements", []):
                 ctrl_id = req.get("control-id", "")
                 desc    = req.get("description", "")
                 if ctrl_id and desc:
                     ctrl_responses[ctrl_id] = desc
+                    if src:
+                        ctrl_response_sources[ctrl_id] = src
                 # Parse implementation-status if present (defaults to "implemented")
                 impl_st = req.get("implementation-status", {})
                 if ctrl_id and impl_st.get("state"):
@@ -3362,6 +3461,7 @@ class ComponentTab(tk.Frame):
             "links":            links,
             "ctrl_responses":   ctrl_responses,
             "ctrl_impl_status": ctrl_impl_status,
+            "ctrl_response_sources": ctrl_response_sources,
             "file_uuid":        root.get("uuid") or new_uuid(),
             "version":          meta.get("version", "1.0"),
             "revisions":        revisions,
@@ -3727,6 +3827,7 @@ class ComponentTab(tk.Frame):
         self._selected_index   = None
         self._ctrl_responses   = {}
         self._ctrl_impl_status = {}
+        self._ctrl_response_sources = {}
         if hasattr(self, "_comp_search_var"):
             self._comp_search_var.set("")
         if hasattr(self, "_comp_type_filter_var"):
@@ -3802,6 +3903,7 @@ class ComponentTab(tk.Frame):
         self._selected_index   = None
         self._ctrl_responses   = {}
         self._ctrl_impl_status = {}
+        self._ctrl_response_sources = {}
         # Reset filters so all newly loaded components are visible
         if hasattr(self, "_comp_search_var"):
             self._comp_search_var.set("")
@@ -3847,6 +3949,7 @@ class ComponentTab(tk.Frame):
         self._filtered_indices = []
         self._selected_index   = None
         self._ctrl_responses   = {}
+        self._ctrl_response_sources = {}
         self._dirty            = False
         if hasattr(self, "_comp_search_var"):
             self._comp_search_var.set("")

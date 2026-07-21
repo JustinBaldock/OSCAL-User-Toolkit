@@ -1,0 +1,65 @@
+{
+  "component-definition": {
+    "uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+    "metadata": {
+      "title": "Privileged Access Management Policy",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "117301d2-c14c-4fdb-b80d-fedc8f53dcb2",
+        "type": "policy",
+        "title": "Privileged Access Management Policy",
+        "description": "Defines requirements for granting, managing, reviewing, and revoking privileged access across all organisational systems. Mandates the use of separate privileged accounts, multi-factor authentication for all privileged activities, and quarterly access reviews.",
+        "purpose": "Establish and enforce privileged access management requirements.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner",
+            "remarks": "CISO \u2014 responsible for policy approval and annual review"
+          },
+          {
+            "role-id": "maintainer",
+            "remarks": "Identity and Access Management Team"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "61f2398a-f8ca-4633-af83-6df588d8c9ff",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Privileged Access Management Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "b1d74603-247a-4884-a459-265ef8822ab9",
+                "control-id": "ism-1175",
+                "description": "The PAM policy prohibits the use of privileged accounts for standard activities such as email, web browsing, or general productivity tasks. Privileged accounts are restricted to administrative tasks only."
+              },
+              {
+                "uuid": "14dd2733-b7fc-4e29-aea2-d7b742d1e046",
+                "control-id": "ism-0445",
+                "description": "The PAM policy requires that privileged access requests are approved by the relevant system owner and the CISO before access is granted. All privileged accounts are individually named \u2014 shared privileged accounts are prohibited."
+              },
+              {
+                "uuid": "6ac225d1-01a6-42a9-8583-71c47ac72581",
+                "control-id": "ism-1507",
+                "description": "The PAM policy mandates formal requests for privileged access, including business justification, the specific systems and actions required, and a defined review date (maximum 12 months)."
+              },
+              {
+                "uuid": "76e4b333-e5ec-43f1-a992-23ac0f2ceb47",
+                "control-id": "ism-1508",
+                "description": "The PAM policy requires that privileged access is limited to the minimum required to perform approved administrative tasks (principle of least privilege)."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

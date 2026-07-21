@@ -801,6 +801,7 @@ class OSCALApp(tk.Tk):
             get_oscal_version_paths = self.get_oscal_version_paths,
             get_library_path  = self.get_library_path,
             library_mode      = True,
+            get_resolver      = self.get_resolver,
         )
         organisation_nb.add(self._library_component_tab, text="⚙  Library Components")
 
@@ -822,9 +823,20 @@ class OSCALApp(tk.Tk):
             ),
             get_oscal_versions      = self.get_oscal_versions,
             get_oscal_version_paths = self.get_oscal_version_paths,
-            add_component       = self._library_component_tab.add_component,
+            # No add_component here — deliberately NOT wired to
+            # self._library_component_tab.add_component, unlike the System
+            # Overview pair below. In the Library, ComponentTab already
+            # auto-loads every real file in library/components/ on its own
+            # (see library_mode); importing a capability's OWN bundled
+            # component copies on top of that let a capability file with a
+            # stale/mismatched bundled component silently create a second,
+            # phantom "duplicate" row with the same title but no matching
+            # file on disk. Member resolution now relies purely on
+            # get_components() already containing the real library files —
+            # see oscal_user_toolkit_design_document.md §10.25.
             get_library_path    = self.get_library_path,
             library_mode        = True,
+            get_resolver        = self.get_resolver,
         )
         organisation_nb.add(self._library_capability_tab, text="🔗  Library Capabilities")
 
@@ -1553,9 +1565,9 @@ class OSCALApp(tk.Tk):
         """
         Callback for tabs that need to look up controls across every
         currently loaded catalog (see models.CatalogResolver), not just
-        the single primary self._catalog. Not yet consumed by any tab —
-        Component Editor's Source column/filter (todo.md §3) will be the
-        first.
+        the single primary self._catalog. Wired only into the Library
+        Component/Capability Editors (see todo.md §3, oscal_user_toolkit_design_document.md
+        §10.24) — the System Overview editors still show a single catalog.
         """
         return self._resolver
 

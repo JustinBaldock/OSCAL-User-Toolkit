@@ -1,0 +1,55 @@
+{
+  "component-definition": {
+    "uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+    "metadata": {
+      "title": "Windows 11 \u2014 Patch Management",
+      "last-modified": "2026-07-21T13:14:24Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "23bec6a4-cb04-421c-b187-6e2d65e1b8fb",
+        "type": "software",
+        "title": "Windows 11 \u2014 Patch Management",
+        "description": "Windows 11 is the standard workstation operating system. Patching is managed via Windows Update for Business (WUfB) and Microsoft Intune. Patch compliance is verified via Tenable Nessus vulnerability scans run fortnightly from the central scan server.",
+        "purpose": "Apply and verify security patches on all Windows 11 workstations.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "54ee4f8d-9ba5-4201-b1d6-c494bbe6ab68",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Windows 11 \u2014 Patch Management.",
+            "implemented-requirements": [
+              {
+                "uuid": "ee04ee88-bc67-46c0-9ea1-70bde966584c",
+                "control-id": "ism-1696",
+                "description": "Security patches assessed as critical, or where working exploits exist, are deployed to Windows 11 workstations within 48 hours via Windows Update for Business configured in the Semi-Annual Channel with accelerated deadline policy."
+              },
+              {
+                "uuid": "1d8f6c1e-cc39-43f3-9f3a-5c087a6155b8",
+                "control-id": "ism-1693",
+                "description": "All other security patches for the Windows 11 operating system are deployed within one month via the standard monthly Patch Tuesday deployment ring."
+              },
+              {
+                "uuid": "e478fc81-016f-45f5-b3b9-8cc0f64785fd",
+                "control-id": "ism-1699",
+                "description": "A vulnerability scanner (Tenable Nessus) is used at least weekly to identify missing patches for high-risk applications on Windows 11 workstations, including web browsers, Microsoft Office, and PDF readers."
+              },
+              {
+                "uuid": "d427e0aa-44c2-4a97-a3f3-f843f43d519b",
+                "control-id": "ism-1702",
+                "description": "A vulnerability scanner is run at least fortnightly to identify missing OS-level patches on Windows 11 workstations. Results are reviewed by the security team and outstanding patches are escalated within 5 business days."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

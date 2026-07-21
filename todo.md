@@ -134,17 +134,11 @@ A profile with two catalog imports looks like:
 
 ### Current Limitation
 
-The app still only holds **one** active catalog and **one** active profile at a time (`self._catalog`/`self._profile` in `app.py`). A `CatalogResolver` already exists (design document §10.17) and auto-loads every catalog a profile's `imports[]` references — but nothing in the UI consumes it yet. Control title lookups in the SSP, Component, and Catalog Viewer tabs only resolve against the single loaded catalog; if a profile imports from two catalogs, control IDs from the second would appear in the profile's ID set but have no title to display.
+The app still only holds **one** active catalog and **one** active profile at a time (`self._catalog`/`self._profile` in `app.py`). A `CatalogResolver` already exists (design document §10.17) and auto-loads every catalog a profile's `imports[]` references.
 
-### What Needs to Change
+**Stages 2–3 are done, but scoped to the Library Component/Capability Editors only** (see design document §10.24): when a loaded profile's `imports[]` pulls in more than one catalog, both editors' control lists combine every loaded catalog (tagged `[source_filename]` per control), and `build_component_oscal_entry()`/`CapabilityTab._build_oscal_document()` group responses by distinct source into one `control-implementations` block per catalog — confirmed schema-valid directly against `oscal_component_schema.json` (the array has no max, each entry has its own required `source`). **Not yet done**: the System Overview Component/Capability Editors still show a single catalog's controls (deliberately deferred — see §10.24 for why); the Catalog Viewer and SSP Editor are also untouched by this.
 
-#### Stage 2 — Component Editor Source column/filter
-
-"All Controls"/"Applied Controls" (Section 7) currently read from the single `self._catalog`. Settled design (brainstormed against a catalog-switcher and per-catalog-tabs alternative): keep the same Treeview structure, source it from `resolver.all_controls()` instead, and add a Source filter dropdown alongside the existing search/type filter (same pattern as Catalog Viewer's Guideline filter). The single static "Source: X" label currently written to every control-implementation on save goes away — source becomes per-control, resolved automatically from whichever catalog it came from.
-
-#### Stage 3 — Multi-source OSCAL output
-
-`build_component_oscal_entry()` in `models.py` currently always emits exactly one `control-implementations` block with one `source`. Needs to group a component's control responses by distinct `source_href` and emit one block per group, since a component whose controls come from two catalogs needs two `source` values, not one.
+### What Still Needs to Change
 
 #### Profile Editor Integration
 
@@ -205,7 +199,7 @@ From the `usability_review.md` pass (see design document §10.22 for what was al
 | Feature | Priority | Effort | Notes |
 |---|---|---|---|
 | Profile Editor | High | High | Most impactful missing editor; every SSP needs a profile — see §1 |
-| Multi-Catalog Support (Stages 2–3) | Medium | Medium | OSCAL schema already supports it; CatalogResolver exists, UI doesn't consume it yet — see §3 |
+| Multi-Catalog Support — extend to System Overview editors | Low | Medium | Done for the Library Component/Capability Editors; System Overview's own editors, the Catalog Viewer, and the SSP Editor still show a single catalog — see §3 |
 | Data Flow Diagram Export | Medium | Medium | Input UX done; only the `.drawio` export itself remains — see §4 |
 | Standalone Component Definition document type | Low | Medium | Largely superseded by the Library system; remaining gap is a distinct document type + "load all controls from profile" — see §2 |
 | Capability version/revision history | Low | Low | Same design as components, just not yet applied to `CapabilityTab` — see §5 |

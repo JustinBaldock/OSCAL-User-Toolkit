@@ -1,0 +1,50 @@
+{
+  "component-definition": {
+    "uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+    "metadata": {
+      "title": "Windows Advanced Audit Policy",
+      "last-modified": "2026-07-21T13:12:32Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7956b3ae-1cff-4db9-b06c-038ee0de469e",
+        "type": "software",
+        "title": "Windows Advanced Audit Policy",
+        "description": "Windows Advanced Audit Policy is configured via Group Policy on all domain-joined systems to capture the event types required by the logging policy. Windows Event Forwarding (WEF) streams events to a Windows Event Collector (WEC) server, which forwards them to Microsoft Sentinel. Critical event IDs monitored include: 4624, 4625, 4634, 4648, 4672, 4688, 4698, 4720, 4726, 4740.",
+        "purpose": "Configure and forward Windows security events to the centralised SIEM.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5ab8814d-aa0b-4128-ac43-fa699aa7e3af",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Windows Advanced Audit Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "260467aa-6ef6-4d91-b435-afc2f9d04c1b",
+                "control-id": "ism-1405",
+                "description": "Windows Event Forwarding (WEF) is configured on all Windows endpoints and servers via Group Policy. Events are forwarded to the WEC server within 60 seconds using a subscription-based push model. The WEC server forwards all collected events to Microsoft Sentinel."
+              },
+              {
+                "uuid": "3658dfa8-6c7b-4d2b-83f8-5887c4a3f6dd",
+                "control-id": "ism-0585",
+                "description": "Windows Advanced Audit Policy is configured to capture: Account Logon (success and failure), Account Management (all), Privilege Use (success and failure), Process Creation (success), Object Access (failure), Policy Change (all), and System events (all). Each event includes timestamp, host, user SID, and outcome."
+              },
+              {
+                "uuid": "e6bb2a2f-61f1-4b11-a5d0-030079e67a5e",
+                "control-id": "ism-1509",
+                "description": "Security event log maximum size is 1GB with 'Archive when full' policy. Privileged access events (EID 4672 \u2014 Special Logon, EID 4673 \u2014 Privileged Service Called, EID 4674 \u2014 Operation on Privileged Object) are forwarded to Sentinel and trigger review alerts."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
