@@ -969,6 +969,16 @@ class ComponentTab(tk.Frame):
             font=("Helvetica", 8),
         )
         self._v_file_uuid_lbl.pack(anchor="w")
+        # Which OSCAL version this component's file actually declares —
+        # read back on load (see _parse_single_component()), not always
+        # the app's currently-selected version. Surfaces mismatches like
+        # the Library's CivicActions examples, which declare "1.0.0"
+        # while everything else in the Library declares 1.1.2/1.2.2.
+        self._v_oscal_version_lbl = tk.Label(
+            id_row, text="OSCAL Version: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 8),
+        )
+        self._v_oscal_version_lbl.pack(anchor="w")
 
         tk.Label(ver_card, text="Revision History:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(4, 0))
@@ -1689,6 +1699,7 @@ class ComponentTab(tk.Frame):
             # attribution on the Library's aws.json/django.json/etc.
             "doc_creator": "",
             "doc_links":   [],  # [{rel, href, text}]
+            "doc_oscal_version": "",  # set on first save/load — see below
         }
         self._components.append(new_comp)
         self._dirty = True
@@ -1808,6 +1819,9 @@ class ComponentTab(tk.Frame):
         self._v_version.set(comp.get("version", "1.0"))
         self._v_component_uuid_lbl.config(text=f"Component UUID: {comp.get('uuid', '—')}")
         self._v_file_uuid_lbl.config(text=f"Document UUID: {comp.get('file_uuid', '—')}")
+        self._v_oscal_version_lbl.config(
+            text=f"OSCAL Version: {comp.get('doc_oscal_version') or '—'}"
+        )
         self._revision_tree.delete(*self._revision_tree.get_children())
         for rev in comp.get("revisions", []):
             self._revision_tree.insert("", "end", values=(
@@ -2968,6 +2982,10 @@ class ComponentTab(tk.Frame):
             "version":       comp.get("version", "").strip() or "1.0",
             "oscal-version": self._get_oscal_version(),
         }
+        # Keep the displayed "OSCAL Version" label (Document Metadata card)
+        # in sync with what's actually about to be written, so it reflects
+        # reality immediately after a save rather than only after a reload.
+        comp["doc_oscal_version"] = metadata["oscal-version"]
         revisions = comp.get("revisions") or []
         if revisions:
             metadata["revisions"] = [
@@ -3160,6 +3178,7 @@ class ComponentTab(tk.Frame):
             "revisions":        revisions,
             "doc_creator":      doc_creator,
             "doc_links":        doc_links,
+            "doc_oscal_version": meta.get("oscal-version", ""),
         }
 
     def _load_component_from_path(self, path):

@@ -831,6 +831,18 @@ class CapabilityTab(tk.Frame):
         # see usability_review.md #2/#8 and tab_utils.make_collapsible().
         meta_card = make_collapsible(parent, "🗂  Document Metadata", C, start_expanded=True)
 
+        # Which OSCAL version this capability's file actually declares —
+        # read back on load (see _load_capability_from_path()), not always
+        # the app's currently-selected version. Same rationale as
+        # ComponentTab's equivalent label — see there for what this
+        # surfaces (e.g. the Library's CivicActions examples declaring
+        # "1.0.0" while everything else declares 1.1.2/1.2.2).
+        self._v_oscal_version_lbl = tk.Label(
+            meta_card, text="OSCAL Version: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            font=("Helvetica", 8),
+        )
+        self._v_oscal_version_lbl.pack(anchor="w", padx=10, pady=(6, 0))
+
         tk.Label(meta_card, text="Creator / Organisation:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(6, 0))
         creator_row = tk.Frame(meta_card, bg=C["CARD_BG"])
@@ -1207,6 +1219,7 @@ class CapabilityTab(tk.Frame):
             # attribution on the Library's aws.json/django.json/etc.
             "doc_creator":              "",
             "doc_links":                [],  # [{rel, href, text}]
+            "doc_oscal_version":        "",  # set on first save/load — see below
         }
         self._capabilities.append(new_cap)
         self._dirty = True
@@ -1293,7 +1306,10 @@ class CapabilityTab(tk.Frame):
         if desc:
             self._v_desc.insert("1.0", desc)
 
-        # Document Metadata — creator/links
+        # Document Metadata — OSCAL version/creator/links
+        self._v_oscal_version_lbl.config(
+            text=f"OSCAL Version: {cap.get('doc_oscal_version') or '—'}"
+        )
         self._v_creator.set(cap.get("doc_creator", ""))
         self._doc_link_tree.delete(*self._doc_link_tree.get_children())
         for link in cap.get("doc_links", []):
@@ -1986,6 +2002,10 @@ class CapabilityTab(tk.Frame):
             "version":       self._file_version.get().strip() or "1.0",
             "oscal-version": oscal_ver,
         }
+        # Keep the displayed "OSCAL Version" label (Document Metadata card)
+        # in sync with what's actually about to be written — see
+        # ComponentTab._build_single_component_oscal() for the equivalent.
+        cap["doc_oscal_version"] = oscal_ver
         # Document-level metadata.parties/links — e.g. the CivicActions
         # attribution seen on the Library's aws.json/django.json/etc — see
         # ComponentTab._build_single_component_oscal() for the equivalent.
@@ -2274,6 +2294,7 @@ class CapabilityTab(tk.Frame):
             "inherited_ctrl_responses": inherited,
             "doc_creator":             doc_creator,
             "doc_links":               doc_links,
+            "doc_oscal_version":       meta.get("oscal-version", ""),
         }
 
         # ── Import bundled components into the Component Editor ───────────────
