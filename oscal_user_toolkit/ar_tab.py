@@ -294,7 +294,7 @@ class ARTab(tk.Frame):
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", ipady=3)
         tk.Button(ap_row, text="📂  Browse…", command=self._browse_ap,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(6, 0))
 
@@ -504,7 +504,7 @@ class ARTab(tk.Frame):
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(ev_btn_row, text="✕  Remove Selected", command=_remove_ev,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left", padx=6)
         ev_tree.pack(fill="x", padx=6, pady=(0, 6))
@@ -685,7 +685,7 @@ class ARTab(tk.Frame):
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(rem_btn_row, text="✕  Remove Selected", command=_remove_rem,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left", padx=6)
         rem_tree.pack(fill="x", padx=6, pady=(0, 6))
@@ -1186,7 +1186,7 @@ class ARTab(tk.Frame):
                   relief="flat", padx=16, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(brow, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=12, pady=4, cursor="hand2",
                   ).pack(side="left", padx=8)
 

@@ -260,7 +260,7 @@ class WorkspaceTab(tk.Frame):
         )
         new_btn = tk.Button(
             btn_row, text="🆕  Create New Workspace", command=lambda: self._new_workspace(),
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10, "bold"),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
         )
         new_btn.pack(side="left", padx=(8, 0))

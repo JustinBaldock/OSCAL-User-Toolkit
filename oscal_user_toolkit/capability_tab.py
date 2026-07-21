@@ -382,7 +382,7 @@ class CapabilityTab(tk.Frame):
         # Clear all capabilities and start fresh
         tk.Button(
             tb, text="🗑  Clear All", command=self._clear_all,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 12), pady=8)
 
@@ -635,7 +635,7 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             btn_row, text="✕  Delete",
             command=self._delete_capability,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
         ).pack(side="right")
 
@@ -856,7 +856,7 @@ class CapabilityTab(tk.Frame):
         upgrade_btn = tk.Button(
             oscal_ver_row, text="🔼  Upgrade OSCAL Version",
             command=self._upgrade_oscal_version,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 8),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 8),
             relief="flat", padx=6, pady=0, cursor="hand2",
         )
         upgrade_btn.pack(side="left", padx=(10, 0))
@@ -890,7 +890,7 @@ class CapabilityTab(tk.Frame):
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(doc_link_btn_row, text="✕  Remove Selected", command=self._remove_doc_link,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left", padx=6)
         self._doc_link_tree = ttk.Treeview(
@@ -945,7 +945,7 @@ class CapabilityTab(tk.Frame):
         tk.Button(
             mem_btn, text="✕  Remove Selected",
             command=self._remove_member,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
 
@@ -1711,7 +1711,7 @@ class CapabilityTab(tk.Frame):
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(btn_row, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left", padx=(8, 0))
         dlg.bind("<Return>", lambda _e: do_upgrade())
@@ -1806,7 +1806,7 @@ class CapabilityTab(tk.Frame):
                   bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.bind("<Return>", lambda _e: _ok())
 
@@ -1882,7 +1882,7 @@ class CapabilityTab(tk.Frame):
                   bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.bind("<Return>", lambda _e: _ok())
 

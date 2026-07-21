@@ -109,6 +109,15 @@ DARK_COLORS = {
     # theme-swapped) because every _BG colour is light/pastel in BOTH
     # palettes by design.
     "BUTTON_TEXT": "#1a1a1a",
+    # Fill for secondary/neutral buttons (Cancel, Delete, Remove Selected,
+    # etc). Fixed light grey-lavender, not theme-swapped — same reasoning
+    # as the _BG keys: usability_review_2.md flagged that pairing these
+    # buttons' fill (HEADER_BG, which is dark in dark mode) with the
+    # theme's light TEXT colour made secondary-button text a visibly
+    # different colour from primary buttons' fixed BUTTON_TEXT sitting
+    # right next to them. This fill is light enough for BUTTON_TEXT in
+    # both palettes, so every button now uses the same text colour.
+    "SECONDARY_BG": "#c9ccdb",
 }
 
 LIGHT_COLORS = {
@@ -135,6 +144,7 @@ LIGHT_COLORS = {
     "BLUE_BG":     "#90caf9",
     "TEAL_BG":     "#80cbc4",
     "BUTTON_TEXT": "#1a1a1a",   # Same fixed near-black as DARK_COLORS
+    "SECONDARY_BG": "#c9ccdb",  # Same fixed fill as DARK_COLORS — see note there
 }
 
 COLORS = dict(DARK_COLORS)

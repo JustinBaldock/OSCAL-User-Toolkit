@@ -61,6 +61,12 @@ Checked directly rather than assumed carried-over:
 
 ---
 
+## Follow-up fix (post-review): inconsistent button text colour
+
+Not one of the findings above — raised separately after this review, by direct user observation of the running app: secondary buttons (Cancel, Delete, Remove Selected, "Create New Workspace", "Browse Elsewhere", "Clear Profile", etc.) used `bg=HEADER_BG, fg=TEXT`, while primary/coloured buttons (Save, Open, Add, Upgrade, etc.) used a fixed `fg=BUTTON_TEXT` (near-black) regardless of theme. Individually each pairing had adequate contrast, but in dark mode this meant a primary button's text was fixed black while an adjacent secondary button's text was light — two different text colours in the same button row. ✅ **Fixed**: added a new fixed `SECONDARY_BG` fill (`#c9ccdb`, same value in both palettes, same rationale as the existing `_BG` keys) and switched all ~83 secondary buttons across every tab to `bg=SECONDARY_BG, fg=BUTTON_TEXT` — every button in the app now uses the same text colour. Verified no `bg=HEADER_BG, fg=TEXT` button pairing remains, and the full app still constructs cleanly. One deliberate exception left as-is: the small inline "Change…" link next to the profile label (`ssp_tab.py`) — that's a distinct, intentional "text link" style (transparent background, accent-coloured text), not a filled button, so it wasn't part of this pattern.
+
+---
+
 ## Suggested priority if tackled
 
 1. Fix the silent validation-skip in the Upgrade dialog (🔴 above) — small, and it's the one place this session's own "never claim compliance you haven't checked" principle was accidentally broken.

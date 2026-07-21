@@ -114,7 +114,7 @@ class DataSourcesTab(tk.Frame):
         self._current_profile_lbl.pack(anchor="w", padx=10, pady=(0, 4))
         self._clear_profile_btn = tk.Button(
             status_row, text="✕  Clear Profile", command=self._on_clear_profile,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         )
         self._clear_profile_btn.pack(anchor="w", padx=10, pady=(0, 8))
@@ -159,12 +159,12 @@ class DataSourcesTab(tk.Frame):
         ).pack(side="left")
         tk.Button(
             btn_row, text="…  Browse Elsewhere", command=browse_cmd,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
         refresh_btn = tk.Button(
             btn_row, text="🔄", command=self.refresh,
-            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+            bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
         )
         refresh_btn.pack(side="left")
