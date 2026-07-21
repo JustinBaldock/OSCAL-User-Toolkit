@@ -133,7 +133,7 @@ class ARTab(tk.Frame):
             tk.Button(
                 tb, text=text, command=cmd,
                 bg=bg, fg=fg or C["BUTTON_TEXT"],
-                font=("Helvetica", 11, "bold"),
+                font=("Helvetica", 11),
                 relief="flat", padx=12, pady=4, cursor="hand2",
                 activebackground=abg, activeforeground=fg or C["BUTTON_TEXT"],
             ).pack(side="left", padx=(12, 0), pady=8)
@@ -151,7 +151,7 @@ class ARTab(tk.Frame):
             text="📋  Generate POA&M from Findings",
             command=self._generate_poam,
             bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"],
-            font=("Helvetica", 10, "bold"),
+            font=("Helvetica", 10),
             relief="flat", padx=10, pady=4, cursor="hand2",
             activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 0), pady=8)
@@ -240,8 +240,8 @@ class ARTab(tk.Frame):
             btn_row.pack(fill="x", padx=8, pady=6)
             for text, cmd, bg in [
                 ("＋  Add",    add_cmd,    C["BLUE_BG"]),
-                ("✎  Edit",   edit_cmd,   C["HEADER_BG"]),
-                ("✕  Remove", remove_cmd, C["HEADER_BG"]),
+                ("✎  Edit",   edit_cmd,   C["SECONDARY_BG"]),
+                ("✕  Remove", remove_cmd, C["SECONDARY_BG"]),
             ]:
                 tk.Button(btn_row, text=text, command=cmd,
                           # Fixed BUTTON_TEXT regardless of bg — on macOS,
@@ -249,8 +249,7 @@ class ARTab(tk.Frame):
                           # native light-grey face, so theme-flipping TEXT
                           # (light in dark mode) becomes unreadable against it.
                           bg=bg, fg=C["BUTTON_TEXT"],
-                          font=("Helvetica", 10,
-                                "bold" if bg == C["BLUE_BG"] else "normal"),
+                          font=("Helvetica", 10),
                           relief="flat", padx=10, pady=3, cursor="hand2",
                           ).pack(side="left", padx=(0, 6))
             tree = ttk.Treeview(frame,
@@ -500,7 +499,7 @@ class ARTab(tk.Frame):
                 _refresh_ev()
 
         tk.Button(ev_btn_row, text="＋  Add", command=_add_ev,
-                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(ev_btn_row, text="✕  Remove Selected", command=_remove_ev,
@@ -681,7 +680,7 @@ class ARTab(tk.Frame):
                 _refresh_rem()
 
         tk.Button(rem_btn_row, text="＋  Add", command=_add_rem,
-                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         tk.Button(rem_btn_row, text="✕  Remove Selected", command=_remove_rem,
@@ -1182,7 +1181,7 @@ class ARTab(tk.Frame):
         brow = tk.Frame(dlg, bg=C["BG"])
         brow.pack(fill="x", pady=(4, 12), padx=12)
         tk.Button(brow, text="OK", command=ok_cmd,
-                  bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+                  bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=16, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(brow, text="Cancel", command=dlg.destroy,

@@ -154,7 +154,7 @@ class DataSourcesTab(tk.Frame):
         btn_row.pack(fill="x", padx=8, pady=6)
         tk.Button(
             btn_row, text="📂  Load Selected", command=load_cmd,
-            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(

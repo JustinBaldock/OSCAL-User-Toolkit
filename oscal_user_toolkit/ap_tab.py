@@ -114,7 +114,7 @@ class APTab(tk.Frame):
         def btn(text, cmd, bg, abg):
             tk.Button(
                 tb, text=text, command=cmd,
-                bg=bg, fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
+                bg=bg, fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
                 relief="flat", padx=12, pady=4, cursor="hand2",
                 activebackground=abg, activeforeground=C["BUTTON_TEXT"],
             ).pack(side="left", padx=(12, 0), pady=8)
@@ -394,13 +394,13 @@ class APTab(tk.Frame):
         # unreadable. Fixed dark text is safe regardless of what actually
         # renders.
         for text, cmd, bg, fg in [
-            ("＋  Add",    self._add_task,    C["BLUE_BG"],   C["BUTTON_TEXT"]),
-            ("✎  Edit",   self._edit_task,   C["HEADER_BG"], C["BUTTON_TEXT"]),
-            ("✕  Remove", self._remove_task, C["HEADER_BG"], C["BUTTON_TEXT"]),
+            ("＋  Add",    self._add_task,    C["BLUE_BG"],      C["BUTTON_TEXT"]),
+            ("✎  Edit",   self._edit_task,   C["SECONDARY_BG"], C["BUTTON_TEXT"]),
+            ("✕  Remove", self._remove_task, C["SECONDARY_BG"], C["BUTTON_TEXT"]),
         ]:
             tk.Button(btn_row, text=text, command=cmd,
                       bg=bg, fg=fg,
-                      font=("Helvetica", 10, "bold" if bg == C["BLUE_BG"] else "normal"),
+                      font=("Helvetica", 10),
                       relief="flat", padx=10, pady=3, cursor="hand2",
                       ).pack(side="left", padx=(0, 6))
 
@@ -650,7 +650,7 @@ class APTab(tk.Frame):
         brow = tk.Frame(dlg, bg=C["BG"])
         brow.pack(fill="x", pady=(4, 12), padx=12)
         tk.Button(brow, text="OK", command=ok_cmd,
-                  bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+                  bg=C["GREEN_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=16, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(brow, text="Cancel", command=dlg.destroy,

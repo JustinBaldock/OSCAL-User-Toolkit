@@ -66,7 +66,7 @@ class AllSystemsTab(tk.Frame):
         toolbar.pack(fill="x", padx=20, pady=(4, 4))
         tk.Button(
             toolbar, text="🔄  Refresh", command=self.refresh,
-            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         self._systems_path_lbl = tk.Label(

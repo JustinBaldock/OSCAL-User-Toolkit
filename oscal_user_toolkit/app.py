@@ -562,7 +562,7 @@ class OSCALApp(tk.Tk):
         # (settings.py) that Component/Capability Editor import from.
         library_folder_btn = tk.Button(
             tb, text="📚  Library Folder", command=self._set_library_folder,
-            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12),
             relief="flat", padx=14, pady=6, cursor="hand2",
         )
         library_folder_btn.pack(side="left", padx=(8, 8), pady=10)
@@ -582,7 +582,7 @@ class OSCALApp(tk.Tk):
         # (settings.py) that the "🌐 All Systems" tab scans.
         systems_folder_btn = tk.Button(
             tb, text="🗂  Systems Folder", command=self._set_systems_folder,
-            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12, "bold"),
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 12),
             relief="flat", padx=14, pady=6, cursor="hand2",
         )
         systems_folder_btn.pack(side="left", padx=(0, 8), pady=10)
