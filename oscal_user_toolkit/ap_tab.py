@@ -800,6 +800,7 @@ class APTab(tk.Frame):
         self._ap    = empty_ap()
         self._tasks = []
         self._populate()
+        self._dirty = False
 
     # =========================================================================
     # SAVE / OPEN / NEW

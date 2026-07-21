@@ -157,11 +157,12 @@ class WorkspaceTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, open_workspace=None, save_workspace=None,
-                 get_theme=None, set_theme=None, **kwargs):
+                 new_workspace=None, get_theme=None, set_theme=None, **kwargs):
         super().__init__(parent, bg=colors["BG"], **kwargs)
         self._colors         = colors
         self._open_workspace = open_workspace or (lambda: None)
         self._save_workspace = save_workspace or (lambda: None)
+        self._new_workspace  = new_workspace or (lambda: None)
         # Theme toggle callbacks — get_theme() returns "dark"/"light",
         # set_theme(name) asks the main app to switch the whole application's
         # colour palette. Both are owned by OSCALApp (see app.py's
@@ -239,6 +240,11 @@ class WorkspaceTab(tk.Frame):
         tk.Button(
             btn_row, text="💾  Save Workspace", command=lambda: self._save_workspace(),
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+            relief="flat", padx=12, pady=4, cursor="hand2",
+        ).pack(side="left", padx=(8, 0))
+        tk.Button(
+            btn_row, text="🆕  Create New Workspace", command=lambda: self._new_workspace(),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(8, 0))
         tk.Label(

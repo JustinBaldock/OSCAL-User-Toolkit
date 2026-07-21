@@ -1483,6 +1483,7 @@ class POAMTab(tk.Frame):
         self._findings     = []
         self._poam_items   = []
         self._populate()
+        self._dirty = False
 
     # =========================================================================
     # SAVE / OPEN / NEW

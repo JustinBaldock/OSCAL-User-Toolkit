@@ -951,6 +951,7 @@ class OSCALApp(tk.Tk):
             colors         = COLORS,
             open_workspace = self._open_workspace,
             save_workspace = self._save_workspace,
+            new_workspace  = self._new_workspace,
             get_theme      = lambda: self._theme,
             set_theme      = self.set_theme,
         )
@@ -1180,18 +1181,17 @@ class OSCALApp(tk.Tk):
     # WINDOW CLOSE GUARD
     # =========================================================================
 
-    def _on_close(self):
+    def _get_dirty_tab_names(self):
         """
-        Called when the user clicks the window's × button.
+        Names of every document-editor tab (System Overview's Component/
+        Capability Editors, SSP, AP, AR, POA&M — not the Library editors,
+        which aren't tied to any one workspace) that currently has unsaved
+        changes. Shared by _on_close() and _new_workspace(), so both
+        confirmations name the same set of tabs the same way.
 
-        Checks every editor tab for unsaved changes.  If any tab has a dirty
-        flag set, the user is prompted to confirm before the window closes.
-        Cancelling keeps the window open so they can save first.
+        Each tab exposes a _dirty bool; tabs that predate this feature
+        default to False via getattr so the check never crashes.
         """
-        # Collect names of tabs that have unsaved changes.
-        # Each tab exposes a _dirty bool; tabs that predate this feature
-        # default to False via getattr so the check never crashes.
-        dirty_tabs = []
         checks = [
             (getattr(self, "_component_tab", None), "Component Editor"),
             (getattr(self, "_capability_tab", None), "Capability Editor"),
@@ -1200,9 +1200,17 @@ class OSCALApp(tk.Tk):
             (getattr(self, "_ap_tab",          None), "Assessment Plan"),
             (getattr(self, "_ar_tab",          None), "Assessment Results"),
         ]
-        for tab, name in checks:
-            if tab is not None and getattr(tab, "_dirty", False):
-                dirty_tabs.append(name)
+        return [name for tab, name in checks if tab is not None and getattr(tab, "_dirty", False)]
+
+    def _on_close(self):
+        """
+        Called when the user clicks the window's × button.
+
+        Checks every editor tab for unsaved changes.  If any tab has a dirty
+        flag set, the user is prompted to confirm before the window closes.
+        Cancelling keeps the window open so they can save first.
+        """
+        dirty_tabs = self._get_dirty_tab_names()
 
         if dirty_tabs:
             tab_list = "\n".join(f"  • {t}" for t in dirty_tabs)
@@ -1453,6 +1461,29 @@ class OSCALApp(tk.Tk):
         self._catalog_tab.apply_profile(None)
         self._status_lbl.config(text="Profile cleared — showing full catalog.")
 
+    def _clear_catalog(self):
+        """
+        Clear the loaded catalog (and, since a profile can't apply without
+        one, the profile too). Used by _new_workspace() — there's no
+        toolbar button for this on its own, since clearing a catalog with
+        no replacement isn't something a user would normally want except
+        as part of starting over completely.
+        """
+        self._catalog = None
+        self._resolver.clear()
+        self._reset_catalog_card()
+        self._catalog_tab.load_controls([])
+        self._clear_profile()
+
+    def _reset_catalog_card(self):
+        """Reset the catalog info card to its default (no-catalog) state."""
+        C = COLORS
+        self._cat_title_lbl.config(text="No catalog loaded", fg=C["SUBTEXT"])
+        for lbl in (self._cat_version_lbl, self._cat_oscal_lbl,
+                    self._cat_published_lbl, self._cat_modified_lbl,
+                    self._cat_controls_lbl):
+            lbl.config(text="—")
+
     # =========================================================================
     # LIBRARY — shared catalogs/profiles/components/capabilities folder,
     # separate from any one system's own workspace (see settings.py and
@@ -1539,6 +1570,63 @@ class OSCALApp(tk.Tk):
     # methods are the only place that knows about every other tab at once —
     # exactly the same reason DashboardTab's callbacks are wired here rather
     # than inside any individual tab.
+
+    def _new_workspace(self):
+        """
+        Clear every open document plus the loaded catalog/profile, and
+        forget which workspace file was open — a blank slate for starting
+        a different system from scratch, without restarting the app.
+
+        Deliberately does NOT touch the Organisation tab's Library editors
+        or the Systems/Library folder settings — those are organisation-
+        wide, not tied to any one workspace — and never deletes anything
+        already saved to disk; it only resets in-memory state.
+
+        Only warns about unsaved changes when there actually are some
+        (same check _on_close() uses, via _get_dirty_tab_names()) — a
+        blanket "this clears everything, are you sure?" on every click
+        would just get reflexively dismissed after the first time and
+        stop meaning anything.
+        """
+        dirty_tabs = self._get_dirty_tab_names()
+        detail = (
+            "This clears every open document (Component Editor, Capability "
+            "Editor, SSP, Assessment Plan, Assessment Results, POA&M) plus "
+            "the loaded catalog and profile, and forgets which workspace "
+            "file was open.\n\nFiles already saved to disk are not affected."
+        )
+        if dirty_tabs:
+            tab_list = "\n".join(f"  • {t}" for t in dirty_tabs)
+            message = (
+                f"The following tabs have unsaved changes:\n\n{tab_list}\n\n"
+                f"{detail}\n\nContinue anyway?"
+            )
+        else:
+            message = f"{detail}\n\nContinue?"
+
+        if not messagebox.askyesno("New Workspace", message, icon="warning"):
+            return
+
+        # Reset each document tab directly rather than through their own
+        # public _new()/_new_file()/_clear_all() — those already show their
+        # own "unsaved changes" confirmation when dirty, and the user just
+        # confirmed once, above; showing it up to 6 more times per tab is
+        # exactly the "reflexively dismissed" problem this was designed to
+        # avoid. Clearing _dirty first means those methods' own internal
+        # guard never fires.
+        self._component_tab._dirty = False
+        self._component_tab._new_file()
+        self._capability_tab._dirty = False
+        self._capability_tab._clear_all()
+        self._ssp_tab._reset()
+        self._ap_tab._reset()
+        self._ar_tab._reset()
+        self._poam_tab._reset()
+
+        self._clear_catalog()   # also clears the profile — see _clear_catalog()
+
+        self._workspace_path = None
+        self._status_lbl.config(text="New workspace — every document and the catalog/profile were cleared.")
 
     def _open_workspace(self):
         """

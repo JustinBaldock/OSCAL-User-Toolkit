@@ -4546,6 +4546,7 @@ class SSPTab(tk.Frame):
         self._refresh_bycomp_tree()
         for tree in (self._sp_tree, self._usr_tree, self._inv_tree):
             tree.delete(*tree.get_children())
+        self._dirty = False
 
     # =========================================================================
     # SAVE / OPEN / NEW / EXPORT ACTIONS

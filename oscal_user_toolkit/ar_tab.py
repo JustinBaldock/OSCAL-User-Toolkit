@@ -1250,6 +1250,7 @@ class ARTab(tk.Frame):
         self._findings     = []
         self._log_entries  = []
         self._populate()
+        self._dirty = False
 
     # =========================================================================
     # SAVE / OPEN / NEW
