@@ -153,6 +153,17 @@ Both confirmed functionally: dispatch correctly targets whichever tab is actuall
 - Implement contextual help (hover tooltips)
 - Create a basic walkthrough or tutorial for new users
 
+**✅ Done — Help menu added.** Confirmed directly that the app had no `tk.Menu` at all before this — the toolbar's buttons were the only affordance. Added a native menu bar (`app.py`'s `_build_menu_bar()`) with a single **Help** menu:
+- **Keyboard Shortcuts** — the Ctrl+S/Ctrl+O reference for #3/#7's shortcuts, kept as plain text describing exactly what's actually wired (not auto-generated from the `_SAVE_ACTIONS`/`_OPEN_ACTIONS` dictionaries, so it needs a manual update if that coverage changes — noted in a comment).
+- **Workspace Guide** — jumps straight to the existing Workspace tab's per-tab guidance cards (the app's existing, if easy-to-miss, help content), giving it a second, more discoverable entry point rather than building a parallel help system.
+- **About OSCAL User Toolkit** — what the app is, and where the fuller docs (`README.md`, the design document, `RELEASE_NOTES.md`) live.
+
+Verified functionally: the menu bar is actually attached (`self.cget("menu")`), the Help cascade has the 3 expected entries in order, both `showinfo` dialogs fire with the right title, and invoking "Workspace Guide" actually switches the active tab to index 0.
+
+**✅ Done (partial) — "contextual help (hover tooltips)" is largely covered already**, via #2's `attach_tooltip()` work in the previous pass — not repeated here since it's the same item under two heuristics in the original review.
+
+*Not done*: a full in-app walkthrough/tutorial for new users. Scoped out deliberately — a real tutorial system (guided first-run flow, highlighting UI elements in sequence, etc.) is a substantially larger project than a quick-reference menu, and the Workspace tab's existing per-tab guidance cards already cover a good chunk of what a tutorial would otherwise need to explain from scratch.
+
 ## Implementation Status Specific Observations
 The implementation status values are correctly defined and consistent between:
 - `component_tab.py`

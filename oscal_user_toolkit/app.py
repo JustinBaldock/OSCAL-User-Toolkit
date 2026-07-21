@@ -221,6 +221,7 @@ class OSCALApp(tk.Tk):
         # side="bottom" layout is unaffected by which is *constructed* first.
         self._build_statusbar() # Bottom bar with status message
         self._build_notebook()  # Tabbed area with CatalogTab and SSPTab
+        self._build_menu_bar()  # Help menu (usability_review.md #10)
 
         # Guard against closing the window with unsaved changes in any editor tab.
         # tkinter fires WM_DELETE_WINDOW when the user clicks the × button.
@@ -1013,6 +1014,70 @@ class OSCALApp(tk.Tk):
 
         update(self._notebook)
         self.after(500, self._refresh_dirty_indicators)
+
+    # =========================================================================
+    # MENU BAR (usability_review.md #10 — Help and Documentation)
+    # =========================================================================
+
+    def _build_menu_bar(self):
+        """
+        Add a minimal native menu bar with a single Help menu.
+
+        The app previously had no menu bar and no in-app help affordance at
+        all beyond the Workspace tab's static per-tab guidance cards — this
+        doesn't attempt a full tutorial system (a separate, larger project),
+        just the concrete, bounded piece: a discoverable place to find the
+        keyboard shortcuts added for usability_review.md #3/#1, a shortcut
+        back to the existing Workspace guide, and basic version/about info.
+        """
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
+
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(
+            label="Keyboard Shortcuts", command=self._show_keyboard_shortcuts
+        )
+        help_menu.add_command(
+            label="Workspace Guide", command=lambda: self._notebook.select(0)
+        )
+        help_menu.add_separator()
+        help_menu.add_command(label="About OSCAL User Toolkit", command=self._show_about)
+
+    def _show_keyboard_shortcuts(self):
+        """
+        Show the shortcuts actually wired in _on_ctrl_s()/_on_ctrl_o() —
+        kept as plain text here rather than generated from _SAVE_ACTIONS/
+        _OPEN_ACTIONS so this stays simple; update this text if those
+        dictionaries' coverage changes.
+        """
+        messagebox.showinfo(
+            "Keyboard Shortcuts",
+            "Ctrl+S — Save the currently active editor tab\n"
+            "    Works in: Component Editor, Capability Editor (both System\n"
+            "    Overview and Library versions), SSP Editor, Assessment Plan,\n"
+            "    Assessment Results, POA&M Editor.\n\n"
+            "Ctrl+O — Open File(s)\n"
+            "    Works in: Component Editor, Capability Editor (System\n"
+            "    Overview only — the Library editors auto-load instead).\n"
+            "    Suppressed while typing in a multi-line text field.\n\n"
+            "Mouse wheel scrolls whichever panel is currently under the\n"
+            "cursor, on every tab.",
+        )
+
+    def _show_about(self):
+        messagebox.showinfo(
+            "About OSCAL User Toolkit",
+            "OSCAL User Toolkit\n\n"
+            "A desktop application for creating, editing, and managing "
+            "OSCAL 1.2.2 documents — purpose-built for organisations "
+            "running multiple separate networks that each need their own "
+            "System Security Plan.\n\n"
+            "See README.md for full feature documentation, "
+            "oscal_user_toolkit_design_document.md for the technical "
+            "design history, and RELEASE_NOTES.md for what's changed "
+            "between versions.",
+        )
 
     # =========================================================================
     # STATUS BAR
