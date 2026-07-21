@@ -1135,6 +1135,8 @@ class ARTab(tk.Frame):
         dlg.transient(self)
         dlg.grab_set()
         dlg.minsize(width, 10)
+        # usability_review_2.md — Escape always means Cancel.
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
         return dlg
 
     def _dlg_field(self, parent, label, row_idx, width=36, default=""):

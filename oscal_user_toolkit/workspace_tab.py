@@ -25,6 +25,8 @@ and the manifest-relative-path resolution helper used by both callbacks.
 import tkinter as tk
 from tkinter import ttk
 
+from .tab_utils import attach_tooltip
+
 
 # Each entry describes one tab, grouped the same way the Notebook groups
 # them (see app.py._build_notebook() — Data / System Overview / Audit are
@@ -232,21 +234,42 @@ class WorkspaceTab(tk.Frame):
         # in models.py for the manifest format.
         btn_row = tk.Frame(header, bg=C["HEADER_BG"])
         btn_row.pack(anchor="w", padx=20, pady=(0, 14))
-        tk.Button(
+        open_btn = tk.Button(
             btn_row, text="📂  Open Workspace", command=lambda: self._open_workspace(),
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left")
-        tk.Button(
+        )
+        open_btn.pack(side="left")
+        attach_tooltip(
+            open_btn,
+            "Load a saved workspace manifest — catalog, profile, SSP, components, "
+            "capabilities, AP, AR, and POA&M all in one step",
+            C,
+        )
+        save_btn = tk.Button(
             btn_row, text="💾  Save Workspace", command=lambda: self._save_workspace(),
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=(8, 0))
-        tk.Button(
+        )
+        save_btn.pack(side="left", padx=(8, 0))
+        attach_tooltip(
+            save_btn,
+            "Save a manifest recording every file currently open, so this workspace "
+            "can be reopened in one step later",
+            C,
+        )
+        new_btn = tk.Button(
             btn_row, text="🆕  Create New Workspace", command=lambda: self._new_workspace(),
             bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=12, pady=4, cursor="hand2",
-        ).pack(side="left", padx=(8, 0))
+        )
+        new_btn.pack(side="left", padx=(8, 0))
+        attach_tooltip(
+            new_btn,
+            "Clears every open document plus the loaded catalog/profile — asks for "
+            "confirmation first. Files already saved to disk are not affected",
+            C,
+        )
         tk.Label(
             btn_row,
             text="  A workspace remembers every file for one system — catalog, "

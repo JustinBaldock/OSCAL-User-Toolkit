@@ -1583,6 +1583,8 @@ class CapabilityTab(tk.Frame):
         # it is closed. Without this the user could keep clicking behind it.
         dlg.grab_set()
         dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
+        # usability_review_2.md — Escape always means Cancel here too.
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
         return dlg
 
     _LINK_REL_VALUES = [
@@ -1623,6 +1625,7 @@ class CapabilityTab(tk.Frame):
         dlg.configure(bg=C["BG"])
         dlg.transient(self.winfo_toplevel())
         dlg.grab_set()
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
 
         tk.Label(dlg, text=f"Current OSCAL version: {current_version}",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
@@ -1677,6 +1680,20 @@ class CapabilityTab(tk.Frame):
                     )
                     if not proceed:
                         return
+            else:
+                # usability_review_2.md — see ComponentTab's equivalent for
+                # why this can't just fall through silently: the button
+                # promises to validate first, so a missing schema zip needs
+                # to say so rather than quietly upgrading unchecked.
+                proceed = messagebox.askyesno(
+                    "OSCAL schema not found",
+                    f"Could not find the bundled OSCAL {target_version} schema to "
+                    f"validate against, so this capability's compliance with that "
+                    f"version can't be checked.\n\nUpgrade anyway, without validation?",
+                    icon="warning",
+                )
+                if not proceed:
+                    return
 
             cap["doc_oscal_version"] = target_version
             self._dirty = True
@@ -1697,6 +1714,7 @@ class CapabilityTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left", padx=(8, 0))
+        dlg.bind("<Return>", lambda _e: do_upgrade())
 
     def _add_doc_link(self):
         """
@@ -1790,6 +1808,7 @@ class CapabilityTab(tk.Frame):
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
+        dlg.bind("<Return>", lambda _e: _ok())
 
         dlg.wait_window()
         return result.get("value")
@@ -1865,6 +1884,7 @@ class CapabilityTab(tk.Frame):
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
+        dlg.bind("<Return>", lambda _e: _ok())
 
         dlg.wait_window()
         return result if result else None

@@ -12,6 +12,8 @@ Anything from the first review still open (undo/redo, batch/multi-select, an in-
 
 ### The "Upgrade OSCAL Version" button can silently skip the validation it promises
 
+✅ **Fixed.** Both `_upgrade_oscal_version()` methods now show a `messagebox.askyesno("OSCAL schema not found", ...)` warning and require explicit confirmation before committing the upgrade when the target version's schema zip can't be found — validated with an empty `get_oscal_version_paths()` dict: declining leaves `doc_oscal_version` unchanged, accepting still commits.
+
 **Heuristic #1 (Visibility of system status) / #9 (honest error recovery).**
 
 `component_tab.py:2166` and `capability_tab.py:2255` both guard the entire validation step with `if zip_path:` — and `zip_path` comes from `self._get_oscal_version_paths().get(target_version)`, which returns `None` if that version's schema zip isn't found. When that happens, the code falls straight through to committing the upgrade (`comp["doc_oscal_version"] = target_version`) **with no indication to the user that validation never actually ran.** The button's own tooltip and in-dialog copy both explicitly promise "re-validates... before re-labelling" — this is the one path where that promise is silently broken.
@@ -28,9 +30,13 @@ In practice this needs a genuinely missing/renamed schema zip to trigger, which 
 
 ### 2. "Create New Workspace" has no tooltip, despite being the clearest case for one
 
+✅ **Fixed.** `workspace_tab.py`'s Open/Save/New Workspace buttons all now have `attach_tooltip()` calls explaining their consequences, matching the pattern used elsewhere.
+
 **Heuristic #2 / #10.** `workspace_tab.py` has zero `attach_tooltip()` calls — none of its three buttons (Open/Save/**New** Workspace) have one. This is the exact pattern the tooltip work under the *first* review targeted (buttons whose label doesn't reveal a real consequence) — "Create New Workspace" clears every open document plus the catalog/profile, which is not obvious from the label alone, and is currently only explained in the confirmation dialog *after* the button is already clicked.
 
 ### 3. No dialog in the entire app supports Enter-to-confirm or Escape-to-cancel
+
+✅ **Fixed, with scope.** `<Escape>` → cancel is now bound in every `_make_dialog()` implementation (component_tab.py, capability_tab.py, ar_tab.py, ap_tab.py, poam_tab.py, ssp_tab.py) plus the two standalone `tk.Toplevel` dialogs that don't use that helper (`_save_new_version`, both `_upgrade_oscal_version`s). `<Return>` → primary action is bound in component_tab.py and capability_tab.py's own dialogs (the ones actively touched this session) — verified functionally by simulating `<Return>`/`<Escape>` key events on the Upgrade OSCAL Version dialog. The Protocol dialog's port-range entry fields get their own `<Return>` → "add port range" binding instead of the dialog-wide one, since Return there should add the range being typed, not submit the whole dialog. `<Return>` bindings for ar_tab.py/ap_tab.py/poam_tab.py/ssp_tab.py's own dialogs are a deliberately deferred follow-up, not done here.
 
 **Heuristic #3 / #7.** Checked directly: zero `<Return>` or `<Escape>` bindings exist anywhere in the codebase. Every modal dialog — Add Component, Add Link, Save New Version, Upgrade OSCAL Version, Add Member, the New Workspace confirmation, all of them — requires a mouse click to proceed or cancel, with no keyboard path through. This is a bigger, cross-cutting gap than the Ctrl+S/Ctrl+O work covered (that was app-level shortcuts; this is entirely absent *inside* every dialog), and would be a meaningful, self-contained follow-up: bind `<Return>` to whichever button is the dialog's primary action and `<Escape>` to Cancel, ideally via one shared helper in `_make_dialog()` rather than dialog-by-dialog.
 

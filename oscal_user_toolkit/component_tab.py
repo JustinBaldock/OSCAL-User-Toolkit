@@ -2016,6 +2016,10 @@ class ComponentTab(tk.Frame):
         dlg.configure(bg=C["BG"])
         dlg.transient(self.winfo_toplevel())
         dlg.grab_set()
+        # usability_review_2.md — this dialog builds its own Toplevel
+        # rather than going through _make_dialog(), so it needs its own
+        # Escape binding too (Return is bound below, once do_save exists).
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
 
         tk.Label(dlg, text=f"Current version: {old_version}",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
@@ -2078,6 +2082,7 @@ class ComponentTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left", padx=(8, 0))
+        dlg.bind("<Return>", lambda _e: do_save())
 
     def _upgrade_oscal_version(self):
         """
@@ -2119,6 +2124,7 @@ class ComponentTab(tk.Frame):
         dlg.configure(bg=C["BG"])
         dlg.transient(self.winfo_toplevel())
         dlg.grab_set()
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
 
         tk.Label(dlg, text=f"Current OSCAL version: {current_version}",
                  bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
@@ -2178,6 +2184,21 @@ class ComponentTab(tk.Frame):
                     )
                     if not proceed:
                         return
+            else:
+                # usability_review_2.md — this used to fall through silently
+                # here, committing the upgrade with no indication validation
+                # never ran at all. The button promises to validate first;
+                # a missing schema zip shouldn't let that promise go unmet
+                # without at least telling the user.
+                proceed = messagebox.askyesno(
+                    "OSCAL schema not found",
+                    f"Could not find the bundled OSCAL {target_version} schema to "
+                    f"validate against, so this component's compliance with that "
+                    f"version can't be checked.\n\nUpgrade anyway, without validation?",
+                    icon="warning",
+                )
+                if not proceed:
+                    return
 
             comp["doc_oscal_version"] = target_version
             comp.setdefault("revisions", []).insert(0, {
@@ -2204,6 +2225,7 @@ class ComponentTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left", padx=(8, 0))
+        dlg.bind("<Return>", lambda _e: do_upgrade())
 
     # =========================================================================
     # CONTROL IMPLEMENTATION — Section 7
@@ -2407,6 +2429,10 @@ class ComponentTab(tk.Frame):
         # clicking the main window while the dialog is open.
         dlg.grab_set()
         dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
+        # usability_review_2.md — Escape always means Cancel, regardless of
+        # what this particular dialog does, so it's safe to bind here once
+        # rather than needing every dialog method to do it individually.
+        dlg.bind("<Escape>", lambda _e: dlg.destroy())
         return dlg
 
     def _dialog(self, title, fields):
@@ -2581,6 +2607,7 @@ class ComponentTab(tk.Frame):
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
+        dlg.bind("<Return>", lambda _e: _ok())
         dlg.wait_window()
         return result if result else None
 
@@ -2650,6 +2677,7 @@ class ComponentTab(tk.Frame):
         tk.Button(btn, text="Cancel", command=dlg.destroy,
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
+        dlg.bind("<Return>", lambda _e: _ok())
         dlg.wait_window()
         return result if result else None
 
@@ -2793,18 +2821,20 @@ class ComponentTab(tk.Frame):
         tk.Label(add_row, text="Start", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10)).pack(side="left")
         v_start = tk.StringVar()
-        tk.Entry(add_row, textvariable=v_start, width=6,
+        pr_start_entry = tk.Entry(add_row, textvariable=v_start, width=6,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 10), highlightthickness=1,
-                 highlightbackground=C["HEADER_BG"]).pack(side="left", padx=(2, 6))
+                 highlightbackground=C["HEADER_BG"])
+        pr_start_entry.pack(side="left", padx=(2, 6))
 
         tk.Label(add_row, text="End", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10)).pack(side="left")
         v_end = tk.StringVar()
-        tk.Entry(add_row, textvariable=v_end, width=6,
+        pr_end_entry = tk.Entry(add_row, textvariable=v_end, width=6,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 10), highlightthickness=1,
-                 highlightbackground=C["HEADER_BG"]).pack(side="left", padx=(2, 6))
+                 highlightbackground=C["HEADER_BG"])
+        pr_end_entry.pack(side="left", padx=(2, 6))
 
         tk.Label(add_row, text="Transport", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10)).pack(side="left")
@@ -2815,10 +2845,11 @@ class ComponentTab(tk.Frame):
         tk.Label(add_row, text="Remarks", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10)).pack(side="left")
         v_pr_remarks = tk.StringVar()
-        tk.Entry(add_row, textvariable=v_pr_remarks, width=20,
+        pr_remarks_entry = tk.Entry(add_row, textvariable=v_pr_remarks, width=20,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 10), highlightthickness=1,
-                 highlightbackground=C["HEADER_BG"]).pack(side="left", padx=(2, 6))
+                 highlightbackground=C["HEADER_BG"])
+        pr_remarks_entry.pack(side="left", padx=(2, 6))
 
         def _add_pr():
             start_raw = v_start.get().strip()
@@ -2870,6 +2901,11 @@ class ComponentTab(tk.Frame):
         tk.Button(add_row, text="＋  Add", command=_add_pr,
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, cursor="hand2").pack(side="left")
+        # usability_review_2.md — Return here should add the port range being
+        # typed, not submit the whole dialog (that's what the OK button is
+        # for), so these get their own binding instead of a dialog-wide one.
+        for _entry in (pr_start_entry, pr_end_entry, pr_remarks_entry):
+            _entry.bind("<Return>", lambda _e: _add_pr())
 
         def _remove_pr():
             sel = pr_tree.selection()
@@ -3086,6 +3122,7 @@ class ComponentTab(tk.Frame):
                   bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10, pady=2, cursor="hand2",
                   activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left")
+        dlg.bind("<Return>", lambda _e: _ok())
         dlg.wait_window()
         return result if result else None
 
