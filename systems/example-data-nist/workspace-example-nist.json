@@ -2,6 +2,29 @@
   "workspace": {
     "title": "workspace-example-nist",
     "catalog": "NIST_SP-800-53_rev5_catalog.json",
-    "profile": "NIST_SP-800-53_rev5_LOW-baseline_profile.json"
+    "profile": "NIST_SP-800-53_rev5_LOW-baseline_profile.json",
+    "components": [
+      "components/hardware_Firewall.json",
+      "components/hardware_Network_Switch.json",
+      "components/hardware_UPS.json",
+      "components/operating-system_Microsoft_Windows_11.json",
+      "components/operating-system_Microsoft_Windows_Server_2022.json",
+      "components/policy_Access_Control.json",
+      "components/policy_Backup_and_Recovery.json",
+      "components/policy_Configuration_Management.json",
+      "components/policy_Incident_Response.json",
+      "components/policy_Patch_Management.json",
+      "components/policy_Remote_Access.json",
+      "components/policy_Security_Awareness_Training.json",
+      "components/service_Active_Directory.json",
+      "components/service_Backup_Veeam.json",
+      "components/service_Email_Microsoft_365_Exchange_Online.json",
+      "components/service_SIEM_Microsoft_Sentinel.json",
+      "components/service_VPN_Remote_Access.json",
+      "components/software_Microsoft_365_Apps.json",
+      "components/software_Microsoft_Defender_for_Endpoint.json",
+      "components/software_Tenable_Nessus_Vulnerability_Scanner.json",
+      "components/aws.json"
+    ]
   }
 }
