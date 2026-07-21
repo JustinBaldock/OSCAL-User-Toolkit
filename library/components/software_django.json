@@ -1,0 +1,105 @@
+{
+  "component-definition": {
+    "uuid": "99037a66-3184-43e2-95a6-cd1ed5cd7d5d",
+    "metadata": {
+      "title": "Django Component",
+      "last-modified": "2026-07-21T13:39:22Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "c6a7ff57-6c41-4d64-b9fe-dea202520955",
+        "type": "software",
+        "title": "Django",
+        "description": "Django is the Python web framework the organisation's web application(s) are built on. It provides the underlying authentication, session management, permissions, and administrative interface — the deployed application's security controls are implemented by configuring and extending these built-in framework capabilities rather than building them from scratch.",
+        "purpose": "Provide the authentication, access control, session management, and administrative framework underlying the organisation's web application(s).",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Django Software Foundation (open source)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Self-hosted / managed hosting"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "861d7460-474d-4685-806c-a793b2ac3f68",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Django.",
+            "implemented-requirements": [
+              {
+                "uuid": "4fa7972f-298e-4e1f-bc37-4ab57fb297f8",
+                "control-id": "ism-1403",
+                "description": "Django's login throttling (django-axes or equivalent) locks an account after five consecutive failed login attempts within a defined time window, requiring administrator action to unlock before the lockout period expires."
+              },
+              {
+                "uuid": "d6f375ec-20ad-4cf9-86f8-c8726ebc2817",
+                "control-id": "ism-0428",
+                "description": "Django's session framework is configured with SESSION_COOKIE_AGE and SESSION_SAVE_EVERY_REQUEST such that a session is terminated after a maximum of 15 minutes of user inactivity or 12 hours of overall session time, whichever comes first, and terminating a session requires the user to re-authenticate with all configured authentication factors."
+              },
+              {
+                "uuid": "efef2787-5684-4421-9622-9ca6acc30e88",
+                "control-id": "ism-1173",
+                "description": "Access to the Django admin site is restricted to accounts with the is_staff/is_superuser flag, and those accounts are required to complete multi-factor authentication (via django-otp or an equivalent SSO integration) before the admin interface is reachable."
+              },
+              {
+                "uuid": "432963ce-86ba-41c3-a446-6cfe037b8afd",
+                "control-id": "ism-1508",
+                "description": "Django's permissions framework grants each user only the model-level and object-level permissions their role requires; the admin site — the only interface with elevated management capability — is unreachable to accounts without the is_staff flag."
+              },
+              {
+                "uuid": "6f5b694a-0f29-4721-950f-ecc5d13838fb",
+                "control-id": "ism-0415",
+                "description": "Every Django account is tied to a single, individually-attributable user record — shared or generic accounts are not created, so every action attributable to a Django user (content changes, admin actions) can be traced to one accountable individual."
+              }
+            ]
+          },
+          {
+            "uuid": "4007933a-f6e9-4d1f-b93e-60320ae9af0f",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for Django.",
+            "implemented-requirements": [
+              {
+                "uuid": "58be92b2-8ee9-4d99-862a-ba84160b47c6",
+                "control-id": "ac-3",
+                "description": "Django's permissions framework (django.contrib.auth's model- and object-level permissions, combined with view-level decorators/mixins) enforces logical access to application data and functionality — a request is only served if the authenticated user holds the specific permission the view requires."
+              },
+              {
+                "uuid": "a7fb245c-7cce-47d6-8ccb-799ee8fee65d",
+                "control-id": "ac-7",
+                "description": "Django is configured with a login-throttling mechanism (django-axes or equivalent) that locks an account after a defined number of invalid login attempts within a defined time period; the threshold and lockout duration are configurable to conform to organisational policy."
+              },
+              {
+                "uuid": "529ead62-d39f-4e77-9e16-93cc182659c2",
+                "control-id": "ac-12",
+                "description": "Django's session framework terminates a session after SESSION_COOKIE_AGE elapses or after a period of inactivity (enforced via SESSION_SAVE_EVERY_REQUEST), and sessions can also be terminated on demand — e.g. on password change, via Django's session invalidation hooks."
+              },
+              {
+                "uuid": "44a7824d-2803-4e49-86cf-25335571cfbe",
+                "control-id": "ia-2",
+                "description": "Django user authentication is performed via django.contrib.auth's username/password backend, or delegated to an organisational Single Sign-On provider via a configured SSO authentication backend — no application-specific authentication mechanism is implemented outside these supported backends."
+              },
+              {
+                "uuid": "50948c1f-f408-43ce-a60b-435fd01c367c",
+                "control-id": "ia-6",
+                "description": "Django's login form obscures password input as it is typed. On authentication failure, Django returns the same generic error message regardless of whether the username or the password was incorrect, so a failed attempt does not reveal which field was wrong or whether the account exists."
+              },
+              {
+                "uuid": "cb7d9fd6-4763-4593-ae2a-73a3a694273b",
+                "control-id": "sr-3",
+                "description": "Django is kept on a supported release and updated in line with the Django Security Team's published security releases; the deployed version and its dependencies are tracked so a security advisory can be matched against what's actually running and patched promptly."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

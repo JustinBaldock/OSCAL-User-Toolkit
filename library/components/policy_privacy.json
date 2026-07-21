@@ -1,0 +1,95 @@
+{
+  "component-definition": {
+    "uuid": "9952b717-053a-462c-9936-158b974f7060",
+    "metadata": {
+      "title": "Privacy Policy Component",
+      "last-modified": "2026-07-21T13:29:08Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "7f89f0f5-51ec-4d54-9e19-405d74c91db3",
+        "type": "policy",
+        "title": "Privacy Policy",
+        "description": "The privacy policy defines the organisation's requirements for the lawful collection, use, disclosure, and retention of personal information, including the minimum information collected from users, the purposes it is used for, and the transparency obligations owed to individuals whose information is held.",
+        "purpose": "Ensure personal information is collected, used, and retained only as authorised, minimised, and disclosed to individuals.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "policy-owner",
+            "value": "Privacy Officer"
+          },
+          {
+            "name": "review-cycle",
+            "value": "Annual"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "882a7f75-94bc-403e-a1dd-9bbb907adf09",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Privacy Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "e4bc50df-66cb-48c4-bf87-9388fdff7655",
+                "control-id": "ism-2021",
+                "description": "System owners maintain and apply data minimisation practices for every system that collects personal information — only the fields genuinely required for authentication, communication, and service delivery are collected (e.g. name and email address for account identification); no additional personal information is requested or retained."
+              },
+              {
+                "uuid": "7cafec63-447b-4a9e-964e-7e37d4aabef9",
+                "control-id": "ism-2103",
+                "description": "Personal information generated, collected, or processed by any system is not used to train, fine-tune, or otherwise improve AI models unless informed, explicit consent has been obtained from the data owner in advance."
+              },
+              {
+                "uuid": "629973db-f653-458f-ae06-a7dbf756424f",
+                "control-id": "ism-0821",
+                "description": "Personnel who manage or moderate systems that display user-supplied personal information are advised of the security risks associated with personal information being posted or exposed on those systems, and are trained to identify and escalate inadvertent disclosures."
+              }
+            ]
+          },
+          {
+            "uuid": "427bdce2-9dff-4f27-b052-f35860e96ce1",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for Privacy Policy.",
+            "implemented-requirements": [
+              {
+                "uuid": "ae0a5832-1be1-4b90-8993-52df450371b3",
+                "control-id": "pt-1",
+                "description": "The privacy policy and its supporting procedures are documented, approved by the Privacy Officer, communicated to all personnel with a role in handling personal information, and reviewed annually or when a material change to data handling practices occurs."
+              },
+              {
+                "uuid": "ad012157-c350-40b5-b3df-495cb1774139",
+                "control-id": "pt-2",
+                "description": "Collection of personal information is authorised only for the specific, documented purposes set out in this policy — currently limited to account identification (name, email address) and, where a user chooses to provide it, information submitted voluntarily to participate in community or support features."
+              },
+              {
+                "uuid": "d4a44a89-e7e3-4980-8a5a-64b0cf55c489",
+                "control-id": "pt-3",
+                "description": "Each category of personal information collected is mapped to its specific processing purpose in the organisation's data inventory: email address and name for account identification and communication; any additional user-submitted content for the feature the user chose to use (e.g. forum posts, support tickets)."
+              },
+              {
+                "uuid": "330972a5-71c6-4e8c-8743-99bd0abef88a",
+                "control-id": "pt-4",
+                "description": "Where personal information is collected for a purpose beyond providing the core service (e.g. marketing communications, optional profile fields), explicit consent is obtained from the individual before collection, and the individual may withdraw consent at any time."
+              },
+              {
+                "uuid": "82d43166-3cbf-4e90-9299-db0914c2c94f",
+                "control-id": "pt-5",
+                "description": "A privacy notice describing what personal information is collected, why, and how it is used and protected is published and linked from every page of the service, and presented to users at account creation before any personal information is collected."
+              },
+              {
+                "uuid": "554e04f5-b060-48cc-85a2-aa4ff93ad004",
+                "control-id": "pt-6",
+                "description": "The organisation maintains a record of the systems of records containing personal information, reviewed annually, so that any system holding personal information subject to a notice obligation is identified and its notice kept current."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

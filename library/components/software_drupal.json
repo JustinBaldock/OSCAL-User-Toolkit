@@ -1,0 +1,105 @@
+{
+  "component-definition": {
+    "uuid": "7162d00b-b890-4a92-8ce1-08171a6a3f1c",
+    "metadata": {
+      "title": "Drupal CMS Component",
+      "last-modified": "2026-07-21T13:36:09Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "d04868b1-bc83-4cbf-8238-88ecf862cad9",
+        "type": "software",
+        "title": "Drupal CMS",
+        "description": "Drupal is the content management system used to publish and manage the organisation's website content. Access is role-based — Anonymous (unauthenticated visitors with read-only access to published content), Authenticated (registered users with personal account management), and Administrator (content and user management) — with the anonymous role granted the least access of all roles, and unable to self-register.",
+        "purpose": "Publish and manage website content securely, with role-based access to authoring and administration functions.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "vendor",
+            "value": "Drupal (open source)"
+          },
+          {
+            "name": "deployment-model",
+            "value": "Self-hosted / managed hosting"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "fe597e0b-c1c4-40c1-bb18-0d47ce16ecfd",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Drupal CMS.",
+            "implemented-requirements": [
+              {
+                "uuid": "119945da-d811-4f6e-a49f-0b1fc4a04cad",
+                "control-id": "ism-1403",
+                "description": "Drupal is configured to lock a user account after five consecutive failed login attempts within a defined time window. A locked account requires administrator action to unlock before the lockout period expires."
+              },
+              {
+                "uuid": "27a49539-127f-4bfc-a056-0496b61f1dbc",
+                "control-id": "ism-1173",
+                "description": "Administrator and other roles with unrestricted access to live content or user accounts are required to use multi-factor authentication before their session is granted access."
+              },
+              {
+                "uuid": "6baadca4-b477-4e0a-8ed2-fef5fb7f0e1c",
+                "control-id": "ism-1508",
+                "description": "Administrator privileges (content publishing, user management, site configuration) are limited to the roles whose function requires them; the Authenticated role grants no administrative capability, and only Administrators can create new user accounts."
+              },
+              {
+                "uuid": "3ff87bbe-21ce-4b57-ba48-19cfe66bc2a7",
+                "control-id": "ism-1405",
+                "description": "Drupal's logging module forwards authentication events, account lifecycle changes, and content creation/modification/deletion/publishing events to the organisation's centralised event logging facility for retention and analysis."
+              },
+              {
+                "uuid": "f4c19abe-9793-4077-8186-252948c87056",
+                "control-id": "ism-0415",
+                "description": "Every Drupal account is assigned to a single, individually-attributable user — shared or generic accounts are not created, so every logged action can be attributed to one accountable individual."
+              }
+            ]
+          },
+          {
+            "uuid": "0bbc3846-0cbb-4beb-846c-9723a6efbc13",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for Drupal CMS.",
+            "implemented-requirements": [
+              {
+                "uuid": "75f26a0d-964e-4144-9984-9a87a511d005",
+                "control-id": "ac-2",
+                "description": "Drupal provisions accounts under a small set of defined roles (Anonymous, Authenticated, Administrator), plus any additional organisation-defined roles, each granted only the access appropriate to that role. Account creation and role assignment is restricted to Administrator accounts and is itself logged."
+              },
+              {
+                "uuid": "e4df781f-c898-4d52-943b-4859b79ab33b",
+                "control-id": "ac-3",
+                "description": "Access to Drupal content and administrative functions is enforced by the platform's built-in role-based permissions system — a user's role determines exactly which content and controls they can reach, checked on every request. Anonymous users cannot self-register an account."
+              },
+              {
+                "uuid": "6b5cf603-15dc-44c1-b5aa-732a5a9101d6",
+                "control-id": "ac-7",
+                "description": "Drupal is configured to lock an account after a defined number of invalid login attempts within a defined time period; the lockout period and threshold are configurable by Administrators to conform to organisational policy, and unlocking a locked-out account before the lockout period expires requires administrator action."
+              },
+              {
+                "uuid": "658591b5-a83e-421e-86d2-77a3df6ad16e",
+                "control-id": "ia-4",
+                "description": "Upon account creation, Drupal assigns each user a unique numerical user ID (UID) used internally to attribute all subsequent actions (content creation, editing, deletion) to that account. UIDs are never reused, even after an account is blocked or deleted."
+              },
+              {
+                "uuid": "f61d39f7-c389-44c7-abf3-734b2f5fb028",
+                "control-id": "ia-5",
+                "description": "Drupal requires a password meeting the organisation's complexity policy, issues a randomly-generated single-use default password that must be changed on first login, and stores all passwords as a salted one-way hash — the plaintext password is never stored or recoverable, including by administrators."
+              },
+              {
+                "uuid": "2464a901-e991-4b85-8804-c92c7df36494",
+                "control-id": "au-2",
+                "description": "Drupal's logging module is configured to record authentication events (successful and failed logins, logouts), account lifecycle events (creation, blocking, unblocking, role changes), and content events (creation, modification, deletion, publishing, unpublishing, file uploads) sufficient to reconstruct who did what and when."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

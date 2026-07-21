@@ -3,7 +3,7 @@
     "uuid": "caa78ba3-67d5-40be-8136-e4127de19f36",
     "metadata": {
       "title": "SSH Component",
-      "last-modified": "2026-07-21T13:21:16Z",
+      "last-modified": "2026-07-21T13:25:12Z",
       "version": "1.0",
       "oscal-version": "1.1.2"
     },
@@ -30,7 +30,7 @@
         ],
         "protocols": [
           {
-            "uuid": "374c92ba-a61c-43c6-9e6a-d4b0a4aa9974",
+            "uuid": "131a8063-b43c-4576-960b-c1c9ffd1f8d5",
             "name": "ssh",
             "title": "SSH — encrypted remote administrative access",
             "port-ranges": [
@@ -44,34 +44,66 @@
         ],
         "control-implementations": [
           {
-            "uuid": "032bd28a-9145-4d9a-831c-1915666664e7",
+            "uuid": "d5a5eb10-b8ea-4477-bbd7-18c038ddfb31",
             "source": "ISM_catalog.json",
             "description": "Control implementations for SSH.",
             "implemented-requirements": [
               {
-                "uuid": "e26c1615-0872-4435-97cd-32a24032091d",
+                "uuid": "3de064d0-03bf-4fba-83c6-f257dc980b6b",
                 "control-id": "ism-1506",
                 "description": "The SSH daemon is configured with Protocol 2 only — SSH version 1 is disabled organisation-wide via centrally managed configuration, removing the weaker legacy protocol's known cryptographic vulnerabilities."
               },
               {
-                "uuid": "6a59d3f0-6655-477a-9dbf-5f7c32c3d403",
+                "uuid": "2480f2f9-f722-4def-a2c1-129716e699a6",
                 "control-id": "ism-0484",
                 "description": "The SSH daemon configuration (managed centrally via configuration management) sets ListenAddress to only the required management interface, a login banner, LoginGraceTime 60, HostbasedAuthentication no, IgnoreRhosts yes, PermitRootLogin no, PermitEmptyPasswords no, AllowTcpForwarding no, GatewayPorts no, and X11Forwarding no."
               },
               {
-                "uuid": "a3bd355e-a66b-4740-8db3-974404fe1d7a",
+                "uuid": "7bddd08a-3550-407d-a738-013609c0b919",
                 "control-id": "ism-0485",
                 "description": "All SSH connections use public key-based authentication. Password authentication is disabled in the SSH daemon configuration (PasswordAuthentication no); only holders of an authorised, registered public key can connect."
               },
               {
-                "uuid": "041b3e05-51a6-45f3-9740-3729ebdf6236",
+                "uuid": "030954b3-1969-4e30-9ade-07714352ae63",
                 "control-id": "ism-1449",
                 "description": "SSH private keys are protected with a passphrase (key encryption key) before being issued to users. Unencrypted private keys are not permitted on any endpoint."
               },
               {
-                "uuid": "3492fc73-e5de-481d-8f9e-3a1dd6eda9f7",
+                "uuid": "15c4775b-aa1a-4f01-87a9-c202904bc386",
                 "control-id": "ism-0489",
                 "description": "Where ssh-agent key caching is used, it is limited to workstations and servers with a screen lock, and the cached key is configured to expire after no more than four hours of inactivity."
+              }
+            ]
+          },
+          {
+            "uuid": "54d8202b-eec0-4fe7-8b65-ba33eba9b01c",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for SSH.",
+            "implemented-requirements": [
+              {
+                "uuid": "b8d95dcb-ade3-4203-bd34-b712cbaa1603",
+                "control-id": "ac-17",
+                "description": "Remote administrative access to servers, network devices, and virtualisation hosts is provided exclusively via SSH — no unencrypted remote administration protocol (e.g. Telnet) is permitted. SSH sessions are authorised per the organisation's remote access policy and are subject to the same access control and MFA requirements as console access where the underlying platform supports it."
+              },
+              {
+                "uuid": "67db63d8-bb8b-47b6-ae04-aba5b6676948",
+                "control-id": "ia-5",
+                "description": "SSH authenticators (public/private key pairs) are managed through their full lifecycle: keys are generated per-user, registered against the target system's authorized_keys before access is granted, protected by a mandatory passphrase (see sc-12), and revoked by removing the corresponding public key when a user's access is withdrawn or a key is suspected compromised."
+              },
+              {
+                "uuid": "fa7b26be-7f72-4eb4-857e-b8f6e039fbe8",
+                "control-id": "sc-12",
+                "description": "SSH key pairs are generated using modern asymmetric algorithms (Ed25519 or RSA 4096-bit minimum). Private keys are protected with a passphrase-derived key encryption key (see ism-1449) and are never transmitted or stored unencrypted. Key rotation is required if a key is suspected of compromise or when an assigned user leaves the organisation."
+              },
+              {
+                "uuid": "792c5f4d-f76d-4f0b-a30f-f634c194c298",
+                "control-id": "cm-6",
+                "description": "The SSH daemon's configuration baseline (ListenAddress restricted to the management interface, LoginGraceTime 60, HostbasedAuthentication no, IgnoreRhosts yes, PermitRootLogin no, PermitEmptyPasswords no, AllowTcpForwarding no, GatewayPorts no, X11Forwarding no) is defined once in configuration management and applied identically to every server, network device, and virtualisation host — deviations are detected and remediated automatically on the next configuration management run."
+              },
+              {
+                "uuid": "ba8197f0-1060-42e7-ab67-521b00946065",
+                "control-id": "ac-6",
+                "description": "SSH access is granted on a least-privilege basis: PermitRootLogin is disabled everywhere, so administrators authenticate as a named, individually-attributable account and elevate via sudo/equivalent only for the specific commands their role requires, rather than connecting with unrestricted root access directly over SSH."
               }
             ]
           }
