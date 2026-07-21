@@ -1010,9 +1010,9 @@ Two companion documents drove a full pass through Nielsen's 10 usability heurist
 
 Every fix across both documents was verified functionally (simulated the actual failure condition and confirmed the app's response), not just syntax-checked — several genuine findings in this pass (the dark-mode contrast bug, the second `OSError` gap) were only caught because of that.
 
-### 10.23 Document metadata, OSCAL version upgrade, and a second usability pass (`usability_review_2.md`)
+### 10.23 Document metadata, OSCAL version upgrade, and a second usability pass
 
-A follow-up round of work, driven partly by direct feature requests and partly by a second Nielsen heuristics pass (`usability_review_2.md`) specifically hunting for gaps introduced by everything §10.20–§10.22 built.
+A follow-up round of work, driven partly by direct feature requests and partly by a second Nielsen heuristics pass (originally its own `usability_review_2.md`, later merged into `usability_review.md` — see §10.27) specifically hunting for gaps introduced by everything §10.20–§10.22 built.
 
 **Document metadata — Creator/Organisation and Document Links, collapsible.** Both `ComponentTab` and `CapabilityTab` gained two new per-file metadata fields alongside the existing version/UUID card (§10.21): a Creator/Organisation text field and a `doc_links[]` table (same rel/href/text shape as the existing per-component `links[]`, but describing the *document itself* — e.g. a vendor's "latest version" URL — not the component). Prompted by inspecting real-world example components (CivicActions' published OSCAL components) that carry exactly this kind of file-level provenance. The whole "🗂 Document Metadata" card is now collapsible via a new `tab_utils.make_collapsible()` helper (parent, title, colors, start_expanded) — a generic disclosure-triangle wrapper, not specific to this card, so any future card can reuse it.
 
@@ -1022,7 +1022,7 @@ A follow-up round of work, driven partly by direct feature requests and partly b
 
 **System Overview Capability Editor auto-loads from the system's capability folder.** Mirroring how the Component Editor already behaved, `on_system_folder_changed()`/`_load_system_folder()` (`capability_tab.py`) now load every capability file in the current system's `capabilities/` folder automatically when the system folder changes, instead of requiring a manual Open Folder each time.
 
-**`usability_review_2.md` findings, fixed in priority order:**
+**Second-pass findings, fixed in priority order:**
 - **Silent validation-skip in the Upgrade dialog** (🔴 highest priority): both `_upgrade_oscal_version()` methods guarded the whole validation step with `if zip_path:` — a missing/renamed schema zip meant `zip_path` was `None`, and the code fell straight through to committing the upgrade with **no indication validation had ever run**, directly contradicting the dialog's own "re-validates before re-labelling" copy. Fixed with an `else:` branch requiring explicit confirmation ("could not find the schema — upgrade anyway, without validation?") before proceeding.
 - **No tooltip on "Create New Workspace"**: added, along with the Open/Save Workspace buttons, which also had none.
 - **No dialog anywhere supports Enter-to-confirm/Escape-to-cancel**: `<Escape>` → cancel added to every `_make_dialog()` implementation across all 6 tab files with dialogs (cheap, one line each, benefits every dialog in the app at once) plus the handful of dialogs built as standalone `tk.Toplevel`s outside that helper. `<Return>` → primary action scoped to `component_tab.py`/`capability_tab.py`'s own dialogs (the ones actively developed this round) — deliberately *not* extended to `ar_tab.py`/`ap_tab.py`/`poam_tab.py`/`ssp_tab.py`'s dialogs in the same pass, left as a documented follow-up rather than an exhaustive ~20-dialog sweep. One deliberate exception: the Protocol dialog's port-range entry fields bind `<Return>` to "add this port range" instead of the dialog-wide primary action, since Return there should extend the list being built, not submit the whole dialog.
@@ -1075,6 +1075,10 @@ The project had no automated verification at all before this — every fix in th
 **26 tests**, chosen to cover the pieces most likely to silently break on a careless refactor rather than attempting exhaustive coverage: the small pure helpers (`new_uuid`, `now_iso`, `safe_filename_component`, `get_prop`), `get_source_href`'s profile-over-catalog-over-placeholder preference order, `get_profile_controls`'s filtering, `CatalogResolver` (add/get/resolve/all_controls/clear), and — the newest and most change-prone logic in the file — `build_component_oscal_entry()`'s multi-catalog grouping from §10.24, including the "some controls have a recorded source, some don't" mixed case that a less careful implementation could merge into the wrong bucket. Also covers the VLAN and data-flow-link grouped-props round-trips (§10.12), which had no prior test coverage at all.
 
 **Suggested next, in rough order of effort-to-value** (not yet built): `empty_ssp()`/`empty_poam()`/`empty_ap()`/`empty_ar()` shape assertions (trivial); `parse_*_file()` round-trips for SSP/AP/AR/POA&M (same pattern as the VLAN/data-flow tests, just bigger documents); `build_workspace_manifest()`/`load_workspace_manifest()` (needs `tmp_path` fixtures — real files on disk, not pure dicts); `validate_oscal_file()` against the real bundled `oscal-1.2.2.zip` schema (highest real-world value, since it's the app's actual conformance guarantee, but needs that fixture file); `CatalogResolver.load_from_profile()`'s back-matter indirection (hardest of the five).
+
+### 10.27 `usability_review.md` and `usability_review_2.md` merged into one file
+
+Two separate review documents had accumulated — the original 10-heuristic pass (§10.22) and a follow-up pass hunting for regressions introduced by everything built since (§10.23) — plus a set of button-colour/font-weight fixes that had been appended to the second file as ad hoc follow-ups rather than filed under any heuristic. Per direct instruction, merged both into a single `usability_review.md`, organized by the original 10-heuristic structure: each second-pass finding is now folded inline under whichever heuristic it actually belongs to (cross-referenced where a finding spans two, e.g. the Upgrade dialog's validation-skip bug under #1 with a #9 cross-reference), labelled **"Second pass"** so the two passes stay distinguishable without needing two files. The button-colour/weight follow-ups landed under #8 (Aesthetic and Minimalist Design), next to the WCAG contrast fix they're a direct continuation of. `usability_review_2.md` was deleted; every code comment across the tab files that referenced it by name (`# usability_review_2.md — Escape always means Cancel`, etc.) was updated to point at the merged file instead.
 
 ---
 
@@ -1163,7 +1167,7 @@ The components span a realistic medium-to-large Australian organisation's enviro
 
 ### Version 4.4 (July 2026)
 
-**Usability (`usability_review_2.md`, fixed in priority order):**
+**Usability (second pass, fixed in priority order):**
 - Fixed the "Upgrade OSCAL Version" dialog silently skipping validation when the target schema zip couldn't be found — now warns and requires explicit confirmation before proceeding unchecked.
 - Added tooltips to all three Workspace tab buttons (Open/Save/Create New Workspace).
 - Added `<Escape>`-to-cancel to every dialog in the app (via `_make_dialog()` plus the standalone `tk.Toplevel` dialogs outside it) and `<Return>`-to-confirm to `component_tab.py`/`capability_tab.py`'s own dialogs.

@@ -1609,7 +1609,7 @@ class CapabilityTab(tk.Frame):
         # it is closed. Without this the user could keep clicking behind it.
         dlg.grab_set()
         dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
-        # usability_review_2.md — Escape always means Cancel here too.
+        # usability_review.md — Escape always means Cancel here too.
         dlg.bind("<Escape>", lambda _e: dlg.destroy())
         return dlg
 
@@ -1707,7 +1707,7 @@ class CapabilityTab(tk.Frame):
                     if not proceed:
                         return
             else:
-                # usability_review_2.md — see ComponentTab's equivalent for
+                # usability_review.md — see ComponentTab's equivalent for
                 # why this can't just fall through silently: the button
                 # promises to validate first, so a missing schema zip needs
                 # to say so rather than quietly upgrading unchecked.

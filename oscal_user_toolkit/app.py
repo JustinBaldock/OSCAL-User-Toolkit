@@ -111,7 +111,7 @@ DARK_COLORS = {
     "BUTTON_TEXT": "#1a1a1a",
     # Fill for secondary/neutral buttons (Cancel, Delete, Remove Selected,
     # etc). Fixed light grey-lavender, not theme-swapped — same reasoning
-    # as the _BG keys: usability_review_2.md flagged that pairing these
+    # as the _BG keys: usability_review.md flagged that pairing these
     # buttons' fill (HEADER_BG, which is dark in dark mode) with the
     # theme's light TEXT colour made secondary-button text a visibly
     # different colour from primary buttons' fixed BUTTON_TEXT sitting

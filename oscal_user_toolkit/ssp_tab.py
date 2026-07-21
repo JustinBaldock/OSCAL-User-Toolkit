@@ -1475,7 +1475,7 @@ class SSPTab(tk.Frame):
         dlg.transient(self)
         dlg.grab_set()
         dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
-        # usability_review_2.md — Escape always means Cancel.
+        # usability_review.md — Escape always means Cancel.
         dlg.bind("<Escape>", lambda _e: dlg.destroy())
         return dlg
 

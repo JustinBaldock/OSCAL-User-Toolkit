@@ -52,7 +52,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - **Error logging**: an uncaught error in any tab is now logged with a full traceback to `oscal_user_toolkit/error.log` and shown as a plain-language dialog, instead of failing silently
 - **Dialog keyboard support**: every dialog in the app closes on **Escape**; the Component/Capability Editors' own dialogs also confirm on **Return**
 - **Consistent button styling**: every button (primary and secondary) now uses the same text colour and normal font weight — no more colour/weight mismatches between adjacent buttons
-- See [usability_review.md](usability_review.md) and [usability_review_2.md](usability_review_2.md) for the two usability passes this came from, and [SECURE_CODING.md](SECURE_CODING.md) for the project's secure-coding rules
+- See [usability_review.md](usability_review.md) for the Nielsen heuristics review this came from (two passes, merged into one document), and [SECURE_CODING.md](SECURE_CODING.md) for the project's secure-coding rules
 
 ### Workspace
 - **Landing tab** with per-tab guidance and **Open/Save Workspace** buttons that load or save an entire system's file set (SSP, components, capabilities, AP, AR, POA&M) in one action via a portable JSON manifest
@@ -393,8 +393,7 @@ OSCAL-User-Toolkit/
 ├── user_stories.md                  # Role-based user stories driving design decisions
 ├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
 ├── oscal_user_toolkit_design_document.md  # Technical design document and changelog
-├── usability_review.md              # Nielsen heuristics review — status of every finding, fixed or deferred
-├── usability_review_2.md            # Second Nielsen heuristics pass — new findings from post-fix code
+├── usability_review.md              # Nielsen heuristics review (two passes, merged) — status of every finding, fixed or deferred
 ├── SECURE_CODING.md                 # Project rules derived from the OpenSSF Secure Coding Guide for Python
 └── README.md
 ```

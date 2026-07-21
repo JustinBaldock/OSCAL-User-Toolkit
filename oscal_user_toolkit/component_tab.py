@@ -2047,7 +2047,7 @@ class ComponentTab(tk.Frame):
         dlg.configure(bg=C["BG"])
         dlg.transient(self.winfo_toplevel())
         dlg.grab_set()
-        # usability_review_2.md — this dialog builds its own Toplevel
+        # usability_review.md — this dialog builds its own Toplevel
         # rather than going through _make_dialog(), so it needs its own
         # Escape binding too (Return is bound below, once do_save exists).
         dlg.bind("<Escape>", lambda _e: dlg.destroy())
@@ -2216,7 +2216,7 @@ class ComponentTab(tk.Frame):
                     if not proceed:
                         return
             else:
-                # usability_review_2.md — this used to fall through silently
+                # usability_review.md — this used to fall through silently
                 # here, committing the upgrade with no indication validation
                 # never ran at all. The button promises to validate first;
                 # a missing schema zip shouldn't let that promise go unmet
@@ -2520,7 +2520,7 @@ class ComponentTab(tk.Frame):
         # clicking the main window while the dialog is open.
         dlg.grab_set()
         dlg.minsize(width, 10)   # enforce minimum width; height auto-sizes to content
-        # usability_review_2.md — Escape always means Cancel, regardless of
+        # usability_review.md — Escape always means Cancel, regardless of
         # what this particular dialog does, so it's safe to bind here once
         # rather than needing every dialog method to do it individually.
         dlg.bind("<Escape>", lambda _e: dlg.destroy())
@@ -2994,7 +2994,7 @@ class ComponentTab(tk.Frame):
         tk.Button(add_row, text="＋  Add", command=_add_pr,
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, cursor="hand2").pack(side="left")
-        # usability_review_2.md — Return here should add the port range being
+        # usability_review.md — Return here should add the port range being
         # typed, not submit the whole dialog (that's what the OK button is
         # for), so these get their own binding instead of a dialog-wide one.
         for _entry in (pr_start_entry, pr_end_entry, pr_remarks_entry):
