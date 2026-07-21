@@ -1642,6 +1642,7 @@ class OSCALApp(tk.Tk):
         self._ssp_tab._refresh_cap8_tree()
 
         self._workspace_path = path
+        self._capability_tab.on_system_folder_changed()
 
         summary = f"Workspace: {ws['title'] or Path(path).name}\n\n"
         summary += "Loaded:\n" + "\n".join(f"  • {x}" for x in loaded) if loaded else "Nothing was loaded."
@@ -1696,6 +1697,7 @@ class OSCALApp(tk.Tk):
             json.dump(manifest, f, indent=2, ensure_ascii=False)
 
         self._workspace_path = path
+        self._capability_tab.on_system_folder_changed()
         self._status_lbl.config(text=f"Workspace saved: {Path(path).name}")
         messagebox.showinfo("Workspace Saved", f"Workspace saved successfully:\n{path}")
 

@@ -218,6 +218,50 @@ class CapabilityTab(tk.Frame):
             self._gate_frame.pack(fill="both", expand=True)
             self._update_gate_label()
 
+    def on_system_folder_changed(self):
+        """
+        Called by app.py right after opening or saving a Workspace (i.e.
+        whenever get_system_folder() starts returning a new, or newly
+        non-None, path). Not called for library_mode instances — the
+        Library Capability Editor's file source is the Library folder,
+        not any one system's.
+
+        Auto-loads every capability file already sitting in the current
+        system's capabilities/ folder — the same "scan the whole folder,
+        not just whatever a workspace manifest happens to list" behaviour
+        SSPTab's "🔄 Sync from System Folder" already uses (see design
+        document §10.15), so a capability added to that folder by another
+        means (e.g. "📚 Import from Library", or copied in externally)
+        shows up here without the user having to separately track which
+        files a stale workspace manifest does or doesn't mention.
+        """
+        if self._library_mode:
+            return
+        self._load_system_folder()
+
+    def _load_system_folder(self):
+        """
+        Load every capability file in <system folder>/capabilities/ into
+        this tab — see on_system_folder_changed() for when this runs.
+
+        Reuses load_from_paths()'s existing UUID-dedup (via
+        _load_capability_from_path()), so this is safe to call again
+        later (e.g. a second workspace save) without duplicating
+        capabilities already loaded by hand via Open File(s)/Open Folder/
+        Import from Library.
+        """
+        system_folder = self._get_system_folder()
+        if not system_folder:
+            return
+        cap_dir = Path(system_folder) / "capabilities"
+        if cap_dir.is_dir():
+            self.load_from_paths(sorted(cap_dir.glob("*.json")))
+        # Refresh the folder-location hint (see _build_folder_hint()) even
+        # if there were no files to load, so it shows the new system
+        # folder's path right away rather than waiting for some other
+        # unrelated action to trigger _refresh_list().
+        self._update_folder_hint()
+
     # =========================================================================
     # GUARD CHECK
     # =========================================================================
