@@ -428,7 +428,7 @@ OSCAL is an open standard developed by [NIST](https://www.nist.gov/). It provide
 
 ## Contributing
 
-Contributions, bug reports, and feature suggestions are welcome. Please open an issue or pull request on GitHub.
+Contributions, bug reports, and feature suggestions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the project structure, dev setup, and testing conventions before opening a pull request.
 
 ---
 
