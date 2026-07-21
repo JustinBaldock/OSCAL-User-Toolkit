@@ -93,6 +93,7 @@ class CapabilityTab(tk.Frame):
     def __init__(self, parent, colors,
                  get_catalog, get_components, get_profile, set_status,
                  get_oscal_version=None, get_oscal_zip_path=None,
+                 get_oscal_versions=None, get_oscal_version_paths=None,
                  add_component=None, get_library_path=None, get_system_folder=None,
                  library_mode=False):
         """
@@ -107,6 +108,12 @@ class CapabilityTab(tk.Frame):
             set_status        - Callback: updates the main window status bar
             get_oscal_version - Callback: returns the selected OSCAL version string
             get_oscal_zip_path- Callback: returns the path to the OSCAL schema zip
+            get_oscal_versions      - Optional callback returning every OSCAL
+                                schema version bundled with the app — used by
+                                "🔼 Upgrade OSCAL Version" to offer targets.
+            get_oscal_version_paths - Optional callback returning the full
+                                {version: zip_path} map, so any available
+                                target version can be validated against.
             add_component     - Callback: ComponentTab.add_component(comp) — used
                                 when loading a capability file to import its bundled
                                 member components into the Component Editor's list
@@ -134,6 +141,8 @@ class CapabilityTab(tk.Frame):
         self._set_status          = set_status
         self._get_oscal_version   = get_oscal_version   or (lambda: "1.1.2")
         self._get_oscal_zip_path  = get_oscal_zip_path  or (lambda: None)
+        self._get_oscal_versions      = get_oscal_versions or (lambda: [])
+        self._get_oscal_version_paths = get_oscal_version_paths or (lambda: {})
         # add_component is ComponentTab.add_component — importing bundled
         # components via this method keeps CapabilityTab decoupled from
         # ComponentTab's internal data structure.
@@ -837,11 +846,26 @@ class CapabilityTab(tk.Frame):
         # ComponentTab's equivalent label — see there for what this
         # surfaces (e.g. the Library's CivicActions examples declaring
         # "1.0.0" while everything else declares 1.1.2/1.2.2).
+        oscal_ver_row = tk.Frame(meta_card, bg=C["CARD_BG"])
+        oscal_ver_row.pack(fill="x", padx=10, pady=(6, 0))
         self._v_oscal_version_lbl = tk.Label(
-            meta_card, text="OSCAL Version: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            oscal_ver_row, text="OSCAL Version: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 8),
         )
-        self._v_oscal_version_lbl.pack(anchor="w", padx=10, pady=(6, 0))
+        self._v_oscal_version_lbl.pack(side="left")
+        upgrade_btn = tk.Button(
+            oscal_ver_row, text="🔼  Upgrade OSCAL Version",
+            command=self._upgrade_oscal_version,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 8),
+            relief="flat", padx=6, pady=0, cursor="hand2",
+        )
+        upgrade_btn.pack(side="left", padx=(10, 0))
+        attach_tooltip(
+            upgrade_btn,
+            "Re-validate this capability against a different OSCAL schema "
+            "version and, if you confirm, re-stamp it to that version",
+            C,
+        )
 
         tk.Label(meta_card, text="Creator / Organisation:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(6, 0))
@@ -1565,6 +1589,114 @@ class CapabilityTab(tk.Frame):
         "latest-version", "reference", "vendor-documentation",
         "security-advisory", "policy", "homepage", "related",
     ]
+
+    def _upgrade_oscal_version(self):
+        """
+        Let the user pick a target OSCAL schema version, validate this
+        capability against THAT version's schema, and — only if they
+        confirm — re-stamp metadata.oscal-version to it.
+
+        See ComponentTab._upgrade_oscal_version() for the full design
+        rationale (this does not migrate content, only re-validates and
+        re-labels) — this is the same feature, mirrored for capabilities.
+        Does not itself write to disk — Apply/Save Capability still does.
+        """
+        if self._sel_index is None:
+            messagebox.showinfo("No capability", "Please select a capability first.")
+            return
+
+        available = self._get_oscal_versions()
+        if not available:
+            messagebox.showwarning(
+                "No OSCAL schema versions found",
+                "No bundled OSCAL schema zip files were found to upgrade against.",
+            )
+            return
+
+        self._collect_into(self._sel_index)
+        cap = self._capabilities[self._sel_index]
+        current_version = cap.get("doc_oscal_version", "") or "unknown"
+
+        C = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title("Upgrade OSCAL Version")
+        dlg.configure(bg=C["BG"])
+        dlg.transient(self.winfo_toplevel())
+        dlg.grab_set()
+
+        tk.Label(dlg, text=f"Current OSCAL version: {current_version}",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                 ).pack(anchor="w", padx=16, pady=(14, 4))
+
+        row = tk.Frame(dlg, bg=C["BG"])
+        row.pack(fill="x", padx=16, pady=4)
+        tk.Label(row, text="Upgrade to:", bg=C["BG"], fg=C["TEXT"],
+                 font=("Helvetica", 10), width=14, anchor="w").pack(side="left")
+        default_target = current_version if current_version in available else available[0]
+        target_var = tk.StringVar(value=default_target)
+        ttk.Combobox(row, textvariable=target_var, values=available,
+                     state="readonly", width=14).pack(side="left")
+
+        tk.Label(
+            dlg,
+            text="Re-validates this capability against the chosen version's schema\n"
+                 "before re-labelling it — this does not migrate any content, it\n"
+                 "only checks and re-stamps metadata.oscal-version.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"), justify="left",
+        ).pack(anchor="w", padx=16, pady=(8, 10))
+
+        def do_upgrade():
+            target_version = target_var.get().strip()
+            if not target_version:
+                messagebox.showwarning("Version required", "Please choose a target version.")
+                return
+            if target_version == current_version:
+                messagebox.showinfo(
+                    "Already at this version",
+                    f"This capability is already stamped as OSCAL {target_version}.",
+                )
+                return
+
+            # Build from a shallow copy, not cap itself — see
+            # ComponentTab._upgrade_oscal_version() for why: without this,
+            # even declining after a failed validation would silently
+            # re-stamp doc_oscal_version to the toolbar's current version.
+            doc, _ = self._build_oscal_document(dict(cap))
+            doc["component-definition"]["metadata"]["oscal-version"] = target_version
+
+            zip_path = self._get_oscal_version_paths().get(target_version)
+            if zip_path:
+                valid, errors = validate_oscal_file(doc, "oscal_component_schema.json", zip_path)
+                if not valid:
+                    detail = "\n".join(errors)
+                    proceed = messagebox.askyesno(
+                        "Schema validation failed",
+                        f"This capability does not fully conform to the OSCAL "
+                        f"{target_version} schema.\n\n{detail}\n\nUpgrade anyway?",
+                        icon="warning",
+                    )
+                    if not proceed:
+                        return
+
+            cap["doc_oscal_version"] = target_version
+            self._dirty = True
+            dlg.destroy()
+            self._populate_from(self._sel_index)
+            self._status_lbl.config(
+                text=f"OSCAL version upgraded to {target_version}  (not yet saved to disk)",
+                fg=C["YELLOW"],
+            )
+
+        btn_row = tk.Frame(dlg, bg=C["BG"])
+        btn_row.pack(fill="x", padx=16, pady=(0, 14))
+        tk.Button(btn_row, text="Upgrade", command=do_upgrade,
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=10, pady=4, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(btn_row, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=4, cursor="hand2",
+                  ).pack(side="left", padx=(8, 0))
 
     def _add_doc_link(self):
         """

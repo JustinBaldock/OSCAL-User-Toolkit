@@ -45,7 +45,7 @@ from pathlib import Path
 
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, get_source_href, get_profile_controls,
-                     safe_filename_component)
+                     safe_filename_component, validate_oscal_file)
 from .tab_utils import is_tab_active, attach_tooltip, make_collapsible
 
 # =============================================================================
@@ -133,8 +133,9 @@ class ComponentTab(tk.Frame):
     """
 
     def __init__(self, parent, colors, get_catalog, get_profile, set_status,
-                 get_oscal_version=None, get_library_path=None, get_system_folder=None,
-                 library_mode=False):
+                 get_oscal_version=None, get_oscal_versions=None,
+                 get_oscal_version_paths=None, get_library_path=None,
+                 get_system_folder=None, library_mode=False):
         """
         Initialise the ComponentTab.
 
@@ -148,6 +149,14 @@ class ComponentTab(tk.Frame):
                                 string selected in the toolbar (e.g. "1.2.2").
                                 Defaults to a lambda returning "1.1.2" so the
                                 tab still works if constructed standalone.
+            get_oscal_versions      - Optional callback returning every OSCAL
+                                schema version bundled with the app (not just
+                                the toolbar's current selection) — used by
+                                "🔼 Upgrade OSCAL Version" to offer targets.
+            get_oscal_version_paths - Optional callback returning the full
+                                {version: zip_path} map, so any available
+                                target version's schema can be validated
+                                against, not just the currently-selected one.
             get_library_path  - Optional callback returning the configured
                                 Library folder Path, or None if not set.
             get_system_folder - Optional callback returning the current
@@ -172,6 +181,8 @@ class ComponentTab(tk.Frame):
         self._get_profile       = get_profile
         self._set_status        = set_status
         self._get_oscal_version = get_oscal_version or (lambda: "1.1.2")
+        self._get_oscal_versions      = get_oscal_versions or (lambda: [])
+        self._get_oscal_version_paths = get_oscal_version_paths or (lambda: {})
         self._get_library_path  = get_library_path  or (lambda: None)
         self._get_system_folder = get_system_folder or (lambda: None)
         self._library_mode      = library_mode
@@ -974,11 +985,26 @@ class ComponentTab(tk.Frame):
         # the app's currently-selected version. Surfaces mismatches like
         # the Library's CivicActions examples, which declare "1.0.0"
         # while everything else in the Library declares 1.1.2/1.2.2.
+        oscal_ver_row = tk.Frame(ver_card, bg=C["CARD_BG"])
+        oscal_ver_row.pack(fill="x", padx=10, pady=(0, 2))
         self._v_oscal_version_lbl = tk.Label(
-            id_row, text="OSCAL Version: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
+            oscal_ver_row, text="OSCAL Version: —", bg=C["CARD_BG"], fg=C["SUBTEXT"],
             font=("Helvetica", 8),
         )
-        self._v_oscal_version_lbl.pack(anchor="w")
+        self._v_oscal_version_lbl.pack(side="left")
+        upgrade_btn = tk.Button(
+            oscal_ver_row, text="🔼  Upgrade OSCAL Version",
+            command=self._upgrade_oscal_version,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 8),
+            relief="flat", padx=6, pady=0, cursor="hand2",
+        )
+        upgrade_btn.pack(side="left", padx=(10, 0))
+        attach_tooltip(
+            upgrade_btn,
+            "Re-validate this component against a different OSCAL schema "
+            "version and, if you confirm, re-stamp it to that version",
+            C,
+        )
 
         tk.Label(ver_card, text="Revision History:", bg=C["CARD_BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 9, "italic")).pack(anchor="w", padx=10, pady=(4, 0))
@@ -2045,6 +2071,132 @@ class ComponentTab(tk.Frame):
         btn_row = tk.Frame(dlg, bg=C["BG"])
         btn_row.pack(fill="x", padx=16, pady=(0, 14))
         tk.Button(btn_row, text="Save New Version", command=do_save,
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
+                  relief="flat", padx=10, pady=4, cursor="hand2",
+                  ).pack(side="left")
+        tk.Button(btn_row, text="Cancel", command=dlg.destroy,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=4, cursor="hand2",
+                  ).pack(side="left", padx=(8, 0))
+
+    def _upgrade_oscal_version(self):
+        """
+        Let the user pick a target OSCAL schema version, validate this
+        component against THAT version's schema (not just whichever one
+        the toolbar currently has selected), and — only if they confirm —
+        re-stamp metadata.oscal-version to it.
+
+        This does not migrate content across OSCAL schema versions (this
+        app has no such migration logic for any schema change between
+        releases) — it only re-validates and re-labels. If validation
+        fails, the user is warned and can still proceed, matching the
+        same "doesn't fully conform — save anyway?" pattern already used
+        elsewhere (e.g. app.py's _open_catalog()), so the button is never
+        able to silently claim compliance it hasn't actually checked.
+
+        Does not itself write to disk — Apply/Save still do that, same as
+        _save_new_version().
+        """
+        if self._selected_index is None:
+            messagebox.showinfo("No component", "Please select a component first.")
+            return
+
+        available = self._get_oscal_versions()
+        if not available:
+            messagebox.showwarning(
+                "No OSCAL schema versions found",
+                "No bundled OSCAL schema zip files were found to upgrade against.",
+            )
+            return
+
+        self._collect_into(self._selected_index)
+        comp = self._components[self._selected_index]
+        current_version = comp.get("doc_oscal_version", "") or "unknown"
+
+        C = self._colors
+        dlg = tk.Toplevel(self)
+        dlg.title("Upgrade OSCAL Version")
+        dlg.configure(bg=C["BG"])
+        dlg.transient(self.winfo_toplevel())
+        dlg.grab_set()
+
+        tk.Label(dlg, text=f"Current OSCAL version: {current_version}",
+                 bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+                 ).pack(anchor="w", padx=16, pady=(14, 4))
+
+        row = tk.Frame(dlg, bg=C["BG"])
+        row.pack(fill="x", padx=16, pady=4)
+        tk.Label(row, text="Upgrade to:", bg=C["BG"], fg=C["TEXT"],
+                 font=("Helvetica", 10), width=14, anchor="w").pack(side="left")
+        default_target = current_version if current_version in available else available[0]
+        target_var = tk.StringVar(value=default_target)
+        ttk.Combobox(row, textvariable=target_var, values=available,
+                     state="readonly", width=14).pack(side="left")
+
+        tk.Label(
+            dlg,
+            text="Re-validates this component against the chosen version's schema\n"
+                 "before re-labelling it — this does not migrate any content, it\n"
+                 "only checks and re-stamps metadata.oscal-version.",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"), justify="left",
+        ).pack(anchor="w", padx=16, pady=(8, 10))
+
+        def do_upgrade():
+            target_version = target_var.get().strip()
+            if not target_version:
+                messagebox.showwarning("Version required", "Please choose a target version.")
+                return
+            if target_version == current_version:
+                messagebox.showinfo(
+                    "Already at this version",
+                    f"This component is already stamped as OSCAL {target_version}.",
+                )
+                return
+
+            # Build from a shallow copy, not comp itself — comp is a plain
+            # top-level dict of simple values/lists here (no nested dicts
+            # get mutated by the build), so a shallow copy safely isolates
+            # _build_single_component_oscal()'s side effects (it writes
+            # comp["file_uuid"]/comp["doc_oscal_version"] directly) until
+            # the user actually confirms, below. Without this, even
+            # clicking Cancel or declining after a failed validation would
+            # silently re-stamp doc_oscal_version to whatever the toolbar
+            # currently has selected.
+            doc = self._build_single_component_oscal(dict(comp))
+            doc["component-definition"]["metadata"]["oscal-version"] = target_version
+
+            zip_path = self._get_oscal_version_paths().get(target_version)
+            if zip_path:
+                valid, errors = validate_oscal_file(doc, "oscal_component_schema.json", zip_path)
+                if not valid:
+                    detail = "\n".join(errors)
+                    proceed = messagebox.askyesno(
+                        "Schema validation failed",
+                        f"This component does not fully conform to the OSCAL "
+                        f"{target_version} schema.\n\n{detail}\n\nUpgrade anyway?",
+                        icon="warning",
+                    )
+                    if not proceed:
+                        return
+
+            comp["doc_oscal_version"] = target_version
+            comp.setdefault("revisions", []).insert(0, {
+                "version": comp.get("version", "1.0"),
+                "date":    now_iso(),
+                "remarks": f"OSCAL version upgraded from {current_version} to {target_version}.",
+            })
+            self._dirty = True
+            dlg.destroy()
+            self._populate_from(self._selected_index)
+            self._refresh_list()
+            self._status_lbl.config(
+                text=f"OSCAL version upgraded to {target_version}  (not yet saved to disk)",
+                fg=C["YELLOW"],
+            )
+
+        btn_row = tk.Frame(dlg, bg=C["BG"])
+        btn_row.pack(fill="x", padx=16, pady=(0, 14))
+        tk.Button(btn_row, text="Upgrade", command=do_upgrade,
                   bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left")

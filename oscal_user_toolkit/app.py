@@ -330,6 +330,26 @@ class OSCALApp(tk.Tk):
         self._oscal_version_paths = {label: path for label, path in versions}
         return [f"v{label}" for label, _ in versions]
 
+    def get_oscal_versions(self):
+        """
+        Callback passed to Component/Capability Editor: every OSCAL schema
+        version bundled with the app (unprefixed, e.g. "1.2.2" — matching
+        the format stored in comp["doc_oscal_version"]), not just whichever
+        one happens to be selected in the toolbar right now. Used by the
+        "🔼 Upgrade OSCAL Version" dialog to offer every available target.
+        """
+        return [v.lstrip("v") for v in self._oscal_versions]
+
+    def get_oscal_version_paths(self):
+        """
+        Callback passed to Component/Capability Editor: the full
+        {version_label: zip_path} map, so the "🔼 Upgrade OSCAL Version"
+        dialog can validate against ANY available target version's schema,
+        not just whichever one the toolbar currently has selected (that's
+        what get_oscal_zip_path is for, elsewhere).
+        """
+        return self._oscal_version_paths
+
     # =========================================================================
     # STYLING
     # =========================================================================
@@ -767,6 +787,8 @@ class OSCALApp(tk.Tk):
             get_profile       = lambda: self._profile,
             set_status        = lambda msg: self._status_lbl.config(text=msg),
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_oscal_versions      = self.get_oscal_versions,
+            get_oscal_version_paths = self.get_oscal_version_paths,
             get_library_path  = self.get_library_path,
             library_mode      = True,
         )
@@ -788,6 +810,8 @@ class OSCALApp(tk.Tk):
             get_oscal_zip_path  = lambda: self._oscal_version_paths.get(
                 self._oscal_version_var.get().lstrip("v")
             ),
+            get_oscal_versions      = self.get_oscal_versions,
+            get_oscal_version_paths = self.get_oscal_version_paths,
             add_component       = self._library_component_tab.add_component,
             get_library_path    = self.get_library_path,
             library_mode        = True,
@@ -810,6 +834,8 @@ class OSCALApp(tk.Tk):
             get_profile= lambda: self._profile,
             set_status = lambda msg: self._status_lbl.config(text=msg),
             get_oscal_version = lambda: self._oscal_version_var.get().lstrip("v"),
+            get_oscal_versions      = self.get_oscal_versions,
+            get_oscal_version_paths = self.get_oscal_version_paths,
             get_library_path  = self.get_library_path,
             get_system_folder = self.get_system_folder,
         )
@@ -829,6 +855,8 @@ class OSCALApp(tk.Tk):
             get_oscal_zip_path  = lambda: self._oscal_version_paths.get(
                 self._oscal_version_var.get().lstrip("v")
             ),
+            get_oscal_versions      = self.get_oscal_versions,
+            get_oscal_version_paths = self.get_oscal_version_paths,
             # Allows CapabilityTab to import bundled components from saved
             # capability files directly into ComponentTab's live list.
             add_component       = self._component_tab.add_component,
