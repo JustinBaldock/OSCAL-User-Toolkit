@@ -1,5 +1,7 @@
 # OSCAL User Toolkit — Feature Todo List
 
+> This file tracks work that is **not yet done**. Completed features are documented in [oscal_user_toolkit_design_document.md](oscal_user_toolkit_design_document.md) instead (see its §10 "Key Design Decisions" and §11 "Example Component Library") — once something ships, it moves out of this file and into that one, so this list doesn't accumulate stale "✅ Done" history.
+
 ---
 
 ## 1. Profile Editor
@@ -86,118 +88,17 @@ Key fields:
 
 ---
 
-## 2. Component Definition Editor (Standalone)
+## 2. Standalone Component Definition document type
 
-### Purpose
-Create and edit standalone OSCAL 1.2.2 `component-definition` documents. These differ from the Component Editor within the SSP tab: a component-definition document is a reusable, shareable library of pre-approved component configurations that can be imported into multiple SSPs across an organisation or across organisations.
+The Library system (see design document §10.13–§10.20) already covers most of what a "reusable, shareable component library separate from any one SSP" originally needed — a shared folder, an import path into any SSP, dedicated Library-mode editors. What it still doesn't provide, relative to a true standalone `component-definition` document type:
 
-Examples:
-- "Windows 11 Hardened Workstation — ISM baseline"
-- "Microsoft 365 Tenant — Exchange Online and SharePoint"
-- "Cisco Catalyst Switch — Network device hardening"
-- "VMware vSphere 8 — Hypervisor platform"
+- **No document-level metadata distinct from the Library itself** — no `import-component-definitions` support, no title/version/remarks that live at the "collection of components" level rather than per-component. The Library *is* just `ComponentTab` pointed at `library/components/`, one component per file — not a separate document format that can bundle many components with its own metadata.
+- **No "Load all controls from profile" skeleton-generation button** — a button that creates a blank implemented-requirement entry for every control in the currently active profile, so a user fills in descriptions rather than adding requirements one at a time.
 
-### OSCAL 1.2.2 Structure
-
-```json
-{
-  "component-definition": {
-    "uuid": "...",
-    "metadata": { "title", "last-modified", "version", "oscal-version" },
-    "import-component-definitions": [{ "href": "..." }],
-    "components": [
-      {
-        "uuid": "...",
-        "type": "software|hardware|service|policy|process|plan|guidance|standard|validation",
-        "title": "...",
-        "description": "...",
-        "purpose": "...",
-        "responsible-roles": [...],
-        "protocols": [...],
-        "control-implementations": [
-          {
-            "uuid": "...",
-            "source": "profile-href",
-            "description": "...",
-            "implemented-requirements": [
-              {
-                "uuid": "...",
-                "control-id": "ism-1490",
-                "description": "...",
-                "set-parameters": [...],
-                "responsible-roles": [...],
-                "statements": [...]
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "capabilities": [...],
-    "back-matter": { "resources": [...] }
-  }
-}
-```
-
-### Key Differences from SSP Component Tab
-| SSP Component Tab | Standalone Component Definition |
-|---|---|
-| Components are scoped to one system | Components are reusable across systems |
-| Control implementations reference the SSP's profile | Control implementations reference any profile/catalog |
-| Cannot be exported independently | Saved as a standalone portable document |
-| No import-component-definitions support | Can import and extend other component libraries |
-
-### Sections to Implement
-
-#### Section 1 — Document Metadata
-- Title, Version, Remarks
-- Source Profile reference (href to the profile that control implementations are drawn from)
-
-#### Section 2 — Components List
-- Treeview: Type | Title | Control Coverage (count)
-- Add/Edit/Remove
-- Component dialog:
-  - Type (combo: software/hardware/service/policy/process/plan/guidance/standard/validation)
-  - Title, Description, Purpose
-  - Version, Vendor (as props)
-  - Responsible Roles (table: role-id + party description)
-
-#### Section 3 — Control Implementations (per component)
-- For each selected component: table of implemented requirements
-- Implemented Requirement dialog:
-  - Control ID (with lookup from loaded profile/catalog)
-  - Description of how this component implements the control
-  - Implementation Status (implemented/partial/planned/alternative/not-applicable)
-  - Remarks
-- "Load all controls from profile" button — creates a skeleton implementation entry for each control in the active profile
-
-#### Section 4 — Capabilities (optional/advanced)
-- Capabilities group components into higher-level functional units
-- Table: Capability Name | Description | Incorporated Components
-- Lower priority — phase 2
-
-### Serialisation Notes
-- `build_oscal_component_definition(doc, oscal_version, save_path)`
-- `parse_component_definition_file(data)`
-- `empty_component_definition()`
-- On open: offer to merge components into the current SSP Component tab (import workflow)
-
-### Integration
-- New tab: "📦  Component Library" added after Component Editor
-- SSP Component tab gains an "Import from Component Definition…" button that opens a component-definition file and lets the user select components to pull into the SSP
-- When saving an SSP, offer to also export its components as a component-definition document
-
-### Update — largely superseded by the Library system (see section 5)
-
-Most of what this feature wanted — a reusable, shareable component library separate from any one SSP, with an import path into the SSP — now exists via the Library folder (`settings.py`), Component/Capability Editor's "📚 Import from Library", and the SSP Editor's "🔄 Sync from System Folder" (see section 5 and design document §10.13/§10.15). What's still missing relative to this original proposal:
-- No dedicated "standalone Component Definition" document type/tab distinct from what Component Editor already edits — the Library *is* just Component Editor pointed at `library/components/`, not a separate document format with its own metadata (title/version/remarks at the library level, `import-component-definitions` support, etc.).
-- No "Load all controls from profile" skeleton-generation button.
-- Capabilities-within-a-component-definition-file is already how `capability_tab.py` saves today (bundles member components in the same file) — Section 4 of this proposal is effectively done, just not as a separate optional section.
+(Capabilities bundling multiple components into one file — originally proposed as a "Section 4" of this feature — is already how `capability_tab.py` saves today, so that part doesn't need separate work.)
 
 ### ISM-Specific Considerations
 - ISM assessment methods map to component implementation: EXAMINE (policy/documentation components), TEST (software/hardware components), INTERVIEW (process/people components)
-- Australian Cyber Security Centre (ACSC) publishes hardening guides for common platforms — a pre-populated component library for Windows, Microsoft 365, and network devices aligned to ISM would be high value. **Largely done**: the bundled Library now has 95 example components (see section 5 and design document §11) spanning hardware, hypervisors, workstation/server OSes, services, software, and policies, each with ISM control implementations using real, catalog-verified control IDs.
-- Component definitions can be versioned and shared between agencies as a common baseline — **done for components** (section 6 / design document §10.21)
 
 ---
 
@@ -233,40 +134,30 @@ A profile with two catalog imports looks like:
 
 ### Current Limitation
 
-The app currently treats catalog and profile as a 1:1 relationship — one catalog file loaded at a time via "Open Catalog". `load_profile()` in `models.py` already walks the full `imports[]` array and collects all control IDs correctly, but:
-
-- The UI has a single catalog slot; only one catalog file can be loaded at a time
-- Control title lookups in the SSP, Component, and Catalog Viewer tabs only resolve against the single loaded catalog
-- If a profile imported from two catalogs, control IDs from the second catalog would appear in the profile's ID set but have no title to display
+The app still only holds **one** active catalog and **one** active profile at a time (`self._catalog`/`self._profile` in `app.py`). A `CatalogResolver` already exists (design document §10.17) and auto-loads every catalog a profile's `imports[]` references — but nothing in the UI consumes it yet. Control title lookups in the SSP, Component, and Catalog Viewer tabs only resolve against the single loaded catalog; if a profile imports from two catalogs, control IDs from the second would appear in the profile's ID set but have no title to display.
 
 ### What Needs to Change
 
-#### 1 — Catalog Resolver in `models.py` — ✅ Done (stage 1 of 3 — see design document §10.17)
+#### Stage 2 — Component Editor Source column/filter
 
-`CatalogResolver` exists, keyed by resolved absolute catalog path (not by href, which is only meaningful relative to whichever file declared it). `resolve_control(path, control_id)` and `all_controls()` are implemented but not yet consumed by any tab. `load_from_profile()` auto-loads every catalog a profile's `imports[]` references — including resolving `"#uuid"` back-matter indirection, which turned out to be how the bundled NIST example profiles actually reference their catalog (confirmed directly on those files; a plain relative href turned out to be the less common case in practice). `app.py` owns one `self._resolver`, populated on Open Catalog and auto-populated on Open Profile, exposed via `get_resolver()`.
+"All Controls"/"Applied Controls" (Section 7) currently read from the single `self._catalog`. Settled design (brainstormed against a catalog-switcher and per-catalog-tabs alternative): keep the same Treeview structure, source it from `resolver.all_controls()` instead, and add a Source filter dropdown alongside the existing search/type filter (same pattern as Catalog Viewer's Guideline filter). The single static "Source: X" label currently written to every control-implementation on save goes away — source becomes per-control, resolved automatically from whichever catalog it came from.
 
-**Still open — stages 2 and 3:**
-- **Component Editor Source column/filter** (stage 2): "All Controls"/"Applied Controls" (Section 7) currently read from the single `self._catalog`. Brainstormed three UI options (a catalog switcher, tabs per catalog, or one merged list with a Source column + filter) and settled on the merged-list approach — same Treeview structure, sourced from `resolver.all_controls()` instead, with a Source filter dropdown alongside the existing search/type filter (same pattern as Catalog Viewer's Guideline filter). The single static "Source: X" label that's currently written to every control-implementation on save goes away — source becomes per-control, resolved automatically from whichever catalog it came from.
-- **Multi-source OSCAL output** (stage 3): `build_component_oscal_entry()` in `models.py` currently always emits exactly one `control-implementations` block with one `source`. Needs to group a component's control responses by distinct `source_href` and emit one block per group, since a component whose controls come from two catalogs needs two `source` values, not one.
+#### Stage 3 — Multi-source OSCAL output
 
-#### 2 — UI: Multiple Catalog Slots or Auto-Load — ✅ Decided: Option A (see #1 above)
+`build_component_oscal_entry()` in `models.py` currently always emits exactly one `control-implementations` block with one `source`. Needs to group a component's control responses by distinct `source_href` and emit one block per group, since a component whose controls come from two catalogs needs two `source` values, not one.
 
-#### 2b — "Data Sources" tab — ✅ Done (single catalog/profile, Library-backed)
+#### Profile Editor Integration
 
-`data_sources_tab.py` is no longer a placeholder: it browses the configured Library's `catalogs/`/`profiles/` subfolders, loads a selected file, falls through to a normal file dialog via "Browse Elsewhere" for anything outside the library, and shows/clears the currently active catalog/profile. The toolbar's "Open Catalog"/"Open Profile"/"Clear Profile" buttons were removed from `app.py._build_toolbar()` — this tab is now the only way to do those things. See design document §10.14.
+The Profile Editor (§1 above) should support adding multiple `imports` entries — each with its own catalog href and control selection. The merge strategy (`as-is` vs `combine`) should be configurable when more than one import is present.
 
-**What this did NOT do — still open:** the app still only holds **one** active catalog and **one** active profile at a time (`self._catalog`/`self._profile` in `app.py`), same as before. This tab makes picking *which* single catalog/profile to load easier and more discoverable, but doesn't implement true multi-catalog support (Option B below). The open questions below about multiple simultaneously-loaded catalogs are still unresolved:
-- If multiple catalogs are loaded with no profile, how does the Catalog Viewer disambiguate controls that happen to share an ID across catalogs? (See namespace note in #4 below.)
-- Does every other tab (Component Editor, SSP Editor, etc.) need to let the user pick *which* loaded catalog a component's controls come from, or is the profile still the sole source of truth for control resolution?
-- Should removing a catalog warn the user if components/SSPs currently reference controls from it?
-
-#### 3 — Profile Editor Integration
-
-The Profile Editor (Feature 1) should support adding multiple `imports` entries — each with its own catalog href and control selection. The merge strategy (`as-is` vs `combine`) should be configurable when more than one import is present.
-
-#### 4 — Control ID Namespace Awareness
+#### Control ID Namespace Awareness
 
 SP 800-53 uses IDs like `ac-2`, `si-2`; SP 800-171 uses `03.01.01`; ISM uses `ism-1490`. The app should handle these without collision. Since each import in a profile references a specific catalog, the resolver can use `(catalog_href, control_id)` as the lookup key to avoid ambiguity if two catalogs ever share an ID.
+
+### Open questions
+- If multiple catalogs are loaded with no profile, how does the Catalog Viewer disambiguate controls that happen to share an ID across catalogs?
+- Does every other tab (Component Editor, SSP Editor, etc.) need to let the user pick *which* loaded catalog a component's controls come from, or is the profile still the sole source of truth for control resolution?
+- Should removing a catalog warn the user if components/SSPs currently reference controls from it?
 
 ### Example Data to Create
 
@@ -276,69 +167,36 @@ Once multi-catalog support is implemented, create an example overlay profile in 
 
 ---
 
-## 4. Data Flow Mapping & Diagram Feature
+## 4. Data Flow Diagram Export
 
-### Background
+The SSP schema's `system-characteristics.data-flow` object only carries a free-text `description` plus a `diagrams[]` array of externally-linked diagram files — OSCAL has no schema object anywhere that models a structured graph of "component A sends information type X to component B." SSP Section 4 already has a "Data Flow Links" table (Add/Edit/Remove a link between two of the SSP's own components, with protocol/port/transport/direction — see design document §10.12 for the storage decision) that captures this structured data in a schema-valid way. What's still missing is turning it into a diagram:
 
-The SSP schema's `system-characteristics.data-flow` object only carries a free-text `description` plus a `diagrams[]` array of externally-linked diagram files (`uuid`, `caption`, `link`, `description`) — see `oscal_ssp_schema.json`. OSCAL has no schema object anywhere that models a structured graph of "component A sends information type X to component B." An earlier iteration of the SSP Editor bolted a `component_flows` concept onto each Information Type (Section 5) — encoded as generic `props` triplets tagged `class="data-flow"` — and used it to auto-generate a draw.io export. This was removed (see commit removing `_export_data_flow_drawio` and `component_flows` from `models.py`/`ssp_tab.py`) because Information Types is not the OSCAL-correct home for flow/topology data, and smuggling structured data through generic `props` made the encoding fragile and non-obvious to round-trip.
-
-### Purpose
-
-Reintroduce data-flow mapping as its own dedicated feature — not attached to Information Types — that helps users author the narrative `data-flow.description` field and produce a real network/data-flow diagram, without inventing non-standard OSCAL fields.
-
-### Status: Input UX done, diagram export still to do
-
-**Done (see design doc §10.12 for the storage decision):** SSP Section 4 now has a "Data Flow Links" table directly under the Data Flow description textbox — Add/Edit/Remove a link between two of the SSP's own components (Section 8), each with a protocol (shared `COMMON_PROTOCOLS` list from `component_tab.py`), port, transport (TCP/UDP), and direction (outbound/inbound/bidirectional). Stored as OSCAL `data-flow.props[]`, grouped by a shared `group` UUID per flow and namespaced (`ns: https://oscal-user-toolkit/ns/data-flow-link`) — a schema-valid, order-independent encoding using the `property` object's documented `group` field, unlike the removed Information-Types encoding. `data-flow.description` is auto-drafted from the flow links when the user leaves it blank, so the document stays meaningful to any plain OSCAL consumer.
-
-**Still to do — the diagram export:**
-- A "📊 Export Data Flow Diagram" action (draw.io `.drawio`) generated from the new `data_flow_links` table — reuse the bipartite/graph-building helpers from the removed `_export_data_flow_drawio` (component boxes, `TYPE_STYLES` colours, arrow direction per flow direction), but sourced from `ssp["data_flow_links"]` instead of Information Types' `component_flows`.
-- Link the generated `.drawio` file into `data-flow.diagrams[]` automatically (the same way manually-added diagrams already work via `_build_diagram_section`), so the exported diagram shows up in the existing Data Flow Diagrams list rather than being a one-off file the user has to separately attach.
-- Consider extending the same flow-link concept to Network Architecture (Section 4), which has the identical "no structured schema, diagrams + description only" shape — could reuse the same table/dialog pattern with a topology-flavoured field set (e.g. adding a "link type" instead of protocol/port).
+- A "📊 Export Data Flow Diagram" action (draw.io `.drawio`) generated from the `data_flow_links` table — component boxes, direction-coded arrows, colour-coding by component type (the same visual language the existing System→Capability→Component export already uses).
+- Link the generated `.drawio` file into `data-flow.diagrams[]` automatically (the same way manually-added diagrams already work), so the exported diagram shows up in the existing Data Flow Diagrams list rather than being a one-off file the user has to separately attach.
+- Consider extending the same flow-link concept to Network Architecture (Section 4), which has the identical "no structured schema, diagrams + description only" shape — could reuse the same table/dialog pattern with a topology-flavoured field set (e.g. a "link type" field instead of protocol/port).
 
 ---
 
-## 5. Component & Capability Library — ✅ Done
+## 5. Capability version / revision history
 
-### What was built
+Components already have their own `file_uuid`/`version`/`revisions[]` and a "Version & Revision History" UI (design document §10.21) — `CapabilityTab` still uses shared, tab-level `_file_version` state and has no revision history at all. Same design, applied to capabilities: per-capability `file_uuid`/`version`/`revisions[]`, a "Save New Version" action, and the version/UUID display card in the capability form.
 
-A large organisation's shared, reusable components/capabilities now live in a **Library** folder (`library/{catalogs,profiles,components,capabilities}/`), separate from any one system's own workspace folder — see design document §10.13–§10.16 for the full design history, and `user_stories.md` US-12/US-13 for the driving use case.
+---
 
-- **Library path**: configured once via the "📚 Library Folder" toolbar button, persisted in `settings.json` (inside the `oscal_user_toolkit/` package folder, `.gitignore`d), defaulting to the repo's own `library/` folder if never changed.
-- **Data Sources tab**: browses the Library's `catalogs/`/`profiles/` subfolders and is now the only way to open/clear the active catalog/profile (replaced the old toolbar buttons).
-- **Component/Capability Editor — "📚 Import from Library"**: copies a chosen library file into the current system's folder (the folder containing the active workspace manifest) as an independent, editable copy — never mutates the library source, and never overwrites an already-imported local copy.
-- **SSP Editor — "🔄 Sync from System Folder" (Section 8)**: reads every file in the current system's `components/`/`capabilities/` folders and imports it into the SSP, including auto-populated Section 9 control responses and Capabilities Used entries.
-- **AP/POA&M — read-only Components/Capabilities panes**: sourced from the referenced SSP file, so an auditor can see what's in the system without needing write access to it.
-- **Organisation tab — Library Component/Capability Editors** (`library_mode` on `ComponentTab`/`CapabilityTab`, see design document §10.20): dedicated, locked-to-the-Library editors, distinct from the System Overview instances — resolves the "no indicator whether you're editing the master or a copy" gap below by making them separate tabs entirely, plus "🌐 All Systems" moved in alongside them. See `user_stories.md` US-14.
+## 6. `COMPONENT_TYPES` dropdown doesn't offer the exact `process-procedure` schema term
 
-### Known remaining gaps
+`component_tab.py`'s `COMPONENT_TYPES` list splits the schema's single `process-procedure` type into two separate dropdown options, `"process"` and `"procedure"` — neither is the exact schema term (though all three, being free-form-string-compatible, are schema-valid, so nothing currently saved is actually broken). A user picking a brand-new component's type from the dropdown just can't select the literal `process-procedure` term today. Fix: replace the two split options with the single correct term (or offer all three).
 
-- Still only one active catalog/profile at a time (see section 3's still-open multi-catalog questions above — the Library made *picking* a catalog/profile easier, it didn't add multi-catalog support).
-- No dedicated standalone Component/Capability Definition document type — see the note at the end of section 2.
-- **Component/capability version history**: OSCAL's `metadata.revisions[]` (document-level, confirmed via `oscal_component_schema.json`) lets a normal user see whether the Library's copy of something has been updated since their system last imported it — brainstormed as part of US-14. **Done for components** (design doc §10.21); **capabilities still not covered** — a separate follow-up, not yet scheduled.
+---
 
-## 6. Component version / revision / UUID metadata — ✅ Done (components only)
+## 7. Remaining usability gaps
 
-Implemented per the design in `oscal_user_toolkit_design_document.md` §10.21. `ComponentTab`'s components each carry their own `file_uuid`/`version`/`revisions[]`, a "Version & Revision History" card sits in Section 1 with an editable Version field and a "📌 Save New Version" action, and the previously shared/broken `_file_uuid`/`_file_version` tab-level state is gone. Verified functionally, including the `library_mode` many-components-one-tab case. This is groundwork for a later "compare version" function (not built).
+From the `usability_review.md` pass (see design document §10.22 for what was already done):
 
-**Not done**: the same for `CapabilityTab` — capabilities still use shared tab-level `_file_version` and have no revision history. A separate task if wanted.
-
-## 7. Library content coverage — ✅ Done
-
-Grew the example Library from 64 to **95 components** (see design document §11 for the full type-by-type breakdown) and added **2 new capabilities** (Virtualisation (VMware), Virtualisation (Hyper-V)), bringing the Library to 11 capabilities total. Notably, every OSCAL `defined-component.type` schema value now has at least one example — including `physical` (4: Main Office Server Room, Remote Office Comms Room, Air Conditioning, Power Generator), `process-procedure`, `plan`, `guidance`, and `standard`, which previously had none. Every new component's ISM control implementations use real control IDs verified directly against the bundled catalog.
-
-Also fixed, library-wide: a schema violation (invalid `remarks` field on `port-ranges`) present in 29 pre-existing component files, and an empty `protocols: []` array in 6 policy components. All 95 files now validate cleanly against `oscal_component_schema.json`.
-
-**Known follow-up, not yet fixed**: `component_tab.py`'s `COMPONENT_TYPES` dropdown list splits the schema's single `process-procedure` type into two separate options, `"process"` and `"procedure"` — neither is the exact schema term (though all three, being free-form-string-compatible, are schema-valid). Doesn't break anything already saved (a `ttk.Combobox` in readonly mode still displays a preset value correctly even when absent from its own `values` list — confirmed directly), but a user picking a brand-new component's type from the dropdown can't select the literal `process-procedure` term today.
-
-## 8. Usability heuristics + secure-coding pass — ✅ Done
-
-A full pass against `usability_review.md`'s 10 Nielsen heuristics and the OpenSSF Secure Coding Guide for Python (`SECURE_CODING.md`, new this pass) — see design document §10.22 for the consolidated summary, or the two documents themselves for full per-item detail and verification evidence. Highlights: Ctrl+S/Ctrl+O shortcuts, a native Help menu (the app's first `tk.Menu`), an unsaved-changes tab indicator, tooltips on the highest-value buttons, real port-range validation, a genuine WCAG dark-mode contrast bug found and fixed (74 buttons had 1.38:1 contrast), and uncaught UI errors now logged to `error.log` instead of failing silently.
-
-**Known remaining gaps** (deliberately out of scope this pass, tracked here rather than silently dropped):
-- No undo/redo — would need a real change-tracking layer across every tab's edit operations; scoped as a separate, larger project.
-- No batch operations / multi-select — every `Treeview` in the app uses `selectmode="browse"` (one row at a time); no bulk-delete or bulk-edit workflow exists.
-- No in-app tutorial/walkthrough for new users — the Workspace tab's existing per-tab guidance cards cover some of this ground already.
-- `GREEN`/`TEAL` text colour is marginally under WCAG's normal-text contrast threshold in light mode only (3.1–3.9:1) — left alone since both are load-bearing brand colours; changing a hue for a marginal contrast gain is a visual-identity decision, not a quick fix.
+- **No undo/redo** — would need a real change-tracking layer across every tab's edit operations. A separate, larger project, not a quick addition.
+- **No batch operations / multi-select** — every `Treeview` in the app uses `selectmode="browse"` (one row at a time); no bulk-delete or bulk-edit workflow exists anywhere.
+- **No in-app tutorial/walkthrough for new users** — the Workspace tab's existing per-tab guidance cards cover some of this ground already, but there's no guided first-run flow.
+- **`GREEN`/`TEAL` text colour is marginally under WCAG's normal-text contrast threshold in light mode only** (3.1–3.9:1, vs. the 4.5:1 normal-text target — still comfortably above the 3:1 large/bold-text threshold). Left alone deliberately: both are load-bearing brand/identity colours used consistently across many components, so changing a hue for a marginal contrast gain is a visual-identity decision, not a quick accessibility fix.
 
 ---
 
@@ -346,9 +204,11 @@ A full pass against `usability_review.md`'s 10 Nielsen heuristics and the OpenSS
 
 | Feature | Priority | Effort | Notes |
 |---|---|---|---|
-| Authorization Dashboard | ✅ Done | Low | Implemented — reads from open document tabs |
-| Component & Capability Library | ✅ Done | — | Library folder, Import from Library, Sync from System Folder, Data Sources tab; see section 5 |
-| Profile Editor | High | High | Most impactful missing editor; every SSP needs a profile |
-| Component Definition Editor | Medium | Medium | Largely superseded by the Library system; remaining gap is a standalone document type — see section 2's update note |
-| Multi-Catalog Support | Medium | Medium | OSCAL schema already supports it; app needs CatalogResolver + UI update |
-| Data Flow Mapping & Diagram Feature | Medium | Medium | Input UX (Data Flow Links table) done; diagram export still to do — see section 4 |
+| Profile Editor | High | High | Most impactful missing editor; every SSP needs a profile — see §1 |
+| Multi-Catalog Support (Stages 2–3) | Medium | Medium | OSCAL schema already supports it; CatalogResolver exists, UI doesn't consume it yet — see §3 |
+| Data Flow Diagram Export | Medium | Medium | Input UX done; only the `.drawio` export itself remains — see §4 |
+| Standalone Component Definition document type | Low | Medium | Largely superseded by the Library system; remaining gap is a distinct document type + "load all controls from profile" — see §2 |
+| Capability version/revision history | Low | Low | Same design as components, just not yet applied to `CapabilityTab` — see §5 |
+| `COMPONENT_TYPES` dropdown fix | Low | Low | Cosmetic — nothing currently saved is broken — see §6 |
+| Batch operations / multi-select | Low | High | No existing Treeview supports multi-select — see §7 |
+| Undo/redo | Low | High | Needs a real change-tracking layer — see §7 |
