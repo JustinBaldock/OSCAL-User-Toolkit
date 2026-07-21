@@ -36,7 +36,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - **Import from Library** (Component/Capability Editor): copy a Library component/capability into the current system's own folder as an independent, editable copy — never touches the Library source, never overwrites a copy you've already edited
 - **Sync from System Folder** (SSP Editor, Section 8): pull everything that's been imported for the current system straight into the SSP, with control responses auto-populated
 - Assessment Plan and POA&M both show read-only visibility into whatever components/capabilities the referenced SSP has, without needing write access
-- **95 example components** ship in `library/components/`, covering every OSCAL component type — hardware, software, services, operating systems, policies, and (less commonly represented in most toolkits) `physical`, `process-procedure`, `plan`, `guidance`, and `standard` — plus **11 example capabilities** in `library/capabilities/`. See [oscal_user_toolkit_design_document.md §11](oscal_user_toolkit_design_document.md) for the full breakdown
+- **102 example components** ship in `library/components/`, covering every OSCAL component type — hardware, software, services, operating systems, policies, and (less commonly represented in most toolkits) `physical`, `process-procedure`, `plan`, `guidance`, and `standard` — plus **11 example capabilities** in `library/capabilities/`. See [oscal_user_toolkit_design_document.md §11](oscal_user_toolkit_design_document.md) for the full breakdown
 
 ### Organisation Tab — Library Component & Capability Editors (new)
 - **⚙ Library Components** and **🔗 Library Capabilities**: dedicated editors locked to `library/components/`/`library/capabilities/` — no Open File/Open Folder dialogs, no location prompt on save; they auto-load every file in the Library and save straight back to it, so there's no ambiguity about whether you're editing the Library's shared master or a system's local copy
@@ -50,10 +50,13 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - **Unsaved-changes indicator**: any tab with unsaved edits shows a trailing `*` on its label, including on the parent group tab (e.g. **⚙ System Overview**) if anything inside it is dirty — so you can tell something needs saving without opening every group to check
 - **Tooltips** on buttons whose action or consequence isn't obvious from the label alone (hover to see them)
 - **Error logging**: an uncaught error in any tab is now logged with a full traceback to `oscal_user_toolkit/error.log` and shown as a plain-language dialog, instead of failing silently
+- **Dialog keyboard support**: every dialog in the app closes on **Escape**; the Component/Capability Editors' own dialogs also confirm on **Return**
+- **Consistent button styling**: every button (primary and secondary) now uses the same text colour and normal font weight — no more colour/weight mismatches between adjacent buttons
 - See [usability_review.md](usability_review.md) and [usability_review_2.md](usability_review_2.md) for the two usability passes this came from, and [SECURE_CODING.md](SECURE_CODING.md) for the project's secure-coding rules
 
 ### Workspace
 - **Landing tab** with per-tab guidance and **Open/Save Workspace** buttons that load or save an entire system's file set (SSP, components, capabilities, AP, AR, POA&M) in one action via a portable JSON manifest
+- **🆕 Create New Workspace**: clears every open document plus the loaded catalog/profile to start fresh — warns first if anything currently open has unsaved changes; files already saved to disk are never affected
 - Catalog/profile references in a workspace resolve against the Library automatically, so a workspace manifest stays valid even if the Library folder is configured differently on another machine
 - **Dark/light theme toggle**, applied live across every tab without losing in-progress edits; the chosen theme persists between launches
 
@@ -78,6 +81,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - Create OSCAL Component Definition files describing how a system component implements security controls
 - Supports all OSCAL 1.2.2 component types: `defined-system`, `system`, `interconnection`, `software`, `hardware`, `service`, `policy`, `process`, `procedure`, `plan`, `guidance`, `standard`, `validation`, `physical` (the schema's own single `process-procedure` value works too — it's just not yet one of the dropdown's preset options)
 - **Version & Revision History** (Section 1): each component carries its own stable UUID, editable version number, and revision history using OSCAL's native `metadata.revisions[]` — a **📌 Save New Version** action archives the current version with optional remarks before bumping, distinct from a plain in-place save. Tracked per component (not per file), so this stays correct even in the Library Component Editor where many components share one tab instance
+- **Document Metadata card** (collapsible): Creator/Organisation and a Document Links table describing the file itself (e.g. a vendor's "latest version" URL), separate from the component's own Links (Section 7). A **🔼 Upgrade OSCAL Version** button re-validates the component against any bundled schema version and re-stamps `metadata.oscal-version` on confirmation — this re-validates and re-labels only, it does not migrate content between schema versions
 - **Live search and type filter** in the component list — find components instantly by name, description, or type even when hundreds are loaded
 - **Section 6 — Protocols**: document the TCP/UDP ports and protocols the component uses or exposes
 - **Section 7 — Links**: attach external references (vendor documentation, CVE advisories, configuration baselines, policy documents) with structured relationship types
@@ -92,6 +96,8 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - Write additional capability-level responses for controls that span multiple components
 - Save capabilities as self-contained OSCAL files that bundle their member components
 - Load individual capability files or an entire folder of capabilities
+- **Document Metadata card** (collapsible): same Creator/Organisation, Document Links, and **🔼 Upgrade OSCAL Version** support as the Component Editor
+- The System Overview instance auto-loads every capability file already in the current system's `capabilities/` folder, matching the Component Editor's existing behaviour
 
 ### SSP Editor
 - Create and edit OSCAL System Security Plan documents
@@ -325,7 +331,7 @@ OSCAL-User-Toolkit/
 │   ├── models.py                    # All data logic — parsing, building, validating OSCAL JSON; no GUI code
 │   ├── app.py                       # Main window, toolbar, tab wiring, and shared state
 │   ├── settings.py                  # Persisted app settings — Library/Systems folder paths, default theme
-│   ├── tab_utils.py                 # Shared helper for the grouped-tab mousewheel guard
+│   ├── tab_utils.py                 # Shared UI helpers: mousewheel guard, tooltips, collapsible sections
 │   ├── workspace_tab.py             # Workspace tab (landing tab; Open/Save Workspace)
 │   ├── data_sources_tab.py          # Data Sources tab — browses the Library's catalogs/profiles
 │   ├── dashboard_tab.py             # Authorization Dashboard tab (the one currently-open system)

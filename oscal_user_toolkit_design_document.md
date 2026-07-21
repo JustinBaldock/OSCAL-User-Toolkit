@@ -1010,11 +1010,33 @@ Two companion documents drove a full pass through Nielsen's 10 usability heurist
 
 Every fix across both documents was verified functionally (simulated the actual failure condition and confirmed the app's response), not just syntax-checked — several genuine findings in this pass (the dark-mode contrast bug, the second `OSError` gap) were only caught because of that.
 
+### 10.23 Document metadata, OSCAL version upgrade, and a second usability pass (`usability_review_2.md`)
+
+A follow-up round of work, driven partly by direct feature requests and partly by a second Nielsen heuristics pass (`usability_review_2.md`) specifically hunting for gaps introduced by everything §10.20–§10.22 built.
+
+**Document metadata — Creator/Organisation and Document Links, collapsible.** Both `ComponentTab` and `CapabilityTab` gained two new per-file metadata fields alongside the existing version/UUID card (§10.21): a Creator/Organisation text field and a `doc_links[]` table (same rel/href/text shape as the existing per-component `links[]`, but describing the *document itself* — e.g. a vendor's "latest version" URL — not the component). Prompted by inspecting real-world example components (CivicActions' published OSCAL components) that carry exactly this kind of file-level provenance. The whole "🗂 Document Metadata" card is now collapsible via a new `tab_utils.make_collapsible()` helper (parent, title, colors, start_expanded) — a generic disclosure-triangle wrapper, not specific to this card, so any future card can reuse it.
+
+**"🔼 Upgrade OSCAL Version"** (both editors' Document Metadata card): lets the user pick any bundled OSCAL schema version (via `get_oscal_versions()`/`get_oscal_version_paths()` on `OSCALApp`, already existed for the toolbar's version selector — this dialog is the first *other* consumer of them) and re-validate the current component/capability against that version's schema specifically, independent of whatever the toolbar currently has selected. Deliberately framed as "re-validate and re-stamp," not "migrate" — the app has no schema-migration logic for any version, and the in-dialog copy says so. On confirmation, records the change as a new `revisions[]` entry (components) and updates `doc_oscal_version`; never writes to disk itself, same as the rest of the editors' "not yet saved" pattern.
+
+**"🆕 Create New Workspace"** (Workspace tab): clears every open document plus the loaded catalog/profile, gated behind a dirty-check warning (`app.py._new_workspace()`) — only prompts if something would actually be lost, not unconditionally. Surfaced a real pre-existing bug while building this: `SSPTab`/`APTab`/`ARTab`/`POAMTab`'s `_reset()` never cleared `self._dirty`, so a blank-slate reset could still show a stale unsaved-changes `*` afterward; fixed alongside.
+
+**System Overview Capability Editor auto-loads from the system's capability folder.** Mirroring how the Component Editor already behaved, `on_system_folder_changed()`/`_load_system_folder()` (`capability_tab.py`) now load every capability file in the current system's `capabilities/` folder automatically when the system folder changes, instead of requiring a manual Open Folder each time.
+
+**`usability_review_2.md` findings, fixed in priority order:**
+- **Silent validation-skip in the Upgrade dialog** (🔴 highest priority): both `_upgrade_oscal_version()` methods guarded the whole validation step with `if zip_path:` — a missing/renamed schema zip meant `zip_path` was `None`, and the code fell straight through to committing the upgrade with **no indication validation had ever run**, directly contradicting the dialog's own "re-validates before re-labelling" copy. Fixed with an `else:` branch requiring explicit confirmation ("could not find the schema — upgrade anyway, without validation?") before proceeding.
+- **No tooltip on "Create New Workspace"**: added, along with the Open/Save Workspace buttons, which also had none.
+- **No dialog anywhere supports Enter-to-confirm/Escape-to-cancel**: `<Escape>` → cancel added to every `_make_dialog()` implementation across all 6 tab files with dialogs (cheap, one line each, benefits every dialog in the app at once) plus the handful of dialogs built as standalone `tk.Toplevel`s outside that helper. `<Return>` → primary action scoped to `component_tab.py`/`capability_tab.py`'s own dialogs (the ones actively developed this round) — deliberately *not* extended to `ar_tab.py`/`ap_tab.py`/`poam_tab.py`/`ssp_tab.py`'s dialogs in the same pass, left as a documented follow-up rather than an exhaustive ~20-dialog sweep. One deliberate exception: the Protocol dialog's port-range entry fields bind `<Return>` to "add this port range" instead of the dialog-wide primary action, since Return there should extend the list being built, not submit the whole dialog.
+- Verified functionally (not just syntax-checked): simulated `<Return>`/`<Escape>` key events on live dialog instances and confirmed the right callback fired, for both the validation-skip fix and the Enter/Escape bindings.
+
+**Button colour and weight consistency** (raised directly by the designer testing the running app, after the above): every secondary button (Cancel, Delete, Remove Selected, Create New Workspace, Browse Elsewhere, Clear Profile, etc.) used `bg=HEADER_BG, fg=TEXT` — the theme's *own* text colour — while every primary/coloured button (Save, Open, Add, Upgrade) used a fixed near-black `BUTTON_TEXT` regardless of theme (§10.22's contrast fix). Individually both pairings had fine contrast, but side by side in dark mode this put two visibly different text colours on adjacent buttons in the same row. Fixed by adding a new fixed `SECONDARY_BG` fill (`#c9ccdb`, same value in both palettes — same non-theme-swapped rationale as the existing `_BG` keys, §10.22) and switching all secondary buttons (~85, including two found later that built their colours inside a loop rather than a literal `tk.Button()` call, missed by the first sweep) to `bg=SECONDARY_BG, fg=BUTTON_TEXT`. Separately, all ~94 buttons using bold font were switched to normal weight, since the app had no deliberate rule for which buttons should be bold and the result was inconsistent rather than intentional emphasis.
+
+**Library growth**: 7 new example components (`aws.json`, `django.json`, `drupal.json`, `ilias.json`, `privacy.json`, `ssh.json`, `software_EDR_crowdstrike.json` — all `software` type), taking the Library from 95 to **102 components**; capabilities unchanged at 11. See §11.
+
 ---
 
 ## 11. Example Component Library
 
-The `library/components/` folder (see §10.13–§10.20 for the Library system itself) ships with **95 pre-built component files** spanning every component type listed in `oscal_component_schema.json`'s `defined-component.type` enum, plus the app's own `operating-system` convention. They're loaded automatically by the Organisation tab's Library Component Editor (`library_mode` — see §10.20), or can be picked individually via **📚 Import from Library** in the System Overview Component Editor.
+The `library/components/` folder (see §10.13–§10.20 for the Library system itself) ships with **102 pre-built component files** spanning every component type listed in `oscal_component_schema.json`'s `defined-component.type` enum, plus the app's own `operating-system` convention. They're loaded automatically by the Organisation tab's Library Component Editor (`library_mode` — see §10.20), or can be picked individually via **📚 Import from Library** in the System Overview Component Editor.
 
 All example components include:
 - ISM control implementations with detailed implementation narratives, using real control IDs verified directly against the bundled ISM catalog (`library/catalogs/ISM_catalog_2026_06.json`) — never invented
@@ -1030,7 +1052,7 @@ The components span a realistic medium-to-large Australian organisation's enviro
 | operating-system | 10 | Windows 10/11 Workstation, Windows Server 2022, RHEL Server/Workstation, Ubuntu Workstation, VMware ESXi, Microsoft Hyper-V, Proxmox VE, Nutanix AHV |
 | policy | 32 | Patch Management, Backup and Recovery, Remote Access, Incident Response, Access Control, Data Classification, System Usage, Password and Credential Management, Cryptographic Key Management, Physical Security, and the six ISM Cyber Security Principles (Govern/Identify/Protect/Detect/Respond/Recover) |
 | service | 18 | Active Directory, SQL Server, ManageEngine ServiceDesk Plus, Exchange Online, Veeam, VPN, DHCP, DNS, PKI/CA, Web Proxy, NTP, MongoDB, Windows Fileshare, Kubernetes, Identity Provider (Entra ID), Privileged Access Management, Email Security Gateway, Two-Factor Authentication (Duo) |
-| software | 10 | Microsoft 365, Airlock Digital, Defender for Endpoint, Edge, Acrobat, Nessus, Sentinel, GitLab, Subversion, Oracle VirtualBox |
+| software | 17 | Microsoft 365, Airlock Digital, Defender for Endpoint, Edge, Acrobat, Nessus, Sentinel, GitLab, Subversion, Oracle VirtualBox, AWS, Django, Drupal CMS, Ilias, Privacy, SSH, EDR (CrowdStrike Falcon) |
 | physical | 4 | Main Office Server Room, Remote Office Comms Room, Air Conditioning (server room precision cooling), Power Generator |
 | process-procedure | 1 | Cyber Security Incident Response Procedure |
 | plan | 1 | Business Continuity and Disaster Recovery Plan |
@@ -1063,6 +1085,39 @@ The components span a realistic medium-to-large Australian organisation's enviro
 ---
 
 ## 13. Changelog
+
+### Version 4.6 (July 2026)
+
+**Fixes:**
+- Removed bold font from all ~94 `tk.Button()` instances app-wide — normal weight everywhere, since bold had no deliberate rule behind it.
+- Found and fixed two secondary buttons (`ap_tab.py`'s task Edit/Remove, `ar_tab.py`'s Add/Edit/Remove rows) missed by Version 4.5's sweep because their colours were chosen inside a loop rather than a literal `tk.Button()` call.
+
+### Version 4.5 (July 2026)
+
+**Fixes:**
+- Unified secondary-button text colour app-wide: added a new fixed `SECONDARY_BG` fill and switched every secondary button (Cancel, Delete, Remove Selected, Create New Workspace, Browse Elsewhere, Clear Profile, etc. — ~83 buttons) from `bg=HEADER_BG, fg=TEXT` to `bg=SECONDARY_BG, fg=BUTTON_TEXT`, matching primary buttons' fixed text colour. See §10.23.
+
+### Version 4.4 (July 2026)
+
+**Usability (`usability_review_2.md`, fixed in priority order):**
+- Fixed the "Upgrade OSCAL Version" dialog silently skipping validation when the target schema zip couldn't be found — now warns and requires explicit confirmation before proceeding unchecked.
+- Added tooltips to all three Workspace tab buttons (Open/Save/Create New Workspace).
+- Added `<Escape>`-to-cancel to every dialog in the app (via `_make_dialog()` plus the standalone `tk.Toplevel` dialogs outside it) and `<Return>`-to-confirm to `component_tab.py`/`capability_tab.py`'s own dialogs.
+- See §10.23.
+
+### Version 4.3 (July 2026)
+
+**New features:**
+- **Document metadata** — Creator/Organisation field and a `doc_links[]` table added to both `ComponentTab`/`CapabilityTab`'s Document Metadata card, now collapsible via a new generic `tab_utils.make_collapsible()` helper.
+- **"🔼 Upgrade OSCAL Version"** — re-validates a component/capability against any bundled schema version (independent of the toolbar's current selection) and re-stamps `metadata.oscal-version` on confirmation; explicitly not a content migration.
+- **"🆕 Create New Workspace"** (Workspace tab) — clears every open document plus the catalog/profile, gated behind a dirty-check warning.
+- System Overview's Capability Editor now auto-loads from the current system's `capabilities/` folder, matching the Component Editor's existing behaviour.
+- 7 new Library components (`aws`, `django`, `drupal`, `ilias`, `privacy`, `ssh`, EDR/CrowdStrike) — Library grows from 95 to 102 components.
+
+**Fixes:**
+- `SSPTab`/`APTab`/`ARTab`/`POAMTab`'s `_reset()` never cleared `self._dirty` — found while building Create New Workspace's dirty-check gate.
+
+See §10.23 for full detail on all of the above.
 
 ### Version 4.2 (July 2026)
 

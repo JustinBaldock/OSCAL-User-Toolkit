@@ -4,6 +4,61 @@
 
 ---
 
+## v0.4 (Pre-Production Release)
+
+### What this is
+
+A usability and polish-focused release: v0.4 doesn't add a new document type or major workflow, it rounds out the Document Metadata work v0.3 started (Creator/Organisation, Document Links, and a schema-version upgrade tool), closes gaps found by a second Nielsen heuristics pass, and fixes a batch of visual inconsistencies across the app's buttons.
+
+Full feature documentation is in [README.md](README.md). See [oscal_user_toolkit_design_document.md](oscal_user_toolkit_design_document.md) §10.23 for the technical design history, and [usability_review_2.md](usability_review_2.md) for the full second heuristics pass and its priority-ordered fixes.
+
+### Highlights since v0.3
+
+#### Document Metadata — Creator/Organisation, Document Links, and OSCAL version upgrade (new)
+
+- Both the Component and Capability Editors' Document Metadata card gained a **Creator/Organisation** field and a **Document Links** table (rel/href/text describing the file itself — e.g. a vendor's "latest version" URL — separate from the component's own Links section). The card is now collapsible.
+- **🔼 Upgrade OSCAL Version**: re-validates the current component/capability against any bundled OSCAL schema version — independent of whichever version the toolbar currently has selected — and re-stamps `metadata.oscal-version` once you confirm. This is explicitly a re-validate-and-relabel action, not a content migration; the app has no schema-migration logic for any version, and the dialog says so.
+- If the target version's schema can't be found on disk, the dialog now warns and asks for explicit confirmation before proceeding unchecked, instead of silently skipping validation (a genuine gap found by the second usability pass, below).
+
+#### Workspace — Create New Workspace (new)
+
+- **🆕 Create New Workspace** clears every open document plus the loaded catalog/profile to start fresh — warns first only if something currently open has unsaved changes, never unconditionally. Files already saved to disk are never affected.
+- Found and fixed a real bug while building this: the SSP, Assessment Plan, Assessment Results, and POA&M editors' internal reset never cleared their own "unsaved changes" flag, so a blank-slate reset could still show a stale `*` on the tab afterward.
+
+#### Second usability pass — `usability_review_2.md` (new)
+
+A fresh, code-verified Nielsen heuristics pass specifically hunting for gaps in everything built since the first review, fixed in priority order:
+
+- **Dialog keyboard support**: every dialog in the app now closes on **Escape**; the Component and Capability Editors' own dialogs also confirm on **Return**.
+- **Tooltips** added to the Workspace tab's Open/Save/Create New Workspace buttons, which previously had none.
+- System Overview's Capability Editor now auto-loads every capability file already in the current system's folder, matching how the Component Editor already behaved.
+
+#### Button consistency (new)
+
+Two rounds of fixes, prompted by direct visual inspection of the running app:
+
+- **Text colour**: every secondary button (Cancel, Delete, Remove Selected, Create New Workspace, Browse Elsewhere, Clear Profile, and others — around 85 in total) previously used the theme's own text colour, while primary/coloured buttons used a fixed near-black colour — in dark mode this put two different text colours on adjacent buttons in the same row. Every button now uses the same fixed text colour.
+- **Font weight**: all ~94 buttons using bold text switched to normal weight, for a consistent look with no unintended emphasis.
+
+#### Library content
+
+- 7 new example components — `aws`, `django`, `drupal`, `ilias`, `privacy`, `ssh`, and EDR (CrowdStrike Falcon) — all `software` type, taking the Library from 95 to **102 components**. Capabilities unchanged at 11.
+
+### Requirements
+
+- Python 3.9+
+- `jsonschema` (schema validation) and `python-docx` (Word export) — see [README.md#requirements](README.md#requirements) for installation
+
+### Known limitations
+
+- Capability version/revision history is not yet implemented (components only — see `todo.md` §5). Capabilities now have the Document Metadata card and OSCAL version upgrade, but not the per-capability version/UUID/revision-history tracking components have.
+- `component_tab.py`'s type dropdown splits the schema's single `process-procedure` value into two separate options (`process`, `procedure`); the exact schema term isn't currently selectable from the dropdown for a *new* component, though it loads and displays correctly if already saved with that value (`todo.md` §6).
+- `<Return>`-to-confirm is only wired up in the Component and Capability Editors' own dialogs — the Assessment Plan, Assessment Results, and POA&M editors' dialogs close on Escape but don't yet confirm on Return.
+- Single catalog/profile pair per session (multi-catalog support is tracked in `todo.md` §3).
+- No Profile Editor or standalone Component/Capability Definition document type yet (`todo.md` §1–2).
+
+---
+
 ## v0.3 (Pre-Production Release)
 
 ### What this is
