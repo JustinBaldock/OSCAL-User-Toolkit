@@ -28,6 +28,8 @@ add (toolbar, notebook, etc.) goes inside it.
 """
 
 import json        # For parsing JSON files and error handling
+import logging
+import traceback
 import zipfile
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -156,6 +158,11 @@ class OSCALApp(tk.Tk):
         # This MUST be called before any other tkinter code.
         super().__init__()
 
+        # Set up error logging + the uncaught-exception dialog before
+        # anything else runs, so it's active for the rest of construction
+        # too — see usability_review.md #9 and _setup_error_logging().
+        self._setup_error_logging()
+
         # ── Window properties ─────────────────────────────────────────────────
         self.title("OSCAL User Toolkit")
         self.geometry("1400x900")    # Initial width x height in pixels
@@ -226,6 +233,70 @@ class OSCALApp(tk.Tk):
         # Guard against closing the window with unsaved changes in any editor tab.
         # tkinter fires WM_DELETE_WINDOW when the user clicks the × button.
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    # =========================================================================
+    # ERROR LOGGING (usability_review.md #9)
+    # =========================================================================
+
+    def _setup_error_logging(self):
+        """
+        Log uncaught exceptions to a file, and show the user a plain-
+        language dialog instead of the default tkinter behaviour —
+        which is to print a traceback to stderr and otherwise do nothing
+        visible at all. A user running the packaged app (not from a
+        terminal) would never see that traceback; the button they clicked
+        would just silently appear to do nothing, with no way to tell
+        something went wrong or report it.
+
+        This only catches exceptions tkinter itself catches this way —
+        i.e. ones raised inside a widget callback (button command, key
+        binding, .after() callback) that aren't already handled by a
+        try/except somewhere in that callback. It does not catch
+        exceptions raised during synchronous construction code (those
+        still propagate and crash __init__ normally, which is correct —
+        there's no partially-built UI to gracefully continue with).
+        """
+        log_path = Path(__file__).parent / "error.log"
+        self._error_log_path = log_path
+
+        handler = logging.FileHandler(log_path, encoding="utf-8")
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s %(levelname)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        ))
+        logger = logging.getLogger("oscal_user_toolkit")
+        logger.setLevel(logging.ERROR)
+        logger.addHandler(handler)
+        self._error_logger = logger
+
+        # tkinter calls this method (if it exists on the Tk instance) instead
+        # of its own default handler whenever a bound callback raises an
+        # exception that reaches tkinter's event dispatch loop uncaught.
+        self.report_callback_exception = self._on_uncaught_exception
+
+    def _on_uncaught_exception(self, exc_type, exc_value, exc_traceback):
+        """
+        tkinter's uncaught-exception hook — see _setup_error_logging().
+
+        Logs the full traceback (for a developer to diagnose later) and
+        shows the user a friendly dialog naming the log file, rather than
+        the exception text itself, which is rarely actionable to a
+        non-developer (Nielsen #9: help users recognise, diagnose, and
+        recover from errors — the recovery here is "the app is still
+        usable, here's where to find details if you want to report this").
+        """
+        formatted = "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
+        self._error_logger.error("Uncaught exception in a UI callback:\n%s", formatted)
+
+        messagebox.showerror(
+            "Something went wrong",
+            "An unexpected error occurred, but the application should "
+            "still be usable — try the action again, or save your work "
+            "in other tabs first if you're unsure.\n\n"
+            f"Details have been written to:\n{self._error_log_path}\n\n"
+            f"({exc_type.__name__}: {exc_value})",
+        )
 
     # =========================================================================
     # OSCAL VERSION DISCOVERY

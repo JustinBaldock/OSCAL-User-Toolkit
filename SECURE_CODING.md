@@ -53,7 +53,7 @@ The only zip files this app opens are its own bundled OSCAL schema releases (`os
 
 **6. No secrets, credentials, or API keys in source.** This app doesn't handle any itself (it only *describes* credential/crypto controls in OSCAL component data), so this should never come up — but if a future integration needs one, it goes in a config file that's `.gitignore`d, never a literal in a `.py` file.
 
-**7. No stray `print()` debugging left in committed code.** Use the existing `set_status()` callback pattern (writes to the status bar) if a tab needs to surface something to the user; there's no logging framework in this app beyond that, and none is needed for a single-user desktop tool.
+**7. No stray `print()` debugging left in committed code.** Use the existing `set_status()` callback pattern (writes to the status bar) if a tab needs to surface something to the user. For genuine errors, use the `logging` module — `app.py`'s `_setup_error_logging()` sets up a file handler on the `"oscal_user_toolkit"` logger (writing to `oscal_user_toolkit/error.log`, gitignored) and installs it as tkinter's `report_callback_exception` hook, so any uncaught exception in a UI callback is logged with a full traceback instead of silently vanishing into stderr. Get that logger with `logging.getLogger("oscal_user_toolkit")` rather than creating a new one if you need to log something explicitly.
 
 ## What's deliberately out of scope
 

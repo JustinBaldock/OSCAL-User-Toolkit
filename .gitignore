@@ -2,3 +2,4 @@
 /oscal_user_toolkit/__pycache__
 .claude/worktrees/agent-a158412db406bae72/
 /oscal_user_toolkit/settings.json
+/oscal_user_toolkit/error.log

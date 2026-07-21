@@ -142,6 +142,16 @@ Both confirmed functionally: dispatch correctly targets whichever tab is actuall
 - Add context-specific help tooltips
 - Implement error logging for developers
 
+**✅ Done — a real gap found: tkinter's default uncaught-exception behaviour is silent failure, not "basic error messages."** Checked directly: nothing in the app overrode `report_callback_exception`, and no `logging` module usage existed anywhere (confirmed independently during the SECURE_CODING.md audit too). This means any exception raised inside a button click, key binding, or `.after()` callback that wasn't already wrapped in a `try/except` — i.e. anything not already covered by the many specific handlers added in earlier passes — hit tkinter's *own* default handler, which prints a traceback to stderr and otherwise does nothing. A user running the packaged app (not from a terminal) would never see that traceback; the button they clicked would just appear to silently do nothing, with no indication anything went wrong and nothing to report. That's a worse failure mode than the "basic error messages" the review described — there was no error message at all for this class of failure.
+
+Fixed via `app.py`'s new `_setup_error_logging()` (called first thing in `__init__`, before any widgets are built) and `_on_uncaught_exception()`:
+- Every uncaught callback exception now writes a full timestamped traceback to `oscal_user_toolkit/error.log` (via Python's `logging` module — gitignored, this app's first real use of that module).
+- The user sees a plain-language dialog ("Something went wrong... try the action again, or save your work in other tabs first") naming the log file location and the exception type/message, rather than either a silent failure or a raw traceback dumped in their face.
+
+Verified functionally: simulated an uncaught exception the same way tkinter's dispatch loop actually triggers this hook, and confirmed the dialog fires with the correct title/content and the log file receives the full traceback, exception type, and message.
+
+*Not done*: "guidance for correcting invalid input" beyond what error-prevention validation (see #5) already provides at the point of entry, and "context-specific help tooltips" for errors specifically — general tooltips were already covered under #2/#10.
+
 ## 10. Help and Documentation
 **Issues:**
 - No embedded help system
