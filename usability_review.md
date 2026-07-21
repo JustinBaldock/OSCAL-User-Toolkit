@@ -67,6 +67,14 @@ Both confirmed functionally: dispatch correctly targets whichever tab is actuall
 - Consistent use of icons and visual elements
 - Use standard terminology throughout
 
+**⚠️ Superseded (partially) — button relief/font/cursor were already consistent.** Checked directly: every button in the app already uses `relief="flat"` and `cursor="hand2"` (245+ occurrences each), so "button styles... vary" didn't hold up as originally worded. The real, verifiable inconsistencies were narrower:
+
+**✅ Done — icon/text spacing standardized.** ~13 buttons used a single space between their icon and label (`"✕ Remove"`, `"＋ Add"`, `"⧉ Duplicate"`, `"📂 Browse…"`, `"⊞ By type"`, `"🔤 A–Z"`) while the app's dominant convention (200+ other buttons) uses a double space (`"💾  Save..."`, `"📂  Open File(s)"`). All normalized to double-space, across `ar_tab.py`, `poam_tab.py`, `ap_tab.py`, and `component_tab.py`.
+
+**✅ Done — "Remove" terminology unified to "Remove Selected".** 15 buttons across `ssp_tab.py`, `ar_tab.py`, and `poam_tab.py` said bare "✕ Remove"/"✕  Remove" for an action that removes whichever row is currently selected in a Treeview — verified every one of them sits directly next to an "✏ Edit Selected" button acting on the same selection, so the inconsistent wording wasn't a deliberate distinction, just drift. Left "✕ Delete" alone (2 places, `component_tab.py`/`capability_tab.py`) — that's a genuinely different action (deletes the whole component/capability, not a sub-item row), so keeping a different verb there is correct, not inconsistent.
+
+*Not done*: standardizing button positioning across tabs, and a full pass on terminology beyond Remove/Delete — neither independently re-audited this pass.
+
 ## 5. Error Prevention
 **Issues:**
 - No validation feedback for input fields
@@ -77,6 +85,12 @@ Both confirmed functionally: dispatch correctly targets whichever tab is actuall
 - Implement real-time form validation
 - Add confirmation dialogs for delete/overwrite actions
 - Add input format validation (e.g., port ranges, UUIDs)
+
+**⚠️ Superseded (partially) — confirmations and structure warnings already existed.** Checked directly: `askyesno` confirmation dialogs are already used in 7 files (deletes, clears, unsaved-changes-on-close), and `validate_oscal_file()` + a "Load anyway?" prompt already warns on invalid OSCAL structure at 6 load points (catalog, profile, component, capability saves). The doc's blanket claims didn't hold up — but the one specific, named example it called out, port range validation, was a real gap.
+
+**✅ Done — port range validation now checks the actual valid range, not just "is it a number".** `component_tab.py`'s protocol dialog already validated that Start/End port fields parsed as integers (submit-time, via the existing "+ Add" button — not live-as-you-type, but does prevent bad data reaching the model either way), but accepted any integer at all — `0`, a negative number, `99999`, or an end port lower than the start port would all have been silently accepted into a saved OSCAL file. Added range checks (1–65535, the valid TCP/UDP port range) for both fields, plus an end-cannot-be-lower-than-start check. Verified all boundary cases (0, 65536, reversed range, non-numeric, valid single port, valid range, the 1/65535 boundary values themselves) against the exact logic added.
+
+*Not done*: UUID format validation — checked whether this applies at all first: every UUID in the app is auto-generated (`new_uuid()`) and shown read-only (e.g. the Version & Revision History card's Component/Document UUID labels) — there is no user-typed UUID field anywhere to validate. The original recommendation doesn't actually apply to this app as built. Real-time (as-you-type) validation more broadly, and OSCAL structure warnings beyond what already existed, weren't tackled.
 
 ## 6. Recognition Rather Than Recall
 **Issues:**
@@ -110,6 +124,12 @@ Both confirmed functionally: dispatch correctly targets whichever tab is actuall
 - Reduce visual clutter by grouping related elements
 - Improve color contrast and readability
 - Standardize spacing and padding throughout
+
+**✅ Done — a real, severe color-contrast bug found and fixed.** Rather than relying on subjective "could be more readable," computed actual WCAG 2.1 contrast ratios for every `fg`/`bg` colour pair used together anywhere in the app (26 distinct combinations found), in both themes. Formula verified against the known white-on-black reference (21.0:1) before trusting the results. Found: **74 buttons** across 7 files (`ssp_tab.py` alone had 40) paired `fg=C["BUTTON_TEXT"]` (a fixed near-black `#1a1a1a`, intended only for use on the light pastel `_BG` fills like `GREEN_BG`/`BLUE_BG`) with `bg=C["HEADER_BG"]` (dark slate `#313244` in dark mode) — a **1.38:1 contrast ratio** in dark mode, far below even the most lenient WCAG threshold (3:1), on every "secondary" button in the app (Remove Selected, Edit Selected, Cancel, etc.). Fixed by changing all 74 to `fg=C["TEXT"]` instead — the pattern 2 buttons already used correctly — which gives 8.69:1 in dark mode and 12.06:1 in light mode, comfortably passing WCAG AA in both. Verified the fix doesn't touch any of the correct `BUTTON_TEXT`-on-pastel-fill pairings (checked every real `BUTTON_TEXT` call site individually — all pair with `GREEN_BG`/`TEAL_BG`/`ACCENT_BG`/`BLUE_BG`, none with a raw background colour).
+
+**Known, deliberately unfixed**: `GREEN`/`TEAL` used as direct text colour (status labels, section headings) come out marginal in **light mode only** — 3.1–3.9:1, above the 3:1 "large/bold text" threshold but below the stricter 4.5:1 normal-text one. Left alone rather than changed, because `GREEN`/`TEAL` are load-bearing brand/identity colours used consistently across many components (capability editor branding, success indicators) — adjusting their hue to fix a marginal contrast shortfall would be a visual-identity change, not a surgical accessibility fix, and deserves a deliberate decision rather than being bundled into this pass.
+
+*Not done*: "reduce visual clutter," "standardize spacing/padding" — neither is answerable by direct code inspection the way contrast is; would need actual visual/screenshot review, not just grep.
 
 ## 9. Help Users Recognize, Diagnose, and Recover from Errors
 **Issues:**

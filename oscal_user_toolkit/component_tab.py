@@ -408,7 +408,7 @@ class ComponentTab(tk.Frame):
         # Also appends to the list.
         tk.Button(
             tb, text="🗑  Clear All", command=self._new_file,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
             activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"],
         ).pack(side="left", padx=(0, 8), pady=8)
@@ -426,7 +426,7 @@ class ComponentTab(tk.Frame):
 
         tk.Button(
             tb, text="🗑  Clear All", command=self._new_file,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
             relief="flat", padx=12, pady=4, cursor="hand2",
         ).pack(side="left", padx=(0, 12), pady=8)
 
@@ -662,7 +662,7 @@ class ComponentTab(tk.Frame):
 
         # Sort toggle button — cycles between "Sort by type" and "Sort A–Z"
         self._sort_btn = tk.Button(
-            type_row, text="⊞ By type",
+            type_row, text="⊞  By type",
             command=self._toggle_sort,
             bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
             relief="flat", padx=6, pady=1, cursor="hand2",
@@ -679,14 +679,14 @@ class ComponentTab(tk.Frame):
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   activebackground="#b4befe", activeforeground=C["BUTTON_TEXT"],
                   ).pack(side="left")
-        tk.Button(btn_row, text="⧉ Duplicate",
+        tk.Button(btn_row, text="⧉  Duplicate",
                   command=self._duplicate_component,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(4, 0))
-        tk.Button(btn_row, text="✕ Delete",
+        tk.Button(btn_row, text="✕  Delete",
                   command=self._delete_component,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="right")
 
@@ -991,7 +991,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(prop_btn, text="✕  Remove Selected",
                   command=self._remove_property,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -1028,7 +1028,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(role_btn, text="✕  Remove Selected",
                   command=self._remove_role,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -1071,7 +1071,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(proto_btn, text="✕  Remove Selected",
                   command=self._remove_protocol,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -1121,7 +1121,7 @@ class ComponentTab(tk.Frame):
                   ).pack(side="left")
         tk.Button(link_btn, text="✕  Remove Selected",
                   command=self._remove_link,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=8)
 
@@ -1449,10 +1449,10 @@ class ComponentTab(tk.Frame):
         """Switch between grouping by type-then-title and sorting purely A-Z."""
         if self._sort_mode == "type":
             self._sort_mode = "alpha"
-            self._sort_btn.config(text="🔤 A–Z")
+            self._sort_btn.config(text="🔤  A–Z")
         else:
             self._sort_mode = "type"
-            self._sort_btn.config(text="⊞ By type")
+            self._sort_btn.config(text="⊞  By type")
         self._refresh_list()
 
     def _build_filtered_indices(self):
@@ -1942,7 +1942,7 @@ class ComponentTab(tk.Frame):
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left")
         tk.Button(btn_row, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=4, cursor="hand2",
                   ).pack(side="left", padx=(8, 0))
 
@@ -2201,7 +2201,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2320,7 +2320,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2389,7 +2389,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2571,12 +2571,30 @@ class ComponentTab(tk.Frame):
             except ValueError:
                 messagebox.showwarning("Invalid", "Start port must be a number.")
                 return
+            if not (1 <= start <= 65535):
+                messagebox.showwarning(
+                    "Invalid Port",
+                    "Start port must be a whole number between 1 and 65535.",
+                )
+                return
             end_raw = v_end.get().strip()
             if end_raw:
                 try:
                     end = int(end_raw)
                 except ValueError:
                     messagebox.showwarning("Invalid", "End port must be a number.")
+                    return
+                if not (1 <= end <= 65535):
+                    messagebox.showwarning(
+                        "Invalid Port",
+                        "End port must be a whole number between 1 and 65535.",
+                    )
+                    return
+                if end < start:
+                    messagebox.showwarning(
+                        "Invalid Range",
+                        "End port cannot be lower than the start port.",
+                    )
                     return
             else:
                 end = start   # default end to the start port
@@ -2590,7 +2608,7 @@ class ComponentTab(tk.Frame):
             # Clear entry fields for the next addition
             v_start.set(""); v_end.set(""); v_pr_remarks.set("")
 
-        tk.Button(add_row, text="＋ Add", command=_add_pr,
+        tk.Button(add_row, text="＋  Add", command=_add_pr,
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9, "bold"),
                   relief="flat", padx=8, cursor="hand2").pack(side="left")
 
@@ -2604,7 +2622,7 @@ class ComponentTab(tk.Frame):
             pr_tree.delete(sel[0])
 
         tk.Button(dlg, text="✕  Remove Selected Port Range", command=_remove_pr,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(anchor="w", padx=20, pady=(4, 2))
 
@@ -2624,7 +2642,7 @@ class ComponentTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2774,7 +2792,7 @@ class ComponentTab(tk.Frame):
                   relief="flat", padx=10, pady=2, cursor="hand2",
                   activebackground=C["ACCENT_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10, pady=2, cursor="hand2",
                   activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left")
         dlg.wait_window()

@@ -569,7 +569,7 @@ class SSPTab(tk.Frame):
             tk.Button(
                 btn_row, text="✕  Remove Selected",
                 command=make_remove(tree, list_key),
-                bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                 relief="flat", padx=10, pady=3, cursor="hand2",
             ).pack(side="left", padx=8)
 
@@ -701,7 +701,7 @@ class SSPTab(tk.Frame):
                 tk.Button(
                     child, text="✏  Edit Selected",
                     command=self._edit_info_type,
-                    bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                    bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                     relief="flat", padx=10, pady=3, cursor="hand2",
                 ).pack(side="left", padx=8)
                 break
@@ -727,7 +727,7 @@ class SSPTab(tk.Frame):
                 tk.Button(
                     child, text="✏  Edit Selected",
                     command=self._edit_role,
-                    bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                    bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                     relief="flat", padx=10, pady=3, cursor="hand2",
                 ).pack(side="left", padx=8)
                 break
@@ -754,7 +754,7 @@ class SSPTab(tk.Frame):
                 tk.Button(
                     child, text="✏  Edit Selected",
                     command=self._edit_party,
-                    bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                    bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                     relief="flat", padx=10, pady=3, cursor="hand2",
                 ).pack(side="left", padx=8)
                 break
@@ -823,11 +823,11 @@ class SSPTab(tk.Frame):
         tk.Button(
             btn_row, text="✏  Edit Selected",
             command=self._edit_responsible_party,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=(6, 0))
         tk.Button(
-            btn_row, text="✕  Remove",
+            btn_row, text="✕  Remove Selected",
             command=self._remove_responsible_party,
             bg=C["RED_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
             relief="flat", padx=10, pady=3, cursor="hand2",
@@ -903,8 +903,8 @@ class SSPTab(tk.Frame):
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
         tk.Button(
-            cap8_btn, text="✕  Remove", command=self._remove_ssp_capability,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            cap8_btn, text="✕  Remove Selected", command=self._remove_ssp_capability,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
 
@@ -956,13 +956,13 @@ class SSPTab(tk.Frame):
         tk.Button(
             comp8_btn, text="📂  Import File(s)",
             command=self._import_components_from_files,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
         tk.Button(
             comp8_btn, text="📁  Import Folder",
             command=self._import_components_from_folder,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
         tk.Button(
@@ -973,12 +973,12 @@ class SSPTab(tk.Frame):
         ).pack(side="left", padx=6)
         tk.Button(
             comp8_btn, text="✏  Edit Selected", command=self._edit_ssp_component,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
         tk.Button(
-            comp8_btn, text="✕  Remove", command=self._remove_ssp_component,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            comp8_btn, text="✕  Remove Selected", command=self._remove_ssp_component,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
 
@@ -1079,13 +1079,13 @@ class SSPTab(tk.Frame):
         tk.Button(
             sp_btn_row, text="✏  Edit Selected",
             command=self._edit_set_param,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
         tk.Button(
-            sp_btn_row, text="✕  Remove",
+            sp_btn_row, text="✕  Remove Selected",
             command=self._remove_set_param,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
 
@@ -1194,7 +1194,7 @@ class SSPTab(tk.Frame):
         tk.Button(
             ctrl9_left, text="🔄  Refresh from Components",
             command=self._refresh_applied_controls_from_components,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
             relief="flat", padx=8, pady=3, cursor="hand2",
         ).pack(fill="x", padx=6, pady=(2, 0))
 
@@ -1231,12 +1231,12 @@ class SSPTab(tk.Frame):
         ).pack(side="left")
         tk.Button(
             bycomp_btn, text="✏  Edit Selected", command=self._edit_bycomp_entry,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
         tk.Button(
-            bycomp_btn, text="✕  Remove", command=self._remove_bycomp_entry,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bycomp_btn, text="✕  Remove Selected", command=self._remove_bycomp_entry,
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
 
@@ -1448,7 +1448,7 @@ class SSPTab(tk.Frame):
         ).pack(side="left", padx=8)
         tk.Button(
             btn, text="Cancel", command=dlg.destroy,
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
             relief="flat", padx=10,
         ).pack(side="left")
 
@@ -1563,7 +1563,7 @@ class SSPTab(tk.Frame):
                   relief="flat", padx=10, pady=2, cursor="hand2",
                   activebackground=C["ACCENT_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10, pady=2, cursor="hand2",
                   activebackground=C["HEADER_BG"], activeforeground=C["BUTTON_TEXT"]).pack(side="left")
         dlg.wait_window()
@@ -2173,7 +2173,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2484,7 +2484,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2561,7 +2561,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2629,13 +2629,13 @@ class SSPTab(tk.Frame):
         tk.Button(
             btn_row, text="✏  Edit Selected",
             command=lambda: self._edit_diagram(list_key, tree),
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
         tk.Button(
-            btn_row, text="✕  Remove",
+            btn_row, text="✕  Remove Selected",
             command=lambda: self._remove_diagram(list_key, tree),
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
 
@@ -2760,13 +2760,13 @@ class SSPTab(tk.Frame):
         tk.Button(
             btn_row, text="✏  Edit Selected",
             command=lambda: self._edit_flow_link(tree),
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
         tk.Button(
-            btn_row, text="✕  Remove",
+            btn_row, text="✕  Remove Selected",
             command=lambda: self._remove_flow_link(tree),
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
 
@@ -2872,7 +2872,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -2981,13 +2981,13 @@ class SSPTab(tk.Frame):
         tk.Button(
             btn_row, text="✏  Edit Selected",
             command=lambda: self._edit_vlan(tree),
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
         tk.Button(
-            btn_row, text="✕  Remove",
+            btn_row, text="✕  Remove Selected",
             command=lambda: self._remove_vlan(tree),
-            bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=8)
 
@@ -3074,7 +3074,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -3225,7 +3225,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -3323,7 +3323,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -3379,13 +3379,13 @@ class SSPTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left")
         tk.Button(usr_btn, text="✏  Edit Selected", command=self._edit_ssp_user,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
-        tk.Button(usr_btn, text="✕  Remove", command=self._remove_ssp_user,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+        tk.Button(usr_btn, text="✕  Remove Selected", command=self._remove_ssp_user,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
         tk.Button(usr_btn, text="📥  Import CSV", command=self._import_ssp_users_csv,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
 
         usr_frame = tk.Frame(
@@ -3495,7 +3495,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None
@@ -3607,13 +3607,13 @@ class SSPTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left")
         tk.Button(inv_btn, text="✏  Edit Selected", command=self._edit_inv_item,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
-        tk.Button(inv_btn, text="✕  Remove", command=self._remove_inv_item,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+        tk.Button(inv_btn, text="✕  Remove Selected", command=self._remove_inv_item,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
         tk.Button(inv_btn, text="📥  Import CSV", command=self._import_inv_items_csv,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=10, pady=3, cursor="hand2").pack(side="left", padx=6)
 
         inv_frame = tk.Frame(
@@ -3713,8 +3713,8 @@ class SSPTab(tk.Frame):
         tk.Button(prop_btn_row, text="＋  Add", command=_add_prop,
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                   relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left")
-        tk.Button(prop_btn_row, text="✕  Remove", command=_remove_prop,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+        tk.Button(prop_btn_row, text="✕  Remove Selected", command=_remove_prop,
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left", padx=6)
 
         # Implemented components (multi-select from Section 8)
@@ -3779,7 +3779,7 @@ class SSPTab(tk.Frame):
                       bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10, "bold"),
                       relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left")
             tk.Button(impl_btn_row, text="✕  Unlink", command=_remove_impl_comp,
-                      bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                      bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                       relief="flat", padx=8, pady=2, cursor="hand2").pack(side="left", padx=6)
         else:
             tk.Label(dlg,
@@ -3820,7 +3820,7 @@ class SSPTab(tk.Frame):
                   bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11, "bold"),
                   relief="flat", padx=10).pack(side="left", padx=8)
         tk.Button(btn, text="Cancel", command=dlg.destroy,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 11),
                   relief="flat", padx=10).pack(side="left")
         dlg.wait_window()
         return result if result else None

@@ -212,13 +212,13 @@ class APTab(tk.Frame):
                  relief="flat", font=("Helvetica", 11), width=48,
                  highlightthickness=1, highlightbackground=C["HEADER_BG"],
                  ).pack(side="left", ipady=3)
-        tk.Button(ssp_row, text="📂 Browse…", command=self._browse_ssp,
+        tk.Button(ssp_row, text="📂  Browse…", command=self._browse_ssp,
                   # Fixed dark text (not theme-flipping TEXT) — on macOS, plain
                   # tk.Button widgets often ignore bg= and always render a
                   # native light-grey face, so light TEXT (correct for dark
                   # mode's intended HEADER_BG fill) becomes unreadable against
                   # that native face. BUTTON_TEXT is safe either way.
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left", padx=(6, 0))
 
@@ -238,7 +238,7 @@ class APTab(tk.Frame):
         ssp_comp_btn_row.pack(fill="x", **P, pady=(2, 2))
         tk.Button(ssp_comp_btn_row, text="🔄  Refresh from SSP",
                   command=self._refresh_ssp_components,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
         self._ssp_comp_status = tk.Label(
@@ -359,7 +359,7 @@ class APTab(tk.Frame):
         load_row.pack(fill="x", padx=12, pady=(0, 8))
         tk.Button(load_row, text="📋  Load IDs from profile",
                   command=self._load_ids_from_profile,
-                  bg=C["HEADER_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  bg=C["HEADER_BG"], fg=C["TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
         tk.Label(load_row,
