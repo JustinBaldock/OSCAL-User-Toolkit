@@ -253,7 +253,6 @@ class DashboardTab(tk.Frame):
     # ── System card ───────────────────────────────────────────────────────────
 
     def _populate_system(self, ssp, ap, ar):
-        C = self._colors
         self._clear(self._sys_card)
         self._heading(self._sys_card, "🏢  System Identity")
 

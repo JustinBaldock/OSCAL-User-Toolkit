@@ -3,3 +3,6 @@
 .claude/worktrees/agent-a158412db406bae72/
 /oscal_user_toolkit/settings.json
 /oscal_user_toolkit/error.log
+__pycache__/
+.pytest_cache/
+.ruff_cache/

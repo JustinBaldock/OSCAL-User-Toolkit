@@ -1329,7 +1329,6 @@ class OSCALApp(tk.Tk):
                    tab's "Open Workspace" action). If None (the normal
                    toolbar button case), ask the user via a file dialog.
         """
-        C = COLORS
 
         if path is None:
             # Open a file browser dialog. Returns the chosen path, or "" if cancelled.
@@ -1428,7 +1427,6 @@ class OSCALApp(tk.Tk):
                    tab's "Open Workspace" action). If None (the normal
                    toolbar button case), ask the user via a file dialog.
         """
-        C = COLORS
 
         # Require a catalog to be loaded first
         if not self._catalog:
@@ -1491,7 +1489,6 @@ class OSCALApp(tk.Tk):
         """
         Clear the loaded profile and return to showing the full catalog.
         """
-        C = COLORS
 
         self._profile = None
 

@@ -258,6 +258,25 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 
 ---
 
+## Development & CI
+
+A [GitHub Actions](.github/workflows/ci.yml) workflow runs on every push and pull request against `main`, with two jobs:
+
+- **Lint** — [Ruff](https://docs.astral.sh/ruff/) checks for real correctness issues (unused imports/variables, undefined names, multi-statement lines) — not full pycodestyle style/line-length rules, since this codebase's existing style runs longer lines than pycodestyle's defaults allow.
+- **Unit tests** — [pytest](https://docs.pytest.org/) runs everything in `tests/`, currently covering `models.py`'s data layer: prop/UUID/filename helpers, `CatalogResolver`, the multi-catalog `control-implementations` grouping (see the design document §10.24), and the VLAN/data-flow-link prop round-trips.
+
+To run either locally:
+
+```bash
+pip install -r requirements-dev.txt
+ruff check .
+pytest
+```
+
+`tests/` currently only covers `models.py` — deliberately, since it's the one file in this codebase with no GUI code (see [Project Structure](#project-structure) below), which makes it straightforward to unit test with plain dicts in, dicts out. The tab files (`component_tab.py` etc.) are tkinter UI code and aren't yet covered by automated tests; verifying those still relies on manually exercising the running app.
+
+---
+
 ## Recommended Workflow
 
 ### 0. Set up your Library and per-system workspace
@@ -326,6 +345,13 @@ Download releases from the [OSCAL GitHub releases page](https://github.com/usnis
 ```
 OSCAL-User-Toolkit/
 ├── main.py                          # Entry point — run this to start the app
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # Lint (ruff) + unit tests (pytest) on every push/PR
+├── tests/
+│   └── test_models.py               # Unit tests for models.py's data layer
+├── pyproject.toml                   # Ruff lint config, pytest config
+├── requirements-dev.txt             # Dev/CI-only dependencies (ruff, pytest)
 ├── oscal_user_toolkit/
 │   ├── __init__.py
 │   ├── models.py                    # All data logic — parsing, building, validating OSCAL JSON; no GUI code

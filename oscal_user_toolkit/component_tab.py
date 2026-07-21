@@ -2987,7 +2987,9 @@ class ComponentTab(tk.Frame):
             })
             pr_tree.insert("", "end", values=(start, end, transport, remarks))
             # Clear entry fields for the next addition
-            v_start.set(""); v_end.set(""); v_pr_remarks.set("")
+            v_start.set("")
+            v_end.set("")
+            v_pr_remarks.set("")
 
         tk.Button(add_row, text="＋  Add", command=_add_pr,
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),

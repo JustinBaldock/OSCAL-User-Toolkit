@@ -1,0 +1,5 @@
+# Development/CI-only dependencies — not required to run the app itself.
+# See README.md#requirements for the app's own optional runtime dependencies
+# (jsonschema, python-docx).
+ruff
+pytest

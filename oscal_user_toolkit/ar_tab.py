@@ -32,7 +32,6 @@ from pathlib import Path
 from .models import (
     new_uuid, now_iso,
     empty_ar, build_oscal_ar, parse_ar_file,
-    empty_poam, build_oscal_poam,
     # Import shared enum constants from models.py instead of defining duplicates
     # here. This ensures AR and POA&M always show the same option lists. (L1 fix)
     DEFAULT_OSCAL_VERSION,

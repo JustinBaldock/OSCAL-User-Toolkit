@@ -47,7 +47,7 @@ try:
     # python-docx builds Microsoft Word (.docx) files programmatically.
     # Also optional — if missing, the Export DOCX button will show an error.
     from docx import Document
-    from docx.shared import Pt, RGBColor, Inches
+    from docx.shared import Pt
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     _DOCX_AVAILABLE = True
 except ImportError:
@@ -2985,9 +2985,12 @@ def parse_poam_file(data):
             for facet in char.get("facets", []):
                 if facet.get("system") == _CIA_SYSTEM:
                     n, v = facet.get("name", ""), facet.get("value", "")
-                    if n == "confidentiality": cia_c = v
-                    elif n == "integrity":     cia_i = v
-                    elif n == "availability":  cia_a = v
+                    if n == "confidentiality":
+                        cia_c = v
+                    elif n == "integrity":
+                        cia_i = v
+                    elif n == "availability":
+                        cia_a = v
         poam["risks"].append({
             "uuid":        r.get("uuid", new_uuid()),
             "title":       r.get("title", ""),

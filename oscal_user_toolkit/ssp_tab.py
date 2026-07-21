@@ -692,7 +692,6 @@ class SSPTab(tk.Frame):
         )
         # Add Edit button to the info types toolbar (it_tree's parent toolbar)
         # and bind double-click for editing.
-        it_parent = self._it_tree.master.master   # frame > card_frame > parent
         # Find the btn_row (first child of the card frame)
         it_card = self._it_tree.master
         for child in it_card.winfo_children():

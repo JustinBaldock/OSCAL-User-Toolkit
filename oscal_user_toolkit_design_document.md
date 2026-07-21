@@ -1062,6 +1062,20 @@ Reported directly by the designer using the app: the Library Component Editor sh
 
 **Verified**: reloaded the full Library (121 components, 11 capabilities) and confirmed zero duplicate titles and every capability's `member_uuids` resolves against `get_components()`; rebuilt every component and capability with zero failures.
 
+### 10.26 CI — GitHub Actions, Ruff, and the first unit tests (`tests/`)
+
+The project had no automated verification at all before this — every fix in this document was checked by hand, either via manual UI testing or a throwaway script run once and discarded. A GitHub Actions workflow (`.github/workflows/ci.yml`) now runs on every push/PR to `main`: a **lint** job (Ruff) and a **test** job (pytest). Since this repo is public, both run on GitHub's free-minutes tier — no cost consideration.
+
+**Ruff config deliberately narrower than the defaults.** `pyproject.toml` selects only `F` (pyflakes — unused imports/variables, undefined names) and `E7`/`E9` (statement- and syntax-level errors), not the full `E`/`W` pycodestyle style set. Tried the full default set first: it flagged 51 "line too long" findings alone, because this codebase's existing style consistently runs past pycodestyle's line-length default. Reformatting dozens of files to satisfy a width nobody had asked for wasn't worth the churn, so the config was narrowed to genuine correctness issues instead — matching the "start lenient, tighten later if wanted" framing this was proposed under.
+
+**Fixed the 15 real findings that scope did surface**, so CI starts green rather than red on its first run: 5 unused imports (`ap_tab.py`'s `now_iso`, `ar_tab.py`'s `empty_poam`/`build_oscal_poam`, `models.py`'s `docx.shared.RGBColor`/`Inches`), 5 unused variables (three identical dead `C = COLORS` lines in `app.py`, one in `dashboard_tab.py`, one dead `it_parent` in `ssp_tab.py`), and 5 multi-statement-per-line issues (`if`/`elif` one-liners in `models.py`'s POA&M risk-facet parsing, a semicolon-joined triple-assignment in `component_tab.py`). All cosmetic — re-ran the full app-construction sanity check and every file's `ast.parse()` after, to confirm none of these were load-bearing.
+
+**Why `tests/test_models.py` and only `models.py` for now.** `models.py` is the one file in this codebase with a documented, deliberate no-GUI-code rule (see its own module docstring, and §10.1) — every function takes plain dicts/lists and returns plain dicts/lists, with no tkinter widget to construct or fake. That makes it the only part of the app that's actually *easy* to unit test; the tab files are tkinter UI code, where a real test would need widget mocking or a headless Tk display in CI — a bigger, lower-value investment left out of this pass deliberately, per direct discussion with the designer.
+
+**26 tests**, chosen to cover the pieces most likely to silently break on a careless refactor rather than attempting exhaustive coverage: the small pure helpers (`new_uuid`, `now_iso`, `safe_filename_component`, `get_prop`), `get_source_href`'s profile-over-catalog-over-placeholder preference order, `get_profile_controls`'s filtering, `CatalogResolver` (add/get/resolve/all_controls/clear), and — the newest and most change-prone logic in the file — `build_component_oscal_entry()`'s multi-catalog grouping from §10.24, including the "some controls have a recorded source, some don't" mixed case that a less careful implementation could merge into the wrong bucket. Also covers the VLAN and data-flow-link grouped-props round-trips (§10.12), which had no prior test coverage at all.
+
+**Suggested next, in rough order of effort-to-value** (not yet built): `empty_ssp()`/`empty_poam()`/`empty_ap()`/`empty_ar()` shape assertions (trivial); `parse_*_file()` round-trips for SSP/AP/AR/POA&M (same pattern as the VLAN/data-flow tests, just bigger documents); `build_workspace_manifest()`/`load_workspace_manifest()` (needs `tmp_path` fixtures — real files on disk, not pure dicts); `validate_oscal_file()` against the real bundled `oscal-1.2.2.zip` schema (highest real-world value, since it's the app's actual conformance guarantee, but needs that fixture file); `CatalogResolver.load_from_profile()`'s back-matter indirection (hardest of the five).
+
 ---
 
 ## 11. Example Component Library
@@ -1115,6 +1129,26 @@ The components span a realistic medium-to-large Australian organisation's enviro
 ---
 
 ## 13. Changelog
+
+### Version 4.9 (July 2026)
+
+**New:**
+- **CI**: a GitHub Actions workflow (`.github/workflows/ci.yml`) now lints (Ruff) and unit-tests (pytest) every push/PR to `main`. New `tests/test_models.py` — 26 tests covering `models.py`'s data helpers, `CatalogResolver`, the multi-catalog `control-implementations` grouping (§10.24), and the VLAN/data-flow-link prop round-trips.
+- New `pyproject.toml` (Ruff + pytest config) and `requirements-dev.txt` (dev/CI-only dependencies).
+
+**Fixes:**
+- 15 real Ruff findings across 6 files — unused imports/variables and multi-statement-per-line issues — fixed so CI starts green. See §10.26.
+
+### Version 4.8 (July 2026)
+
+**Fixes:**
+- Fixed a real duplicate-title bug reported by the designer: the Library Capability Editor no longer imports its own bundled component copies into the Library Component Editor's shared list — `app.py` stops wiring `add_component` for that instance. Surfaced a much bigger latent gap while verifying: 18 components across 6 capabilities existed only as bundled copies, never as their own `library/components/` file — extracted all of them; Library grows from 102 to 121 components. Two genuine content mismatches (`capability_Backup_and_Recovery.json`, `capability_Patch_Management.json`) repointed at their correct library component. See §10.25.
+
+### Version 4.7 (July 2026)
+
+**New features:**
+- **Multi-catalog components** (`todo.md` §3, Stages 2–3) — the Library Component/Capability Editors' control lists now combine every catalog `get_resolver()` holds when a loaded profile imports more than one (e.g. ISM + NIST), tagging each control with its source catalog. A new `ctrl_response_sources` dict records which catalog each response's control came from; `build_component_oscal_entry()` and `CapabilityTab._build_oscal_document()` group responses by source and emit one `control-implementations` block per catalog, confirmed schema-valid against `oscal_component_schema.json`. Deliberately scoped to the Library editors only, not System Overview's. See §10.24.
+- 6 CivicActions-format library components converted to house style with real ISM + NIST SP 800-53 rev5 control coverage: `service_ssh.json`, `policy_privacy.json`, `service_learning_management_system.json` (was `ilias.json`), `software_drupal.json`, `software_django.json`, `service_aws.json`.
 
 ### Version 4.6 (July 2026)
 

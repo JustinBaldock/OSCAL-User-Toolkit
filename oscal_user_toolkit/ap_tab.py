@@ -21,7 +21,7 @@ from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 
 from .models import (
-    new_uuid, now_iso,
+    new_uuid,
     empty_ap, build_oscal_ap, parse_ap_file,
     # DEFAULT_OSCAL_VERSION is the version string used when no toolbar value is
     # available. Centralised in models.py so updating it there updates all tabs. (M1)
