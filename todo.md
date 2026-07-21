@@ -202,15 +202,6 @@ Use GitHub's **"Default" setup** (one click, auto-configured) rather than the "A
 
 ---
 
-## 9. Two bugs found while writing SSP/AP/AR/POA&M round-trip tests (`tests/test_roundtrip.py`)
-
-Found by building real fixtures and reading the actual output before writing assertions (see design document §10.28) — not yet fixed, deliberately, since fixing them wasn't the point of that task:
-
-- **`build_oscal_ar()` drops an AR observation's `assessed_by` value on save.** `build_oscal_poam()` writes this to an `assessed-by` prop for the identical internal field name; `build_oscal_ar()` never does, even though `parse_ar_file()` reads it back via the same shared `_parse_oscal_observation()` helper both document types use. Low real-world impact today — `ar_tab.py`'s own UI never collects or displays `assessed_by` for AR observations — but a file from another OSCAL tool with that prop set would silently lose it on the first save through this app. Fix: add the same `if o.get("assessed_by"): entry["props"] = [...]` block `build_oscal_poam()` already has, to `build_oscal_ar()`'s observation loop.
-- **README.md and the design document's own feature list overstate AR's risk fields.** Both claim AR risks carry "CIA impact characterizations... stored as OSCAL facets" — that's only true for POA&M risks. `build_oscal_ar()`/`parse_ar_file()` have no CIA handling for risks at all, and `ar_tab.py` never collects `cia_c`/`cia_i`/`cia_a` from the user. Either fix the docs to stop claiming this for AR, or (bigger) actually add CIA characterization support to AR risks to match POA&M's.
-
----
-
 ## Implementation Priority
 
 | Feature | Priority | Effort | Notes |

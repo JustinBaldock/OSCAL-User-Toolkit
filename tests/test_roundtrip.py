@@ -173,12 +173,13 @@ def test_ar_round_trip():
     ar["observations"] = [{
         "uuid": obs_uuid, "description": "Observed", "methods": ["TEST"],
         "title": "Obs 1", "types": ["control-objective"], "collected": "2026-01-01",
-        "expires": "", "relevant_evidence": [], "remarks": "", "assessed_by": "",
+        "expires": "", "relevant_evidence": [], "remarks": "", "assessed_by": "assessor1",
     }]
     risk_uuid = new_uuid()
     ar["risks"] = [{
         "uuid": risk_uuid, "title": "Risk 1", "description": "d", "statement": "s",
         "status": "open", "deadline": "2026-06-01",
+        "cia_c": "high", "cia_i": "moderate", "cia_a": "low",
         "remediations": [{
             "uuid": new_uuid(), "lifecycle": "planned", "title": "Fix",
             "description": "d", "remarks": "",
@@ -211,14 +212,11 @@ def test_ar_round_trip():
     assert result["findings"] == ar["findings"]
     assert result["assessment_log"] == ar["assessment_log"]
 
-    # NOTE: "assessed_by" does NOT currently round-trip for AR observations —
-    # build_oscal_ar() never writes it to a prop (unlike build_oscal_poam(),
-    # which does), even though parse_ar_file() reads it back via the shared
-    # _parse_oscal_observation() helper and ar_tab.py's internal dict shape
-    # carries the key. This assertion documents that CURRENT behaviour so a
-    # future fix is a deliberate change, not a silent one — see the actual
-    # value asserted is "", not the "assessor1" that would prove a real fix.
-    assert result["observations"][0]["assessed_by"] == ""
+    # Fixed (todo.md #9): build_oscal_ar() previously never wrote
+    # "assessed_by" to a prop, silently dropping it on save even though
+    # parse_ar_file() always read it back via the shared
+    # _parse_oscal_observation() helper. Now matches build_oscal_poam().
+    assert result["observations"][0]["assessed_by"] == "assessor1"
 
 
 # ── POA&M ────────────────────────────────────────────────────────────────────

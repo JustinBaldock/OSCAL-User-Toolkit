@@ -3319,6 +3319,10 @@ def build_oscal_ar(ar, oscal_version=None, save_path=None):
                 entry["types"] = [t for t in o["types"] if t]
             if o.get("expires"):
                 entry["expires"] = o["expires"]
+            if o.get("assessed_by"):
+                entry["props"] = [{"name": "assessed-by",
+                                   "value": o["assessed_by"],
+                                   "ns": "https://oscal-user-toolkit/ns/poam"}]
             if o.get("relevant_evidence"):
                 entry["relevant-evidence"] = [
                     {"href": e.get("href", ""), "description": e.get("description", "")}
@@ -3330,6 +3334,7 @@ def build_oscal_ar(ar, oscal_version=None, save_path=None):
             result["observations"].append(entry)
 
     # risks
+    _CIA_SYSTEM = "https://oscal-user-toolkit/ns/cia-impact"
     if ar.get("risks"):
         result["risks"] = []
         for r in ar["risks"]:
@@ -3342,6 +3347,31 @@ def build_oscal_ar(ar, oscal_version=None, save_path=None):
             }
             if r.get("deadline"):
                 entry["deadline"] = r["deadline"]
+            cia = {k: r.get(k, "") for k in ("cia_c", "cia_i", "cia_a")}
+            if any(cia.values()):
+                # Same CIA-facet encoding as build_oscal_poam()'s risks —
+                # see that function for why (todo.md #9): AR is where a risk
+                # is first identified during an assessment, so its impact
+                # rating should be captured here, not only after export to
+                # POA&M.
+                cia_facets = [
+                    {"name": dim, "system": _CIA_SYSTEM, "value": val}
+                    for dim, val in [
+                        ("confidentiality", cia["cia_c"]),
+                        ("integrity",       cia["cia_i"]),
+                        ("availability",    cia["cia_a"]),
+                    ] if val
+                ]
+                entry["characterizations"] = [{
+                    # OSCAL 1.2.2 requires an 'origin' on every characterization.
+                    "origin": {
+                        "actors": [{
+                            "type":       "tool",
+                            "actor-uuid": root.get("uuid", entry["uuid"]),
+                        }]
+                    },
+                    "facets": cia_facets,
+                }]
             if r.get("remediations"):
                 entry["remediations"] = []
                 for rem in r["remediations"]:
@@ -3454,6 +3484,7 @@ def parse_ar_file(data):
         })
 
     # risks
+    _CIA_SYSTEM = "https://oscal-user-toolkit/ns/cia-impact"
     for r in result.get("risks", []):
         rems = []
         for rem in r.get("remediations", []):
@@ -3464,6 +3495,17 @@ def parse_ar_file(data):
                 "description": rem.get("description", ""),
                 "remarks":     rem.get("remarks", ""),
             })
+        cia_c = cia_i = cia_a = ""
+        for char in r.get("characterizations", []):
+            for facet in char.get("facets", []):
+                if facet.get("system") == _CIA_SYSTEM:
+                    n, v = facet.get("name", ""), facet.get("value", "")
+                    if n == "confidentiality":
+                        cia_c = v
+                    elif n == "integrity":
+                        cia_i = v
+                    elif n == "availability":
+                        cia_a = v
         ar["risks"].append({
             "uuid":        r.get("uuid", new_uuid()),
             "title":       r.get("title", ""),
@@ -3471,6 +3513,9 @@ def parse_ar_file(data):
             "statement":   r.get("statement", ""),
             "status":      r.get("status", "open"),
             "deadline":    r.get("deadline", "")[:10] if r.get("deadline") else "",
+            "cia_c":       cia_c,
+            "cia_i":       cia_i,
+            "cia_a":       cia_a,
             "remediations": rems,
             "remarks":     r.get("remarks", ""),
         })

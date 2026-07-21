@@ -607,19 +607,31 @@ class ARTab(tk.Frame):
                                       default=ex.get("status", "open"))
         v_deadline = self._dlg_field(body, "Deadline",          2,
                                       default=ex.get("deadline", ""))
-        t_desc     = self._dlg_text(body,  "Description *",     3, height=3)
+
+        # CIA impact — same field shape/values as POAMTab._risk_dialog(), so
+        # a risk exported to POA&M (see _generate_poam()) carries its impact
+        # rating straight through rather than starting blank there.
+        CIA_IMPACTS = ["", "high", "moderate", "low", "very-low", "not-applicable"]
+        v_cia_c = self._dlg_combo(body, "Confidentiality Impact", 3, CIA_IMPACTS,
+                                  default=ex.get("cia_c", ""))
+        v_cia_i = self._dlg_combo(body, "Integrity Impact",       4, CIA_IMPACTS,
+                                  default=ex.get("cia_i", ""))
+        v_cia_a = self._dlg_combo(body, "Availability Impact",    5, CIA_IMPACTS,
+                                  default=ex.get("cia_a", ""))
+
+        t_desc     = self._dlg_text(body,  "Description *",     6, height=3)
         t_desc.insert("1.0", ex.get("description", ""))
-        t_stmt     = self._dlg_text(body,  "Impact Statement *", 4, height=3)
+        t_stmt     = self._dlg_text(body,  "Impact Statement *", 7, height=3)
         t_stmt.insert("1.0", ex.get("statement", ""))
 
         # Remediations sub-table
         tk.Label(body, text="Remediations", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 10), anchor="nw",
-                 ).grid(row=5, column=0, sticky="nw", padx=12, pady=4)
+                 ).grid(row=8, column=0, sticky="nw", padx=12, pady=4)
         rem_frame = tk.Frame(body, bg=C["CARD_BG"],
                              highlightthickness=1,
                              highlightbackground=C["HEADER_BG"])
-        rem_frame.grid(row=5, column=1, sticky="ew", padx=(0, 12), pady=4)
+        rem_frame.grid(row=8, column=1, sticky="ew", padx=(0, 12), pady=4)
         rem_btn_row = tk.Frame(rem_frame, bg=C["CARD_BG"])
         rem_btn_row.pack(fill="x", padx=6, pady=4)
         rem_list: list = list(ex.get("remediations", []))
@@ -689,7 +701,7 @@ class ARTab(tk.Frame):
         rem_tree.pack(fill="x", padx=6, pady=(0, 6))
         _refresh_rem()
 
-        t_remarks = self._dlg_text(body, "Remarks", 6, height=2)
+        t_remarks = self._dlg_text(body, "Remarks", 9, height=2)
         t_remarks.insert("1.0", ex.get("remarks", ""))
 
         result = {}
@@ -711,6 +723,9 @@ class ARTab(tk.Frame):
                 "statement":    stmt,
                 "status":       v_status.get(),
                 "deadline":     v_deadline.get().strip(),
+                "cia_c":        v_cia_c.get(),
+                "cia_i":        v_cia_i.get(),
+                "cia_a":        v_cia_a.get(),
                 "remediations": rem_list,
                 "remarks":      t_remarks.get("1.0", "end-1c").strip(),
             })
