@@ -50,7 +50,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - **Unsaved-changes indicator**: any tab with unsaved edits shows a trailing `*` on its label, including on the parent group tab (e.g. **⚙ System Overview**) if anything inside it is dirty — so you can tell something needs saving without opening every group to check
 - **Tooltips** on buttons whose action or consequence isn't obvious from the label alone (hover to see them)
 - **Error logging**: an uncaught error in any tab is now logged with a full traceback to `oscal_user_toolkit/error.log` and shown as a plain-language dialog, instead of failing silently
-- See [usability_review.md](usability_review.md) for the full usability pass this came from, and [SECURE_CODING.md](SECURE_CODING.md) for the project's secure-coding rules
+- See [usability_review.md](usability_review.md) and [usability_review_2.md](usability_review_2.md) for the two usability passes this came from, and [SECURE_CODING.md](SECURE_CODING.md) for the project's secure-coding rules
 
 ### Workspace
 - **Landing tab** with per-tab guidance and **Open/Save Workspace** buttons that load or save an entire system's file set (SSP, components, capabilities, AP, AR, POA&M) in one action via a portable JSON manifest
@@ -362,6 +362,7 @@ OSCAL-User-Toolkit/
 ├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
 ├── oscal_user_toolkit_design_document.md  # Technical design document and changelog
 ├── usability_review.md              # Nielsen heuristics review — status of every finding, fixed or deferred
+├── usability_review_2.md            # Second Nielsen heuristics pass — new findings from post-fix code
 ├── SECURE_CODING.md                 # Project rules derived from the OpenSSF Secure Coding Guide for Python
 └── README.md
 ```
