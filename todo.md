@@ -330,6 +330,16 @@ Also fixed, library-wide: a schema violation (invalid `remarks` field on `port-r
 
 **Known follow-up, not yet fixed**: `component_tab.py`'s `COMPONENT_TYPES` dropdown list splits the schema's single `process-procedure` type into two separate options, `"process"` and `"procedure"` — neither is the exact schema term (though all three, being free-form-string-compatible, are schema-valid). Doesn't break anything already saved (a `ttk.Combobox` in readonly mode still displays a preset value correctly even when absent from its own `values` list — confirmed directly), but a user picking a brand-new component's type from the dropdown can't select the literal `process-procedure` term today.
 
+## 8. Usability heuristics + secure-coding pass — ✅ Done
+
+A full pass against `usability_review.md`'s 10 Nielsen heuristics and the OpenSSF Secure Coding Guide for Python (`SECURE_CODING.md`, new this pass) — see design document §10.22 for the consolidated summary, or the two documents themselves for full per-item detail and verification evidence. Highlights: Ctrl+S/Ctrl+O shortcuts, a native Help menu (the app's first `tk.Menu`), an unsaved-changes tab indicator, tooltips on the highest-value buttons, real port-range validation, a genuine WCAG dark-mode contrast bug found and fixed (74 buttons had 1.38:1 contrast), and uncaught UI errors now logged to `error.log` instead of failing silently.
+
+**Known remaining gaps** (deliberately out of scope this pass, tracked here rather than silently dropped):
+- No undo/redo — would need a real change-tracking layer across every tab's edit operations; scoped as a separate, larger project.
+- No batch operations / multi-select — every `Treeview` in the app uses `selectmode="browse"` (one row at a time); no bulk-delete or bulk-edit workflow exists.
+- No in-app tutorial/walkthrough for new users — the Workspace tab's existing per-tab guidance cards cover some of this ground already.
+- `GREEN`/`TEAL` text colour is marginally under WCAG's normal-text contrast threshold in light mode only (3.1–3.9:1) — left alone since both are load-bearing brand colours; changing a hue for a marginal contrast gain is a visual-identity decision, not a quick fix.
+
 ---
 
 ## Implementation Priority

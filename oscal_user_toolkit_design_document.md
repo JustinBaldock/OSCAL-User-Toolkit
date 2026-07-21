@@ -1,6 +1,6 @@
 # OSCAL User Toolkit — Design Document
 
-**Version:** 4.1  
+**Version:** 4.2  
 **Date:** July 2026  
 **Language:** Python 3.10+ (standard library only, plus optional `jsonschema` and `python-docx`)  
 **GUI Framework:** tkinter (built into Python)
@@ -991,6 +991,25 @@ So the model is: each single-component file carries a stable document `uuid`, a 
 
 **Verified functionally** (not just syntax-checked): instantiated `ComponentTab` directly, added two components, confirmed each gets an independent `file_uuid`; saved both to disk and confirmed the OSCAL output has distinct document UUIDs; ran a "Save New Version" bump on one and confirmed `metadata.revisions[]` round-trips correctly through save → reload; specifically exercised the `library_mode` many-components-one-tab case (`_load_library_folder()` loading two files into one instance) and confirmed selecting each component shows its own version/UUID/history in the form, and that saving one from the shared tab only touches that component's document UUID/version.
 
+### 10.22 Usability heuristics + secure-coding pass — `usability_review.md` and `SECURE_CODING.md`
+
+Two companion documents drove a full pass through Nielsen's 10 usability heuristics and the OpenSSF Secure Coding Guide for Python (per-item detail lives in those files, not duplicated here — this section is the "why" and the cross-reference):
+
+**Usability (`usability_review.md`)** — every one of the 10 heuristics was checked directly against the codebase (not just re-stated from the original review) and either fixed, found already-addressed, or explicitly marked out of scope with a reason:
+- **#1 Visibility of status**: an "unsaved changes" `*` marker on tab labels, propagating up through nested tab groups (`app.py`'s `_refresh_dirty_indicators()`, polling every 500ms since no tab fires a "dirty changed" event to hook into instead).
+- **#2/#6/#10 Recognition over recall / help**: a new `attach_tooltip()` helper (`tab_utils.py`) attached to the highest-value spots (genuinely icon-only buttons, buttons whose label doesn't reveal a real consequence like discarding unsaved edits); a native Help menu (`app.py`'s `_build_menu_bar()`) — the app had zero `tk.Menu` usage before this.
+- **#3/#7 User control, flexibility**: Ctrl+S (dispatches to whichever of 8 save-capable tabs is active, via a lookup table) and Ctrl+O (wired only where "open" is unambiguous). Found and worked around a real platform conflict: Tk's `Text` widget has its own default `<Control-o>` binding (an Emacs-style newline insert) that fires *before* `bind_all` can intercept it.
+- **#4 Consistency**: normalized icon/text spacing and "Remove"/"Remove Selected" terminology across ~28 buttons in 7 files — verified each button's actual behaviour first (e.g. confirmed "Delete" vs "Remove" already tracked a real semantic distinction — whole-entity delete vs. sub-item removal — so that distinction was kept, not flattened).
+- **#5 Error prevention**: port range fields in the protocol dialog only checked "is this an integer at all," not the valid 1–65535 range or that end ≥ start — both now checked. Confirmed UUID validation doesn't apply anywhere: every UUID in the app is auto-generated and shown read-only.
+- **#8 Aesthetic/minimalist**: computed actual WCAG 2.1 contrast ratios (formula verified against the known white/black 21:1 reference) for every `fg`/`bg` colour pair used together anywhere in the app. Found a real, severe bug this way, not a subjective one: **74 buttons** across 7 files paired a fixed near-black `BUTTON_TEXT` (intended only for the light pastel `_BG` fills) with `HEADER_BG`, giving **1.38:1 contrast in dark mode** — every "secondary" button (Remove Selected, Edit Selected, Cancel) had near-invisible text. Fixed by switching to `fg=C["TEXT"]`, the pattern 2 buttons already used correctly (now 8.69:1 dark / 12.06:1 light). Deliberately left one marginal finding unfixed (`GREEN`/`TEAL` text colour, 3.1–3.9:1 in light mode only) since those are load-bearing brand colours and changing a hue for a marginal contrast gain is a visual-identity decision, not a surgical fix.
+- **#9 Error recovery**: tkinter's default behaviour for an uncaught exception in any UI callback is to print a traceback to stderr and otherwise do *nothing visible* — worse than "basic error messages," since for this whole class of failure there was no message at all. `app.py`'s `_setup_error_logging()` (called first thing in `__init__`) installs `report_callback_exception`, logging a full traceback to `oscal_user_toolkit/error.log` (gitignored) via Python's `logging` module — this app's first real use of it — and shows the user a plain-language dialog naming the exception and log location instead of silent failure.
+
+**Secure coding (`SECURE_CODING.md`)** — a short, project-specific companion to the OpenSSF guide, written directly from an audit of this codebase rather than generic advice: which of the guide's 9 sections actually apply here (§4 Neutralization and §5 Exception handling are high-relevance, since this app constantly `json.load()`s files a user picked; §7 Concurrency and §9 Cryptography don't apply at all), and 7 concrete rules with real examples from this repo. Two fixes came directly out of that audit:
+- Narrowed 10 `except Exception: pass` blocks to `except tk.TclError:` — the only realistic failure in the Tkinter widget-race code they guarded (a stale tree-item id, a canvas destroyed mid-scroll). Left `models.py`'s one remaining broad catch as a documented, intentional exception: that file deliberately never imports `tkinter` to preserve the data/UI layer boundary, even though one function takes a live notebook widget.
+- Added `OSError` to `app.py`'s catalog/profile load handlers, which caught malformed JSON but not a file becoming unreadable between the file dialog and the actual read. Testing this by actually deleting a file mid-flow (not just reading the code) surfaced a *second*, earlier instance of the same gap in `_open_catalog()` — a raw pre-validation JSON parse, before `load_catalog()` is even called — that a pure code-reading pass had missed.
+
+Every fix across both documents was verified functionally (simulated the actual failure condition and confirmed the app's response), not just syntax-checked — several genuine findings in this pass (the dark-mode contrast bug, the second `OSError` gap) were only caught because of that.
+
 ---
 
 ## 11. Example Component Library
@@ -1044,6 +1063,24 @@ The components span a realistic medium-to-large Australian organisation's enviro
 ---
 
 ## 13. Changelog
+
+### Version 4.2 (July 2026)
+
+**Usability (full pass against `usability_review.md`'s 10 Nielsen heuristics):**
+- Unsaved-changes `*` indicator on tab labels, propagating through nested tab groups.
+- Tooltips (`tab_utils.py`'s new `attach_tooltip()`) on the highest-value icon-only/consequence-hiding buttons.
+- Ctrl+S (save active tab, any of 8 save-capable tabs) and Ctrl+O (open files, where unambiguous) — found and worked around a real Tk `Text` widget default-binding conflict on `<Control-o>`.
+- A native Help menu — Keyboard Shortcuts, Workspace Guide, About — the app's first `tk.Menu` usage.
+- Consistency pass: icon/text spacing and "Remove"/"Remove Selected" terminology normalized across ~28 buttons in 7 files.
+- Port range fields now validate the actual 1–65535 range and end ≥ start, not just "is this a number."
+- Found and fixed a real WCAG contrast bug (not a subjective one — computed actual ratios): 74 buttons across 7 files had 1.38:1 contrast in dark mode (near-invisible secondary-button text); fixed to 8.69:1 dark / 12.06:1 light.
+- Uncaught UI-callback exceptions now get logged (`oscal_user_toolkit/error.log`, this app's first real use of the `logging` module) and shown to the user as a plain-language dialog, instead of tkinter's default silent-failure behaviour.
+- Full detail and per-item verification evidence lives in `usability_review.md`, not duplicated here — see §10.22.
+
+**Secure coding:**
+- New `SECURE_CODING.md` — a short, project-specific summary of the OpenSSF Secure Coding Guide for Python, written from an actual audit of this codebase.
+- Narrowed 10 overly-broad `except Exception: pass` blocks to `except tk.TclError:`; added missing `OSError` handling to catalog/profile loading (found a second instance of the same gap by testing the actual failure condition, not just reading the code).
+- See §10.22.
 
 ### Version 4.1 (July 2026)
 

@@ -44,6 +44,14 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - Use this tab to maintain the organisation's shared component/capability masters; use the regular Component/Capability Editor tabs (under **System Overview**) to import and adapt a copy for one specific system
 - **🌐 All Systems** also lives in this tab group, alongside the Library editors
 
+### Application-wide (new)
+- **Keyboard shortcuts**: **Ctrl+S** saves whichever editor tab is currently active (works across all 8 save-capable tabs); **Ctrl+O** opens files where that's unambiguous (the two System Overview Component/Capability Editors)
+- **Help menu**: Keyboard Shortcuts reference, a jump straight to the Workspace tab's guidance cards, and an About panel
+- **Unsaved-changes indicator**: any tab with unsaved edits shows a trailing `*` on its label, including on the parent group tab (e.g. **⚙ System Overview**) if anything inside it is dirty — so you can tell something needs saving without opening every group to check
+- **Tooltips** on buttons whose action or consequence isn't obvious from the label alone (hover to see them)
+- **Error logging**: an uncaught error in any tab is now logged with a full traceback to `oscal_user_toolkit/error.log` and shown as a plain-language dialog, instead of failing silently
+- See [usability_review.md](usability_review.md) for the full usability pass this came from, and [SECURE_CODING.md](SECURE_CODING.md) for the project's secure-coding rules
+
 ### Workspace
 - **Landing tab** with per-tab guidance and **Open/Save Workspace** buttons that load or save an entire system's file set (SSP, components, capabilities, AP, AR, POA&M) in one action via a portable JSON manifest
 - Catalog/profile references in a workspace resolve against the Library automatically, so a workspace manifest stays valid even if the Library folder is configured differently on another machine
@@ -353,6 +361,7 @@ OSCAL-User-Toolkit/
 ├── user_stories.md                  # Role-based user stories driving design decisions
 ├── todo.md                          # Planned features: Profile Editor, Component Definition Editor, multi-catalog support
 ├── oscal_user_toolkit_design_document.md  # Technical design document and changelog
+├── usability_review.md              # Nielsen heuristics review — status of every finding, fixed or deferred
 ├── SECURE_CODING.md                 # Project rules derived from the OpenSSF Secure Coding Guide for Python
 └── README.md
 ```
