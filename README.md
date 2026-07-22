@@ -110,8 +110,8 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
 - **Capabilities Used** (Section 8): pick a capability from the Capability Editor's loaded list and it is recorded on the SSP (as an OSCAL metadata prop, since OSCAL 1.2.2 has no native "capabilities" field on an SSP) — its member components and their control responses are pulled straight into Section 8/9 automatically, provided the component files are already loaded in the Component Editor
 - **🔄 Sync from System Folder** (Section 8): pulls every component/capability file that's been imported into the current system's folder (via Component/Capability Editor's "📚 Import from Library") straight into the SSP, with control responses auto-populated — safe to re-run any time, never duplicates
-- **System Users → Import CSV** (Section 11): bulk-import system user entries from a CSV exported by another tool. Expected columns: `title, short_name, role_ids, description, remarks` (`role_ids` may list multiple roles separated by commas within the cell) — see `systems/example-data-ism/ssp_system_users.csv` for a template
-- **Inventory Items → Import CSV** (Section 12): bulk-import inventory items from a CSV — typically an export from an external asset management system. Expected columns: `description, asset_tag, serial_number, hostname, ip_address, mac_address, physical_location, components, remarks`. Only `description` is required; the metadata columns become OSCAL props, and `components` (semicolon-separated for multiple) is matched case-insensitively against Section 8's current component titles — an asset management export won't usually know the OSCAL mapping, so most rows are expected to have this column blank and only link where the title matches exactly. See `systems/example-data-ism/inventory_items.csv` for a template
+- **System Users → Import CSV** (Section 11): bulk-import system user entries from a CSV exported by another tool. Expected columns: `title, short_name, role_ids, description, remarks` (`role_ids` may list multiple roles separated by commas within the cell) — see `systems/example-01-ism/ssp_system_users.csv` for a template
+- **Inventory Items → Import CSV** (Section 12): bulk-import inventory items from a CSV — typically an export from an external asset management system. Expected columns: `description, asset_tag, serial_number, hostname, ip_address, mac_address, physical_location, components, remarks`. Only `description` is required; the metadata columns become OSCAL props, and `components` (semicolon-separated for multiple) is matched case-insensitively against Section 8's current component titles — an asset management export won't usually know the OSCAL mapping, so most rows are expected to have this column blank and only link where the title matches exactly. See `systems/example-01-ism/inventory_items.csv` for a template
 - **Export to Word** — generate a formatted `.docx` report, including a Capabilities Used table (capability name alongside its member components) and control implementations grouped under catalog guideline headings (requires `python-docx`)
 - **Export Capability and Component Map** (Section 8): generate a System → Capability → Component hierarchy diagram:
   - Loads capabilities currently open in the Capability Editor
@@ -159,7 +159,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 
 ## Example Data
 
-### ISM Example Data (`systems/example-data-ism/`)
+### ISM Example Data (`systems/example-01-ism/`)
 
 A complete example environment built around the Australian Information Security Manual (ISM), including a sample SSP, AP, AR, and POA&M.
 
@@ -193,7 +193,7 @@ A complete example environment built around the Australian Information Security 
 - `ar_ERN.json` — example Assessment Results with 5 risks, 12 observations, 14 findings, and 9 log entries
 - `poam_ERN_POAM.json` — example POA&M with items imported from the AR
 
-### NIST Example Data (`systems/example-data-nist/`)
+### NIST Example Data (`systems/example-03-nist/`)
 
 A parallel example environment for US federal and contractor use cases, referencing NIST SP 800-53 Rev 5 controls (`ac-2`, `si-2`, `ra-5`, etc.).
 
@@ -289,7 +289,7 @@ pytest
 
 1. In the **Data Sources** tab, load the catalog (and optionally a profile) you'll be writing components against
 2. Switch to the **Component Editor** tab
-3. Load the ISM example components from `systems/example-data-ism/components/` using **📁 Open Folder** as a starting point
+3. Load the ISM example components from `systems/example-01-ism/components/` using **📁 Open Folder** as a starting point
 4. For each component unique to your environment: set its type, add protocols and links, write implementation narratives per control, save as an individual JSON file into your Library's `components/` folder
 5. Once a component is saved to the Library, any system can pull a copy of it in via **📚 Import from Library**
 
@@ -380,7 +380,7 @@ OSCAL-User-Toolkit/
 │   ├── components/                  # Reusable component-definition files
 │   └── capabilities/                # Reusable capability-definition files
 ├── systems/                          # Systems folder (default location) — one subfolder per system
-│   ├── example-data-ism/            # Example environment — Australian ISM
+│   ├── example-01-ism/            # Example environment — Australian ISM
 │   │   ├── ssp_ERN.json
 │   │   ├── ap_ERN.json
 │   │   ├── ar_ERN.json
@@ -388,7 +388,7 @@ OSCAL-User-Toolkit/
 │   │   ├── workspace_ERN.json       # Loads everything above via Open Workspace
 │   │   ├── components/              # Copies of the example's own component files
 │   │   └── capability/              # Copies of the example's own capability files
-│   ├── example-data-nist/           # Example environment — NIST SP 800-53 Rev 5
+│   ├── example-03-nist/           # Example environment — NIST SP 800-53 Rev 5
 │   │   └── components/              # NIST SP 800-53 component files
 │   └── example-02/                  # Work-in-progress example (catalog/profile/components only, no SSP yet)
 ├── user_stories.md                  # Role-based user stories driving design decisions
