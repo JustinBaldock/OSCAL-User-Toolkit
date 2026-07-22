@@ -230,7 +230,7 @@ A parallel example environment for US federal and contractor use cases, referenc
 - `python-docx` *(optional)* — enables the **Export to Word** button in the SSP Editor
 
 ```bash
-pip install jsonschema python-docx
+pip install -r requirements.txt
 ```
 
 ### Installation
@@ -352,6 +352,7 @@ OSCAL-User-Toolkit/
 │   ├── test_models.py                # Unit tests for models.py's data layer
 │   └── test_roundtrip.py             # Save/load round-trip tests for SSP/AP/AR/POA&M
 ├── pyproject.toml                   # Ruff lint config, pytest config
+├── requirements.txt                  # Optional runtime dependencies (jsonschema, python-docx)
 ├── requirements-dev.txt             # Dev/CI-only dependencies (ruff, pytest)
 ├── oscal_user_toolkit/
 │   ├── __init__.py

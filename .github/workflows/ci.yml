@@ -5,10 +5,19 @@ on:
     branches: [main]
   pull_request:
 
+# Neither job writes anything (no PR comments, releases, or pushes) — they
+# only check out code and run lint/tests, so read-only access is all the
+# GITHUB_TOKEN needs. Without this, the token defaults to broader
+# permissions than either job actually uses.
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint (ruff)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -20,6 +29,8 @@ jobs:
   test:
     name: Unit tests (pytest)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

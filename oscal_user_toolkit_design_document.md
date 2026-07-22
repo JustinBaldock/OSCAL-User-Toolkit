@@ -1119,6 +1119,14 @@ Confirmed directly against `oscal_component_schema.json`'s `defined-component.ty
 
 **Verified functionally**: built a component with `type="process-procedure"`, confirmed it validates against `oscal_component_schema.json` and round-trips correctly through save → reload; reloaded and rebuilt all 121 real library components with zero failures; confirmed both `COMPONENT_TYPES` and `SSP_COMPONENT_TYPES` contain the single correct term and neither split value.
 
+### 10.32 Renamed the bundled example system folders; two CodeQL findings fixed; Dependabot enabled
+
+**Renamed example system folders to a consistent numbered scheme.** Per direct instruction: `systems/example-data-ism/` → `systems/example-01-ism/`, `systems/example-data-nist/` → `systems/example-03-nist/` (`example-02/` kept as-is, already numbered). Pure `git mv` in both cases — confirmed first that no file inside either folder referenced its own folder name (every internal reference is relative, e.g. `components/x.json`, by design — see §10.16), so no content changes were needed, only the doc references to each folder's current path (`README.md`, `todo.md`). Left the folder names as they existed in already-written historical narrative (design document §10.19, §13's changelog, `RELEASE_NOTES.md`) unchanged — those describe what a folder was actually called at a past point in time, and renaming there would misrepresent history, not just fix a stale pointer. Verified by loading each workspace manifest from its new path and confirming `all_systems_tab.py`'s scan still finds all three systems.
+
+**Two CodeQL findings fixed, both the same underlying gap**: `.github/workflows/ci.yml` had no explicit `permissions` block, so the `GITHUB_TOKEN` defaulted to broader access than either job actually needs (both jobs only check out code and run lint/tests — no PR comments, releases, or pushes). Added `permissions: {contents: read}` at both the workflow level and, since CodeQL flagged it at that granularity too, at each job level individually.
+
+**Dependabot enabled** (dependency graph, alerts, and security updates, via the repo's Security tab — no repo file controls this the same way CodeQL doesn't). For alerts to actually cover the app's real runtime dependencies rather than just the dev/CI tools, added a new `requirements.txt` listing `jsonschema`/`python-docx` (previously mentioned only in `README.md`'s prose, in no manifest file Dependabot could parse) — both optional, same graceful-degradation behaviour as before, just now declared somewhere Dependabot can scan them for known CVEs. `README.md`'s install instructions now point at `pip install -r requirements.txt` instead of a bare inline `pip install` command. Deliberately left unpinned (no `==` version), consistent with `requirements-dev.txt`'s existing style — pinning would be a separate, bigger decision trading reproducibility for needing manual version bumps.
+
 ---
 
 ## 11. Example Component Library

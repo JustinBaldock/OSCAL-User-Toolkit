@@ -1,0 +1,9 @@
+# Optional runtime dependencies for the OSCAL User Toolkit itself.
+# The app runs without these (each feature that needs one degrades
+# gracefully with an informative message if it's missing — see
+# README.md#requirements) — installing them just enables schema
+# validation and the Export to Word button. Listed here (rather than
+# only in README.md's install instructions) so Dependabot can alert on
+# known CVEs in these specific versions.
+jsonschema
+python-docx
