@@ -52,12 +52,15 @@ from .tab_utils import is_tab_active
 # Component type enum for SSP system-implementation components (Section 8).
 # Note this differs from the component-definition enum: an SSP may NOT use
 # "this-system" here (that one is auto-generated), so it is omitted.
-# Updated to OSCAL 1.2.2 valid values — removed "process-procedure" and
-# "network" (not valid in OSCAL 1.2.2), added "process", "procedure",
-# "defined-system", and kept "physical". (H3 fix)
+# "process-procedure" is the schema's own single term (confirmed directly
+# against oscal_component_schema.json's defined-component.type enum) — an
+# earlier version of this list split it into "process"/"procedure", neither
+# of which was the literal schema value (todo.md #6, fixed alongside
+# component_tab.py's identical COMPONENT_TYPES — see
+# oscal_user_toolkit_design_document.md §11).
 SSP_COMPONENT_TYPES = [
     "defined-system", "system", "interconnection", "software", "hardware",
-    "service", "policy", "process", "procedure", "plan", "guidance",
+    "service", "policy", "process-procedure", "plan", "guidance",
     "standard", "validation", "physical",
 ]
 
@@ -4749,8 +4752,7 @@ class SSPTab(tk.Frame):
             "software":  "fillColor=#DAE8FC;strokeColor=#6c8ebf;fontColor=#333333;",
             "hardware":  "fillColor=#D5E8D4;strokeColor=#82b366;fontColor=#333333;",
             "service":   "fillColor=#E1D5E7;strokeColor=#9673a6;fontColor=#333333;",
-            "process":   "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
-            "procedure": "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
+            "process-procedure": "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
             "plan":      "fillColor=#FFF2CC;strokeColor=#d6b656;fontColor=#333333;",
         }
         # Default style for types not in the map above.

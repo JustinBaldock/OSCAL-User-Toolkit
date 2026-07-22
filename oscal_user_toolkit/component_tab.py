@@ -62,8 +62,11 @@ COMPONENT_TYPES = [
     "hardware",       # Physical or virtual hardware devices
     "service",        # External or internal services (APIs, cloud)
     "policy",         # Documented policy
-    "process",        # Repeatable business or technical process
-    "procedure",      # Step-by-step procedure document
+    "process-procedure", # Repeatable business/technical process or step-by-step
+                         # procedure document — the schema's own single term for
+                         # both; previously split into "process"/"procedure" here,
+                         # neither of which was the literal schema value
+                         # (todo.md #6, see oscal_user_toolkit_design_document.md §11)
     "plan",           # Formal plan (e.g. incident response)
     "guidance",       # Guidance document (e.g. configuration guide)
     "standard",       # Technical or security standard

@@ -177,13 +177,7 @@ Components already have their own `file_uuid`/`version`/`revisions[]` and a "Ver
 
 ---
 
-## 6. `COMPONENT_TYPES` dropdown doesn't offer the exact `process-procedure` schema term
-
-`component_tab.py`'s `COMPONENT_TYPES` list splits the schema's single `process-procedure` type into two separate dropdown options, `"process"` and `"procedure"` — neither is the exact schema term (though all three, being free-form-string-compatible, are schema-valid, so nothing currently saved is actually broken). A user picking a brand-new component's type from the dropdown just can't select the literal `process-procedure` term today. Fix: replace the two split options with the single correct term (or offer all three).
-
----
-
-## 7. Remaining usability gaps
+## 6. Remaining usability gaps
 
 From the `usability_review.md` pass (see design document §10.22 for what was already done):
 
@@ -191,14 +185,6 @@ From the `usability_review.md` pass (see design document §10.22 for what was al
 - **No batch operations / multi-select** — every `Treeview` in the app uses `selectmode="browse"` (one row at a time); no bulk-delete or bulk-edit workflow exists anywhere.
 - **No in-app tutorial/walkthrough for new users** — the Workspace tab's existing per-tab guidance cards cover some of this ground already, but there's no guided first-run flow.
 - **`GREEN`/`TEAL` text colour is marginally under WCAG's normal-text contrast threshold in light mode only** (3.1–3.9:1, vs. the 4.5:1 normal-text target — still comfortably above the 3:1 large/bold-text threshold). Left alone deliberately: both are load-bearing brand/identity colours used consistently across many components, so changing a hue for a marginal contrast gain is a visual-identity decision, not a quick accessibility fix.
-
----
-
-## 8. Enable GitHub code scanning (CodeQL)
-
-Turn on GitHub's default CodeQL code scanning setup for this repo. Free for public repos, and complementary to the existing CI (`.github/workflows/ci.yml`) rather than redundant: Ruff catches style/correctness issues, CodeQL does deeper security-focused taint analysis (path traversal, unsafe deserialization, etc.) — relevant here since the app's whole job is parsing JSON files a user picked off disk, which `SECURE_CODING.md` already treats as untrusted input.
-
-Use GitHub's **"Default" setup** (one click, auto-configured) rather than the "Advanced" custom-workflow option — this is a straightforward Python codebase with no unusual build steps. Expect some initial noise on the first scan (findings to triage — accept as safe, or fix — not all necessarily real bugs).
 
 ---
 
@@ -211,7 +197,5 @@ Use GitHub's **"Default" setup** (one click, auto-configured) rather than the "A
 | Data Flow Diagram Export | Medium | Medium | Input UX done; only the `.drawio` export itself remains — see §4 |
 | Standalone Component Definition document type | Low | Medium | Largely superseded by the Library system; remaining gap is a distinct document type + "load all controls from profile" — see §2 |
 | Capability version/revision history | Low | Low | Same design as components, just not yet applied to `CapabilityTab` — see §5 |
-| `COMPONENT_TYPES` dropdown fix | Low | Low | Cosmetic — nothing currently saved is broken — see §6 |
-| Batch operations / multi-select | Low | High | No existing Treeview supports multi-select — see §7 |
-| Undo/redo | Low | High | Needs a real change-tracking layer — see §7 |
-| Enable GitHub code scanning (CodeQL) | Low | Low | One-click "Default" setup, free for public repos — see §8 |
+| Batch operations / multi-select | Low | High | No existing Treeview supports multi-select — see §6 |
+| Undo/redo | Low | High | Needs a real change-tracking layer — see §6 |

@@ -98,13 +98,6 @@ FINDING_STATUS_STATES = ["satisfied", "not-satisfied"]
 # Finding target status reason values (OSCAL finding.target.status.reason)
 FINDING_STATUS_REASONS = ["", "pass", "fail", "other"]
 
-# Valid component type values from OSCAL 1.2.2 schema
-COMPONENT_TYPES = [
-    "defined-system", "system", "interconnection", "software", "hardware",
-    "service", "policy", "process", "procedure", "plan", "guidance",
-    "standard", "validation", "physical",
-]
-
 # =============================================================================
 # OSCAL CATALOG PARSING HELPERS
 # These small functions extract specific pieces of data from the raw JSON
