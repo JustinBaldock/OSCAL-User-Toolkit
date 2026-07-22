@@ -14,6 +14,7 @@ see .gitignore.
 """
 
 import json
+import zipfile
 from pathlib import Path
 
 SETTINGS_PATH = Path(__file__).parent / "settings.json"
@@ -107,6 +108,42 @@ def set_systems_path(path):
     settings = load_settings()
     settings["systems_path"] = str(path)
     save_settings(settings)
+
+
+def scan_oscal_versions(oscal_dir):
+    """
+    Scan oscal_dir for OSCAL schema zip files and return the versions found.
+
+    A file named 'oscal-1.2.2.zip' becomes the label 'v1.2.2'. Versions are
+    sorted newest-first so a dropdown built from the result defaults to the
+    latest available version.
+
+    Parameters:
+        oscal_dir - Path to the folder containing OSCAL release zip files
+                    (the repo's own oscal/ folder by default).
+
+    Returns:
+        A tuple of (version_labels, version_paths):
+            version_labels - list of "vX.Y.Z" strings, newest first
+            version_paths  - {"X.Y.Z": Path} map (unprefixed label -> zip path)
+        Both are empty if oscal_dir doesn't exist or contains no zips.
+    """
+    oscal_dir = Path(oscal_dir)
+    if not oscal_dir.is_dir():
+        return [], {}
+
+    versions = []
+    for path in oscal_dir.glob("*.zip"):
+        if zipfile.is_zipfile(path):
+            # Strip leading 'oscal-' and trailing '.zip', e.g. 'oscal-1.2.2.zip' → '1.2.2'
+            name = path.stem  # 'oscal-1.2.2'
+            label = name.removeprefix("oscal-")  # '1.2.2'
+            versions.append((label, path))
+
+    # Sort by parsed version tuple so '1.2.10' > '1.2.2' correctly
+    versions.sort(key=lambda x: [int(p) for p in x[0].split(".") if p.isdigit()], reverse=True)
+    version_paths = {label: path for label, path in versions}
+    return [f"v{label}" for label, _ in versions], version_paths
 
 
 def get_theme():

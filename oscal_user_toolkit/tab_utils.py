@@ -18,6 +18,7 @@ does without needing a permanently-visible label next to every icon.
 """
 
 import tkinter as tk
+from tkinter import ttk
 
 
 def attach_tooltip(widget, text, colors=None, delay_ms=500):
@@ -157,3 +158,77 @@ def is_tab_active(widget):
         current = parent
         parent = getattr(parent, "master", None)
     return True
+
+
+def style_ttk(root, colors):
+    """
+    Apply custom colours and fonts to ttk (themed) widgets.
+
+    ttk widgets (Treeview, Combobox, Scrollbar, Notebook, etc.) have a
+    separate styling system from plain tk widgets. Overrides the default
+    'clam' theme with the app's colour palette.
+
+    Parameters:
+        root   - Any live Tk widget (usually the app's root window) —
+                 ttk.Style() needs a widget to attach to, but doesn't care
+                 which one; styles apply application-wide either way.
+        colors - The active colour dict (COLORS from app.py, or a copy) —
+                 passed explicitly rather than imported, since this function
+                 has no other reason to depend on app.py.
+
+    Called once at startup and again by app.py's set_theme() whenever the
+    dark/light palette changes, so ttk widgets pick up the new colours
+    immediately (plain tk widgets are handled separately — see set_theme()'s
+    own docstring for why).
+    """
+    C = colors
+    s = ttk.Style(root)
+    s.theme_use("clam")   # 'clam' is a clean theme that accepts overrides
+
+    # Treeview (the table/list widget used in both tabs)
+    s.configure(
+        "Treeview",
+        background=C["SIDEBAR_BG"], foreground=C["TEXT"],
+        fieldbackground=C["SIDEBAR_BG"],
+        borderwidth=0, font=("Helvetica", 11), rowheight=26,
+    )
+    s.configure(
+        "Treeview.Heading",   # Column header row
+        background=C["HEADER_BG"], foreground=C["ACCENT"],
+        font=("Helvetica", 11, "bold"), relief="flat",
+    )
+    # Change selected row colour
+    s.map("Treeview",
+          background=[("selected", C["ACCENT"])],
+          foreground=[("selected", C["BG"])])
+
+    # Scrollbars (both vertical and horizontal)
+    for orient in ("Vertical", "Horizontal"):
+        s.configure(
+            f"{orient}.TScrollbar",
+            background=C["HEADER_BG"], troughcolor=C["SIDEBAR_BG"],
+            borderwidth=0, arrowcolor=C["SUBTEXT"],
+        )
+
+    # Combobox (dropdown)
+    s.configure(
+        "TCombobox",
+        fieldbackground=C["HEADER_BG"], background=C["HEADER_BG"],
+        foreground=C["TEXT"], selectbackground=C["ACCENT"],
+        selectforeground=C["BG"],
+    )
+    s.map("TCombobox",
+          fieldbackground=[("readonly", C["HEADER_BG"])],
+          foreground=[("readonly", C["TEXT"])])
+
+    # Notebook (the tabbed container)
+    s.configure("TNotebook", background=C["BG"], borderwidth=0)
+    s.configure(
+        "TNotebook.Tab",   # Individual tab labels
+        background=C["HEADER_BG"], foreground=C["SUBTEXT"],
+        padding=[14, 6], font=("Helvetica", 11),
+    )
+    # Active tab gets a different colour
+    s.map("TNotebook.Tab",
+          background=[("selected", C["CARD_BG"])],
+          foreground=[("selected", C["ACCENT"])])

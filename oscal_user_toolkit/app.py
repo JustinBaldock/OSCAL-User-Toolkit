@@ -30,7 +30,6 @@ add (toolbar, notebook, etc.) goes inside it.
 import json        # For parsing JSON files and error handling
 import logging
 import traceback
-import zipfile
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path   # Cross-platform file path handling
@@ -52,7 +51,7 @@ from .ar_tab import ARTab
 from .dashboard_tab import DashboardTab
 from .workspace_tab import WorkspaceTab
 from .data_sources_tab import DataSourcesTab
-from .tab_utils import attach_tooltip
+from .tab_utils import attach_tooltip, style_ttk
 from .all_systems_tab import AllSystemsTab
 
 # ── Shared colour palette ─────────────────────────────────────────────────────
@@ -223,12 +222,14 @@ class OSCALApp(tk.Tk):
         # Each method below creates one layer of the UI.
         # Order matters: statusbar must be packed before the notebook
         # so that it appears at the bottom.
-        self._oscal_versions    = self._scan_oscal_versions()
+        self._oscal_versions, self._oscal_version_paths = settings.scan_oscal_versions(
+            Path(__file__).parent.parent / "oscal"
+        )
         self._oscal_version_var = tk.StringVar(
             value=self._oscal_versions[0] if self._oscal_versions else "No versions found"
         )
 
-        self._style_ttk()       # Apply custom colours to ttk widgets
+        style_ttk(self, COLORS) # Apply custom colours to ttk widgets
         self._build_toolbar()   # Top bar with version selector, Library/Systems folder buttons
         self._build_info_panel()# Cards showing catalog and profile metadata
         # Built before the notebook (not after, as the visual top-to-bottom
@@ -312,34 +313,6 @@ class OSCALApp(tk.Tk):
     # OSCAL VERSION DISCOVERY
     # =========================================================================
 
-    def _scan_oscal_versions(self):
-        """
-        Scan the oscal/ folder (sibling of this package) for zip files and
-        return a sorted list of version labels derived from their filenames.
-
-        A file named 'oscal-1.2.2.zip' becomes the label 'v1.2.2'.
-        Versions are sorted newest-first so the dropdown defaults to the
-        latest available version.
-
-        Returns an empty list if the folder does not exist or contains no zips.
-        """
-        oscal_dir = Path(__file__).parent.parent / "oscal"
-        if not oscal_dir.is_dir():
-            return []
-
-        versions = []
-        for path in oscal_dir.glob("*.zip"):
-            if zipfile.is_zipfile(path):
-                # Strip leading 'oscal-' and trailing '.zip', e.g. 'oscal-1.2.2.zip' → '1.2.2'
-                name = path.stem  # 'oscal-1.2.2'
-                label = name.removeprefix("oscal-")  # '1.2.2'
-                versions.append((label, path))
-
-        # Sort by parsed version tuple so '1.2.10' > '1.2.2' correctly
-        versions.sort(key=lambda x: [int(p) for p in x[0].split(".") if p.isdigit()], reverse=True)
-        self._oscal_version_paths = {label: path for label, path in versions}
-        return [f"v{label}" for label, _ in versions]
-
     def get_oscal_versions(self):
         """
         Callback passed to Component/Capability Editor: every OSCAL schema
@@ -361,70 +334,6 @@ class OSCALApp(tk.Tk):
         return self._oscal_version_paths
 
     # =========================================================================
-    # STYLING
-    # =========================================================================
-
-    def _style_ttk(self):
-        """
-        Apply custom colours and fonts to ttk (themed) widgets.
-
-        ttk widgets (Treeview, Combobox, Scrollbar, Notebook, etc.) have a
-        separate styling system from plain tk widgets. We use ttk.Style to
-        override the default 'clam' theme with our dark colour palette.
-        """
-        C = COLORS
-        s = ttk.Style(self)
-        s.theme_use("clam")   # 'clam' is a clean theme that accepts overrides
-
-        # Treeview (the table/list widget used in both tabs)
-        s.configure(
-            "Treeview",
-            background=C["SIDEBAR_BG"], foreground=C["TEXT"],
-            fieldbackground=C["SIDEBAR_BG"],
-            borderwidth=0, font=("Helvetica", 11), rowheight=26,
-        )
-        s.configure(
-            "Treeview.Heading",   # Column header row
-            background=C["HEADER_BG"], foreground=C["ACCENT"],
-            font=("Helvetica", 11, "bold"), relief="flat",
-        )
-        # Change selected row colour
-        s.map("Treeview",
-              background=[("selected", C["ACCENT"])],
-              foreground=[("selected", C["BG"])])
-
-        # Scrollbars (both vertical and horizontal)
-        for orient in ("Vertical", "Horizontal"):
-            s.configure(
-                f"{orient}.TScrollbar",
-                background=C["HEADER_BG"], troughcolor=C["SIDEBAR_BG"],
-                borderwidth=0, arrowcolor=C["SUBTEXT"],
-            )
-
-        # Combobox (dropdown)
-        s.configure(
-            "TCombobox",
-            fieldbackground=C["HEADER_BG"], background=C["HEADER_BG"],
-            foreground=C["TEXT"], selectbackground=C["ACCENT"],
-            selectforeground=C["BG"],
-        )
-        s.map("TCombobox",
-              fieldbackground=[("readonly", C["HEADER_BG"])],
-              foreground=[("readonly", C["TEXT"])])
-
-        # Notebook (the tabbed container)
-        s.configure("TNotebook", background=C["BG"], borderwidth=0)
-        s.configure(
-            "TNotebook.Tab",   # Individual tab labels
-            background=C["HEADER_BG"], foreground=C["SUBTEXT"],
-            padding=[14, 6], font=("Helvetica", 11),
-        )
-        # Active tab gets a different colour
-        s.map("TNotebook.Tab",
-              background=[("selected", C["CARD_BG"])],
-              foreground=[("selected", C["ACCENT"])])
-
-    # =========================================================================
     # THEME (DARK / LIGHT)
     # =========================================================================
 
@@ -443,7 +352,7 @@ class OSCALApp(tk.Tk):
         plain tk widgets read a colour once at creation time and never look
         at the dict again. So after swapping the palette, this method:
 
-          1. Re-runs _style_ttk() so ttk widgets (Treeview, Notebook,
+          1. Re-runs style_ttk() so ttk widgets (Treeview, Notebook,
              Combobox, Scrollbar) re-read the new colours from their style,
              which they DO support live.
           2. Destroys and rebuilds this app's own toolbar, info panel, and
@@ -472,7 +381,7 @@ class OSCALApp(tk.Tk):
         settings.set_theme(theme_name)   # Persist so the app reopens in this theme
 
         self.configure(bg=COLORS["BG"])
-        self._style_ttk()
+        style_ttk(self, COLORS)
 
         # ── Rebuild this app's own chrome, preserving its dynamic content ──────
         saved_status_text = self._status_lbl.cget("text")
