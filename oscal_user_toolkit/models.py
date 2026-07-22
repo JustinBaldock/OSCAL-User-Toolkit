@@ -383,7 +383,7 @@ def load_profile(filepath):
 class CatalogResolver:
     """
     Holds every catalog currently loaded, to support a profile that draws
-    controls from more than one catalog (see todo.md §3 and
+    controls from more than one catalog (see todo.md §5 and
     oscal_user_toolkit_design_document.md §10.17 for the design behind
     this). A single OSCALApp instance owns exactly one CatalogResolver.
 

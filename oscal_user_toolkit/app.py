@@ -186,7 +186,7 @@ class OSCALApp(tk.Tk):
         self._profile = None    # The loaded profile dict (from models.load_profile)
         # Holds every catalog currently loaded, keyed by resolved absolute
         # path — supports a profile that draws controls from more than one
-        # catalog (see CatalogResolver in models.py, todo.md §3, and
+        # catalog (see CatalogResolver in models.py, todo.md §5, and
         # oscal_user_toolkit_design_document.md §10.17). self._catalog above
         # remains "the" catalog for every tab not yet updated to consult the
         # resolver; the resolver additionally holds any further catalogs a
@@ -1563,7 +1563,7 @@ class OSCALApp(tk.Tk):
         Callback for tabs that need to look up controls across every
         currently loaded catalog (see models.CatalogResolver), not just
         the single primary self._catalog. Wired only into the Library
-        Component/Capability Editors (see todo.md §3, oscal_user_toolkit_design_document.md
+        Component/Capability Editors (see todo.md §5, oscal_user_toolkit_design_document.md
         §10.24) — the System Overview editors still show a single catalog.
         """
         return self._resolver

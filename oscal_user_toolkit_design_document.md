@@ -910,7 +910,7 @@ This intentionally does **not** replace the older `_import_components_from_files
 
 **Fix, load side:** `load_workspace_manifest()` tries the workspace-relative interpretation *first* (matching every other field, and covering the non-Library case above), and only falls back to resolving the same filename against the configured Library's `catalogs/`/`profiles/` subfolder if that file doesn't exist. This fallback is what fixes *already-saved* workspace files like `workspace_ERN.json` without needing to edit them — no schema change or version marker was needed, since the fallback only ever triggers when the primary (workspace-relative) resolution fails to find a file, which is exactly the situation those older files are now in.
 
-### 10.17 CatalogResolver — foundation for multi-catalog profiles (todo.md §3, stage 1 of 3)
+### 10.17 CatalogResolver — foundation for multi-catalog profiles (todo.md §5, stage 1 of 3)
 
 The app has always treated catalog and profile as strictly 1:1 — one `self._catalog` dict, loaded once via Open Catalog. OSCAL's own profile schema doesn't have that limitation: a profile's `imports[]` is an array, each entry independently referencing its own catalog (or another profile) via `href`, with its own `include-controls`/`include-all`/`exclude-controls` selection (confirmed directly against `oscal_profile_schema.json`'s `import` definition) — the documented pattern for a baseline spanning two frameworks (e.g. SP 800-53 + SP 800-171). `load_profile()` already walked every import to build a flat, merged `ids` set, but discarded which import each ID came from, so there was no way to know which catalog a given control actually belongs to once more than one is involved.
 
@@ -1032,9 +1032,9 @@ A follow-up round of work, driven partly by direct feature requests and partly b
 
 **Library growth**: 7 new example components (`aws.json`, `django.json`, `drupal.json`, `ilias.json`, `privacy.json`, `ssh.json`, `software_EDR_crowdstrike.json` — all `software` type), taking the Library from 95 to **102 components**; capabilities unchanged at 11. See §11.
 
-### 10.24 Multi-catalog components — Library Component/Capability Editors only (todo.md §3, Stages 2–3)
+### 10.24 Multi-catalog components — Library Component/Capability Editors only (todo.md §5, Stages 2–3)
 
-Confirmed directly against `oscal_component_schema.json` before building anything: `defined-component.control-implementations` is an array (`minItems: 1`, no maximum), and each `control-implementation` entry has its own required `source` — so a component genuinely can hold responses against controls from more than one catalog natively, no workaround needed. This closes out `todo.md` §3's Stages 2–3, which were blocked on nothing consuming the `CatalogResolver` (§10.17) that already existed.
+Confirmed directly against `oscal_component_schema.json` before building anything: `defined-component.control-implementations` is an array (`minItems: 1`, no maximum), and each `control-implementation` entry has its own required `source` — so a component genuinely can hold responses against controls from more than one catalog natively, no workaround needed. This closes out `todo.md` §5's Stages 2–3, which were blocked on nothing consuming the `CatalogResolver` (§10.17) that already existed.
 
 **Deliberately scoped to the Library Component/Capability Editors, not System Overview's.** The Library is the shared, cross-system master most likely to need this — e.g. a single "AWS" component reused across an ISM-governed system and a NIST-governed system needs both an ISM response and a NIST response on the *same* component. System Overview's per-system editors stay tied to whatever one catalog/profile is loaded for that system, unchanged. `app.py`'s `get_resolver()` callback (previously defined but consumed by nothing) is now wired only into `self._library_component_tab`/`self._library_capability_tab`'s construction, not `self._component_tab`/`self._capability_tab`.
 
@@ -1044,7 +1044,7 @@ Confirmed directly against `oscal_component_schema.json` before building anythin
 
 **`build_component_oscal_entry()` (models.py) and `CapabilityTab._build_oscal_document()` group by source instead of emitting one hardcoded block.** Both now bucket a component/capability's responses by `ctrl_response_sources.get(ctrl_id) or source_href` and emit one `control-implementations` block per distinct bucket. For capabilities, inherited responses carry their *member component's own* recorded source through `_resync_inherited_for_cap()`'s new `catalog_source` field, so a capability inheriting an ISM response from one member and a NIST response from another produces two correctly-sourced blocks without the capability itself needing to track anything extra for inherited entries.
 
-**Control ID collisions across catalogs** (flagged as an open question in `todo.md` §3) are handled by keeping whichever catalog's control was seen first and skipping the duplicate — avoids a Tkinter `TclError` from a duplicate Treeview row iid, at the cost of the second catalog's colliding control being invisible in the combined list. Not expected to matter in practice (ISM's `ism-NNNN` and NIST's `ac-2`/`03.01.01`-style IDs don't overlap), and left as a known, documented limitation rather than solved generally.
+**Control ID collisions across catalogs** (flagged as an open question in `todo.md` §5) are handled by keeping whichever catalog's control was seen first and skipping the duplicate — avoids a Tkinter `TclError` from a duplicate Treeview row iid, at the cost of the second catalog's colliding control being invisible in the combined list. Not expected to matter in practice (ISM's `ism-NNNN` and NIST's `ac-2`/`03.01.01`-style IDs don't overlap), and left as a known, documented limitation rather than solved generally.
 
 **Verified functionally, not just syntax-checked**: built a component with an ISM response and a NIST response from two fake loaded catalogs, confirmed `build_component_oscal_entry()` emits two correctly-sourced blocks and the output validates cleanly against the real bundled `oscal-1.2.2.zip` schema; round-tripped a capability with one inherited (member-catalog) response and one capability-level response through save → reload and confirmed both sources survive; reloaded and rebuilt every real file in `library/components/`/`library/capabilities/` with zero failures to confirm no regression on existing single-catalog content.
 
@@ -1190,7 +1190,7 @@ The components span a realistic medium-to-large Australian organisation's enviro
 ### Version 4.7 (July 2026)
 
 **New features:**
-- **Multi-catalog components** (`todo.md` §3, Stages 2–3) — the Library Component/Capability Editors' control lists now combine every catalog `get_resolver()` holds when a loaded profile imports more than one (e.g. ISM + NIST), tagging each control with its source catalog. A new `ctrl_response_sources` dict records which catalog each response's control came from; `build_component_oscal_entry()` and `CapabilityTab._build_oscal_document()` group responses by source and emit one `control-implementations` block per catalog, confirmed schema-valid against `oscal_component_schema.json`. Deliberately scoped to the Library editors only, not System Overview's. See §10.24.
+- **Multi-catalog components** (`todo.md` §5, Stages 2–3) — the Library Component/Capability Editors' control lists now combine every catalog `get_resolver()` holds when a loaded profile imports more than one (e.g. ISM + NIST), tagging each control with its source catalog. A new `ctrl_response_sources` dict records which catalog each response's control came from; `build_component_oscal_entry()` and `CapabilityTab._build_oscal_document()` group responses by source and emit one `control-implementations` block per catalog, confirmed schema-valid against `oscal_component_schema.json`. Deliberately scoped to the Library editors only, not System Overview's. See §10.24.
 - 6 CivicActions-format library components converted to house style with real ISM + NIST SP 800-53 rev5 control coverage: `service_ssh.json`, `policy_privacy.json`, `service_learning_management_system.json` (was `ilias.json`), `software_drupal.json`, `software_django.json`, `service_aws.json`.
 
 ### Version 4.6 (July 2026)
@@ -1298,7 +1298,7 @@ See §10.23 for full detail on all of the above.
 - `load_profile()` gained a new `imports` key (raw per-import href/include/exclude data) alongside the existing, unchanged `ids` set.
 - Data Sources tab shows "(+N more via profile imports)" on the catalog label when a profile has auto-loaded additional catalogs.
 
-**Not yet implemented (stages 2–3 of `todo.md` §3):** Component Editor's Source column/filter, and grouping a component's control-implementations by distinct source in `build_component_oscal_entry()`. `self._catalog` remains the single source every other tab reads from until those land.
+**Not yet implemented (stages 2–3 of `todo.md` §5):** Component Editor's Source column/filter, and grouping a component's control-implementations by distinct source in `build_component_oscal_entry()`. `self._catalog` remains the single source every other tab reads from until those land.
 
 ### Version 3.5 (July 2026)
 
@@ -1351,7 +1351,7 @@ See §10.23 for full detail on all of the above.
 - `models._data_flow_links_narrative()` — auto-drafts `data-flow.description` from flow links when the user hasn't written their own
 - `models._refresh_flow_link_titles()` — re-resolves cached component titles on load
 
-**Not yet implemented (see `todo.md` §4 for further ideas):**
+**Not yet implemented (see `todo.md` §6 for further ideas):**
 - Auto-generating a data-flow `.drawio` diagram from the new flow links table (the removed feature did this from the old, wrong-location data; a replacement built on the new storage is future work)
 
 ### Version 3.0 (June 2026)

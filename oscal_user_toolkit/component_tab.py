@@ -2296,7 +2296,7 @@ class ComponentTab(tk.Frame):
                 continue
             if ctrl["id"] in seen_ids:
                 # Two loaded catalogs happen to share a control ID (see
-                # todo.md §3's "Control ID Namespace Awareness") — keep
+                # todo.md §5's "Control ID Namespace Awareness") — keep
                 # whichever we saw first rather than crashing the Treeview
                 # on a duplicate row iid.
                 continue
