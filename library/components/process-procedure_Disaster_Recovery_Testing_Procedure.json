@@ -1,0 +1,86 @@
+{
+  "component-definition": {
+    "uuid": "86c6398a-3cbe-4992-b0a8-e5ef185a220e",
+    "metadata": {
+      "title": "process-procedure - Disaster Recovery Testing Procedure",
+      "last-modified": "2026-07-22T11:28:57Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "d8e67512-162e-4e12-8f88-c7053d812903",
+        "type": "process-procedure",
+        "title": "Disaster Recovery Testing Procedure",
+        "description": "The documented, step-by-step procedure for planning and executing an annual disaster recovery (DR) test — covering test scope and objectives, restoration of data/applications/settings from backups to a common recovery point, validation against defined recovery time and recovery point objectives, and a post-test report of findings and remediation actions.",
+        "purpose": "Provide a rehearsed, repeatable process for validating that the organisation's disaster recovery capability actually works, rather than assuming plans and backups are sufficient without having tested them.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "9b8b9091-178d-4149-a490-bd75b99ec9e4",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Disaster Recovery Testing Procedure.",
+            "implemented-requirements": [
+              {
+                "uuid": "d735dda5-a78c-4898-8f5e-882f352e0867",
+                "control-id": "ism-principle-res-01",
+                "description": "The organisation's business continuity and disaster recovery plans are exercised through this annual DR test to confirm they support continued and resumed business operations, rather than being assumed correct on paper alone."
+              },
+              {
+                "uuid": "68e915bf-eb9c-4a20-8ccb-fc8d5e81c9b0",
+                "control-id": "ism-0734",
+                "description": "The CISO reviews and signs off the annual DR test plan and its results as part of their ongoing contribution to the development, implementation, and maintenance of the organisation's business continuity and disaster recovery plans."
+              },
+              {
+                "uuid": "d10e4cfd-9f56-41d1-a111-15859d472751",
+                "control-id": "ism-1515",
+                "description": "Restoration of data, applications, and settings from backups to a common point in time is tested as the core activity of the annual disaster recovery exercise, with results recorded against defined recovery time and recovery point objectives."
+              }
+            ]
+          },
+          {
+            "uuid": "3ac0d0e2-2375-4b2d-a0d4-c02c06be6c84",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for Disaster Recovery Testing Procedure.",
+            "implemented-requirements": [
+              {
+                "uuid": "aa102fea-63ae-4ff5-95e7-cf1da65e8684",
+                "control-id": "cp-2",
+                "description": "The annual DR test exercises the organisation's contingency plan for the systems in scope, confirming the plan's activation criteria, roles, and recovery procedures reflect the current environment."
+              },
+              {
+                "uuid": "50a15b00-a278-4788-b538-a0fe197f33f3",
+                "control-id": "cp-4",
+                "description": "Contingency plan testing is performed at least annually using a functional exercise that includes an actual recovery of data and applications from backups, with results, corrective actions, and lessons learned documented in a post-test report."
+              },
+              {
+                "uuid": "de5d0e7c-2bd6-40d2-99c2-ffcf81056614",
+                "control-id": "cp-9",
+                "description": "The DR test validates that system backups are complete, uncorrupted, and restorable within the required recovery time objective — a backup that has never been test-restored is not a validated backup."
+              },
+              {
+                "uuid": "aa79d921-54b9-4789-983e-cacdc427d397",
+                "control-id": "cp-10",
+                "description": "The DR test exercises system recovery and reconstitution — bringing recovered systems back to a fully operational state, including validation of data integrity and functional testing, not just restoring raw files."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

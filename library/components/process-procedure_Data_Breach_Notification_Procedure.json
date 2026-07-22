@@ -1,0 +1,86 @@
+{
+  "component-definition": {
+    "uuid": "21749cf9-1e61-4648-b0d8-649b431dc893",
+    "metadata": {
+      "title": "process-procedure - Data Breach Notification Procedure",
+      "last-modified": "2026-07-22T11:28:57Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2"
+    },
+    "components": [
+      {
+        "uuid": "0495213f-249f-4285-a085-5c009caa8747",
+        "type": "process-procedure",
+        "title": "Data Breach Notification Procedure",
+        "description": "The documented, step-by-step procedure for identifying, assessing, and notifying affected parties and authorities following a data breach — covering initial detection and containment, assessment of whether the breach is likely to result in serious harm, internal escalation to the CISO and executive, notification to affected individuals and the applicable privacy regulator within required timeframes, and notification to external authorities (e.g. ASD) where the breach is also a reportable cyber security incident.",
+        "purpose": "Ensure a data breach is assessed and, where required, notified to affected individuals and regulators within mandated timeframes, rather than notification being missed or delayed because no defined process exists.",
+        "props": [
+          {
+            "name": "operational-status",
+            "value": "operational"
+          },
+          {
+            "name": "owner",
+            "value": "System Owner / CISO"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "system-owner"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "601bfe24-5033-4298-9738-10d84e444fa2",
+            "source": "ISM_catalog.json",
+            "description": "Control implementations for Data Breach Notification Procedure.",
+            "implemented-requirements": [
+              {
+                "uuid": "23cf9876-137b-4ddb-9f59-f3772e638370",
+                "control-id": "ism-0043",
+                "description": "This procedure operationalises the guidelines, roles, and internal/external reporting paths required of the organisation's cyber security incident response plan, specifically for the case where the incident involves a data breach."
+              },
+              {
+                "uuid": "6c0ac34e-0d48-45a2-8fac-4e61f8c8551e",
+                "control-id": "ism-0140",
+                "description": "Where a data breach is also assessed as a reportable cyber security incident, it is reported to ASD as soon as possible after being identified, in line with this procedure's external notification step."
+              },
+              {
+                "uuid": "4a3cfceb-a31d-44f9-9126-80f6266a6fde",
+                "control-id": "ism-0141",
+                "description": "Where a service provider identifies or is otherwise involved in the data breach, they report it to the organisation's designated point of contact as soon as possible, feeding into this procedure's assessment and notification steps."
+              }
+            ]
+          },
+          {
+            "uuid": "4b4197fa-2950-4d0c-8a4e-d3ffa83903c9",
+            "source": "NIST_SP-800-53_rev5_catalog.json",
+            "description": "Control implementations for Data Breach Notification Procedure.",
+            "implemented-requirements": [
+              {
+                "uuid": "3764a534-dc09-4776-9539-4492df654dd0",
+                "control-id": "ir-4",
+                "description": "Detection and containment of the data breach follows the organisation's incident handling process, providing the factual basis (what was accessed, by whom, how) the notification-eligibility assessment step of this procedure relies on."
+              },
+              {
+                "uuid": "beb3b056-7365-4e2e-b3ae-7e7621da1c1b",
+                "control-id": "ir-6",
+                "description": "Once a data breach is assessed as notifiable, affected individuals and the applicable privacy regulator are notified within the required timeframe, and the notification's content (what happened, what data, what the organisation is doing) is documented."
+              },
+              {
+                "uuid": "4d7654f9-d589-45f8-9813-f936e2381aa8",
+                "control-id": "ir-8",
+                "description": "This procedure is a named, referenced sub-process of the organisation's overall incident response plan, invoked specifically when an incident under investigation involves personal information."
+              },
+              {
+                "uuid": "f4aeaf84-7a0d-4215-a598-c13d571139bf",
+                "control-id": "pt-6",
+                "description": "The organisation's system of records inventory is used to determine which individuals' personal information was actually held in the affected system, scoping who must be notified."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
