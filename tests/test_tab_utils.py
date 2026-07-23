@@ -25,9 +25,28 @@ from oscal_user_toolkit import tab_utils
 
 @pytest.fixture
 def root():
+    """
+    A fresh Tk() interpreter per test, with tab_utils' module-level
+    dispatcher state reset around it.
+
+    bind_mousewheel() deliberately keeps process-global state (see its
+    own docstring — that's the whole point of the fix: bind_all() is
+    only ever called once, ever). But each test here creates its own
+    separate tk.Tk() interpreter, and that global state doesn't know
+    about that — without resetting it, a test running after the first
+    would see _mousewheel_dispatcher_bound already True and skip calling
+    bind_all() on ITS OWN (different) interpreter entirely, since the
+    dispatcher was only ever actually registered against the FIRST
+    test's (by-then-destroyed) interpreter. Passed locally by luck of
+    test order/platform; reset here so each test is genuinely isolated.
+    """
     r = tk.Tk()
     r.withdraw()
+    tab_utils._active_mousewheel_handler = None
+    tab_utils._mousewheel_dispatcher_bound = False
     yield r
+    tab_utils._active_mousewheel_handler = None
+    tab_utils._mousewheel_dispatcher_bound = False
     r.destroy()
 
 
@@ -109,7 +128,7 @@ def test_bind_mousewheel_only_calls_bind_all_once(root, monkeypatch):
     for _ in range(5):
         tab_utils.bind_mousewheel(canvas, lambda event: None)
 
-    # 0 or 1: 0 if an earlier test in this module already bound the
-    # module-level dispatcher (it's process-global by design — see the
-    # function's own docstring), 1 if this is the first bind in the process.
-    assert calls["count"] <= 1
+    # Exactly 1: the root fixture resets tab_utils' dispatcher-bound state
+    # before every test, so this is always the first bind against a fresh
+    # interpreter, regardless of what other tests already ran.
+    assert calls["count"] == 1

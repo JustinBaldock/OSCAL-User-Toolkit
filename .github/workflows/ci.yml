@@ -42,4 +42,9 @@ jobs:
       # them here means the tests actually exercise those code paths instead
       # of always hitting the "not installed" branch.
       - run: pip install jsonschema python-docx
-      - run: pytest
+      # test_tab_utils.py creates real tk.Tk() windows; ubuntu-latest runners
+      # have no X display, so xvfb-run provides a virtual one for pytest to
+      # use (see tests/test_tab_utils.py's ERROR: "no display name and no
+      # $DISPLAY environment variable" without this).
+      - run: sudo apt-get update && sudo apt-get install -y xvfb
+      - run: xvfb-run --auto-servernum pytest
