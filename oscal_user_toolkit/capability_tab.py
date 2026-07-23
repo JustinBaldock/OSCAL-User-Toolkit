@@ -64,7 +64,7 @@ from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, validate_oscal_file,
                      get_source_href, get_profile_controls,
                      safe_filename_component)
-from .tab_utils import is_tab_active, attach_tooltip, make_collapsible
+from .tab_utils import is_tab_active, attach_tooltip, make_collapsible, bind_mousewheel
 
 # ── Dot indicators for the control implementation list ────────────────────────
 DOT_DONE  = "●"   # Filled circle  (green) — response has been written
@@ -716,7 +716,7 @@ class CapabilityTab(tk.Frame):
             lambda e: canvas.itemconfig(self._form_win, width=e.width)
         )
         self._canvas = canvas
-        canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        bind_mousewheel(canvas, self._on_mousewheel)
 
         self._build_form_widgets(self._form_frame)
         self._show_placeholder()

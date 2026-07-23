@@ -31,7 +31,7 @@ from .models import (
     # assessment actually is without opening a second tab/file.
     parse_ssp_file,
 )
-from .tab_utils import is_tab_active
+from .tab_utils import is_tab_active, bind_mousewheel
 
 TASK_TYPES    = ["milestone", "action"]
 TIMING_TYPES  = ["none", "on-date", "within-date-range", "at-frequency"]
@@ -145,7 +145,7 @@ class APTab(tk.Frame):
         canvas.bind("<Configure>",
                     lambda e: canvas.itemconfig(win, width=e.width))
         self._canvas = canvas
-        canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        bind_mousewheel(canvas, self._on_mousewheel)
         self._build_form(form)
 
     def _on_mousewheel(self, event):

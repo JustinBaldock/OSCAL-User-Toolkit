@@ -12,6 +12,8 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import date, datetime
 
+from .tab_utils import is_tab_active, bind_mousewheel
+
 
 class DashboardTab(tk.Frame):
     """Read-only authorization dashboard that aggregates all open documents."""
@@ -104,10 +106,16 @@ class DashboardTab(tk.Frame):
         self._inner.bind("<Configure>", lambda e: canvas.configure(
             scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", _on_configure)
-        canvas.bind_all("<MouseWheel>",
-                        lambda e: canvas.yview_scroll(-1 * (e.delta // 120), "units"))
+        bind_mousewheel(canvas, self._on_mousewheel)
 
         self._canvas = canvas
+
+    def _on_mousewheel(self, event):
+        try:
+            if is_tab_active(self):
+                self._canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        except tk.TclError:
+            pass   # Canvas destroyed/not ready — see SECURE_CODING.md #2
 
     def _build_cards(self):
         """Create all card frames (empty on first load, populated by refresh)."""
@@ -260,10 +268,7 @@ class DashboardTab(tk.Frame):
         version   = ssp.get("version", "")
         system_id = ssp.get("system_id", "") or ssp.get("system_id_value", "")
 
-        profile_title = ""
-        profile_info  = ssp.get("import_href", "") or ssp.get("profile_title", "")
-        if not profile_title and ssp.get("profile_resource_title"):
-            profile_title = ssp["profile_resource_title"]
+        profile_info = ssp.get("import_href", "") or ssp.get("profile_title", "")
 
         self._row(self._sys_card, "System Name",     title or "No SSP loaded")
         self._row(self._sys_card, "System ID",        system_id)

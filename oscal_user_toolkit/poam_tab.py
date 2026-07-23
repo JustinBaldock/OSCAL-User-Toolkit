@@ -31,7 +31,7 @@ from .models import (
     RISK_STATUSES, REMEDIATION_LIFECYCLES,
     FINDING_STATUS_STATES, FINDING_STATUS_REASONS,
 )
-from .tab_utils import is_tab_active
+from .tab_utils import is_tab_active, bind_mousewheel
 
 # FINDING_TARGET_TYPES is specific to POA&M (not shared with AR) so it stays here.
 FINDING_TARGET_TYPES = ["statement-id", "objective-id"]
@@ -184,7 +184,7 @@ class POAMTab(tk.Frame):
         canvas.bind("<Configure>",
                     lambda e: canvas.itemconfig(win, width=e.width))
         self._canvas = canvas
-        canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        bind_mousewheel(canvas, self._on_mousewheel)
         self._build_form(form)
 
     def _on_mousewheel(self, event):

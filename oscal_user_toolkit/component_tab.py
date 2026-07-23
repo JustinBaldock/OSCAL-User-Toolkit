@@ -46,7 +46,7 @@ from pathlib import Path
 from .models import (new_uuid, now_iso, build_component_oscal_entry,
                      refresh_ctrl_list, get_source_href, get_profile_controls,
                      safe_filename_component, validate_oscal_file)
-from .tab_utils import is_tab_active, attach_tooltip, make_collapsible
+from .tab_utils import is_tab_active, attach_tooltip, make_collapsible, bind_mousewheel
 
 # =============================================================================
 # CONSTANTS — Allowed values from the OSCAL Component schema
@@ -820,7 +820,7 @@ class ComponentTab(tk.Frame):
             lambda e: canvas.itemconfig(self._form_win, width=e.width)
         )
         self._detail_canvas = canvas
-        canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        bind_mousewheel(canvas, self._on_mousewheel)
 
         self._build_form_widgets(self._form_frame)
         self._show_form_placeholder()

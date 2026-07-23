@@ -232,3 +232,62 @@ def style_ttk(root, colors):
     s.map("TNotebook.Tab",
           background=[("selected", C["CARD_BG"])],
           foreground=[("selected", C["ACCENT"])])
+
+
+# Tracks the Tcl command name behind whichever tab most recently bound the
+# The handler bind_mousewheel()'s single, permanent Tcl-level dispatcher
+# currently forwards <MouseWheel> events to — see bind_mousewheel() for why
+# this indirection exists rather than each tab calling bind_all() directly.
+_active_mousewheel_handler = None
+_mousewheel_dispatcher_bound = False
+
+
+def bind_mousewheel(widget, handler):
+    """
+    Make `handler` the function that responds to the global <MouseWheel>
+    sequence, without leaking a new Tcl command every time this is called.
+
+    Every scrollable tab calls this once per _build_canvas(), and
+    theme_refresh() (the dark/light toggle) destroys and rebuilds every
+    tab's widgets — including re-calling this — each time the theme
+    changes. Calling widget.bind_all() directly on every rebuild leaks:
+    tkinter's bind_all() never releases the Tcl command behind a previous
+    binding when called again, so each theme toggle would leak one
+    Tcl-level command holding a live reference to the OLD tab instance's
+    bound method — keeping that entire old tab (and everything it
+    references: loaded SSPs, components, capabilities, all of it)
+    permanently unreachable to Python's garbage collector, for the life
+    of the process. (An earlier version of this function tried tracking
+    bind_all()'s returned funcid and calling deletecommand() on the
+    previous one before creating a new one — that also fixed the leak,
+    but raises a TclError later whenever the ORIGINAL widget that
+    registered the now-manually-deleted command is itself destroyed,
+    since tkinter's own per-widget cleanup tries to delete the same
+    command a second time. Confirmed by exercising both approaches with a
+    weakref test before settling on this one.)
+
+    Instead, bind_all() is called exactly ONCE for the lifetime of the
+    process, wiring a single, permanent dispatcher function to the Tcl
+    <MouseWheel> event. Every call to this function after the first just
+    reassigns which Python handler that dispatcher forwards to — a plain
+    module-level variable reassignment, not a new Tcl command — so the
+    previous handler (and whatever tab instance it was bound to) has no
+    remaining reference from the Tcl layer and is free to be garbage
+    collected normally, and no widget's own command bookkeeping is ever
+    touched by code outside itself.
+
+    Parameters:
+        widget  - Any live widget to bind against on the very first call
+                  (bind_all() is global, so which widget doesn't matter).
+                  Ignored on every call after the first.
+        handler - The mousewheel event handler that should now receive
+                  <MouseWheel> events.
+    """
+    global _active_mousewheel_handler, _mousewheel_dispatcher_bound
+    _active_mousewheel_handler = handler
+    if not _mousewheel_dispatcher_bound:
+        def _dispatch_mousewheel(event):
+            if _active_mousewheel_handler is not None:
+                _active_mousewheel_handler(event)
+        widget.bind_all("<MouseWheel>", _dispatch_mousewheel)
+        _mousewheel_dispatcher_bound = True

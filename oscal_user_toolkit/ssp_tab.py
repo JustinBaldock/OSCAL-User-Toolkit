@@ -42,7 +42,7 @@ from .models import (
     DEFAULT_OSCAL_VERSION,
 )
 from .component_tab import COMMON_PROTOCOLS  # Shared protocol name list (Section 4 data flow links)
-from .tab_utils import is_tab_active
+from .tab_utils import is_tab_active, bind_mousewheel
 
 
 # =============================================================================
@@ -366,7 +366,7 @@ class SSPTab(tk.Frame):
         self._canvas = canvas
 
         # Mouse wheel scrolling — only scroll when this tab is active
-        canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        bind_mousewheel(canvas, self._on_mousewheel)
 
         # Now build all the form sections inside the inner frame
         self._build_form(form)

@@ -27,6 +27,8 @@ The main app communicates with CatalogTab only through:
 import tkinter as tk
 from tkinter import ttk
 
+from .tab_utils import bind_mousewheel
+
 
 class CatalogTab(tk.Frame):
     """
@@ -325,7 +327,7 @@ class CatalogTab(tk.Frame):
         # Resize events keep the scroll region and frame width in sync
         self._detail.bind("<Configure>", self._on_detail_configure)
         self._canvas.bind("<Configure>", self._on_canvas_configure)
-        self._canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        bind_mousewheel(self._canvas, self._on_mousewheel)
 
         self._show_placeholder()
 

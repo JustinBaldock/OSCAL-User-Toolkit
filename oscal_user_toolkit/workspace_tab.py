@@ -25,7 +25,7 @@ and the manifest-relative-path resolution helper used by both callbacks.
 import tkinter as tk
 from tkinter import ttk
 
-from .tab_utils import attach_tooltip
+from .tab_utils import attach_tooltip, is_tab_active, bind_mousewheel
 
 
 # Each entry describes one tab, grouped the same way the Notebook groups
@@ -303,9 +303,13 @@ class WorkspaceTab(tk.Frame):
 
         # Mouse wheel scrolling while hovering over the tab
         def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            try:
+                if is_tab_active(self):
+                    canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            except tk.TclError:
+                pass   # Canvas destroyed/not ready — see SECURE_CODING.md #2
 
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        bind_mousewheel(canvas, _on_mousewheel)
 
         # ── "Getting started" hint card ─────────────────────────────────────
         hint_card = tk.Frame(
