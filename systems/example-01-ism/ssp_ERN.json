@@ -3,7 +3,7 @@
     "uuid": "11aa7bad-e8d5-4e1b-a8f2-b1696b0136ee",
     "metadata": {
       "title": "Example Research Network SSP",
-      "last-modified": "2026-07-03T12:20:25Z",
+      "last-modified": "2026-07-27T07:26:52Z",
       "version": "0.1",
       "oscal-version": "1.2.2",
       "roles": [
@@ -125,11 +125,11 @@
       "system-name-short": "ERN",
       "description": "The Example Research Network (ERN) is the corporate and research computing environment operated by a small applied-research organisation of approximately 45 staff. The system is headquartered in Canberra, ACT, with three staffed remote research offices in Sydney, Melbourne, and Brisbane, each connected back to the head office over a dedicated site-to-site VPN rather than operating as an independent network.\n\nERN provides general office computing (email, file sharing, and document collaboration), identity and access management, endpoint security, and centralised logging and backup services to all four sites. Approximately 30 Windows 11 workstations and laptops are used by research and administrative staff, supported by a small on-premises server estate at the head office: two Active Directory domain controllers, a Windows file and print server, a Linux application server hosting an internal research data-collection application, a two-node VMware ESXi cluster, and a NAS providing virtual machine datastores and departmental file shares.\n\nThe system processes and stores research data and corporate administrative information up to OFFICIAL: Sensitive, including personnel records, project data, and internal research findings. It does not host any public-facing services and provides no general, unrestricted internet access to end users — outbound connectivity from workstations is limited to a defined set of approved cloud services (Microsoft 365 and Entra ID, Microsoft Sentinel, Tenable Nessus, and Amazon Web Services S3) via the head office perimeter firewall.\n\nEach remote office is lightly provisioned: a small number of workstations, a managed switch, and a SonicWall TZ270 VPN Client (Remote Office) device that establishes a single IPsec tunnel back to the SonicWall TZ670 VPN Hub (Main Office) at the head office. No servers or independent internet breakout exist at any remote office — all remote office traffic, including internet-bound traffic, is backhauled through the head office.",
       "date-authorized": "2026-06-24",
-      "security-sensitivity-level": "fips-199-moderate",
+      "security-sensitivity-level": "ism-nc (Non-classified)",
       "security-impact-level": {
-        "security-objective-confidentiality": "fips-199-moderate",
-        "security-objective-integrity": "fips-199-moderate",
-        "security-objective-availability": "fips-199-moderate"
+        "security-objective-confidentiality": "AusGov-BIL-Insignificant",
+        "security-objective-integrity": "AusGov-BIL-Low",
+        "security-objective-availability": "AusGov-BIL-Low"
       },
       "system-information": {
         "information-types": [
@@ -138,13 +138,13 @@
             "title": "Unofficial",
             "description": "Information that is not part of official government duties or operations",
             "confidentiality-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Insignificant"
             },
             "integrity-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Insignificant"
             },
             "availability-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Insignificant"
             }
           },
           {
@@ -152,13 +152,13 @@
             "title": "Official",
             "description": "Routine government business, operations, and services. This represents the vast majority of government data by volume.",
             "confidentiality-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Insignificant"
             },
             "integrity-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Insignificant"
             },
             "availability-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Insignificant"
             }
           },
           {
@@ -166,13 +166,13 @@
             "title": "Official: Sensitive",
             "description": "Official information that requires protective measures. This applies to data like",
             "confidentiality-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Low"
             },
             "integrity-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Low"
             },
             "availability-impact": {
-              "base": "fips-199-moderate"
+              "base": "AusGov-BIL-Low"
             }
           }
         ]
@@ -455,7 +455,7 @@
           },
           "protocols": [
             {
-              "uuid": "2093cc36-4b3c-43f2-87b8-f51433a9748c",
+              "uuid": "b535c2cf-658f-41d7-9544-cdbd0d77ea00",
               "name": "dns",
               "title": "DNS — Active Directory integrated DNS (authoritative for the AD domain)",
               "port-ranges": [
@@ -472,7 +472,7 @@
               ]
             },
             {
-              "uuid": "b184c93e-f5f8-44b5-b4a5-19d3eb0a04f5",
+              "uuid": "7ccbe24a-0bde-4c8b-ac5b-e9b75e904dbb",
               "name": "kerberos",
               "title": "Kerberos — Primary authentication protocol for the AD domain",
               "port-ranges": [
@@ -489,7 +489,7 @@
               ]
             },
             {
-              "uuid": "cf1cc8af-f6b1-48df-947f-e0244895d975",
+              "uuid": "300bcb3c-163d-4c4f-ba98-842455ee88dc",
               "name": "rpc-epmap",
               "title": "RPC Endpoint Mapper — Required for AD replication and RPC-based AD operations",
               "port-ranges": [
@@ -501,7 +501,7 @@
               ]
             },
             {
-              "uuid": "dd91ad82-4ac0-40d2-bb9f-a0e16f00515f",
+              "uuid": "d27021e3-07bd-44c9-b065-9909eebc04b5",
               "name": "ldap",
               "title": "LDAP — Active Directory directory queries, user and computer object lookups",
               "port-ranges": [
@@ -518,7 +518,7 @@
               ]
             },
             {
-              "uuid": "1474b158-143e-4d42-b7ad-b1caf6843760",
+              "uuid": "d0bcb5bc-e5e3-465f-ac40-c3142134a05a",
               "name": "ldaps",
               "title": "LDAPS — LDAP over TLS (required for secure bind and credential operations)",
               "port-ranges": [
@@ -530,7 +530,7 @@
               ]
             },
             {
-              "uuid": "0597ec58-28fb-40bf-b8cf-170de2bc3f3e",
+              "uuid": "19490d05-7c27-40df-85fe-afc939e3b580",
               "name": "smb",
               "title": "SMB — SYSVOL and NETLOGON share access for Group Policy delivery",
               "port-ranges": [
@@ -542,7 +542,7 @@
               ]
             },
             {
-              "uuid": "528413c9-2748-4e18-94d7-efa6c5e3f7e6",
+              "uuid": "8e2c67f1-771a-4198-a335-f4cc22fa7d17",
               "name": "ntp",
               "title": "NTP — Domain controller as Windows Time authoritative source (W32tm)",
               "port-ranges": [
@@ -554,7 +554,7 @@
               ]
             },
             {
-              "uuid": "b1a18ec0-05d0-4539-9c5e-9c5638967efb",
+              "uuid": "ffdda6cb-63ee-43d2-b5c7-cfdebf2ae346",
               "name": "ad-gc",
               "title": "Active Directory Global Catalog — Forest-wide directory lookups",
               "port-ranges": [
@@ -572,7 +572,7 @@
               ]
             },
             {
-              "uuid": "d8d5af66-681e-4c6a-84a2-9030db053052",
+              "uuid": "dec0bb5f-ac3c-45b4-bf35-5b7b1d43a948",
               "name": "ad-replication",
               "title": "AD Replication — RPC-based DC-to-DC replication traffic (dynamic high ports via RPC)",
               "port-ranges": [
@@ -585,7 +585,7 @@
               ]
             },
             {
-              "uuid": "c98c68dc-8026-421a-9f9c-89732acbb932",
+              "uuid": "6c3cf419-f411-4b02-ae77-872ecd43b7a2",
               "name": "netbios-ns",
               "title": "NetBIOS Name Service — Legacy NetBIOS name resolution (disable where possible)",
               "port-ranges": [
@@ -598,7 +598,7 @@
               ]
             },
             {
-              "uuid": "7918a9c6-80da-4341-bdb1-cbfdf045cca4",
+              "uuid": "c4f00df5-5294-4df3-9d8b-f8d9dffd8f2c",
               "name": "netbios-dgm",
               "title": "NetBIOS Datagram — Legacy NetBIOS datagram service",
               "port-ranges": [
@@ -611,7 +611,7 @@
               ]
             },
             {
-              "uuid": "cb9b93ff-91d3-4961-bec3-cc8b0e60acfc",
+              "uuid": "a555718e-32ac-4489-b8ff-fe1ea454202f",
               "name": "netbios-ssn",
               "title": "NetBIOS Session — Legacy NetBIOS session service",
               "port-ranges": [
@@ -664,7 +664,7 @@
           },
           "protocols": [
             {
-              "uuid": "1380ff73-7b2e-4fa8-9459-8926c8ce4cf7",
+              "uuid": "1c13bc22-6a96-4de2-bd4b-cc35f66c59b7",
               "name": "https",
               "title": "HTTPS — Web-based management console",
               "port-ranges": [
@@ -676,7 +676,7 @@
               ]
             },
             {
-              "uuid": "adb38cab-dc1a-478f-b3de-0a5a433dbc04",
+              "uuid": "9d4515a2-7f15-4ab4-9674-6933a59719aa",
               "name": "ssh",
               "title": "SSH — Secure CLI management",
               "port-ranges": [
@@ -688,7 +688,7 @@
               ]
             },
             {
-              "uuid": "0b7a7dcc-d143-4006-9610-9d8589dfc101",
+              "uuid": "847b1bbd-fdcb-4fd6-bb18-ac5f98593694",
               "name": "snmp",
               "title": "SNMP — Network monitoring (inbound queries / traps outbound)",
               "port-ranges": [
@@ -706,7 +706,7 @@
               ]
             },
             {
-              "uuid": "8c9ab688-9df4-4e82-bbeb-2e5bfd008f0d",
+              "uuid": "d77b5dce-656d-4622-8025-dcc34a862f94",
               "name": "syslog",
               "title": "Syslog — Security event forwarding to SIEM",
               "port-ranges": [
@@ -718,7 +718,7 @@
               ]
             },
             {
-              "uuid": "7334dc27-bbe0-4ab3-8e6e-cb443f03ba37",
+              "uuid": "756f6322-bef0-4d14-a5b4-a2a60ba6ae29",
               "name": "ntp",
               "title": "NTP — Time synchronisation",
               "port-ranges": [
@@ -742,7 +742,7 @@
           },
           "protocols": [
             {
-              "uuid": "0c6ce639-0049-46b1-9ef7-b08e4cbf456c",
+              "uuid": "b07d9f7d-1d71-496c-8857-b5d61df7a5c2",
               "name": "https",
               "title": "Secure local management",
               "port-ranges": [
@@ -754,7 +754,7 @@
               ]
             },
             {
-              "uuid": "266dc127-d0c5-47df-b862-101913310eec",
+              "uuid": "81c25294-5fca-46b6-bdb4-00a966748d4b",
               "name": "IKE",
               "title": "Encrypted data transport",
               "port-ranges": [
@@ -766,7 +766,7 @@
               ]
             },
             {
-              "uuid": "742e0b14-bfc7-4507-9bb5-50eac40cd531",
+              "uuid": "4b4c6ffa-d319-40ab-b164-725d360c57f8",
               "name": "NAT-T",
               "title": "NAT Traversal",
               "port-ranges": [
@@ -790,7 +790,7 @@
           },
           "protocols": [
             {
-              "uuid": "28cb21b5-b576-49ae-911e-a95e5f7f3bfa",
+              "uuid": "e5d8edff-5442-486d-a23d-14eee5eb5d20",
               "name": "https",
               "title": "HTTPS — Airlock Digital management console and agent-to-server communication",
               "port-ranges": [
@@ -802,7 +802,7 @@
               ]
             },
             {
-              "uuid": "c4d39738-90d2-49ea-be85-0ef16ba5c79f",
+              "uuid": "150e1168-dd99-4100-9e27-661e5f6655d0",
               "name": "airlock-agent",
               "title": "Airlock Digital agent communication — Agent check-in and policy download",
               "port-ranges": [
@@ -815,7 +815,7 @@
               ]
             },
             {
-              "uuid": "f138e484-30b7-4b61-a830-666bdc4a6987",
+              "uuid": "7e57b6c8-e6e2-46a0-a4a1-60ae1110d5d3",
               "name": "syslog",
               "title": "Syslog — Airlock Digital event forwarding to SIEM (allowed/blocked execution events)",
               "port-ranges": [
@@ -827,7 +827,7 @@
               ]
             },
             {
-              "uuid": "76082bf8-1937-4ade-aace-0c8af768f0cd",
+              "uuid": "8963ac23-1fc9-4fbe-a6ad-81d8da84c43d",
               "name": "ldaps",
               "title": "LDAPS — Active Directory integration for Airlock Digital management console authentication",
               "port-ranges": [
@@ -839,7 +839,7 @@
               ]
             },
             {
-              "uuid": "264bf3a5-c605-4e59-8c5c-7dc9a52ebdde",
+              "uuid": "1c61050b-4fda-4443-b50d-276e747daaca",
               "name": "ntp",
               "title": "NTP — Time synchronisation for audit log timestamps",
               "port-ranges": [
@@ -877,7 +877,7 @@
           },
           "protocols": [
             {
-              "uuid": "b71e4408-e146-45c6-9de8-a0d6d314efe5",
+              "uuid": "b69ff596-e79e-4471-b9de-18a6ce9f748f",
               "name": "smb",
               "title": "Server Message Block",
               "port-ranges": [
@@ -1891,7 +1891,7 @@
       "description": "Control implementation statements for this system.",
       "implemented-requirements": [
         {
-          "uuid": "ebd0abba-d64a-4a18-ae30-a1a67967500c",
+          "uuid": "89bc856c-3b02-4bfe-9def-181e077db02d",
           "control-id": "ism-1055",
           "by-components": [
             {
@@ -1905,7 +1905,7 @@
           ]
         },
         {
-          "uuid": "8c8355fe-cfca-4403-b442-e2e6b5eb2924",
+          "uuid": "e029a39e-819a-4169-accd-22344db5b63d",
           "control-id": "ism-1546",
           "by-components": [
             {
@@ -1919,7 +1919,7 @@
           ]
         },
         {
-          "uuid": "fc7b099f-6a22-4c78-8eb0-a2a768792a87",
+          "uuid": "5b436fbc-1e7c-419b-96dd-6a3f105c40aa",
           "control-id": "ism-0417",
           "by-components": [
             {
@@ -1933,7 +1933,7 @@
           ]
         },
         {
-          "uuid": "4870e435-9027-4497-a5cc-9a3edbb9ba7e",
+          "uuid": "25fad111-5c79-45b3-8f0e-09efcc428fda",
           "control-id": "ism-1864",
           "by-components": [
             {
@@ -1947,7 +1947,7 @@
           ]
         },
         {
-          "uuid": "29ec3631-8e24-4d08-84aa-c18a22c6c3ba",
+          "uuid": "ff2c9292-bcaa-4637-863e-af46f78a2e4f",
           "control-id": "ism-0181",
           "by-components": [
             {
@@ -1961,7 +1961,7 @@
           ]
         },
         {
-          "uuid": "9458e216-21dd-4b9e-ae6e-e831894a93b6",
+          "uuid": "6bb1893a-197e-4011-a19e-901e9ee065aa",
           "control-id": "ism-1111",
           "by-components": [
             {
@@ -1999,7 +1999,7 @@
           ]
         },
         {
-          "uuid": "617f5647-6259-4a0b-9095-63e7d05df65f",
+          "uuid": "e4a19beb-98c0-4388-9526-158116606949",
           "control-id": "ism-1820",
           "by-components": [
             {
@@ -2013,7 +2013,7 @@
           ]
         },
         {
-          "uuid": "4078014e-92a6-48f1-bec1-7cd42da7f066",
+          "uuid": "c7e1ef6e-ae33-426a-82b7-c1ffcc3f2c96",
           "control-id": "ism-0639",
           "by-components": [
             {
@@ -2027,7 +2027,7 @@
           ]
         },
         {
-          "uuid": "7c9006be-f075-4a8b-8437-2eeecdd289dc",
+          "uuid": "3840a283-5cf8-48bc-b1f4-38642384447d",
           "control-id": "ism-0457",
           "by-components": [
             {
@@ -2041,7 +2041,7 @@
           ]
         },
         {
-          "uuid": "d788c431-3e38-4a44-9b3a-c3390d52b724",
+          "uuid": "9fc081ff-7d26-4170-8eac-2735249d1ed8",
           "control-id": "ism-0465",
           "by-components": [
             {
@@ -2055,7 +2055,7 @@
           ]
         },
         {
-          "uuid": "40959bd0-f8fa-4709-b994-3bfbf8152998",
+          "uuid": "e77c453d-6785-4e44-a97a-e8f6f24c6be5",
           "control-id": "ism-0843",
           "by-components": [
             {
@@ -2085,7 +2085,7 @@
           ]
         },
         {
-          "uuid": "d555e68c-d591-4ca4-9883-62ae3fb46e48",
+          "uuid": "362c28c4-4db9-4098-aa32-f982a105d260",
           "control-id": "ism-1656",
           "by-components": [
             {
@@ -2099,7 +2099,7 @@
           ]
         },
         {
-          "uuid": "3534332a-a76c-40ba-b8e1-86b0733837af",
+          "uuid": "1fc85306-eb86-4040-a033-90d60bd68580",
           "control-id": "ism-0955",
           "by-components": [
             {
@@ -2113,7 +2113,7 @@
           ]
         },
         {
-          "uuid": "e6ba0da8-39ab-45da-9e25-31433f647a79",
+          "uuid": "6d8e482a-c747-466b-aa5f-b15344bdb253",
           "control-id": "ism-1471",
           "by-components": [
             {
@@ -2127,7 +2127,7 @@
           ]
         },
         {
-          "uuid": "fe2bb503-32fd-4ff3-b5b6-11b5fe03b952",
+          "uuid": "2c389eb3-99dc-45b0-9877-9d4b07aa51b9",
           "control-id": "ism-0428",
           "by-components": [
             {
@@ -2141,7 +2141,7 @@
           ]
         },
         {
-          "uuid": "e05be130-3795-4e32-b6dc-519aab26e2b3",
+          "uuid": "330c4940-948a-4820-a420-4978a762de95",
           "control-id": "ism-2012",
           "by-components": [
             {
@@ -2163,7 +2163,7 @@
           ]
         },
         {
-          "uuid": "bbe35f76-896a-46bf-a1cf-cc5853e667d1",
+          "uuid": "3f96ee9b-8f52-4765-9586-a669bd6899e4",
           "control-id": "ism-1175",
           "by-components": [
             {
@@ -2193,7 +2193,7 @@
           ]
         },
         {
-          "uuid": "781d9fe4-6883-4b30-a429-f947e4921f5e",
+          "uuid": "954107d6-c1ef-4f79-864c-2737c647034d",
           "control-id": "ism-0874",
           "by-components": [
             {
@@ -2207,7 +2207,7 @@
           ]
         },
         {
-          "uuid": "7bef1984-0d23-43fb-b0b8-41136c628684",
+          "uuid": "3c22aa20-3efe-467d-aa6f-631926f243aa",
           "control-id": "ism-1490",
           "by-components": [
             {
@@ -2221,7 +2221,7 @@
           ]
         },
         {
-          "uuid": "0d5824e9-ce7e-4e8a-bc33-2cf6d38b6fba",
+          "uuid": "23f9cf2d-30e6-4a0c-b966-e30b6e6efa99",
           "control-id": "ism-1486",
           "by-components": [
             {
@@ -2235,7 +2235,7 @@
           ]
         },
         {
-          "uuid": "f2bc21e6-e2d6-4e2d-bda8-55577068481c",
+          "uuid": "a54f74b7-c628-476f-ab5d-c862a2fa2129",
           "control-id": "ism-1485",
           "by-components": [
             {
@@ -2249,7 +2249,7 @@
           ]
         },
         {
-          "uuid": "1496ed63-591c-45fd-ac65-b27d50e1ee71",
+          "uuid": "774b1f60-0e7a-4a4a-ae81-d7a76fc19416",
           "control-id": "ism-1483",
           "by-components": [
             {
@@ -2263,7 +2263,7 @@
           ]
         },
         {
-          "uuid": "ec032c41-97ab-4d6f-ab26-6b86a3f5ce38",
+          "uuid": "b9ba1af0-96b8-484d-9eb0-c38b9e99057e",
           "control-id": "ism-1978",
           "by-components": [
             {
@@ -2277,7 +2277,7 @@
           ]
         },
         {
-          "uuid": "380ff2ec-465c-44d0-9653-7421c73b1bea",
+          "uuid": "08bb73fb-3773-48ca-9967-fd69a5d12e6e",
           "control-id": "ism-1877",
           "by-components": [
             {
@@ -2291,7 +2291,7 @@
           ]
         },
         {
-          "uuid": "f8d85613-f394-410c-bc79-bb8c6730dbfb",
+          "uuid": "554645d5-c860-40c4-a7a7-aedd1046d615",
           "control-id": "ism-1753",
           "by-components": [
             {
@@ -2305,7 +2305,7 @@
           ]
         },
         {
-          "uuid": "0b542e61-df35-4784-ac1e-50b7b03eed19",
+          "uuid": "4c2bde7e-be51-4c6b-9de7-34dcde03e45e",
           "control-id": "ism-1906",
           "by-components": [
             {
@@ -2319,7 +2319,7 @@
           ]
         },
         {
-          "uuid": "7f9c3e20-473f-4d80-bd36-82e5ebafc61c",
+          "uuid": "fe83fb16-3009-4e45-94e1-47a3c04a8a0b",
           "control-id": "ism-1960",
           "by-components": [
             {
@@ -2357,7 +2357,7 @@
           ]
         },
         {
-          "uuid": "40ae8fef-30e3-45c7-ab41-3122661791d7",
+          "uuid": "c3f31a00-d664-4fb2-ae9d-cde5ee97a221",
           "control-id": "ism-1701",
           "by-components": [
             {
@@ -2371,7 +2371,7 @@
           ]
         },
         {
-          "uuid": "62620069-99e7-4682-a712-fd0bff9aeb31",
+          "uuid": "81fc1b99-f255-461c-96e9-64d32bc4cc4f",
           "control-id": "ism-1818",
           "by-components": [
             {
@@ -2385,7 +2385,7 @@
           ]
         },
         {
-          "uuid": "ddaf68cf-e633-4e85-85be-786714e80806",
+          "uuid": "e113f6c3-abd4-4587-8fa3-b701a99e2fbe",
           "control-id": "ism-0628",
           "by-components": [
             {
@@ -2399,7 +2399,7 @@
           ]
         },
         {
-          "uuid": "0261a066-519d-410f-9bca-c8e66e9d3ad6",
+          "uuid": "b85ebb27-df9e-4b8e-af39-65459814b7bb",
           "control-id": "ism-0631",
           "by-components": [
             {
@@ -2413,7 +2413,7 @@
           ]
         },
         {
-          "uuid": "f6899e43-512e-424d-8b79-7f95d1e24816",
+          "uuid": "4a49902c-0c8c-41fc-8068-962ce5486055",
           "control-id": "ism-1192",
           "by-components": [
             {
@@ -2427,7 +2427,7 @@
           ]
         },
         {
-          "uuid": "9f19800f-71e5-45ac-8498-7716453b12a9",
+          "uuid": "12faebdd-9e87-4d26-9959-cb2953201122",
           "control-id": "ism-0494",
           "by-components": [
             {
@@ -2449,7 +2449,7 @@
           ]
         },
         {
-          "uuid": "f021dba4-b36d-4d13-9795-10b867d976c9",
+          "uuid": "eba52591-4c96-4152-8bee-529a31c444bb",
           "control-id": "ism-0496",
           "by-components": [
             {
@@ -2471,7 +2471,7 @@
           ]
         },
         {
-          "uuid": "9dfd0f7b-98ec-487b-8738-5ae7ad28ae04",
+          "uuid": "d7a26651-ad76-4d88-9649-1c6e1e1e9e0c",
           "control-id": "ism-1233",
           "by-components": [
             {
@@ -2493,7 +2493,7 @@
           ]
         },
         {
-          "uuid": "9db9f7ef-f4de-441b-b40b-34350fbed73a",
+          "uuid": "c766379b-3eae-46be-a67d-e208a1a96905",
           "control-id": "ism-1771",
           "by-components": [
             {
@@ -2515,7 +2515,7 @@
           ]
         },
         {
-          "uuid": "411a52d3-1bf5-485f-a038-0d66603702c8",
+          "uuid": "586734c3-9118-4eaa-b3d5-7e96c2a517da",
           "control-id": "ism-1000",
           "by-components": [
             {
@@ -2537,7 +2537,7 @@
           ]
         },
         {
-          "uuid": "f2f20890-aac0-4b07-93f0-a0b665cd3898",
+          "uuid": "6f9ab77c-110f-4d26-9275-81508f0a9c43",
           "control-id": "ism-0634",
           "by-components": [
             {
@@ -2551,7 +2551,7 @@
           ]
         },
         {
-          "uuid": "684fc99b-1835-4c32-a19b-04f9eb8c7e8b",
+          "uuid": "fc74ef59-3af3-40f1-9495-9b18b56309d4",
           "control-id": "ism-1774",
           "by-components": [
             {
@@ -2565,7 +2565,7 @@
           ]
         },
         {
-          "uuid": "3d054994-ab08-4b0a-9576-fd0ff9cae60f",
+          "uuid": "ced44f17-0bc6-40bf-a17a-02d93d22f5ac",
           "control-id": "ism-0705",
           "by-components": [
             {
@@ -2579,7 +2579,7 @@
           ]
         },
         {
-          "uuid": "3f17eb1f-16b4-4517-918f-1d1b2a75b5ec",
+          "uuid": "91f016e2-b055-415f-be2d-3f9eaa3f53e1",
           "control-id": "ism-0622",
           "by-components": [
             {
@@ -2593,7 +2593,7 @@
           ]
         },
         {
-          "uuid": "8aa90f8f-bc75-4b84-8db0-a6f3c3707b30",
+          "uuid": "53aec4cd-b1d0-4564-971c-4bcf9ee562d5",
           "control-id": "ism-1417",
           "by-components": [
             {
@@ -2623,7 +2623,7 @@
           ]
         },
         {
-          "uuid": "a54e3724-5004-4b3c-bb1c-0303cf23b4a7",
+          "uuid": "9ecfe664-cd07-41f1-8251-f22def97d4c1",
           "control-id": "ism-1416",
           "by-components": [
             {
@@ -2645,7 +2645,7 @@
           ]
         },
         {
-          "uuid": "5d0ee8c0-8033-4c59-8958-e77ccbfaf28c",
+          "uuid": "d8e62809-4ea0-409c-9bc6-a33b2a0aa9be",
           "control-id": "ism-1341",
           "by-components": [
             {
@@ -2659,7 +2659,7 @@
           ]
         },
         {
-          "uuid": "96ec65a7-8874-48c8-82d3-b18b47a489f8",
+          "uuid": "2b70a8ba-c4ad-432d-b332-1d79c492aaac",
           "control-id": "ism-1492",
           "by-components": [
             {
@@ -2673,7 +2673,7 @@
           ]
         },
         {
-          "uuid": "1e3ccfc0-577e-421b-b4a9-9a700fad4128",
+          "uuid": "1108892a-2706-451d-90c5-9d1e36e996ef",
           "control-id": "ism-1696",
           "by-components": [
             {
@@ -2695,7 +2695,7 @@
           ]
         },
         {
-          "uuid": "02d0830b-2247-4c28-909f-6deeb6ad26b2",
+          "uuid": "5c2ddee4-aacc-4184-bbd2-abd5c9b2cb7e",
           "control-id": "ism-1693",
           "by-components": [
             {
@@ -2717,7 +2717,7 @@
           ]
         },
         {
-          "uuid": "04a9cfe8-d5af-430d-93fc-4f2ba7e9b75e",
+          "uuid": "86e9d645-2e25-4273-8bfb-27d524063553",
           "control-id": "ism-1702",
           "by-components": [
             {
@@ -2747,7 +2747,7 @@
           ]
         },
         {
-          "uuid": "188bbd78-8e0b-4cd9-beac-a1dab34b61d6",
+          "uuid": "811c8aab-e4c3-47bb-a083-062eae5975c6",
           "control-id": "ism-1699",
           "by-components": [
             {
@@ -2769,7 +2769,7 @@
           ]
         },
         {
-          "uuid": "c50e7a78-3320-4c17-b522-45ac818c9440",
+          "uuid": "d8e29624-50bc-47bd-be89-69ea6990df40",
           "control-id": "ism-1704",
           "by-components": [
             {
@@ -2783,7 +2783,7 @@
           ]
         },
         {
-          "uuid": "5dfd4590-1b8b-411b-8386-d00ce54cc51a",
+          "uuid": "62b00b57-9f5a-4ac2-a60a-026ad9c3dbd8",
           "control-id": "ism-0445",
           "by-components": [
             {
@@ -2805,7 +2805,7 @@
           ]
         },
         {
-          "uuid": "bf096e13-07d7-4e45-b466-c93b52d48efe",
+          "uuid": "be2caf0a-c67f-4ecb-91c6-4cebcaaffece",
           "control-id": "ism-1507",
           "by-components": [
             {
@@ -2819,7 +2819,7 @@
           ]
         },
         {
-          "uuid": "ba2e5490-e8cc-48b8-8e33-62deadf73984",
+          "uuid": "c5528d0d-c0f7-4c2a-aa3a-befcd5bb6734",
           "control-id": "ism-1508",
           "by-components": [
             {
@@ -2841,7 +2841,7 @@
           ]
         },
         {
-          "uuid": "492ccf72-7d99-4fde-b8b1-b2d4a154386a",
+          "uuid": "9671df93-1320-4405-a88b-438bd7df3cd0",
           "control-id": "ism-1173",
           "by-components": [
             {
@@ -2855,7 +2855,7 @@
           ]
         },
         {
-          "uuid": "a9aae8b7-d0c6-458a-a742-0c6b753e86e3",
+          "uuid": "ed9ef245-54c6-447d-beb1-d943d764bb3e",
           "control-id": "ism-0974",
           "by-components": [
             {
@@ -2869,7 +2869,7 @@
           ]
         },
         {
-          "uuid": "4d647ea4-592d-49a1-962f-077667cf8e07",
+          "uuid": "36c5c43e-a1a3-4a66-aedf-9e595d0f288a",
           "control-id": "ism-1405",
           "by-components": [
             {
@@ -2899,7 +2899,7 @@
           ]
         },
         {
-          "uuid": "db825f21-7f24-40d9-abf8-f918eec94250",
+          "uuid": "5ad7c2b3-4235-45a8-805c-dcd7e2b92fbb",
           "control-id": "ism-0585",
           "by-components": [
             {
@@ -2929,7 +2929,7 @@
           ]
         },
         {
-          "uuid": "28573209-79af-474c-a5e9-a826b8b32f0f",
+          "uuid": "44d9b2bf-91ef-4c9d-b4b3-58e17557fb44",
           "control-id": "ism-1509",
           "by-components": [
             {
@@ -2959,7 +2959,7 @@
           ]
         },
         {
-          "uuid": "e39d9008-a841-4550-8b11-57c0f2f50d39",
+          "uuid": "3e480ea1-128e-4cb4-963c-34a8dac07dac",
           "control-id": "ism-1566",
           "by-components": [
             {
@@ -2981,7 +2981,7 @@
           ]
         },
         {
-          "uuid": "e45dc515-5e3e-4349-8b39-0b13d6af30b3",
+          "uuid": "30fa8d6c-9d7a-4774-a063-592adddf93c8",
           "control-id": "ism-1683",
           "by-components": [
             {
@@ -2995,7 +2995,7 @@
           ]
         },
         {
-          "uuid": "cf21dfe8-eab4-45ad-8ef4-8867c03681ca",
+          "uuid": "1414ffb7-be96-422d-a36b-dab6a93c8b25",
           "control-id": "ism-1118",
           "by-components": [
             {
@@ -3017,7 +3017,7 @@
           ]
         },
         {
-          "uuid": "dc367ce7-8a34-4981-8a80-9c1f73bc34b7",
+          "uuid": "aff36d5c-d619-4ef5-87c6-eb724530d209",
           "control-id": "ism-principle-gov-01",
           "by-components": [
             {
@@ -3031,7 +3031,7 @@
           ]
         },
         {
-          "uuid": "bf2ba3b1-9dd7-4218-9bfb-a45f730bf759",
+          "uuid": "07ff3b92-4de8-4d54-bf2f-6638996e25ab",
           "control-id": "ism-principle-ide-01",
           "by-components": [
             {
@@ -3045,7 +3045,7 @@
           ]
         },
         {
-          "uuid": "fa9110ab-80d6-42ec-8e3c-b820583bd904",
+          "uuid": "80477c3d-6c1a-4113-9f27-df71e78d1607",
           "control-id": "ism-principle-ide-02",
           "by-components": [
             {
@@ -3059,7 +3059,7 @@
           ]
         },
         {
-          "uuid": "e279a648-a7fa-453b-b43e-caeb28003fd3",
+          "uuid": "a76b13b1-9b14-46a8-ac12-85e50cf68f25",
           "control-id": "ism-principle-ide-04",
           "by-components": [
             {
@@ -3073,7 +3073,7 @@
           ]
         },
         {
-          "uuid": "803464b9-01ba-4124-8593-a419b34bfc2c",
+          "uuid": "11afab3c-c4cb-4d6e-b172-19572562ea21",
           "control-id": "ism-principle-pro-01",
           "by-components": [
             {
@@ -3087,7 +3087,7 @@
           ]
         },
         {
-          "uuid": "6e515bfe-10a5-43c6-98d4-e2694028aa17",
+          "uuid": "e4db49bd-72c7-43e5-a5fb-d6d27bf172b4",
           "control-id": "ism-principle-det-01",
           "by-components": [
             {
@@ -3101,7 +3101,7 @@
           ]
         },
         {
-          "uuid": "3d939ed3-14c7-41f4-b63a-6b5442f22de9",
+          "uuid": "66cc9923-bdb1-458c-8e6f-85b8a9d07cab",
           "control-id": "ism-principle-res-01",
           "by-components": [
             {
@@ -3115,7 +3115,7 @@
           ]
         },
         {
-          "uuid": "613d3789-bd4c-4cb1-97ae-a8ffb7dacbc7",
+          "uuid": "96b9a797-eccc-428c-95d6-078b47d3ff1d",
           "control-id": "ism-principle-rec-01",
           "by-components": [
             {
