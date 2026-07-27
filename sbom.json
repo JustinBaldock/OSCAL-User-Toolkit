@@ -178,7 +178,7 @@
       "version": "6.1.1"
     },
     {
-      "bom-ref": "pip==24.2",
+      "bom-ref": "pip==26.1.2",
       "description": "The PyPA recommended tool for installing Python packages.",
       "externalReferences": [
         {
@@ -211,9 +211,9 @@
         }
       ],
       "name": "pip",
-      "purl": "pkg:pypi/pip@24.2",
+      "purl": "pkg:pypi/pip@26.1.2",
       "type": "library",
-      "version": "24.2"
+      "version": "26.1.2"
     },
     {
       "bom-ref": "python-docx==1.2.0",
@@ -431,7 +431,7 @@
       "ref": "lxml==6.1.1"
     },
     {
-      "ref": "pip==24.2"
+      "ref": "pip==26.1.2"
     },
     {
       "dependsOn": [

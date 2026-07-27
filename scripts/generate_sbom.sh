@@ -8,12 +8,23 @@
 # itself (and anything else in requirements-dev.txt) must not leak into the
 # SBOM as if it were part of the shipped application.
 #
+# PIP_VERSION is pinned explicitly (rather than using whatever pip a fresh
+# `python3 -m venv` happens to bootstrap) because cyclonedx-py scans the
+# whole venv, so pip itself becomes an SBOM component — an unpinned pip
+# resolves to whatever version is ambient on the machine that runs this
+# script, which drifted the CI check even with requirements.txt otherwise
+# unchanged (24.2 locally vs 25.0.1 on a GitHub Actions runner vs 26.1.2
+# on another machine, all on the same day).
+#
 # Usage: scripts/generate_sbom.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+PIP_VERSION=26.1.2
+
 SBOM_VENV="$(mktemp -d)/venv"
 python3 -m venv "$SBOM_VENV"
+"$SBOM_VENV/bin/pip" install --quiet "pip==$PIP_VERSION"
 "$SBOM_VENV/bin/pip" install --quiet -r requirements.txt
 
 python3 -m pip show cyclonedx-bom >/dev/null 2>&1 || {
