@@ -5,5 +5,15 @@
 # validation and the Export to Word button. Listed here (rather than
 # only in README.md's install instructions) so Dependabot can alert on
 # known CVEs in these specific versions.
-jsonschema
-python-docx
+#
+# Pinned exactly (not just listed) so sbom.json stays reproducible —
+# unpinned direct deps let `pip install` silently resolve a newer
+# version on every fresh install, which drifted the CI SBOM check
+# without any change in this repo. Dependabot still opens PRs to bump
+# these; each bump needs sbom.json regenerated (scripts/generate_sbom.sh)
+# in the same commit. Note this only pins the two direct dependencies —
+# their own transitive dependencies remain unpinned and could still
+# drift the SBOM occasionally; revisit with a full lock file if that
+# becomes a recurring problem.
+jsonschema==4.26.0
+python-docx==1.2.0
