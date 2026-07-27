@@ -2729,27 +2729,87 @@ class SSPTab(tk.Frame):
         """
         "Add Diagram" for the Capability and Component Map Diagrams table.
 
-        Unlike the other three diagram tables (which just record a caption
-        and a link the user already has), there's no existing file to point
-        at here — so this generates a fresh System -> Capability -> Component
-        draw.io export first (the same export as the "Export Capability and
-        Component Map" button above the table — see _export_drawio()), then
-        opens the normal diagram dialog pre-filled with the saved path so the
-        user can confirm/adjust the caption and description before it's
-        tracked in the table.
+        Unlike the other three diagram tables (which only ever record a
+        caption and a link/path the user already has, via _diagram_dialog()'s
+        own Browse button), this one can also generate a brand new draw.io
+        export — so it asks which is wanted first: attach an existing file
+        (a PNG someone already made, an existing .drawio file, etc. — this
+        was originally missing entirely, reported as a bug: the user had an
+        existing .drawio file and PNG and the table only ever offered the
+        "Export draw.io Diagram" SAVE dialog, which can't select an existing
+        file), or generate a fresh System -> Capability -> Component export
+        first (the same export as the "Export Capability and Component Map"
+        button above the table — see _export_drawio()).
+
+        Either way, the normal diagram dialog then opens pre-filled with the
+        resulting path so the user can confirm/adjust the caption and
+        description before it's tracked in the table.
         """
-        save_path = self._export_drawio()
-        if not save_path:
-            return   # user cancelled the save dialog, or the export failed
-        result = self._diagram_dialog(existing={
-            "caption": "Capability and Component Map",
-            "link":    save_path,
-        })
+        choice = self._diagram_source_choice_dialog()
+        if choice is None:
+            return   # user cancelled
+
+        if choice == "generate":
+            save_path = self._export_drawio()
+            if not save_path:
+                return   # user cancelled the save dialog, or the export failed
+            existing = {"caption": "Capability and Component Map", "link": save_path}
+        else:
+            path = filedialog.askopenfilename(
+                title="Select Diagram File",
+                filetypes=[
+                    ("Diagram/image files", "*.drawio *.png *.jpg *.jpeg *.svg *.pdf"),
+                    ("All files", "*.*"),
+                ],
+            )
+            if not path:
+                return   # user cancelled the file picker
+            existing = {"caption": Path(path).stem, "link": path}
+
+        result = self._diagram_dialog(existing=existing)
         if not result:
             return
         self._ssp.setdefault(list_key, []).append(result)
         tree.insert("", "end", values=(result["caption"], result["link"]))
         self._dirty = True
+
+    def _diagram_source_choice_dialog(self):
+        """
+        Small modal asking whether "Add Diagram" (Capability and Component
+        Map Diagrams table) should generate a new export or attach an
+        existing file. Returns "generate", "attach", or None if cancelled.
+        """
+        C   = self._colors
+        dlg = self._make_dialog("Add Diagram", width=440)
+
+        tk.Label(
+            dlg,
+            text="Generate a new System → Capability → Component export, or\n"
+                 "attach a diagram file you already have (e.g. a PNG or an\n"
+                 "existing .drawio file)?",
+            bg=C["BG"], fg=C["TEXT"], font=("Helvetica", 11),
+            justify="left",
+        ).pack(padx=20, pady=(16, 12), anchor="w")
+
+        result = {}
+
+        def _choose(value):
+            result["value"] = value
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=(0, 16))
+        tk.Button(btn, text="📐  Generate New Export", command=lambda: _choose("generate"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=4, cursor="hand2").pack(side="left", padx=8)
+        tk.Button(btn, text="📂  Attach Existing File", command=lambda: _choose("attach"),
+                  bg=C["ACCENT_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=4, cursor="hand2").pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=10, pady=4, cursor="hand2").pack(side="left")
+        dlg.wait_window()
+        return result.get("value")
 
     def _edit_diagram(self, list_key, tree):
         """Show a dialog to edit the selected diagram in self._ssp[list_key]."""
