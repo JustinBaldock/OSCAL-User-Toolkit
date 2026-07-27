@@ -2571,11 +2571,31 @@ class SSPTab(tk.Frame):
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
                  highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
 
+        # Link/Path takes either a local file (browse for it below) or a
+        # URL typed/pasted directly — Browse just fills the same field, it
+        # doesn't replace typing/pasting a path or link by hand.
+        link_row = lrow("Link/Path *")
         v_link = tk.StringVar(value=e.get("link", ""))
-        tk.Entry(lrow("Link/Path *"), textvariable=v_link, width=42,
+        tk.Entry(link_row, textvariable=v_link, width=32,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
                  highlightbackground=C["HEADER_BG"]).pack(side="left", ipady=3)
+
+        def _browse_link():
+            path = filedialog.askopenfilename(
+                title="Select Diagram File",
+                filetypes=[
+                    ("Diagram/image files", "*.drawio *.png *.jpg *.jpeg *.svg *.pdf"),
+                    ("All files", "*.*"),
+                ],
+                parent=dlg,
+            )
+            if path:
+                v_link.set(path)
+
+        tk.Button(link_row, text="📂 Browse…", command=_browse_link,
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, cursor="hand2").pack(side="left", padx=(6, 0))
 
         v_desc = tk.StringVar(value=e.get("description", ""))
         tk.Entry(lrow("Description"), textvariable=v_desc, width=42,
