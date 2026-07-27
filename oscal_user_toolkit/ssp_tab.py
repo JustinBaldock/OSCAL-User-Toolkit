@@ -910,19 +910,6 @@ class SSPTab(tk.Frame):
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left", padx=6)
 
-        # The draw.io export lives here now — it visualises exactly this
-        # System -> Capability -> Component relationship, so it belongs next
-        # to where capabilities are chosen rather than in the top toolbar.
-        tk.Frame(cap8_btn, bg=C["HEADER_BG"], width=2).pack(
-            side="left", fill="y", padx=8, pady=2
-        )
-        tk.Button(
-            cap8_btn, text="📐  Export Capability and Component Map",
-            command=self._export_drawio,
-            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
-            relief="flat", padx=10, pady=3, cursor="hand2",
-        ).pack(side="left", padx=(0, 6))
-
         cap8_frame = tk.Frame(
             parent, bg=C["CARD_BG"],
             highlightthickness=1, highlightbackground=C["HEADER_BG"],
@@ -946,6 +933,27 @@ class SSPTab(tk.Frame):
         self._cap8_tree.configure(yscrollcommand=cap8_scroll.set)
         cap8_scroll.pack(side="right", fill="y", padx=(0, 4), pady=8)
         self._cap8_tree.pack(side="left", fill="x", expand=True, padx=(8, 0), pady=8)
+
+        # The draw.io export visualises exactly this System -> Capability ->
+        # Component relationship, so it belongs directly under the
+        # capabilities/components it draws from, rather than in the top
+        # toolbar. The Capability and Component Map Diagrams table just
+        # below tracks each exported file so it isn't lost after export.
+        export_btn_row = tk.Frame(parent, bg=C["BG"])
+        export_btn_row.pack(fill="x", padx=28, pady=(0, 4))
+        tk.Button(
+            export_btn_row, text="📐  Export Capability and Component Map",
+            command=self._export_drawio,
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left")
+
+        self._cap_comp_diagram_tree = self._build_diagram_section(
+            parent, "capability_component_diagrams",
+            "Capability and Component Map Diagrams  (optional — \"Add Diagram\" "
+            "generates a new export and tracks the saved file here)",
+            add_fn=self._add_capability_component_diagram,
+        )
 
         # ── Toolbar of component actions ──────────────────────────────────────
         comp8_btn = tk.Frame(parent, bg=C["BG"])
@@ -2579,7 +2587,7 @@ class SSPTab(tk.Frame):
         dlg.wait_window()
         return result if result else None
 
-    def _build_diagram_section(self, parent, list_key, heading_text):
+    def _build_diagram_section(self, parent, list_key, heading_text, add_fn=None):
         """
         Build a self-contained diagrams table — Add/Edit/Remove buttons plus
         a Caption/Link Treeview — bound to self._ssp[list_key].
@@ -2587,7 +2595,9 @@ class SSPTab(tk.Frame):
         OSCAL 1.2.2 allows an independent diagrams[] array on each of
         Authorization Boundary, Network Architecture, and Data Flow, all
         using the same diagram object shape (uuid, caption, link href,
-        description). This one method builds the UI for any of the three;
+        description). This one method builds the UI for any of the three
+        (or, via add_fn, the fourth Capability and Component Map Diagrams
+        table, which isn't a native OSCAL field — see build_oscal_ssp());
         the caller decides which list_key it's bound to and where it's
         placed in the form.
 
@@ -2596,11 +2606,18 @@ class SSPTab(tk.Frame):
             list_key     - The key in self._ssp holding this table's diagram
                            list (e.g. "auth_boundary_diagrams")
             heading_text - Label shown above the table
+            add_fn       - Handler for "Add Diagram", called as
+                           add_fn(list_key, tree). Defaults to _add_diagram
+                           (opens the manual caption/link/description
+                           dialog); pass a different one to do something
+                           else first — e.g. generate a file — before that
+                           dialog opens.
 
         Returns:
             The Treeview widget, so the caller can store it as an instance
             attribute for _populate()/_reset() to repopulate/clear later.
         """
+        add_fn = add_fn or self._add_diagram
         C = self._colors
         tk.Label(
             parent, text=heading_text,
@@ -2635,7 +2652,7 @@ class SSPTab(tk.Frame):
 
         tk.Button(
             btn_row, text="＋  Add Diagram",
-            command=lambda: self._add_diagram(list_key, tree),
+            command=lambda: add_fn(list_key, tree),
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
@@ -2661,6 +2678,32 @@ class SSPTab(tk.Frame):
             self._ssp.setdefault(list_key, []).append(result)
             tree.insert("", "end", values=(result["caption"], result["link"]))
             self._dirty = True
+
+    def _add_capability_component_diagram(self, list_key, tree):
+        """
+        "Add Diagram" for the Capability and Component Map Diagrams table.
+
+        Unlike the other three diagram tables (which just record a caption
+        and a link the user already has), there's no existing file to point
+        at here — so this generates a fresh System -> Capability -> Component
+        draw.io export first (the same export as the "Export Capability and
+        Component Map" button above the table — see _export_drawio()), then
+        opens the normal diagram dialog pre-filled with the saved path so the
+        user can confirm/adjust the caption and description before it's
+        tracked in the table.
+        """
+        save_path = self._export_drawio()
+        if not save_path:
+            return   # user cancelled the save dialog, or the export failed
+        result = self._diagram_dialog(existing={
+            "caption": "Capability and Component Map",
+            "link":    save_path,
+        })
+        if not result:
+            return
+        self._ssp.setdefault(list_key, []).append(result)
+        tree.insert("", "end", values=(result["caption"], result["link"]))
+        self._dirty = True
 
     def _edit_diagram(self, list_key, tree):
         """Show a dialog to edit the selected diagram in self._ssp[list_key]."""
@@ -4294,11 +4337,12 @@ class SSPTab(tk.Frame):
             if val:
                 widget.insert("1.0", val)  # Insert at the very beginning
 
-        # Rebuild the three diagram tables (Sections 3 and 4)
+        # Rebuild the four diagram tables (Sections 3, 4, and 8)
         for tree, key in (
             (self._auth_boundary_diagram_tree, "auth_boundary_diagrams"),
             (self._network_arch_diagram_tree,  "network_arch_diagrams"),
             (self._diagram_tree,               "data_flow_diagrams"),
+            (self._cap_comp_diagram_tree,      "capability_component_diagrams"),
         ):
             tree.delete(*tree.get_children())
             for d in ssp.get(key, []):
@@ -4535,12 +4579,14 @@ class SSPTab(tk.Frame):
 
         # Clear all tables
         for tree in (self._auth_boundary_diagram_tree, self._network_arch_diagram_tree,
-                     self._diagram_tree, self._flow_link_tree, self._vlan_tree,
+                     self._diagram_tree, self._cap_comp_diagram_tree,
+                     self._flow_link_tree, self._vlan_tree,
                      self._it_tree, self._role_tree, self._party_tree):
             tree.delete(*tree.get_children())
         self._ssp["auth_boundary_diagrams"] = []
         self._ssp["network_arch_diagrams"]  = []
         self._ssp["data_flow_diagrams"]     = []
+        self._ssp["capability_component_diagrams"] = []
         self._ssp["data_flow_links"]        = []
         self._ssp["vlans"]                  = []
 
@@ -4639,6 +4685,10 @@ class SSPTab(tk.Frame):
           - hardware → green
           - service  → purple
           - others   → grey
+
+        Returns the saved file path, or None if the user cancelled the save
+        dialog or the write failed — used by _add_capability_component_diagram()
+        to know whether to go on and track the result.
         """
         from tkinter import filedialog
         import xml.etree.ElementTree as ET
@@ -4914,14 +4964,16 @@ class SSPTab(tk.Frame):
         )
         if not save_path:
             # User cancelled the dialog — do nothing.
-            return
+            return None
 
         try:
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(xml_string)
             self._set_status(f"draw.io diagram exported → {save_path}")
+            return save_path
         except OSError as exc:
             messagebox.showerror("Export Failed", str(exc))
+            return None
 
     def _save(self):
         """

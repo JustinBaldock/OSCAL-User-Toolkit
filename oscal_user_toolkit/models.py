@@ -598,6 +598,17 @@ def empty_ssp():
         # Each entry: {"uuid": capability_uuid, "name": capability_name}
         "capabilities_used":    [],
 
+        # ── Section 8c: Capability and Component Map Diagrams ───────────────
+        # Tracks exported System -> Capability -> Component draw.io diagrams
+        # (see SSPTab._export_drawio()) so they round-trip with the SSP. Not
+        # a native SSP field in OSCAL 1.2.2 — there is no schema location for
+        # an arbitrary diagram type like auth-boundary/network-architecture/
+        # data-flow have, so these are written as back-matter resources
+        # instead (see build_oscal_ssp()). Each entry: {"uuid", "caption",
+        # "link", "description"} — same shape as the other three diagram
+        # lists above, for the same UI (_build_diagram_section()).
+        "capability_component_diagrams": [],
+
         # ── Section 9: Control Implementations ───────────────────────────
         # Each entry describes how the system implements one control:
         #   {"control_id", "remarks", "by_components": [
@@ -947,6 +958,27 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
         import_href          = "PROFILE_OR_CATALOG_HREF"
         back_matter_resource = None
 
+    # ── Capability and Component Map diagrams ─────────────────────────────────
+    # See the "capability_component_diagrams" default's comment in the SSP
+    # skeleton above for why these live in back-matter rather than a native
+    # SSP field. Each becomes its own back-matter resource, tagged with a
+    # "type" prop so parse_ssp_file() can tell them apart from the profile/
+    # catalog resource (which reuses the same list).
+    diagram_resources = [
+        {
+            "uuid":  d["uuid"],
+            "title": d.get("caption", "Capability and Component Map"),
+            **({"description": d["description"]} if d.get("description") else {}),
+            "props": [{"name": "type", "value": "capability-component-diagram"}],
+            "rlinks": [{"href": d.get("link", ""),
+                        "media-type": "application/vnd.jgraph.mxfile"}],
+        }
+        for d in ssp.get("capability_component_diagrams", [])
+    ]
+    back_matter_resources = (
+        ([back_matter_resource] if back_matter_resource else []) + diagram_resources
+    )
+
     # ── Stable UUID for the "this-system" component (M3 fix) ─────────────────
     # OSCAL requires at least one component in system-implementation.
     # We reuse the stored UUID if available so that re-saving the same SSP
@@ -1203,9 +1235,12 @@ def build_oscal_ssp(ssp, profile, catalog, oscal_version=None):
                 "implemented-requirements": implemented_requirements,
             },
 
-            # Back-matter — reference documents (our profile/catalog entry goes here)
-            **({"back-matter": {"resources": [back_matter_resource]}}
-               if back_matter_resource else {}),
+            # Back-matter — reference documents (profile/catalog entry, plus
+            # tracked Capability and Component Map diagrams — see the
+            # "capability_component_diagrams" default's comment for why
+            # diagrams live here rather than a native SSP field).
+            **({"back-matter": {"resources": back_matter_resources}}
+               if back_matter_resources else {}),
         }
     }
     return doc
@@ -1463,6 +1498,22 @@ def parse_ssp_file(data):
         # Bare filename — treat the href itself as the file reference
         back_matter_info = {"title": "", "file": import_href, "version": ""}
 
+    # ── Capability and Component Map diagrams ─────────────────────────────────
+    # Pull back out any back-matter resource tagged type="capability-component-
+    # diagram" (see build_oscal_ssp()) into the same {uuid, caption, link,
+    # description} shape the other three diagram lists use.
+    capability_component_diagrams = [
+        {
+            "uuid":        r.get("uuid", new_uuid()),
+            "caption":     r.get("title", "Capability and Component Map"),
+            "link":        (r.get("rlinks") or [{}])[0].get("href", ""),
+            "description": r.get("description", ""),
+        }
+        for r in root.get("back-matter", {}).get("resources", [])
+        if any(p.get("name") == "type" and p.get("value") == "capability-component-diagram"
+               for p in r.get("props", []))
+    ]
+
     # ── Read security-impact-level (M2 fix) ──────────────────────────────────
     # OSCAL 1.2.x stores a structured object with three separate CIA objectives.
     # We read it back so the three dropdowns are populated on re-open.
@@ -1509,6 +1560,7 @@ def parse_ssp_file(data):
         "parties":              parties,
         "responsible_parties":  responsible_parties,
         "capabilities_used":    capabilities_used,
+        "capability_component_diagrams": capability_component_diagrams,
         "information_types":    info_types,
         "components":           components,
         "ctrl_implementations": ctrl_implementations,
