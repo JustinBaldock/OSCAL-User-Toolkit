@@ -1156,6 +1156,16 @@ An external code review flagged four findings. Checked each directly rather than
 
 ---
 
+### 10.35 Compliance-grade SBOM (`sbom.json`), CI drift check, and moved/added Section 8 diagram tracking
+
+**SBOM.** Added `sbom.json` — a [CycloneDX](https://cyclonedx.org/) 1.6 Software Bill of Materials for `requirements.txt`'s runtime dependencies, generated (not hand-written) via `cyclonedx-py environment` against a clean virtualenv containing only those dependencies (`scripts/generate_sbom.sh`) — deliberately built from a separate clean venv rather than the repo's normal dev environment, so `requirements-dev.txt` tooling (Ruff, pytest, `cyclonedx-bom` itself) can't leak into the SBOM as if it were part of the shipped application. Uses `cyclonedx-py`'s `environment` mode rather than its `requirements` mode specifically because `requirements.txt` pins no exact versions — `environment` mode captures the actual resolved/installed versions (9 components: 2 direct + transitive deps), which is what a compliance-grade SBOM needs to be accurate for. `--output-reproducible` makes two consecutive generations byte-identical (no timestamp/serialNumber noise), which is what makes the CI drift check below possible.
+
+**CI drift check.** A hand-maintained SBOM goes stale the moment a dependency changes and nobody remembers to regenerate it — so a third CI job (`sbom`) regenerates it fresh on every push and fails the build if the result differs from what's committed, same idea as a lockfile check. Kept to `permissions: contents: read` like the other two jobs — it only verifies, it doesn't commit the regenerated file back.
+
+**Section 8 diagram tracking, moved Export button.** While in the area, also moved the "📐 Export Capability and Component Map" button (System Overview → SSP Editor → Section 8) out of the Capabilities Used button row and into its own row directly beneath the capabilities table, and added a new "Capability and Component Map Diagrams" table underneath it — same Add/Edit/Remove-Selected pattern as the existing Auth Boundary/Network Architecture/Data Flow diagram tables (`_build_diagram_section()`), now parameterised with an `add_fn` so a table's "Add Diagram" button can do something other than open the plain caption/link/description dialog. Here, "Add Diagram" runs the same draw.io export first, then opens that dialog pre-filled with the saved path, so an export doesn't disappear into a save dialog and get forgotten — it's tracked. OSCAL 1.2.2 has no native `diagrams[]` field for this (unlike auth-boundary/network-architecture/data-flow, which do), so tracked diagrams are written as back-matter resources tagged with a `type=capability-component-diagram` prop, parsed back out the same way on load — verified with a `build_oscal_ssp()` → `parse_ssp_file()` round-trip.
+
+---
+
 ## 11. Example Component Library
 
 The `library/components/` folder (see §10.13–§10.20 for the Library system itself) ships with **121 pre-built component files** spanning every component type listed in `oscal_component_schema.json`'s `defined-component.type` enum, plus the app's own `operating-system` convention. They're loaded automatically by the Organisation tab's Library Component Editor (`library_mode` — see §10.20), or can be picked individually via **📚 Import from Library** in the System Overview Component Editor.

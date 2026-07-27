@@ -48,3 +48,27 @@ jobs:
       # $DISPLAY environment variable" without this).
       - run: sudo apt-get update && sudo apt-get install -y xvfb
       - run: xvfb-run --auto-servernum pytest
+
+  sbom:
+    name: SBOM drift check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install cyclonedx-bom
+      # Regenerates sbom.json (scripts/generate_sbom.sh) into a scratch
+      # location and diffs it against the committed one — --output-reproducible
+      # makes the output deterministic run-to-run, so any difference here
+      # means requirements.txt changed without sbom.json being regenerated
+      # to match (see scripts/generate_sbom.sh and README.md#sbom).
+      - run: |
+          cp sbom.json /tmp/sbom.committed.json
+          bash scripts/generate_sbom.sh
+          diff -u /tmp/sbom.committed.json sbom.json || {
+            echo "::error::sbom.json is out of date — run scripts/generate_sbom.sh and commit the result."
+            exit 1
+          }
