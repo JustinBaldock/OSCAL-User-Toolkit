@@ -20,7 +20,10 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import date, datetime
 
-from .models import load_workspace_manifest, parse_ssp_file, parse_ar_file, parse_poam_file
+from .models import (
+    load_workspace_manifest, parse_ssp_file, parse_ar_file, parse_poam_file,
+    load_profile, load_catalog,
+)
 
 
 class AllSystemsTab(tk.Frame):
@@ -91,16 +94,19 @@ class AllSystemsTab(tk.Frame):
 
         self._tree = ttk.Treeview(
             table_frame,
-            columns=("system", "last_assessed", "compliance", "risks", "poam", "notes"),
+            columns=("system", "last_assessed", "compliance", "controls_required",
+                     "controls_applied", "risks", "poam", "notes"),
             show="headings", selectmode="browse",
         )
         for col, heading, w, stretch in [
-            ("system",        "System",         200, False),
-            ("last_assessed", "Last Assessed",  120, False),
-            ("compliance",    "Compliance",     100, False),
-            ("risks",         "Open Risks",      90, False),
-            ("poam",          "POA&M Overdue",  110, False),
-            ("notes",         "Notes",          220, True),
+            ("system",            "System",             200, False),
+            ("last_assessed",     "Last Assessed",      120, False),
+            ("compliance",        "Compliance",         100, False),
+            ("controls_required", "Controls Required",  120, False),
+            ("controls_applied",  "Controls Applied",   120, False),
+            ("risks",             "Open Risks",           90, False),
+            ("poam",              "POA&M Overdue",       110, False),
+            ("notes",             "Notes",               220, True),
         ]:
             self._tree.heading(col, text=heading, anchor="w")
             self._tree.column(col, width=w, anchor="w", stretch=stretch)
@@ -135,6 +141,41 @@ class AllSystemsTab(tk.Frame):
                 return path
         return None
 
+    @staticmethod
+    def _controls_required(ws):
+        """
+        Return how many controls the system's profile selects — the
+        "Controls Required" column — or None if it can't be determined.
+
+        Reads only the profile file itself (profile["ids"], a flat set of
+        selected control IDs — see load_profile()), not the full catalog,
+        since that's all that's needed for a count and catalogs can be
+        large. Falls back to the referenced catalog's full control count
+        only for an include-all profile (which selects everything, so has
+        no explicit with-ids list of its own) or when there's no profile
+        at all — both cases where the catalog is the only source of a count.
+        """
+        profile = None
+        if ws.get("profile"):
+            try:
+                profile = load_profile(ws["profile"])
+            except (OSError, json.JSONDecodeError, ValueError):
+                pass
+
+        if profile and profile["ids"]:
+            return len(profile["ids"])
+
+        needs_catalog = (
+            not profile
+            or any(imp.get("include_all") for imp in profile.get("imports", []))
+        )
+        if needs_catalog and ws.get("catalog"):
+            try:
+                return len(load_catalog(ws["catalog"])["controls"])
+            except (OSError, json.JSONDecodeError, ValueError):
+                return None
+        return None
+
     def _summarize_system(self, system_dir):
         """
         Build one row's worth of data for a system folder. Never raises —
@@ -147,6 +188,7 @@ class AllSystemsTab(tk.Frame):
         if not manifest_path:
             return {
                 "system": name, "last_assessed": "", "compliance": "",
+                "controls_required": "", "controls_applied": "",
                 "risks": "", "poam": "", "notes": "No workspace manifest found",
             }
 
@@ -155,18 +197,26 @@ class AllSystemsTab(tk.Frame):
         except (OSError, json.JSONDecodeError, KeyError) as exc:
             return {
                 "system": name, "last_assessed": "", "compliance": "",
+                "controls_required": "", "controls_applied": "",
                 "risks": "", "poam": "", "notes": f"Could not read workspace: {exc}",
             }
 
         ssp_title = name
+        controls_applied = ""
         if ws.get("ssp"):
             try:
                 with open(ws["ssp"], encoding="utf-8") as f:
                     raw = json.load(f)
                 ssp, _ = parse_ssp_file(raw)
                 ssp_title = ssp.get("title") or name
+                # "Controls Applied" — how many controls actually have a
+                # response recorded in Section 9, not how many the profile
+                # merely selects (that's "Controls Required" below).
+                controls_applied = len(ssp.get("ctrl_implementations", []))
             except (OSError, json.JSONDecodeError, KeyError):
                 pass
+
+        controls_required = self._controls_required(ws)
 
         last_assessed = ""
         ar_findings = []
@@ -216,12 +266,14 @@ class AllSystemsTab(tk.Frame):
             notes.append("no POA&M")
 
         return {
-            "system":        ssp_title,
-            "last_assessed": last_assessed or "—",
-            "compliance":    compliance,
-            "risks":         open_risks,
-            "poam":          poam_overdue,
-            "notes":         ", ".join(notes),
+            "system":            ssp_title,
+            "last_assessed":     last_assessed or "—",
+            "compliance":        compliance,
+            "controls_required": controls_required if controls_required is not None else "—",
+            "controls_applied":  controls_applied if ws.get("ssp") else "—",
+            "risks":             open_risks,
+            "poam":              poam_overdue,
+            "notes":             ", ".join(notes),
         }
 
     def refresh(self):
@@ -241,6 +293,7 @@ class AllSystemsTab(tk.Frame):
         for row in rows:
             self._tree.insert("", "end", values=(
                 row["system"], row["last_assessed"], row["compliance"],
+                row["controls_required"], row["controls_applied"],
                 row["risks"], row["poam"], row["notes"],
             ))
 
