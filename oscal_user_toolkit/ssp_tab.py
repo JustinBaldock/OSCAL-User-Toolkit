@@ -1283,14 +1283,23 @@ class SSPTab(tk.Frame):
         C = self._colors
 
         section("10 ·  Network Protocols")
-        tk.Label(
+        proto10_hint = tk.Label(
             parent,
-            text="  Network protocols exposed or used by the system's components,\n"
-                 "  inherited automatically when component files are imported.\n"
-                 "  Per OSCAL, protocols are stored on each individual component.",
+            text="  Network protocols exposed or used by the system's components, "
+                 "inherited automatically when component files are imported. "
+                 "Per OSCAL, protocols are stored on each individual component — "
+                 "this table is read-only; to add, edit, or remove a protocol, "
+                 "go to the Component Editor and edit the component it belongs to.",
             bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left",
-        ).pack(anchor="w", padx=28)
+            justify="left", anchor="w",
+        )
+        proto10_hint.pack(anchor="w", fill="x", padx=28)
+        # Rewraps to the label's own current width so the hint always fits the
+        # window instead of wrapping at a fixed pixel count (or not at all).
+        proto10_hint.bind(
+            "<Configure>",
+            lambda e: proto10_hint.config(wraplength=e.width),
+        )
 
         # Counter label — shows total protocols across all components
         self._proto10_count_lbl = tk.Label(
