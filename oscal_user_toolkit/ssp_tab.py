@@ -408,6 +408,40 @@ class SSPTab(tk.Frame):
     # (section, field, textbox, combo) to avoid repetitive code.
     # =========================================================================
 
+    def _hint(self, parent, text, font=("Helvetica", 9, "italic"), fg=None, **pack_kwargs):
+        """
+        Build a hint/description Label that rewraps to its own current
+        width whenever it's resized, instead of wrapping at a fixed pixel
+        count or (with no wraplength set at all) not wrapping and just
+        overflowing/getting clipped. Used throughout the SSP Editor's main
+        scrollable form so every hint box scales with the window.
+
+        Not used inside modal dialogs — those are fixed-size and
+        non-resizable (see _make_dialog()), so there's nothing to rewrap to.
+
+        Parameters:
+            parent      - Widget to pack this label into
+            text        - Hint text. Wrapping is entirely dynamic (bound to
+                          the label's own width below), so callers should
+                          NOT hand-wrap with embedded "\\n" for line length —
+                          only use "\\n"/"\\n\\n" for genuine paragraph breaks.
+            font, fg    - Override the default italic/SUBTEXT hint styling
+                          (e.g. the non-italic font 11 used for table
+                          sub-headings like "VLANs" or "Data Flow Links").
+            pack_kwargs - Extra kwargs merged into pack() (e.g. pady=(8, 2));
+                          padx defaults to 28 (this form's standard margin)
+                          unless overridden.
+        """
+        C = self._colors
+        pack_kwargs.setdefault("padx", 28)
+        lbl = tk.Label(
+            parent, text=text, bg=C["BG"], fg=fg or C["SUBTEXT"],
+            font=font, justify="left", anchor="w",
+        )
+        lbl.pack(anchor="w", fill="x", **pack_kwargs)
+        lbl.bind("<Configure>", lambda e: lbl.config(wraplength=e.width))
+        return lbl
+
     def _build_form(self, parent):
         """
         Build all seven SSP form sections inside the scrollable form frame.
@@ -519,7 +553,7 @@ class SSPTab(tk.Frame):
             ).pack(side="left")
 
         # ── Local helper: table section (Treeview + Add/Remove buttons) ───────
-        def list_section(title, hint, columns, add_cmd, list_key, hint_wrap=0):
+        def list_section(title, hint, columns, add_cmd, list_key):
             """
             Build a complete table section: heading, hint text, Add/Remove
             buttons, and a Treeview table.
@@ -530,14 +564,9 @@ class SSPTab(tk.Frame):
                 columns   - List of (col_id, heading_text, width, stretch) tuples
                 add_cmd   - Method to call when user clicks Add
                 list_key  - The key in self._ssp that holds this table's data list
-                hint_wrap - If non-zero, wrap the hint label at this pixel width
             """
             section(title)
-            tk.Label(
-                parent, text=f"  {hint}",
-                bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-                wraplength=hint_wrap, justify="left",
-            ).pack(anchor="w", **P)
+            self._hint(parent, f"  {hint}")
 
             # Outer frame for the table and its buttons
             frame = tk.Frame(
@@ -602,10 +631,7 @@ class SSPTab(tk.Frame):
         field("SSP Title *",     "title",           width=60)
         field("Version *",       "version",         width=20, default="1.0")
         field("Date Authorized", "date_authorized",  width=20)
-        tk.Label(
-            parent, text="  * Required fields.  Date format: YYYY-MM-DD",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=28)
+        self._hint(parent, "  * Required fields.  Date format: YYYY-MM-DD")
 
         # ── 2. System Characteristics ─────────────────────────────────────────
         section("2 ·  System Characteristics")
@@ -711,7 +737,6 @@ class SSPTab(tk.Frame):
             ],
             add_cmd   = self._add_info_type,
             list_key  = "information_types",
-            hint_wrap = 820,
         )
         # Add Edit button to the info types toolbar (it_tree's parent toolbar)
         # and bind double-click for editing.
@@ -821,12 +846,11 @@ class SSPTab(tk.Frame):
         """
         C = self._colors
         section("7b ·  Responsible Parties")
-        tk.Label(
+        self._hint(
             parent,
-            text="  Map each role to the person or organisation who fills it.  "
-                 "Roles and parties must be defined in Sections 6 and 7 first.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=28)
+            "  Map each role to the person or organisation who fills it.  "
+            "Roles and parties must be defined in Sections 6 and 7 first.",
+        )
 
         frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -887,14 +911,12 @@ class SSPTab(tk.Frame):
         C = self._colors
 
         section("8 ·  System Components")
-        tk.Label(
+        self._hint(
             parent,
-            text="  The components that make up this system (software, hardware,\n"
-                 "  services, etc.). Add them by hand, or import existing component\n"
-                 "  files — or pull them straight from the Component Editor.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left",
-        ).pack(anchor="w", padx=28)
+            "  The components that make up this system (software, hardware, "
+            "services, etc.). Add them by hand, or import existing component "
+            "files — or pull them straight from the Component Editor.",
+        )
 
         # ── Capabilities Used ───────────────────────────────────────────────────
         # OSCAL 1.2.2 has no native "capabilities" field on an SSP — capability
@@ -908,14 +930,12 @@ class SSPTab(tk.Frame):
             parent, text="  Capabilities Used",
             bg=C["BG"], fg=C["ACCENT"], font=("Helvetica", 10, "bold"),
         ).pack(anchor="w", padx=28, pady=(8, 0))
-        tk.Label(
+        self._hint(
             parent,
-            text="  Adding a capability here pulls in every member component and its control\n"
-                 "  responses from the Component Editor automatically. Load the capability's\n"
-                 "  member component files in the Component Editor first, or nothing will import.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left",
-        ).pack(anchor="w", padx=28)
+            "  Adding a capability here pulls in every member component and its control "
+            "responses from the Component Editor automatically. Load the capability's "
+            "member component files in the Component Editor first, or nothing will import.",
+        )
 
         cap8_btn = tk.Frame(parent, bg=C["BG"])
         cap8_btn.pack(fill="x", padx=28, pady=4)
@@ -1081,22 +1101,20 @@ class SSPTab(tk.Frame):
         C = self._colors
 
         section("9 ·  Control Implementations")
-        tk.Label(
+        self._hint(
             parent,
-            text="  For each control, describe how the system's components implement\n"
-                 "  it. Select a control on the left, then add one by-component entry\n"
-                 "  per component that contributes.   ● = has entries   ○ = none yet",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left",
-        ).pack(anchor="w", padx=28)
+            "  For each control, describe how the system's components implement "
+            "it. Select a control on the left, then add one by-component entry "
+            "per component that contributes.   ● = has entries   ○ = none yet",
+        )
 
         # ── 9b. Set-Parameters ────────────────────────────────────────────────
         # Allow overriding catalog parameter values at the SSP level.
-        tk.Label(
+        self._hint(
             parent,
-            text="  Parameter Overrides  (optional — override catalog parameter values for this system)",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-        ).pack(anchor="w", padx=28, pady=(6, 0))
+            "  Parameter Overrides  (optional — override catalog parameter values for this system)",
+            pady=(6, 0),
+        )
 
         sp_frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -1249,9 +1267,17 @@ class SSPTab(tk.Frame):
             ctrl9_right,
             text="Select a control from the list to add implementation entries.",
             bg=C["CARD_BG"], fg=C["SUBTEXT"], font=("Helvetica", 10, "italic"),
-            wraplength=380, justify="left", anchor="nw",
+            justify="left", anchor="nw",
         )
         self._ctrl9_stmt_lbl.pack(fill="x", padx=8, pady=(8, 4))
+        # Rewraps to the label's own current width on resize — this pane is
+        # user-resizable (a PanedWindow sash) as well as the whole window, and
+        # this label often shows a long control statement, not just the short
+        # placeholder text above.
+        self._ctrl9_stmt_lbl.bind(
+            "<Configure>",
+            lambda e: self._ctrl9_stmt_lbl.config(wraplength=e.width),
+        )
 
         tk.Frame(ctrl9_right, bg=C["HEADER_BG"], height=1).pack(
             fill="x", padx=8, pady=4
@@ -1317,22 +1343,13 @@ class SSPTab(tk.Frame):
         C = self._colors
 
         section("10 ·  Network Protocols")
-        proto10_hint = tk.Label(
+        self._hint(
             parent,
-            text="  Network protocols exposed or used by the system's components, "
-                 "inherited automatically when component files are imported. "
-                 "Per OSCAL, protocols are stored on each individual component — "
-                 "this table is read-only; to add, edit, or remove a protocol, "
-                 "go to the Component Editor and edit the component it belongs to.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left", anchor="w",
-        )
-        proto10_hint.pack(anchor="w", fill="x", padx=28)
-        # Rewraps to the label's own current width so the hint always fits the
-        # window instead of wrapping at a fixed pixel count (or not at all).
-        proto10_hint.bind(
-            "<Configure>",
-            lambda e: proto10_hint.config(wraplength=e.width),
+            "  Network protocols exposed or used by the system's components, "
+            "inherited automatically when component files are imported. "
+            "Per OSCAL, protocols are stored on each individual component — "
+            "this table is read-only; to add, edit, or remove a protocol, "
+            "go to the Component Editor and edit the component it belongs to.",
         )
 
         # Counter label — shows total protocols across all components
@@ -2665,10 +2682,7 @@ class SSPTab(tk.Frame):
         """
         add_fn = add_fn or self._add_diagram
         C = self._colors
-        tk.Label(
-            parent, text=heading_text,
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
-        ).pack(anchor="w", padx=28, pady=(8, 2))
+        self._hint(parent, heading_text, font=("Helvetica", 11), pady=(8, 2))
 
         frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -2872,13 +2886,13 @@ class SSPTab(tk.Frame):
         description textbox in Section 4.
         """
         C = self._colors
-        tk.Label(
+        self._hint(
             parent,
-            text="Data Flow Links  (optional — map how data moves between "
-                 "components, e.g. database → web application, with protocol "
-                 "and port)",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
-        ).pack(anchor="w", padx=28, pady=(8, 2))
+            "Data Flow Links  (optional — map how data moves between "
+            "components, e.g. database → web application, with protocol "
+            "and port)",
+            font=("Helvetica", 11), pady=(8, 2),
+        )
 
         frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -3099,11 +3113,11 @@ class SSPTab(tk.Frame):
         the Network Architecture Diagrams table in Section 4.
         """
         C = self._colors
-        tk.Label(
+        self._hint(
             parent,
-            text="VLANs  (optional — record the VLANs that make up the network)",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 11),
-        ).pack(anchor="w", padx=28, pady=(8, 2))
+            "VLANs  (optional — record the VLANs that make up the network)",
+            font=("Helvetica", 11), pady=(8, 2),
+        )
 
         frame = tk.Frame(
             parent, bg=C["CARD_BG"],
@@ -3527,13 +3541,11 @@ class SSPTab(tk.Frame):
         C = self._colors
 
         section("11 ·  System Users")
-        tk.Label(
+        self._hint(
             parent,
-            text="  People or entities that interact with the system (e.g. administrators,\n"
-                 "  operators, end-users). Each user can be assigned one or more role IDs.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left",
-        ).pack(anchor="w", padx=28)
+            "  People or entities that interact with the system (e.g. administrators, "
+            "operators, end-users). Each user can be assigned one or more role IDs.",
+        )
 
         usr_btn = tk.Frame(parent, bg=C["BG"])
         usr_btn.pack(fill="x", padx=28, pady=4)
@@ -3755,13 +3767,11 @@ class SSPTab(tk.Frame):
         C = self._colors
 
         section("12 ·  Inventory Items")
-        tk.Label(
+        self._hint(
             parent,
-            text="  Hardware, software, and service assets that make up the system.\n"
-                 "  Link each item to the components that implement it.",
-            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 9, "italic"),
-            justify="left",
-        ).pack(anchor="w", padx=28)
+            "  Hardware, software, and service assets that make up the system. "
+            "Link each item to the components that implement it.",
+        )
 
         inv_btn = tk.Frame(parent, bg=C["BG"])
         inv_btn.pack(fill="x", padx=28, pady=4)
