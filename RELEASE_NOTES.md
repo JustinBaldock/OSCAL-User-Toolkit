@@ -4,6 +4,99 @@
 
 ---
 
+## v0.5 (Pre-Production Release)
+
+### What this is
+
+A quality-and-correctness-focused release: v0.5 adds no new document type or major workflow, but it's the first release with automated CI (lint, unit tests, a compliance-grade SBOM with drift detection, and CodeQL security scanning), fixes a real duplicate-title bug that led to a batch of Library components being extracted from capability bundles into their own files, fixes a genuine app-wide memory leak, and closes two real bugs the new test coverage surfaced (an AR field that silently failed to save, and a documented-but-missing CIA characterization feature for AR risks). It also adds multi-catalog support to the Library editors, several SSP Editor usability/coverage improvements, and a batch of diagram-workflow fixes.
+
+Full feature documentation is in [README.md](README.md). See [oscal_user_toolkit_design_document.md](oscal_user_toolkit_design_document.md) §10.24–§10.35 for the technical design history.
+
+### Highlights since v0.4
+
+#### Automated CI — lint, tests, SBOM drift check, CodeQL, Dependabot (new)
+
+The project had no automated verification before this release — every fix was checked by hand. A GitHub Actions workflow (`.github/workflows/ci.yml`) now runs on every push/PR to `main`:
+
+- **Lint** (Ruff) and **test** (pytest) jobs — 42 tests total, covering `models.py`'s data helpers, `CatalogResolver`, multi-catalog `control-implementations` grouping, VLAN/data-flow-link prop round-trips, full save/load round-trips for SSP/AP/AR/POA&M, `settings.scan_oscal_versions()`, and the mousewheel-leak fix below.
+- **SBOM drift check** — `sbom.json`, a CycloneDX 1.6 Software Bill of Materials for `requirements.txt`'s runtime dependencies (direct and transitive, exact resolved versions), regenerated fresh on every push and failing the build if it doesn't match what's committed. Both `requirements.txt`'s two direct dependencies and the SBOM generation venv's own `pip` version are now pinned exactly, closing a real source of false-positive drift (an unpinned dependency or an unpinned ambient `pip` version resolving differently across machines/CI runners with no actual code change).
+- **CodeQL** security scanning and **Dependabot** (dependency graph, alerts, security updates) both enabled via GitHub's repo settings.
+
+#### Library — duplicate-title bug fixed, components extracted from capability bundles (fix)
+
+Reported directly by the designer using the app: the Library Component Editor showed a duplicate "Backup and Recovery Policy" row. Root cause: the Library Capability Editor was importing its *own* bundled copy of each member component into the shared Library Component list on top of the real file already loaded from `library/components/` — normally harmless, except two of those bundled copies had drifted from the real file (different UUID, different content) and showed up as visually-identical duplicate rows. Fixed by no longer wiring bundle-importing for the Library Capability Editor specifically (System Overview's editors are unaffected — they still need it).
+
+Verifying the fix surfaced a much bigger latent gap: **18 components across 6 capabilities existed only as bundled copies inside a capability file, never as their own standalone `library/components/` file** — every member of Email Security, Endpoint Protection, Privileged Access Management, and Security Monitoring and Logging, among others. All 18 were extracted into real, independently-reusable library files, taking the Library from 102 to 121 components. 3 more new `process-procedure` components (Data Breach Notification, Disaster Recovery Testing, Vulnerability Scan Response) were added separately, for **124 components total** (capabilities unchanged at 11).
+
+#### Multi-catalog components — Library editors only (new)
+
+The Library Component and Capability Editors' control lists now combine every catalog a loaded profile imports (e.g. ISM + NIST), tagging each control with its source catalog. A new per-response source record means a single component can hold correctly-sourced responses against controls from more than one catalog at once — `build_component_oscal_entry()` groups them into one `control-implementations` block per catalog, confirmed schema-valid. Deliberately scoped to the Library editors only, not System Overview's per-system editors, which stay tied to one catalog/profile as before. 6 example components (SSH, Privacy Policy, LMS, Drupal, Django, AWS) were converted to carry real ISM + NIST SP 800-53 rev5 coverage as a demonstration.
+
+#### Two real bugs found by new test coverage, both fixed (fix)
+
+Building round-trip tests for SSP/AP/AR/POA&M surfaced two genuine, previously-undiscovered bugs, fixed immediately after:
+
+- **AR observations silently dropped their `assessed_by` value on save** — the POA&M side wrote this field correctly, the AR side never did, even though both read it back the same way. Low real-world impact (the AR UI never actually collected this field), but a hand-crafted or another-tool's AR file with it set would have lost it silently. Fixed.
+- **AR risks never got the CIA (Confidentiality/Integrity/Availability) impact characterization that README/design docs claimed they had** — that feature only ever existed for POA&M risks. Rather than just correcting the documentation, added the real feature: AR's risk dialog gained the same three CIA impact dropdowns POA&M already has, matching its exact encoding — so "Generate POA&M from Findings" now carries a risk's CIA rating through automatically instead of silently losing it.
+
+#### Real memory leak fixed, plus two missing scroll guards (fix)
+
+An external code review flagged four findings; investigating them directly (rather than trusting the description) found the real bug was substantially worse than described: every theme toggle (dark/light) leaked one entire previous tab instance — including every loaded SSP, component, and capability it held — for the life of the process, because rebuilding a tab's scrollable canvas re-registered a mouse-wheel binding that tkinter never releases. Fixed with a new shared dispatcher (`tab_utils.bind_mousewheel()`) that registers the underlying binding exactly once per process; confirmed fixed with a `weakref`-based test (20 theme toggles, 1 survivor instead of 20). Also fixed two tabs (Dashboard, Workspace) missing the same "don't scroll when not the active tab" guard every other tab already had.
+
+#### SSP Editor — AusGov-aligned dropdown options (new)
+
+OSCAL's Security Sensitivity Level and CIA impact fields are free text in the schema, not a fixed enum, so these add options rather than replacing existing ones:
+
+- **Security Sensitivity Level** (Section 2) gained the ISM classifications (NC, OS, PROTECTED, SECRET, TOP SECRET) alongside the existing FIPS-199 options.
+- **Confidentiality/Integrity/Availability impact** dropdowns (Section 2's top-level fields and each Information Type's per-item fields) gained the 7-point AusGov Business Impact Level scale alongside FIPS-199, via one shared option list so both places stay in sync.
+
+#### All Systems tab — Controls Required / Controls Applied columns (new)
+
+Two new columns: **Controls Required** (the system's profile selection size, or the full catalog if no profile narrows it) and **Controls Applied** (how many controls actually have a recorded response in the SSP), positioned right after System.
+
+#### Diagram workflow fixes (fix/new)
+
+- **Export to PNG**, alongside the existing draw.io export — shells out to the draw.io desktop app's own export CLI; shows a clear message (not a raw error) if draw.io isn't installed.
+- **Browse button** added to the diagram dialog's Link/Path field (all four diagram tables) — previously plain-text-only, so attaching an existing file meant typing the exact path by hand.
+- **Fixed a real bug**: the Capability and Component Map's "Add Diagram" always jumped straight into generating a brand-new export, with no way to attach an existing PNG or `.drawio` file. Now asks first — generate new, or attach existing.
+- **Capability and Component Map diagrams** are now tracked in their own table (Section 8), matching the existing Auth Boundary/Network Architecture/Data Flow diagram tables, rather than the export button producing a file with no record of it in the SSP.
+
+#### UI polish — resizable hint boxes (fix)
+
+Every hint/description label across the SSP Editor's main form (Sections 1–12) now reflows to the window's actual current width via a shared `_hint()` helper, replacing hand-wrapped line breaks that either clipped or overflowed when the window was resized. Matches the technique already proven on Section 10's protocol hint.
+
+#### Housekeeping
+
+- Renamed the bundled example system folders to a consistent numbered scheme (`example-data-ism` → `example-01-ism`, `example-data-nist` → `example-03-nist`).
+- Fixed the `process-procedure` component-type gap (`todo.md`): the schema's real single value had been incorrectly split into two non-schema `process`/`procedure` options in two separate dropdowns; both fixed, plus a dead unused duplicate constant removed.
+- Extracted the OSCAL-version-scanner and ttk-styling logic out of `app.py` into `settings.py`/`tab_utils.py` (now independently unit-testable), trimming `app.py` from 1,857 to 1,766 lines.
+- Merged `usability_review.md` and `usability_review_2.md` into one file, organized by the original 10-heuristic structure.
+- Refreshed the bundled example ISM system's data (`ssp_ERN.json`, its Word export, and its system diagram).
+
+### Requirements
+
+- Python 3.9+
+- `jsonschema==4.26.0` (schema validation) and `python-docx==1.2.0` (Word export), now pinned exactly — see [README.md#requirements](README.md#requirements) for installation
+- Optional: the draw.io desktop app, only if you want the new **Export to PNG** diagram button — every other feature works without it
+
+### Known limitations
+
+- Capability version/revision history is still not implemented (components only — `todo.md` §1).
+- No undo/redo, no batch operations/multi-select, no in-app tutorial (`todo.md` §2) — unchanged from v0.4.
+- Multi-catalog support is scoped to the Library Component/Capability Editors only — the Catalog Viewer, SSP Editor, and System Overview's per-system editors still work against one catalog/profile at a time (`todo.md` §5).
+- Control ID collisions across two loaded catalogs are resolved by keeping whichever was seen first — not expected to matter in practice (ISM's and NIST's ID formats don't overlap), but not solved generally.
+- No auto-generated Data Flow diagram from the Section 4 Data Flow Links table yet — diagrams for Data Flow/Network Architecture are still manually attached (`todo.md` §6).
+- Single catalog/profile pair per session; no Profile Editor or standalone Component/Capability Definition document type yet.
+- Generated OSCAL output should be independently reviewed before use in a real authorisation package.
+
+### Upgrading from v0.4
+
+- No breaking changes to file formats, the workspace manifest, or the Library folder layout. Existing single-catalog components/capabilities save and load byte-for-byte the same as before — the new multi-catalog source tracking only activates when more than one catalog is actually loaded.
+- If you have a local copy of the renamed example folders (`example-data-ism`/`example-data-nist`) referenced in an old workspace manifest, re-point it at the new `example-01-ism`/`example-03-nist` paths (or just re-save the workspace once opened, which records the new path).
+- Re-run `pip install -r requirements.txt` to pick up the newly-pinned `jsonschema`/`python-docx` versions.
+
+---
+
 ## v0.4 (Pre-Production Release)
 
 ### What this is
