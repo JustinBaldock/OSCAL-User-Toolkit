@@ -94,16 +94,16 @@ class AllSystemsTab(tk.Frame):
 
         self._tree = ttk.Treeview(
             table_frame,
-            columns=("system", "last_assessed", "compliance", "controls_required",
-                     "controls_applied", "risks", "poam", "notes"),
+            columns=("system", "controls_required", "controls_applied",
+                     "last_assessed", "compliance", "risks", "poam", "notes"),
             show="headings", selectmode="browse",
         )
         for col, heading, w, stretch in [
             ("system",            "System",             200, False),
-            ("last_assessed",     "Last Assessed",      120, False),
-            ("compliance",        "Compliance",         100, False),
             ("controls_required", "Controls Required",  120, False),
             ("controls_applied",  "Controls Applied",   120, False),
+            ("last_assessed",     "Last Assessed",      120, False),
+            ("compliance",        "Compliance",         100, False),
             ("risks",             "Open Risks",           90, False),
             ("poam",              "POA&M Overdue",       110, False),
             ("notes",             "Notes",               220, True),
@@ -292,8 +292,8 @@ class AllSystemsTab(tk.Frame):
 
         for row in rows:
             self._tree.insert("", "end", values=(
-                row["system"], row["last_assessed"], row["compliance"],
-                row["controls_required"], row["controls_applied"],
+                row["system"], row["controls_required"], row["controls_applied"],
+                row["last_assessed"], row["compliance"],
                 row["risks"], row["poam"], row["notes"],
             ))
 
