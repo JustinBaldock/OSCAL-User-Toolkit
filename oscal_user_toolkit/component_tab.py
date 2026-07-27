@@ -1074,10 +1074,14 @@ class ComponentTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
+        tk.Button(doc_link_btn_row, text="✏  Edit Selected", command=self._edit_doc_link,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left", padx=6)
         tk.Button(doc_link_btn_row, text="✕  Remove Selected", command=self._remove_doc_link,
                   bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
-                  ).pack(side="left", padx=6)
+                  ).pack(side="left")
         self._doc_link_tree = ttk.Treeview(
             ver_card, columns=("rel", "href", "text"), show="headings", height=2,
         )
@@ -1089,6 +1093,7 @@ class ComponentTab(tk.Frame):
             self._doc_link_tree.heading(col, text=heading, anchor="w")
             self._doc_link_tree.column(col, width=w, anchor="w", stretch=stretch)
         self._doc_link_tree.pack(fill="x", padx=10, pady=(0, 8))
+        self._doc_link_tree.bind("<Double-1>", lambda _e: self._edit_doc_link())
 
         # =====================================================================
         # SECTION 2 — DESCRIPTION
@@ -1132,11 +1137,16 @@ class ComponentTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
+        tk.Button(prop_btn, text="✏  Edit Selected",
+                  command=self._edit_property,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
         tk.Button(prop_btn, text="✕  Remove Selected",
                   command=self._remove_property,
                   bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
-                  ).pack(side="left", padx=8)
+                  ).pack(side="left")
 
         self._prop_tree = ttk.Treeview(
             prop_frame, columns=("name", "value", "remarks"),
@@ -1150,6 +1160,7 @@ class ComponentTab(tk.Frame):
             self._prop_tree.heading(col, text=heading, anchor="w")
             self._prop_tree.column(col, width=w, anchor="w", stretch=stretch)
         self._prop_tree.pack(fill="x", padx=8, pady=(0, 8))
+        self._prop_tree.bind("<Double-1>", lambda _e: self._edit_property())
 
         # =====================================================================
         # SECTION 5 — RESPONSIBLE ROLES
@@ -1169,11 +1180,16 @@ class ComponentTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
+        tk.Button(role_btn, text="✏  Edit Selected",
+                  command=self._edit_role,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
         tk.Button(role_btn, text="✕  Remove Selected",
                   command=self._remove_role,
                   bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
-                  ).pack(side="left", padx=8)
+                  ).pack(side="left")
 
         self._role_tree = ttk.Treeview(
             role_frame, columns=("role_id", "remarks"),
@@ -1184,6 +1200,7 @@ class ComponentTab(tk.Frame):
         self._role_tree.column("role_id",  width=240, anchor="w")
         self._role_tree.column("remarks",  width=340, anchor="w", stretch=True)
         self._role_tree.pack(fill="x", padx=8, pady=(0, 8))
+        self._role_tree.bind("<Double-1>", lambda _e: self._edit_role())
 
         # =====================================================================
         # SECTION 6 — PROTOCOLS
@@ -1212,11 +1229,16 @@ class ComponentTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
+        tk.Button(proto_btn, text="✏  Edit Selected",
+                  command=self._edit_protocol,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
         tk.Button(proto_btn, text="✕  Remove Selected",
                   command=self._remove_protocol,
                   bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
-                  ).pack(side="left", padx=8)
+                  ).pack(side="left")
 
         proto_tree_frame = tk.Frame(proto_frame, bg=C["CARD_BG"])
         proto_tree_frame.pack(fill="x", padx=8, pady=(0, 8))
@@ -1239,6 +1261,7 @@ class ComponentTab(tk.Frame):
         self._proto_tree.configure(yscrollcommand=proto_scroll.set)
         proto_scroll.pack(side="right", fill="y")
         self._proto_tree.pack(side="left", fill="both", expand=True)
+        self._proto_tree.bind("<Double-1>", lambda _e: self._edit_protocol())
 
         # =====================================================================
         # SECTION 7 — LINKS
@@ -1262,11 +1285,16 @@ class ComponentTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   ).pack(side="left")
+        tk.Button(link_btn, text="✏  Edit Selected",
+                  command=self._edit_link,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  ).pack(side="left", padx=8)
         tk.Button(link_btn, text="✕  Remove Selected",
                   command=self._remove_link,
                   bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
                   relief="flat", padx=8, pady=3, cursor="hand2",
-                  ).pack(side="left", padx=8)
+                  ).pack(side="left")
 
         self._link_tree = ttk.Treeview(
             link_frame, columns=("rel", "href", "text"),
@@ -1280,6 +1308,7 @@ class ComponentTab(tk.Frame):
             self._link_tree.heading(col, text=heading, anchor="w")
             self._link_tree.column(col, width=w, anchor="w", stretch=stretch)
         self._link_tree.pack(fill="x", padx=8, pady=(0, 8))
+        self._link_tree.bind("<Double-1>", lambda _e: self._edit_link())
 
         # =====================================================================
         # SECTION 8 — REMARKS
@@ -2600,6 +2629,26 @@ class ComponentTab(tk.Frame):
         ))
         self._dirty = True
 
+    def _edit_property(self):
+        """Open the selected property in the dialog and overwrite it in place."""
+        if self._selected_index is None:
+            return
+        sel = self._prop_tree.selection()
+        if not sel:
+            messagebox.showinfo("No property selected",
+                                "Select a property to edit first.")
+            return
+        idx  = self._prop_tree.index(sel[0])
+        prop = self._components[self._selected_index]["props"][idx]
+        result = self._property_dialog(existing=prop)
+        if not result:
+            return
+        self._components[self._selected_index]["props"][idx] = result
+        self._prop_tree.item(sel[0], values=(
+            result["name"], result["value"], result.get("remarks", "")
+        ))
+        self._dirty = True
+
     def _remove_property(self):
         """Remove the selected property row."""
         sel = self._prop_tree.selection()
@@ -2617,7 +2666,7 @@ class ComponentTab(tk.Frame):
         The value widget adapts (dropdown vs free entry) based on the name.
         """
         C   = self._colors
-        dlg = self._make_dialog("Add Property", width=420)
+        dlg = self._make_dialog("Edit Property" if existing else "Add Property", width=420)
 
         # Property name dropdown
         row1 = tk.Frame(dlg, bg=C["BG"])
@@ -2720,6 +2769,25 @@ class ComponentTab(tk.Frame):
         ))
         self._dirty = True
 
+    def _edit_role(self):
+        """Open the selected role in the dialog and overwrite it in place."""
+        if self._selected_index is None:
+            return
+        sel = self._role_tree.selection()
+        if not sel:
+            messagebox.showinfo("No role selected", "Select a role to edit first.")
+            return
+        idx  = self._role_tree.index(sel[0])
+        role = self._components[self._selected_index]["roles"][idx]
+        result = self._role_dialog(existing=role)
+        if not result:
+            return
+        self._components[self._selected_index]["roles"][idx] = result
+        self._role_tree.item(sel[0], values=(
+            result["role_id"], result.get("remarks", "")
+        ))
+        self._dirty = True
+
     def _remove_role(self):
         """Remove the selected role row."""
         sel = self._role_tree.selection()
@@ -2731,16 +2799,16 @@ class ComponentTab(tk.Frame):
         self._role_tree.delete(sel[0])
         self._dirty = True
 
-    def _role_dialog(self):
-        """Show a modal dialog to add a responsible role."""
+    def _role_dialog(self, existing=None):
+        """Show a modal dialog to add or edit a responsible role."""
         C   = self._colors
-        dlg = self._make_dialog("Add Responsible Role", width=400)
+        dlg = self._make_dialog("Edit Responsible Role" if existing else "Add Responsible Role", width=400)
 
         row1 = tk.Frame(dlg, bg=C["BG"])
         row1.pack(fill="x", padx=20, pady=8)
         tk.Label(row1, text="Role ID *", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
-        v_role = tk.StringVar(value=RESPONSIBLE_ROLES[0])
+        v_role = tk.StringVar(value=(existing or {}).get("role_id", RESPONSIBLE_ROLES[0]))
         ttk.Combobox(row1, textvariable=v_role, values=RESPONSIBLE_ROLES,
                      state="normal", width=28).pack(side="left")
 
@@ -2748,7 +2816,7 @@ class ComponentTab(tk.Frame):
         row2.pack(fill="x", padx=20, pady=4)
         tk.Label(row2, text="Remarks", bg=C["BG"], fg=C["SUBTEXT"],
                  font=("Helvetica", 11), width=16, anchor="w").pack(side="left")
-        v_remarks = tk.StringVar()
+        v_remarks = tk.StringVar(value=(existing or {}).get("remarks", ""))
         tk.Entry(row2, textvariable=v_remarks, width=32,
                  bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
                  relief="flat", font=("Helvetica", 11), highlightthickness=1,
@@ -2832,6 +2900,24 @@ class ComponentTab(tk.Frame):
         self._refresh_proto_tree()
         self._dirty = True
 
+    def _edit_protocol(self):
+        """Open the selected protocol (with its port ranges) and overwrite it in place."""
+        if self._selected_index is None:
+            return
+        sel = self._proto_tree.selection()
+        if not sel:
+            messagebox.showinfo("No protocol selected",
+                                "Select a protocol to edit first.")
+            return
+        idx = self._proto_tree.index(sel[0])
+        protocols = self._components[self._selected_index].setdefault("protocols", [])
+        result = self._protocol_dialog(existing=protocols[idx])
+        if not result:
+            return
+        protocols[idx] = result
+        self._refresh_proto_tree()
+        self._dirty = True
+
     def _remove_protocol(self):
         """Remove the selected protocol row."""
         if self._selected_index is None:
@@ -2853,7 +2939,7 @@ class ComponentTab(tk.Frame):
         Returns a protocol dict or None if cancelled.
         """
         C   = self._colors
-        dlg = self._make_dialog("Add Protocol", width=480)
+        dlg = self._make_dialog("Edit Protocol" if existing else "Add Protocol", width=480)
 
         # ── Protocol name (free-entry combobox) ───────────────────────────────
         tk.Label(dlg,
@@ -3071,6 +3157,25 @@ class ComponentTab(tk.Frame):
         ))
         self._dirty = True
 
+    def _edit_link(self):
+        """Open the selected link in the dialog and overwrite it in place."""
+        if self._selected_index is None:
+            return
+        sel = self._link_tree.selection()
+        if not sel:
+            messagebox.showinfo("No link selected", "Select a link to edit first.")
+            return
+        idx   = self._link_tree.index(sel[0])
+        links = self._components[self._selected_index].setdefault("links", [])
+        result = self._link_dialog(existing=links[idx])
+        if not result:
+            return
+        links[idx] = result
+        self._link_tree.item(sel[0], values=(
+            result["rel"], result["href"], result.get("text", "")
+        ))
+        self._dirty = True
+
     def _remove_link(self):
         """Remove the selected link row."""
         if self._selected_index is None:
@@ -3103,6 +3208,25 @@ class ComponentTab(tk.Frame):
         ))
         self._dirty = True
 
+    def _edit_doc_link(self):
+        """Open the selected document link in the dialog and overwrite it in place."""
+        if self._selected_index is None:
+            return
+        sel = self._doc_link_tree.selection()
+        if not sel:
+            messagebox.showinfo("No link selected", "Select a document link to edit first.")
+            return
+        idx       = self._doc_link_tree.index(sel[0])
+        doc_links = self._components[self._selected_index].setdefault("doc_links", [])
+        result = self._link_dialog(existing=doc_links[idx])
+        if not result:
+            return
+        doc_links[idx] = result
+        self._doc_link_tree.item(sel[0], values=(
+            result["rel"], result["href"], result.get("text", "")
+        ))
+        self._dirty = True
+
     def _remove_doc_link(self):
         """Remove the selected document-link row — see _add_doc_link()."""
         if self._selected_index is None:
@@ -3123,7 +3247,7 @@ class ComponentTab(tk.Frame):
         Returns a link dict {rel, href, text} or None if cancelled.
         """
         C   = self._colors
-        dlg = self._make_dialog("Add Link", width=520)
+        dlg = self._make_dialog("Edit Link" if existing else "Add Link", width=520)
 
         tk.Label(dlg,
                  text="Add an external reference — vendor docs, CVE advisories,\n"

@@ -903,10 +903,14 @@ class CapabilityTab(tk.Frame):
                   bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
                   ).pack(side="left")
+        tk.Button(doc_link_btn_row, text="✏  Edit Selected", command=self._edit_doc_link,
+                  bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
+                  relief="flat", padx=8, pady=2, cursor="hand2",
+                  ).pack(side="left", padx=6)
         tk.Button(doc_link_btn_row, text="✕  Remove Selected", command=self._remove_doc_link,
                   bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 9),
                   relief="flat", padx=8, pady=2, cursor="hand2",
-                  ).pack(side="left", padx=6)
+                  ).pack(side="left")
         self._doc_link_tree = ttk.Treeview(
             meta_card, columns=("rel", "href", "text"), show="headings", height=2,
         )
@@ -918,6 +922,7 @@ class CapabilityTab(tk.Frame):
             self._doc_link_tree.heading(col, text=heading, anchor="w")
             self._doc_link_tree.column(col, width=w, anchor="w", stretch=stretch)
         self._doc_link_tree.pack(fill="x", padx=10, pady=(0, 8))
+        self._doc_link_tree.bind("<Double-1>", lambda _e: self._edit_doc_link())
 
         # =====================================================================
         # SECTION 2 — MEMBER COMPONENTS
@@ -957,11 +962,19 @@ class CapabilityTab(tk.Frame):
         ).pack(side="left")
 
         tk.Button(
+            mem_btn, text="✏  Edit Selected",
+            command=self._edit_member,
+            bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=8, pady=3, cursor="hand2",
+            activebackground="#7ad5c6", activeforeground=C["BUTTON_TEXT"],
+        ).pack(side="left", padx=8)
+
+        tk.Button(
             mem_btn, text="✕  Remove Selected",
             command=self._remove_member,
             bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=8, pady=3, cursor="hand2",
-        ).pack(side="left", padx=8)
+        ).pack(side="left")
 
         # Table showing member components
         # Columns: component title, type, and its role in this capability
@@ -986,6 +999,7 @@ class CapabilityTab(tk.Frame):
         self._mem_tree.configure(yscrollcommand=mem_scroll.set)
         mem_scroll.pack(side="right", fill="y")
         self._mem_tree.pack(side="left", fill="both", expand=True)
+        self._mem_tree.bind("<Double-1>", lambda _e: self._edit_member())
 
         # =====================================================================
         # SECTION 3 — CONTROL IMPLEMENTATIONS (CAPABILITY-LEVEL)
@@ -1559,6 +1573,88 @@ class CapabilityTab(tk.Frame):
         self._refresh_list()
         self._dirty = True
 
+    def _edit_member(self):
+        """
+        Edit the selected member's role/description in place. The member
+        component itself can't be swapped this way (it's keyed by UUID
+        across member_uuids/member_descriptions/inherited responses) — to
+        change which component is a member, remove it and add the right one.
+        """
+        sel = self._mem_tree.selection()
+        if not sel:
+            messagebox.showinfo("No member selected",
+                                "Select a member component to edit first.")
+            return
+        if self._sel_index is None:
+            return
+        comp_uuid = sel[0]   # The Treeview iid is the component UUID
+        comp = self._find_component(comp_uuid)
+        cap  = self._capabilities[self._sel_index]
+        role_desc = cap.get("member_descriptions", {}).get(comp_uuid, "")
+
+        result = self._member_role_dialog(comp, role_desc)
+        if result is None:
+            return
+
+        cap.setdefault("member_descriptions", {})[comp_uuid] = result
+        self._mem_tree.item(sel[0], values=(
+            comp.get("title", "") if comp else "",
+            comp.get("type", "") if comp else "",
+            result,
+        ))
+        self._dirty = True
+
+    def _member_role_dialog(self, comp, existing_desc):
+        """
+        Show a modal dialog to edit a member component's role/description
+        within this capability. The component itself is shown read-only —
+        see _edit_member() for why it can't be changed here.
+        """
+        C   = self._colors
+        dlg = self._make_dialog("Edit Member Role", width=480)
+
+        tk.Label(
+            dlg, text=f"Component: {comp.get('title', '?') if comp else '?'}",
+            bg=C["BG"], fg=C["TEXT"], font=("Helvetica", 11, "bold"),
+        ).pack(padx=20, pady=(16, 4), anchor="w")
+
+        tk.Label(
+            dlg, text="Role / description of this component in the capability  (required):",
+            bg=C["BG"], fg=C["SUBTEXT"], font=("Helvetica", 10),
+        ).pack(padx=20, pady=(10, 2), anchor="w")
+
+        v_desc = tk.StringVar(value=existing_desc)
+        tk.Entry(
+            dlg, textvariable=v_desc, width=55,
+            bg=C["CARD_BG"], fg=C["TEXT"], insertbackground=C["TEXT"],
+            relief="flat", font=("Helvetica", 11),
+            highlightthickness=1, highlightbackground=C["HEADER_BG"],
+        ).pack(padx=20, pady=4, ipady=3)
+
+        result = {}
+
+        def _ok():
+            if not v_desc.get().strip():
+                messagebox.showwarning(
+                    "Description required",
+                    "Please describe this component's role in the capability."
+                )
+                return
+            result["value"] = v_desc.get().strip()
+            dlg.destroy()
+
+        btn = tk.Frame(dlg, bg=C["BG"])
+        btn.pack(pady=12)
+        tk.Button(btn, text="  Save  ", command=_ok,
+                  bg=C["TEAL_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left", padx=8)
+        tk.Button(btn, text="Cancel", command=dlg.destroy,
+                  bg=C["SECONDARY_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 11),
+                  relief="flat", padx=10).pack(side="left")
+        dlg.bind("<Return>", lambda _e: _ok())
+        dlg.wait_window()
+        return result.get("value")
+
     def _remove_member(self):
         """Remove the selected row from the member components table."""
         sel = self._mem_tree.selection()
@@ -1762,6 +1858,26 @@ class CapabilityTab(tk.Frame):
         ))
         self._dirty = True
 
+    def _edit_doc_link(self):
+        """Open the selected document link in the dialog and overwrite it in place."""
+        if self._sel_index is None:
+            return
+        sel = self._doc_link_tree.selection()
+        if not sel:
+            messagebox.showinfo("No link selected", "Select a document link to edit first.")
+            return
+        idx       = self._doc_link_tree.index(sel[0])
+        cap       = self._capabilities[self._sel_index]
+        doc_links = cap.setdefault("doc_links", [])
+        result = self._doc_link_dialog(existing=doc_links[idx])
+        if not result:
+            return
+        doc_links[idx] = result
+        self._doc_link_tree.item(sel[0], values=(
+            result["rel"], result["href"], result.get("text", "")
+        ))
+        self._dirty = True
+
     def _remove_doc_link(self):
         """Remove the selected document-link row — see _add_doc_link()."""
         if self._sel_index is None:
@@ -1783,7 +1899,7 @@ class CapabilityTab(tk.Frame):
         Returns a link dict {rel, href, text} or None if cancelled.
         """
         C   = self._colors
-        dlg = self._make_dialog("Add Document Link", width=480)
+        dlg = self._make_dialog("Edit Document Link" if existing else "Add Document Link", width=480)
 
         row1 = tk.Frame(dlg, bg=C["BG"])
         row1.pack(fill="x", padx=20, pady=(14, 4))
