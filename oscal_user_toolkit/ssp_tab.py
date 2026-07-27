@@ -967,6 +967,12 @@ class SSPTab(tk.Frame):
             bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
             relief="flat", padx=10, pady=3, cursor="hand2",
         ).pack(side="left")
+        tk.Button(
+            export_btn_row, text="🖼  Export to PNG",
+            command=self._export_drawio_png,
+            bg=C["BLUE_BG"], fg=C["BUTTON_TEXT"], font=("Helvetica", 10),
+            relief="flat", padx=10, pady=3, cursor="hand2",
+        ).pack(side="left", padx=(8, 0))
 
         self._cap_comp_diagram_tree = self._build_diagram_section(
             parent, "capability_component_diagrams",
@@ -4681,14 +4687,16 @@ class SSPTab(tk.Frame):
     # DRAW.IO DIAGRAM EXPORT
     # =========================================================================
 
-    def _export_drawio(self):
+    def _build_capability_component_drawio_xml(self):
         """
-        Export a three-tier draw.io diagram showing:
+        Build a three-tier draw.io diagram showing:
 
             System  →  Capabilities  →  Components
 
-        The diagram is saved as a .drawio XML file that can be opened directly
-        in draw.io (desktop app or app.diagrams.net in a browser).
+        Shared by _export_drawio() (saves the .drawio XML directly) and
+        _export_drawio_png() (converts it to PNG via the draw.io desktop
+        app) — both need the exact same diagram, just written out
+        differently, so the diagram-building logic lives here once.
 
         Layout logic:
           1. Capabilities (loaded in the Capability Editor) are placed first,
@@ -4706,11 +4714,9 @@ class SSPTab(tk.Frame):
           - service  → purple
           - others   → grey
 
-        Returns the saved file path, or None if the user cancelled the save
-        dialog or the write failed — used by _add_capability_component_diagram()
-        to know whether to go on and track the result.
+        Returns (xml_string, system_name) — system_name is returned too
+        since callers use it to build a sensible default filename.
         """
-        from tkinter import filedialog
         import xml.etree.ElementTree as ET
 
         # ── Gather data ───────────────────────────────────────────────────────
@@ -4974,8 +4980,23 @@ class SSPTab(tk.Frame):
             pass  # Python < 3.9 — the file is still valid, just less readable.
 
         xml_string = ET.tostring(root_el, encoding="unicode", xml_declaration=False)
+        return xml_string, system_name
 
-        # ── Ask user where to save ────────────────────────────────────────────
+    def _export_drawio(self):
+        """
+        Save the System -> Capability -> Component draw.io diagram
+        (_build_capability_component_drawio_xml()) as a .drawio XML file
+        the user picks a location for. It can be opened directly in draw.io
+        (desktop app or app.diagrams.net in a browser).
+
+        Returns the saved file path, or None if the user cancelled the save
+        dialog or the write failed — used by _add_capability_component_diagram()
+        to know whether to go on and track the result.
+        """
+        from tkinter import filedialog
+
+        xml_string, system_name = self._build_capability_component_drawio_xml()
+
         save_path = filedialog.asksaveasfilename(
             title="Export draw.io Diagram",
             defaultextension=".drawio",
@@ -4994,6 +5015,108 @@ class SSPTab(tk.Frame):
         except OSError as exc:
             messagebox.showerror("Export Failed", str(exc))
             return None
+
+    @staticmethod
+    def _find_drawio_executable():
+        """
+        Locate the draw.io desktop app's command-line binary, or return
+        None if it isn't installed — used by _export_drawio_png() to fail
+        gracefully with install instructions rather than a raw traceback,
+        since PNG export shells out to the real draw.io app (there is no
+        practical way to render an mxGraph diagram to an image ourselves —
+        see oscal_user_toolkit_design_document.md for why).
+
+        Checks, in order: PATH (covers Linux packages and anyone who's
+        added it manually), then each OS's conventional install location.
+        """
+        import shutil
+        import sys
+
+        for name in ("drawio", "draw.io"):
+            found = shutil.which(name)
+            if found:
+                return found
+
+        if sys.platform == "darwin":
+            candidates = ["/Applications/draw.io.app/Contents/MacOS/draw.io"]
+        elif sys.platform == "win32":
+            candidates = [
+                r"C:\Program Files\draw.io\draw.io.exe",
+                r"C:\Program Files (x86)\draw.io\draw.io.exe",
+            ]
+        else:
+            candidates = ["/usr/bin/drawio", "/opt/drawio/drawio"]
+
+        for path in candidates:
+            if Path(path).is_file():
+                return path
+        return None
+
+    def _export_drawio_png(self):
+        """
+        Export the System -> Capability -> Component draw.io diagram
+        (_build_capability_component_drawio_xml()) straight to a PNG image,
+        by writing it to a temp .drawio file and shelling out to the
+        installed draw.io desktop app's --export CLI mode to convert it.
+
+        If draw.io isn't installed, shows a clear, actionable message
+        instead of failing silently or with a raw exception — this is an
+        optional convenience feature, not a core one, so a missing
+        dependency shouldn't feel like a bug.
+        """
+        from tkinter import filedialog
+        import subprocess
+        import tempfile
+
+        drawio_exe = self._find_drawio_executable()
+        if not drawio_exe:
+            messagebox.showinfo(
+                "draw.io Not Found",
+                "PNG export needs the draw.io desktop app, which isn't installed "
+                "(or isn't in a location this app knows to check).\n\n"
+                "Download it from https://www.drawio.com/ , or use "
+                "\"📐 Export Capability and Component Map\" instead to save a "
+                ".drawio file you can open and export manually.",
+            )
+            return None
+
+        xml_string, system_name = self._build_capability_component_drawio_xml()
+
+        save_path = filedialog.asksaveasfilename(
+            title="Export Capability and Component Map as PNG",
+            defaultextension=".png",
+            filetypes=[("PNG image", "*.png"), ("All files", "*.*")],
+            initialfile=f"{system_name.replace(' ', '_')}_system_diagram.png",
+        )
+        if not save_path:
+            return None
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".drawio", delete=False, encoding="utf-8"
+        ) as tmp:
+            tmp.write(xml_string)
+            tmp_path = tmp.name
+
+        try:
+            result = subprocess.run(
+                [drawio_exe, "--export", "--format", "png", "--transparent",
+                 "--output", save_path, tmp_path],
+                capture_output=True, text=True, timeout=60,
+            )
+            if result.returncode != 0 or not Path(save_path).is_file():
+                messagebox.showerror(
+                    "PNG Export Failed",
+                    "draw.io could not convert the diagram to PNG.\n\n"
+                    + (result.stderr.strip() or result.stdout.strip() or "No further details were reported."),
+                )
+                return None
+            self._set_status(f"draw.io diagram exported → {save_path}")
+            return save_path
+        except (OSError, subprocess.SubprocessError) as exc:
+            messagebox.showerror("PNG Export Failed", str(exc))
+            return None
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
 
     def _save(self):
         """
