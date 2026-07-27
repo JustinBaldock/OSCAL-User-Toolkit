@@ -609,7 +609,13 @@ class SSPTab(tk.Frame):
         )
         combo(
             "Security Sensitivity Level", "security_sensitivity_level",
-            ["fips-199-low", "fips-199-moderate", "fips-199-high"],
+            # OSCAL's security-sensitivity-level is free text ("such as
+            # defined by FIPS-199" — not an enum, see oscal_ssp_schema.json),
+            # so ISM classifications are offered alongside FIPS-199's for
+            # ISM-based systems, rather than replacing them.
+            ["fips-199-low", "fips-199-moderate", "fips-199-high",
+             "ism-nc (Non-classified)", "ism-os (OFFICIAL: Sensitive)",
+             "ism-p (PROTECTED)", "ism-s (SECRET)", "ism-ts (TOP SECRET)"],
             default="fips-199-moderate",
         )
 
