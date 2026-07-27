@@ -80,6 +80,21 @@ DATA_FLOW_DIRECTIONS = ["outbound", "inbound", "bidirectional"]
 # Transport options for a Section 4 data flow link's port.
 DATA_FLOW_TRANSPORTS = ["TCP", "UDP"]
 
+# Confidentiality/Integrity/Availability impact options — Section 2's three
+# top-level dropdowns and each Information Type's per-item CIA dropdowns
+# (see _cia_dialog()) share this same list, so it's defined once here rather
+# than duplicated, to keep both places offering identical options. OSCAL's
+# security-objective-confidentiality/integrity/availability fields are free
+# text ("such as FIPS-199" — an example, not an enum, per
+# oscal_ssp_schema.json), so the AusGov Business Impact Level scale is
+# offered alongside FIPS-199's rather than replacing it.
+CIA_IMPACT_OPTIONS = [
+    "fips-199-low", "fips-199-moderate", "fips-199-high",
+    "AusGov-BIL-Insignificant", "AusGov-BIL-Low", "AusGov-BIL-Medium",
+    "AusGov-BIL-Moderate", "AusGov-BIL-High", "AusGov-BIL-Major",
+    "AusGov-BIL-Critical",
+]
+
 
 class SSPTab(tk.Frame):
     """
@@ -624,18 +639,17 @@ class SSPTab(tk.Frame):
         # We add three Comboboxes so users can set each one independently.
         # These map to confidentiality_impact, integrity_impact, availability_impact
         # in the internal SSP dict (see models.py empty_ssp and build_oscal_ssp).
-        _cia_options = ["fips-199-low", "fips-199-moderate", "fips-199-high"]
         combo(
             "Confidentiality Impact", "confidentiality_impact",
-            _cia_options, default="fips-199-moderate",
+            CIA_IMPACT_OPTIONS, default="fips-199-moderate",
         )
         combo(
             "Integrity Impact", "integrity_impact",
-            _cia_options, default="fips-199-moderate",
+            CIA_IMPACT_OPTIONS, default="fips-199-moderate",
         )
         combo(
             "Availability Impact", "availability_impact",
-            _cia_options, default="fips-199-moderate",
+            CIA_IMPACT_OPTIONS, default="fips-199-moderate",
         )
 
         self._status_remarks = textbox("Status Remarks", height=2)
@@ -3208,7 +3222,7 @@ class SSPTab(tk.Frame):
             width=600,
         )
 
-        impacts = ["fips-199-low", "fips-199-moderate", "fips-199-high"]
+        impacts = CIA_IMPACT_OPTIONS
 
         def lrow(parent, text, width=18):
             row = tk.Frame(parent, bg=C["BG"])
