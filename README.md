@@ -28,7 +28,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 
 ### Systems Folder & All Systems (new)
 - **Systems folder**: one subfolder per system — each holding its own workspace manifest, SSP, AP, AR, and POA&M — separate from the shared Library. Configure it via the **🗂 Systems Folder** toolbar button (persisted between launches; defaults to this repo's own `systems/` folder, which is where the bundled examples now live)
-- **🌐 All Systems tab** (lives in the **Organisation** tab group): scans every subfolder in the Systems folder and shows an organisation-wide rollup — one row per system (compliance %, open risks, overdue POA&M items) plus aggregate totals — without needing to open each system individually. Distinct from the Dashboard tab, which only ever shows the one system currently open in the live editor tabs
+- **🌐 All Systems tab** (lives in the **Organisation** tab group): scans every subfolder in the Systems folder and shows an organisation-wide rollup — one row per system (controls required, controls applied, compliance %, open risks, overdue POA&M items) plus aggregate totals — without needing to open each system individually. **Controls Required** is the system's loaded profile selection size (or the full catalog if no profile narrows it further); **Controls Applied** is how many controls actually have a recorded response in the SSP. Distinct from the Dashboard tab, which only ever shows the one system currently open in the live editor tabs
 
 ### Data Sources & Library (new in v0.2)
 - **Library folder**: a shared, organisation-level `catalogs/`/`profiles/`/`components/`/`capabilities/` folder, separate from any one system's own workspace — configure it once via the **📚 Library Folder** toolbar button (persisted between launches; defaults to this repo's own `library/` folder)
@@ -36,7 +36,7 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - **Import from Library** (Component/Capability Editor): copy a Library component/capability into the current system's own folder as an independent, editable copy — never touches the Library source, never overwrites a copy you've already edited
 - **Sync from System Folder** (SSP Editor, Section 8): pull everything that's been imported for the current system straight into the SSP, with control responses auto-populated
 - Assessment Plan and POA&M both show read-only visibility into whatever components/capabilities the referenced SSP has, without needing write access
-- **121 example components** ship in `library/components/`, covering every OSCAL component type — hardware, software, services, operating systems, policies, and (less commonly represented in most toolkits) `physical`, `process-procedure`, `plan`, `guidance`, and `standard` — plus **11 example capabilities** in `library/capabilities/`. See [oscal_user_toolkit_design_document.md §11](oscal_user_toolkit_design_document.md) for the full breakdown
+- **124 example components** ship in `library/components/`, covering every OSCAL component type — hardware, software, services, operating systems, policies, and (less commonly represented in most toolkits) `physical`, `process-procedure`, `plan`, `guidance`, and `standard` — plus **11 example capabilities** in `library/capabilities/`. See [oscal_user_toolkit_design_document.md §11](oscal_user_toolkit_design_document.md) for the full breakdown
 
 ### Organisation Tab — Library Component & Capability Editors (new)
 - **⚙ Library Components** and **🔗 Library Capabilities**: dedicated editors locked to `library/components/`/`library/capabilities/` — no Open File/Open Folder dialogs, no location prompt on save; they auto-load every file in the Library and save straight back to it, so there's no ambiguity about whether you're editing the Library's shared master or a system's local copy
@@ -105,7 +105,8 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
 - **VLANs** (Section 4): record VLAN ID (validated 1–4094), name, and description
 - **Data Flow Links** (Section 4): record how data moves between the SSP's own components — source, target, protocol, port, transport, direction; the Data Flow description is auto-drafted from these links if left blank
 - Manage roles, parties, and information types with full CIA impact levels
-- **Security Impact Level** (OSCAL 1.2.x): set Confidentiality, Integrity, and Availability objectives independently
+- **Security Impact Level** (OSCAL 1.2.x): set Confidentiality, Integrity, and Availability objectives independently. Options include FIPS-199 (Low/Moderate/High) and the 7-point AusGov Business Impact Level scale (Insignificant/Low/Medium/Moderate/High/Major/Critical) — OSCAL's schema leaves this field free text, so both scales are offered side by side rather than one replacing the other
+- **Security Sensitivity Level** (Section 2): FIPS-199 options plus the Australian ISM classifications (Non-classified, OFFICIAL: Sensitive, PROTECTED, SECRET, TOP SECRET)
 - Define system components and document how each implements individual security controls
 - Reference a loaded profile so the SSP declares exactly which baseline it is assessed against
 - **Capabilities Used** (Section 8): pick a capability from the Capability Editor's loaded list and it is recorded on the SSP (as an OSCAL metadata prop, since OSCAL 1.2.2 has no native "capabilities" field on an SSP) — its member components and their control responses are pulled straight into Section 8/9 automatically, provided the component files are already loaded in the Component Editor
@@ -120,6 +121,8 @@ The tab bar is grouped: **Workspace** and **Dashboard** stay top-level, while **
   - Component boxes are colour-coded by type (policy = amber, software = blue, hardware = green, service = purple)
   - Output is a `.drawio` file that opens directly in the draw.io desktop app or [app.diagrams.net](https://app.diagrams.net)
   - *Tip: load your capability files in the Capability Editor tab before exporting*
+- **🖼 Export to PNG** (Section 8): renders the same System → Capability → Component diagram straight to a `.png`, by shelling out to the draw.io desktop app's own export CLI. Shows a plain-language message with install instructions if draw.io isn't installed — every other feature works without it
+- **Capability and Component Map Diagrams** (Section 8): a tracked table of diagrams for this map, matching the existing Auth Boundary/Network Architecture/Data Flow diagram tables. **Add Diagram** asks whether to generate a new export or attach an existing file (`.drawio`, `.png`, `.jpg`, `.svg`, `.pdf`); every diagram table's caption/link dialog also has a **📂 Browse…** button so attaching an existing file no longer means typing the exact path by hand
 
 ### Assessment Plan (AP) Editor
 - Create and edit OSCAL Assessment Plan documents

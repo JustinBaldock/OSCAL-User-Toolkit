@@ -1162,13 +1162,27 @@ An external code review flagged four findings. Checked each directly rather than
 
 **CI drift check.** A hand-maintained SBOM goes stale the moment a dependency changes and nobody remembers to regenerate it — so a third CI job (`sbom`) regenerates it fresh on every push and fails the build if the result differs from what's committed, same idea as a lockfile check. Kept to `permissions: contents: read` like the other two jobs — it only verifies, it doesn't commit the regenerated file back.
 
-**Section 8 diagram tracking, moved Export button.** While in the area, also moved the "📐 Export Capability and Component Map" button (System Overview → SSP Editor → Section 8) out of the Capabilities Used button row and into its own row directly beneath the capabilities table, and added a new "Capability and Component Map Diagrams" table underneath it — same Add/Edit/Remove-Selected pattern as the existing Auth Boundary/Network Architecture/Data Flow diagram tables (`_build_diagram_section()`), now parameterised with an `add_fn` so a table's "Add Diagram" button can do something other than open the plain caption/link/description dialog. Here, "Add Diagram" runs the same draw.io export first, then opens that dialog pre-filled with the saved path, so an export doesn't disappear into a save dialog and get forgotten — it's tracked. OSCAL 1.2.2 has no native `diagrams[]` field for this (unlike auth-boundary/network-architecture/data-flow, which do), so tracked diagrams are written as back-matter resources tagged with a `type=capability-component-diagram` prop, parsed back out the same way on load — verified with a `build_oscal_ssp()` → `parse_ssp_file()` round-trip.
+**Section 8 diagram tracking, moved Export button.** While in the area, also moved the "📐 Export Capability and Component Map" button (System Overview → SSP Editor → Section 8) out of the Capabilities Used button row and into its own row directly beneath the capabilities table, and added a new "Capability and Component Map Diagrams" table underneath it — same Add/Edit/Remove-Selected pattern as the existing Auth Boundary/Network Architecture/Data Flow diagram tables (`_build_diagram_section()`), now parameterised with an `add_fn` so a table's "Add Diagram" button can do something other than open the plain caption/link/description dialog. OSCAL 1.2.2 has no native `diagrams[]` field for this (unlike auth-boundary/network-architecture/data-flow, which do), so tracked diagrams are written as back-matter resources tagged with a `type=capability-component-diagram` prop, parsed back out the same way on load — verified with a `build_oscal_ssp()` → `parse_ssp_file()` round-trip. (The original "Add Diagram" behavior here — run the draw.io export first, then pre-fill the tracking dialog with the saved path — turned out to have a real gap, fixed in §10.36 below.)
+
+### 10.36 PNG export, a real Add-Diagram bug fix, AusGov-aligned dropdowns, All Systems columns, and resizable hint boxes
+
+**Export to PNG.** A new `_export_drawio_png()` alongside the existing `.drawio` export: finds the draw.io desktop app via `shutil.which("drawio"/"draw.io")` first, then OS-specific conventional install paths (`/Applications/draw.io.app/Contents/MacOS/draw.io` on macOS; Program Files on Windows; `/usr/bin/drawio`/`/opt/drawio/drawio` on Linux) — shows a plain-language `messagebox.showinfo` with install instructions rather than a raw error if it isn't found. When found, writes the same generated System→Capability→Component XML to a temporary `.drawio` file and shells out to the app's own `--export --format png --transparent --output ...` CLI, surfacing `stderr`/`stdout` on failure and always cleaning up the temp file. A new "🖼 Export to PNG" button sits next to the existing "📐 Export Capability and Component Map" button in Section 8.
+
+**Real Add-Diagram bug, found and fixed.** §10.35's "Add Diagram" for the new Capability and Component Map Diagrams table was hardcoded to always run the draw.io *save* export first (`filedialog.asksaveasfilename`, `.drawio`/`.xml` only) — there was no way to attach an already-existing file, `.drawio` or otherwise, contradicting what every other diagram table in the app already allowed via free-text paste. Reported directly by the user with the exact dialog title and filter that gave it away. Fixed with a new `_diagram_source_choice_dialog()` — "Add Diagram" now asks Generate New Export vs. Attach Existing File first; Attach Existing opens a real `filedialog.askopenfilename` picker (`*.drawio *.png *.jpg *.jpeg *.svg *.pdf`, plus All Files) before pre-filling the tracking dialog. Verified with mocked-dialog tests covering both branches plus cancel.
+
+Separately, the plain caption/link/description dialog used by *every* diagram table (`_diagram_dialog()`) gained its own "📂 Browse…" button next to the Link/Path field, using the same file-type filter — previously that field was free-text-only, so attaching an existing file meant typing the exact path by hand.
+
+**AusGov-aligned dropdown options (Section 2).** Checked the OSCAL 1.2.2 JSON Schema directly (`oscal_ssp_schema.json`) and confirmed `security-sensitivity-level` and the three `security-objective-confidentiality/integrity/availability` fields are all unconstrained `StringDatatype`, not enums — so these are additions to existing dropdowns, not replacements, and any previously-saved value still loads and displays correctly regardless. Security Sensitivity Level gained the Australian ISM classifications (`ism-nc`/`ism-os`/`ism-p`/`ism-s`/`ism-ts`, labelled Non-classified/OFFICIAL: Sensitive/PROTECTED/SECRET/TOP SECRET) alongside the existing FIPS-199 options. Confidentiality/Integrity/Availability impact gained the 7-point AusGov Business Impact Level scale (Insignificant/Low/Medium/Moderate/High/Major/Critical) via a single shared module-level constant, `CIA_IMPACT_OPTIONS`, used by both Section 2's top-level fields and each Information Type's per-item impact dropdowns — kept as one shared list specifically so the two can't drift apart.
+
+**All Systems tab — Controls Required / Controls Applied columns.** Two new Treeview columns, positioned right after System: **Controls Required** (`_controls_required()` — the loaded profile's `with-ids` selection size, falling back to the referenced catalog's full control count only for an include-all profile or when there's no profile at all, so a full catalog load isn't needed for the common case) and **Controls Applied** (`len(ssp["ctrl_implementations"])` when an SSP is loaded, `"—"` otherwise). Verified against the bundled `example-01-ism` system: 1,024 required (from the profile's own `with-ids` list, not a catalog-size fallback) / 69 applied.
+
+**Resizable hint boxes across the whole SSP Editor.** A sweep of every hint/description `tk.Label` in the SSP Editor's main scrollable form (Sections 1–12) found most still used either no wrap or a fixed pixel `wraplength`, both of which clip or overflow when the window is resized — the technique already used for Section 10's protocol hint (§10.x, added earlier this release) wasn't applied consistently elsewhere. Consolidated into one shared `_hint()` helper (creates the label, binds `<Configure>` to keep `wraplength` equal to the label's own current width) and applied it at all 13+ call sites across the main form, plus the Section 9 selected-control-statement label in the resizable `PanedWindow` pane. Deliberately *not* applied inside `_make_dialog()`-based dialogs, which are fixed-size and non-resizable — there's nothing for the hint to scale to there.
 
 ---
 
 ## 11. Example Component Library
 
-The `library/components/` folder (see §10.13–§10.20 for the Library system itself) ships with **121 pre-built component files** spanning every component type listed in `oscal_component_schema.json`'s `defined-component.type` enum, plus the app's own `operating-system` convention. They're loaded automatically by the Organisation tab's Library Component Editor (`library_mode` — see §10.20), or can be picked individually via **📚 Import from Library** in the System Overview Component Editor.
+The `library/components/` folder (see §10.13–§10.20 for the Library system itself) ships with **124 pre-built component files** spanning every component type listed in `oscal_component_schema.json`'s `defined-component.type` enum, plus the app's own `operating-system` convention. They're loaded automatically by the Organisation tab's Library Component Editor (`library_mode` — see §10.20), or can be picked individually via **📚 Import from Library** in the System Overview Component Editor.
 
 All example components include:
 - ISM control implementations with detailed implementation narratives, using real control IDs verified directly against the bundled ISM catalog (`library/catalogs/ISM_catalog_2026_06.json`) — never invented
@@ -1217,6 +1231,61 @@ The components span a realistic medium-to-large Australian organisation's enviro
 ---
 
 ## 13. Changelog
+
+### Version 5.6 (July 2026)
+
+**New features:**
+- **Export to PNG**, ISM/AusGov dropdown options for Security Sensitivity Level and CIA impact, All Systems tab's Controls Required/Applied columns, and resizable hint boxes across the whole SSP Editor. See §10.36.
+
+**Fixes:**
+- Fixed a real bug: the Capability and Component Map's "Add Diagram" had no way to attach an existing file, only generate a new export. Now asks first. See §10.36.
+- Added a Browse button to every diagram table's caption/link dialog. See §10.36.
+
+### Version 5.5 (July 2026)
+
+**New features:**
+- Compliance-grade `sbom.json` (CycloneDX 1.6) with a CI drift check; moved the Export Capability and Component Map button and added a tracked "Capability and Component Map Diagrams" table to Section 8. See §10.35.
+
+### Version 5.4 (July 2026)
+
+**Fixes:**
+- Fixed a real app-wide memory leak (every theme toggle leaked a whole previous tab instance via an unreleased mousewheel binding) and two tabs (Dashboard, Workspace) missing a scroll guard every other tab already had. See §10.34.
+
+### Version 5.3 (July 2026)
+
+**New:**
+- Extracted the OSCAL-version-scanner and ttk-styling logic out of `app.py` into `settings.py`/`tab_utils.py`, independently unit-testable; `app.py` trimmed from 1,857 to 1,766 lines. See §10.33.
+
+### Version 5.2 (July 2026)
+
+**New:**
+- Renamed the bundled example system folders to a consistent numbered scheme (`example-data-ism` → `example-01-ism`, `example-data-nist` → `example-03-nist`); enabled Dependabot.
+
+**Fixes:**
+- Two CodeQL findings fixed. See §10.32.
+
+### Version 5.1 (July 2026)
+
+**Fixes:**
+- Fixed the `COMPONENT_TYPES`/`SSP_COMPONENT_TYPES` `process-procedure` gap (`todo.md` §6): the schema's single value had been incorrectly split into two non-schema `process`/`procedure` dropdown options; both fixed, plus a dead duplicate constant removed. See §10.31.
+
+### Version 5.0 (July 2026)
+
+**New:**
+- GitHub CodeQL security scanning enabled. See §10.30.
+
+**Fixes:**
+- Fixed both §10.28 bugs surfaced by the new round-trip tests: AR now writes `assessed_by` on save, and AR risks gained real CIA impact characterization support (previously only implemented for POA&M risks). See §10.29.
+
+### Version 4.11 (July 2026)
+
+**New:**
+- Save/load round-trip tests for SSP, AP, AR, and POA&M (`tests/test_roundtrip.py`), which surfaced the two bugs fixed in Version 5.0. See §10.28.
+
+### Version 4.10 (July 2026)
+
+**New:**
+- Merged `usability_review.md` and `usability_review_2.md` into one file, organized by the original 10-heuristic structure. See §10.27.
 
 ### Version 4.9 (July 2026)
 

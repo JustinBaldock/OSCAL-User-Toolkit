@@ -10,7 +10,7 @@
 
 A quality-and-correctness-focused release: v0.5 adds no new document type or major workflow, but it's the first release with automated CI (lint, unit tests, a compliance-grade SBOM with drift detection, and CodeQL security scanning), fixes a real duplicate-title bug that led to a batch of Library components being extracted from capability bundles into their own files, fixes a genuine app-wide memory leak, and closes two real bugs the new test coverage surfaced (an AR field that silently failed to save, and a documented-but-missing CIA characterization feature for AR risks). It also adds multi-catalog support to the Library editors, several SSP Editor usability/coverage improvements, and a batch of diagram-workflow fixes.
 
-Full feature documentation is in [README.md](README.md). See [oscal_user_toolkit_design_document.md](oscal_user_toolkit_design_document.md) §10.24–§10.35 for the technical design history.
+Full feature documentation is in [README.md](README.md). See [oscal_user_toolkit_design_document.md](oscal_user_toolkit_design_document.md) §10.24–§10.36 for the technical design history.
 
 ### Highlights since v0.4
 
